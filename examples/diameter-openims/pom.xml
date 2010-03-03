@@ -25,7 +25,7 @@
     <!-- Mobicents Diameter Components Versions -->
     <mobicents.diameter.jdiameter.version>1.5.3.0-build307-SNAPSHOT</mobicents.diameter.jdiameter.version>
     <mobicents.diameter.mux.version>1.1.0.GA-SNAPSHOT</mobicents.diameter.mux.version>
-    <mobicents.diameter.resources.sh-client.version>2.0.0-SNAPSHOT</mobicents.diameter.resources.sh-client.version>
+    <mobicents.diameter.resources.sh-client.version>${pom.version}</mobicents.diameter.resources.sh-client.version>
     
     <!-- Other Mobicents Components Versions -->
     <mobicents.servers.jainslee.version>1.2.6.GA</mobicents.servers.jainslee.version>
