@@ -10,14 +10,12 @@ import javax.sip.Transaction;
  * @author martins
  * 
  */
-public class TransactionActivityHandle extends SipActivityHandle implements Serializable {
+public abstract class TransactionActivityHandle extends SipActivityHandle implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
-	public static Class<? extends SipActivityHandle> TYPE = TransactionActivityHandle.class;
 	
 	/**
 	 * the transaction's branch

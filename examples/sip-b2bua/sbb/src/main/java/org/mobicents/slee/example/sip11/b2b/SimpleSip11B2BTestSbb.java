@@ -34,12 +34,6 @@ public abstract class SimpleSip11B2BTestSbb implements javax.slee.Sbb {
 
 	// Initial request
 	public void onInviteEvent(RequestEvent event, ActivityContextInterface aci) {
-
-		if (getIncomingDialog() != null) {
-			tracer.severe("Repeated request: " + event.getRequest());
-			return;
-		}
-
 		// ACI is the server transaction activity
 		final ServerTransaction st = event.getServerTransaction();
 		try {

@@ -34,7 +34,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
-import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -68,10 +67,7 @@ import javax.slee.SbbLocalObject;
 import javax.slee.TransactionRequiredLocalException;
 import javax.slee.UnrecognizedActivityException;
 import javax.slee.facilities.TimerEvent;
-import javax.slee.facilities.TimerFacility;
-import javax.slee.facilities.TimerID;
-import javax.slee.facilities.TimerOptions;
-import javax.slee.facilities.TimerPreserveMissed;
+import javax.slee.facilities.Tracer;
 
 import net.java.slee.resource.mgcp.JainMgcpProvider;
 import net.java.slee.resource.mgcp.MgcpActivityContextInterfaceFactory;
@@ -79,10 +75,9 @@ import net.java.slee.resource.mgcp.MgcpConnectionActivity;
 import net.java.slee.resource.mgcp.MgcpEndpointActivity;
 import net.java.slee.resource.sip.DialogActivity;
 import net.java.slee.resource.sip.SipActivityContextInterfaceFactory;
-import net.java.slee.resource.sip.SleeSipProvider;
 
-import org.mobicents.jain.protocol.ip.mgcp.pkg.AUMgcpEvent;
-import org.mobicents.jain.protocol.ip.mgcp.pkg.AUPackage;
+import org.mobicents.protocols.mgcp.jain.pkg.AUMgcpEvent;
+import org.mobicents.protocols.mgcp.jain.pkg.AUPackage;
 import org.mobicents.slee.examples.callcontrol.common.SubscriptionProfileSbb;
 import org.mobicents.slee.examples.callcontrol.profile.CallControlProfileCMP;
 
@@ -97,6 +92,8 @@ import org.mobicents.slee.examples.callcontrol.profile.CallControlProfileCMP;
 public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 		javax.slee.Sbb {
 
+	
+	
 	public void onInvite(javax.sip.RequestEvent event,
 			VoiceMailSbbActivityContextInterface localAci) {
 		Response response;
@@ -108,11 +105,8 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 
 		// Server Transaction
 		ServerTransaction st = event.getServerTransaction();
-		// Setting Server Transaction
-		// this.setServerTransaction(st);
 
 		try {
-			// localAci.detach(this.getSbbLocalObject());
 
 			if (localAci.getFilteredByAncestor()) {
 				log
@@ -222,20 +216,66 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			}
 
 		} catch (TransactionRequiredLocalException e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		} catch (SLEEException e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		} catch (ParseException e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		} catch (SipException e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		} catch (InvalidArgumentException e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		} catch (NullPointerException e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		}
 	}
 
+
+	/**
+	 * At any time a SIP Client can send a BYE Request. If the Voice Mail is
+	 * being used it will be the VoicemailSbb the one that will send OK
+	 * Response.
+	 * 
+	 * @param event
+	 * @param aci
+	 */
+	public void onByeEvent(RequestEvent event, ActivityContextInterface aci) {
+		log.info("########## VOICE MAIL SBB: BYE ##########");
+		try {
+
+			releaseState();
+
+			// Sending the OK Response to the BYE Request received.
+			byeRequestOkResponse(event);
+
+		} catch (FactoryException e) {
+			log.severe(e.getMessage(), e);
+		} catch (NullPointerException e) {
+			log.severe(e.getMessage(), e);
+		}
+	}
+	private void sendServerError(String message, int errorCode) {
+		try {
+			Response response = getMessageFactory()
+					.createResponse(
+							Response.SERVER_INTERNAL_ERROR,
+							this.getInviteRequest(),
+							getHeaderFactory().createContentTypeHeader("text",
+									"plain"), message.getBytes());
+
+			this.getServerTransaction().sendResponse(response);
+
+		} catch (ParseException e) {
+			log.severe(e.getMessage(), e);
+		} catch (SipException e) {
+			log.severe(e.getMessage(), e);
+		} catch (InvalidArgumentException e) {
+			log.severe(e.getMessage(), e);
+		}
+
+		releaseState();
+	}
+	
 	public void onCreateConnectionResponse(CreateConnectionResponse event,
 			ActivityContextInterface aci) {
 		log.info("Receive CRCX response: " + event);
@@ -248,7 +288,7 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			break;
 		default:
 			ReturnCode rc = event.getReturnCode();
-			log.error("CRCX failed. Value = " + rc.getValue() + " Comment = "
+			log.severe("CRCX failed. Value = " + rc.getValue() + " Comment = "
 					+ rc.getComment());
 
 			sendServerError("Failed to create connection, code: "
@@ -261,11 +301,11 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			// this is response for PR creation
 			// we have one connection activity, lets send another crcx
 
-			// send ACK with sdp
+			// send OK with sdp
 			DialogActivity da = getDialogActivity();
 			ServerTransaction txn = getServerTransaction();
 			if (txn == null) {
-				log.error("SIP activity lost, close RTP connection");
+				log.severe("SIP activity lost, close RTP connection");
 				releaseState();
 				return;
 			}
@@ -285,7 +325,7 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			try {
 				contactAddress = getAddressFactory().createAddress("sip:" + localAddress + ":" + localPort);
 			} catch (ParseException ex) {
-				log.error(ex.getMessage(), ex);
+				log.severe(ex.getMessage(), ex);
 			}
 			ContactHeader contact = getHeaderFactory().createContactHeader(contactAddress);
 
@@ -299,9 +339,9 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			try {
 				txn.sendResponse(response);
 			} catch (InvalidArgumentException ex) {
-				log.error(ex.getMessage(), ex);
+				log.severe(ex.getMessage(), ex);
 			} catch (SipException ex) {
-				log.error(ex.getMessage(), ex);
+				log.severe(ex.getMessage(), ex);
 			}
 			EndpointIdentifier endpointID = new EndpointIdentifier(
 					IVR_ENDPOINT_NAME, mmsBindAddress + ":" + MGCP_PEER_PORT);
@@ -358,36 +398,6 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 
 	}
 
-	/**
-	 * At any time a SIP Client can send a BYE Request. If the Voice Mail is
-	 * being used it will be the VoicemailSbb the one that will send OK
-	 * Response.
-	 * 
-	 * @param event
-	 * @param aci
-	 */
-	public void onByeEvent(RequestEvent event, ActivityContextInterface aci) {
-		log.info("########## VOICE MAIL SBB: BYE ##########");
-		try {
-			//TimerID timerID = this.();
-
-			// If there is a Timer set we have to cancel it.
-			//if (timerID != null) {
-			//	timerFacility.cancelTimer(timerID);
-			//}
-
-			releaseState();
-
-			// Sending the OK Response to the BYE Request received.
-			byeRequestOkResponse(event);
-
-		} catch (FactoryException e) {
-			log.error(e.getMessage(), e);
-		} catch (NullPointerException e) {
-			log.error(e.getMessage(), e);
-		}
-	}
-
 	public void onTimerEvent(TimerEvent event, ActivityContextInterface aci) {
 
 	}
@@ -432,28 +442,7 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 		this.setCallIdentifier(null);
 	}
 
-	private void sendServerError(String message, int errorCode) {
-		try {
-			Response response = getMessageFactory()
-					.createResponse(
-							Response.SERVER_INTERNAL_ERROR,
-							this.getInviteRequest(),
-							getHeaderFactory().createContentTypeHeader("text",
-									"plain"), message.getBytes());
-
-			this.getServerTransaction().sendResponse(response);
-
-		} catch (ParseException e) {
-			log.error(e.getMessage(), e);
-		} catch (SipException e) {
-			log.error(e.getMessage(), e);
-		} catch (InvalidArgumentException e) {
-			log.error(e.getMessage(), e);
-		}
-
-		releaseState();
-	}
-
+	
 	public void onNotificationRequestResponse(NotificationRequestResponse event, ActivityContextInterface aci) {
 
 
@@ -467,7 +456,6 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			ReturnCode rc = event.getReturnCode();
 			log.info("########## VOICE MAIL SBB: RQNT failed, terminating call. TXID: "+event.getTransactionHandle()+" ##########");
 			sendByeRequest();
-			//releaseState();
 			
 			break;
 		}
@@ -583,18 +571,6 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 		return null;
 	}
 
-//	private void startTimer(int duration) throws NamingException {
-//		Context ctx = (Context) new InitialContext().lookup("java:comp/env");
-//		timerFacility = (TimerFacility) ctx.lookup("slee/facilities/timer");
-//
-//		TimerOptions options = new TimerOptions(false, 1000 * duration,
-//				TimerPreserveMissed.NONE);
-//		Address address = new Address(AddressPlan.IP, "127.0.0.1");
-//		Date now = new Date();
-//
-//		timerFacility.setTimer(this.getConnectionActivityContext(), address,
-//				now.getTime() + 1000 * duration, options);
-//	}
 
 	/**
 	 * Voice Mail will hang up on caller sending a BYE Request.
@@ -617,9 +593,9 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			releaseState();
 
 		} catch (TransactionUnavailableException e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		} catch (SipException e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		}
 	}
 
@@ -637,7 +613,7 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 					request);
 			tx.sendResponse(response);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		}
 	}
 
@@ -676,7 +652,14 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			File f = new File(filePath);
 			boolean exists = f.exists();
 			//String audioFileString = "file:/" + filePath;
-			filePath="file:/"+filePath;
+			//linux stuff?
+			if(filePath.startsWith("/"))
+			{
+				filePath="file:"+filePath;
+			}else
+			{
+				filePath="file:/"+filePath;
+			}
 			try {
 				// Just to check if file exist
 				//File file = new File(filePath);
@@ -686,13 +669,13 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 					audioFileURL = getClass().getResource(novoicemessage);
 				}
 			} catch (NullPointerException npe) {
-				log.error(
+				log.severe(
 						"Ignore. NullPointerException. The file does not exist "
 								+ filePath, npe);
 				audioFileURL = getClass().getResource(dtmf1);
 
 			} catch (MalformedURLException e1) {
-				log.error(
+				log.severe(
 						"Ignore. MalformedURLException while trying to create the audio file URL "
 								+ filePath, e1);
 				audioFileURL = getClass().getResource(dtmf1);
@@ -745,7 +728,7 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 		boolean state = false;
 		CallControlProfileCMP profile = lookup(new Address(AddressPlan.SIP,
 				sipAddress));
-
+		log.info("Retrieved CallControllProfile["+(profile!=null)+"] for user: "+sipAddress);
 		if (profile != null) {
 			state = profile.getVoicemailState();
 		}
@@ -778,10 +761,9 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 		return sameUser;
 	}
 
-	// TODO: Perform further operations if required in these methods.
 	public void setSbbContext(SbbContext context) {
 		super.setSbbContext(context);
-
+		this.log = getSbbContext().getTracer("VoiceMailSbb");
 		// To create Header objects from a particular implementation of JAIN SIP
 		headerFactory = getSipFactoryProvider().getHeaderFactory();
 
@@ -797,28 +779,26 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			sipACIF = (SipActivityContextInterfaceFactory) myEnv
 					.lookup("slee/resources/jainsip/1.2/acifactory");
 			// Getting Timer Facility interface
-			//timerFacility = (TimerFacility) myEnv
-			//		.lookup("slee/facilities/timer");
 
 			route = (String) myEnv.lookup("filesRoute");
-			//new File(route).getAbsoluteFile().mkdir();
+
 			log.info("=== Files Route: "+route+" ===");
 			mmsBindAddress = (String) myEnv.lookup("server.address");
 		} catch (NamingException e) {
-			log.error(e.getMessage(), e);
+			log.severe(e.getMessage(), e);
 		}
 	}
 
 	public void sbbPostCreate() throws javax.slee.CreateException {
-		// Setting DTMF
-		//this.setDtmf(NON_DIGIT);
-	}
 
+	}
+	
+	/*
 	public abstract org.mobicents.slee.examples.callcontrol.profile.CallControlProfileCMP getCallControlProfileCMP(
 			javax.slee.profile.ProfileID profileID)
 			throws javax.slee.profile.UnrecognizedProfileNameException,
 			javax.slee.profile.UnrecognizedProfileTableNameException;
-
+	*/
 	public abstract org.mobicents.slee.examples.callcontrol.voicemail.VoiceMailSbbActivityContextInterface asSbbActivityContextInterface(
 			ActivityContextInterface aci);
 
@@ -826,6 +806,8 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 		return headerFactory;
 	}
 
+	private Tracer log;
+	
 	// Interfaces
 	private HeaderFactory headerFactory;
 
@@ -868,55 +850,17 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 	 * *************** *****************************************
 	 */
 
-	// 'mediaSession' CMP field setter
-	// public abstract void setMediaSession(MsSession value);
-
-	// 'mediaSession' CMP field getter
-	// public abstract MsSession getMediaSession();
-
 	// 'inviteRequest' CMP field setter
 	public abstract void setInviteRequest(Request value);
 
 	// 'inviteRequest' CMP field getter
 	public abstract Request getInviteRequest();
 
-	// 'serverTransaction' CMP field setter
-	// public abstract void setServerTransaction(ServerTransaction value);
-
-	// 'serverTransaction' CMP field getter
-	// public abstract ServerTransaction getServerTransaction();
-
-	// 'ok' CMP field setter
-	//public abstract void setOk(boolean value);
-
-	// 'ok' CMP field getter
-	//public abstract boolean getOk();
-
 	// 'sameUser' CMP field setter
 	public abstract void setSameUser(boolean value);
 
 	// 'sameUser' CMP field getter
 	public abstract boolean getSameUser();
-
-	// 'timerID' CMP field setter
-	//public abstract void setTimerID(TimerID value);
-
-	// 'timerID' CMP field getter
-	//public abstract TimerID getTimerID();
-
-	// 'dtmf' CMP field setter
-	//public abstract void setDtmf(String value);
-
-	// 'dtmf' CMP field getter
-	//public abstract String getDtmf();
-
-	//public abstract String getUserIVREndpoint();
-
-	//public abstract void setUserIVREndpoint(String endpointName);
-
-	//public abstract String getUserPREndpoint();
-
-	//public abstract void setUserPREndpoint(String endpointName);
 
 	public abstract void setCallIdentifier(CallIdentifier cid);
 
@@ -977,7 +921,7 @@ public abstract class VoiceMailSbb extends SubscriptionProfileSbb implements
 			}
 
 		} else {
-			log.debug("not the same user, start recording after announcement");
+			log.info("not the same user, start recording after announcement");
 			audioFileURL = getClass().getResource(recordAfterTone);
 		}
 

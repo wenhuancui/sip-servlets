@@ -29,7 +29,7 @@ import javax.sip.Transaction;
 import javax.sip.TransactionState;
 import javax.sip.TransactionTerminatedEvent;
 import javax.sip.address.AddressFactory;
-import javax.sip.address.SipURI;
+import javax.sip.address.URI;
 import javax.sip.header.CSeqHeader;
 import javax.sip.header.CallIdHeader;
 import javax.sip.header.ContentTypeHeader;
@@ -58,6 +58,7 @@ import javax.slee.resource.Marshaler;
 import javax.slee.resource.ReceivableService;
 import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
+import javax.slee.resource.ConfigProperties.Property;
 
 import net.java.slee.resource.sip.CancelRequestEvent;
 
@@ -93,6 +94,7 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 	
 	private static final String BALANCERS = "org.mobicents.ha.javax.sip.BALANCERS";
 	
+	private static final String LOOSE_DIALOG_VALIDATION = "org.mobicents.javax.sip.LOOSE_DIALOG_VALIDATION";
 	// Config Properties Values -------------------------------------------
 	
 	private int port;
@@ -102,7 +104,11 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 	private String sipBalancerHeartBeatServiceClassName;
 	private String balancers;
 	private String loadBalancerElector;
-	
+	/**
+	 * default is true;
+	 */
+	private boolean looseDialogSeqValidation = true;
+
 	/**
 	 * allowed transports
 	 */
@@ -479,7 +485,7 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 				//fire the event on a recreated dummy transaction
 				final String branchId = ((ViaHeader)response.getHeaders(ViaHeader.NAME).next()).getBranch();
 				final String method = ((CSeqHeader)response.getHeader(CSeqHeader.NAME)).getMethod();
-				handle = new TransactionActivityHandle(branchId,method);
+				handle = new ClientTransactionActivityHandle(branchId,method);
 				ctw = new NullClientTransactionWrapper(handle,this);
 				// create the activity
 				try {
@@ -603,12 +609,12 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 		try {
 			final CSeqHeader cseq = (CSeqHeader) response.getHeader(CSeqHeader.NAME);
 			List<RouteHeader> routeSet = org.mobicents.slee.resource.sip11.Utils.getRouteList(response,provider.getHeaderFactory());
-			SipURI requestURI = org.mobicents.slee.resource.sip11.Utils.getRequestUri(response, provider.getAddressFactory());
+			//RFC3261 8.1.1.1
+			URI requestURI = org.mobicents.slee.resource.sip11.Utils.getRequestUri(response, provider.getAddressFactory());
 			String branch = ((ViaHeader)response.getHeaders(ViaHeader.NAME).next()).getBranch();
 
 			long cseqNumber = cseq.getSeqNumber();
 
-			// logger.info("DOING FORGE FOR: \n"+response);
 			if (requestURI == null) {
 				tracer.severe("Cannot ack on request that has empty contact!!!!");
 				return;
@@ -626,8 +632,7 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 			}
 
 			//forgedRequest.addHeader(this.provider.getLocalVia(this.provider.getListeningPoints()[0].getTransport(), branch));
-			// ITS BUG....
-			//((SIPRequest) forgedRequest).setMethod(Request.ACK);
+
 			if (tracer.isInfoEnabled()) {
 				tracer.info("Sending request:\n"+forgedRequest);
 			}
@@ -1165,6 +1170,12 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 			this.transports.add(transport);
 		}
 
+		Property p = properties.getProperty(LOOSE_DIALOG_VALIDATION);
+		if(p!=null && p.getValue()!=null)
+		{
+			this.looseDialogSeqValidation = (Boolean) p.getValue();
+		}
+		
 		tracer.info("RA entity named "+raContext.getEntityName()+" bound to port " + this.port);
 		
 	}
@@ -1422,7 +1433,15 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 	public EventIDFilter getEventIDFilter() {
 		return eventIDFilter;
 	}
-	
+	/**
+	 * 
+	 * @return true if jsip dialog should validate cseq.
+	 */
+	public boolean isValidateDialogCSeq() {
+		return looseDialogSeqValidation;
+	}
+
+
 	// CLUSTERING
 	
 	/**

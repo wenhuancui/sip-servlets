@@ -13,7 +13,7 @@
 
   <groupId>org.mobicents.servers.diameter.resources</groupId>
   <artifactId>base-parent</artifactId>
-  <version>2.0.0.JBCP2-Alpha-ER01</version>
+  <version>2.0.0.Alpha-JBCP2</version>
 
   <name>Mobicents :: Diameter Resources :: ${pom.artifactId}</name>
 
@@ -27,13 +27,21 @@
 
   <properties>
     <!-- Mobicents Diameter Components Versions -->
-    <mobicents.diameter.jdiameter.version>1.5.3.0-build350</mobicents.diameter.jdiameter.version>
-    <mobicents.diameter.mux.version>1.1.1.GA</mobicents.diameter.mux.version>
+    <mobicents.diameter.jdiameter.version>1.5.3.0-build351</mobicents.diameter.jdiameter.version>
+    <mobicents.diameter.mux.version>1.1.2.GA</mobicents.diameter.mux.version>
+	<!-- Documentation Related Properties -->
+    <docs.profile>mobicents</docs.profile>
+    <docs.ra.name>Diameter Base</docs.ra.name>
+    <docs.ra.dirname>diameter-base</docs.ra.dirname>
+    <docs.bookid>DIAMETER_BASE</docs.bookid>
   </properties>
 
   <profiles>
     <profile>
       <id>release</id>
+      <modules>
+        <module>docs</module>
+      </modules>
       <build>
         <plugins>
           <plugin>
@@ -71,7 +79,9 @@
     </profile>
     <profile>
       <id>maven-release</id>
-      <modules />
+      <modules>
+        <module>docs</module>
+      </modules>
       <build>
         <plugins>
           <plugin>
@@ -80,6 +90,7 @@
             <configuration>
               <autoVersionSubmodules>true</autoVersionSubmodules>
               <tagBase>https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base</tagBase>
+              <preparationGoals>clean install</preparationGoals>
             </configuration>
           </plugin>
         </plugins>
@@ -88,9 +99,9 @@
   </profiles>
 
   <scm>
-    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/2.0.0.CR1</connection>
-    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/2.0.0.CR1</developerConnection>
-    <url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/2.0.0.CR1</url>
+    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/2.0.0.GA</connection>
+    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/2.0.0.GA</developerConnection>
+    <url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/2.0.0.GA</url>
   </scm>
 
   <build>

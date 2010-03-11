@@ -1,5 +1,6 @@
 package org.mobicents.slee.resource.sip11.wrappers;
 
+import gov.nist.javax.sip.DialogExt;
 import gov.nist.javax.sip.ListeningPointImpl;
 import gov.nist.javax.sip.address.SipUri;
 import gov.nist.javax.sip.header.CSeq;
@@ -400,12 +401,17 @@ public class ClientDialogWrapper extends DialogWrapper {
 			
 			try {
 				// create headers
-				SipUri requestURI = null;
+				URI requestURI = null;
 				if (this.getRemoteTarget() != null)
-					requestURI = (SipUri) getRemoteTarget().getURI().clone();
+					requestURI = (URI) getRemoteTarget().getURI().clone();
 				else {
-					requestURI = (SipUri) data.getToAddress().getURI().clone();
-					requestURI.clearUriParms();
+					requestURI = (URI) data.getToAddress().getURI().clone();
+					
+					//FIXME: check for SipUri instanceof ?
+					if(requestURI.isSipURI())
+					{
+						((SipUri)requestURI).clearUriParms();
+					}
 				}
 				final FromHeader fromHeader = headerFactory.createFromHeader(
 						data.getFromAddress(), getLocalTag());
@@ -445,7 +451,7 @@ public class ClientDialogWrapper extends DialogWrapper {
 	}
 
 	private void updateRequestWithForkData(Request request) throws SipException {
-		final SipURI requestURI = (SipURI) data.getRequestURI().clone();
+		final URI requestURI = (URI) data.getRequestURI().clone();
 		request.setRequestURI(requestURI);
 		
 		final RouteList routeList = data.getLocalRouteList();
@@ -461,7 +467,7 @@ public class ClientDialogWrapper extends DialogWrapper {
 					&& !request.getMethod().equals(Request.ACK)) {
 				cseq.setSeqNumber(data.getLocalSequenceNumber().get() + 1);
 			}
-			requestURI.setMethodParam(cseq.getMethod());
+			request.setMethod(cseq.getMethod());
 			if (data.getLocalRemoteTag() != null) {
 				((ToHeader) request.getHeader(ToHeader.NAME))
 						.setTag(data.getLocalRemoteTag());
@@ -500,6 +506,10 @@ public class ClientDialogWrapper extends DialogWrapper {
 		if (createDialog) {
 			this.wrappedDialog = provider.getRealProvider().getNewDialog(
 					ctw.getWrappedTransaction());
+			if(ra.isValidateDialogCSeq())
+			{
+				((DialogExt)this.wrappedDialog).disableSequenceNumberValidation();
+			}
 			this.wrappedDialog.setApplicationData(this);
 		} else {
 			// only when wrapped dialog exist we need to care about right remote
@@ -837,14 +847,11 @@ public class ClientDialogWrapper extends DialogWrapper {
 					.getTag());
 		ContactHeader contact = ((ContactHeader) response
 				.getHeader(ContactHeader.NAME));
+
 		// issue 623
-		if (contact != null)
-			if (data.getRequestURI() == null
-					|| (contact != null && !data.getRequestURI().equals(contact
-							.getAddress().getURI()))) {
-				//FIXME: it can be gov.nist.javax.sip.address.GenericURI or TelURI!!, we must check, its an error condition and report.
-				data.setRequestURI((SipURI) contact.getAddress().getURI());
-			}
+		if (contact != null && data.getRequestURI() == null) {
+			data.setRequestURI(contact.getAddress().getURI());
+		}
 
 		// save the route, but ensure we don't save the top route pointing to us
 		final SIPResponse sipResponse = (SIPResponse) response;

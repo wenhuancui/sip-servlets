@@ -10,7 +10,7 @@ import java.util.ListIterator;
 import java.util.Set;
 
 import javax.sip.address.AddressFactory;
-import javax.sip.address.SipURI;
+import javax.sip.address.URI;
 import javax.sip.header.CSeqHeader;
 import javax.sip.header.CallIdHeader;
 import javax.sip.header.ContactHeader;
@@ -120,14 +120,8 @@ public class Utils {
 	 * @return
 	 * @throws ParseException 
 	 */
-	public static SipURI getRequestUri(Response response, AddressFactory addressFactory) throws ParseException {
-		ContactHeader contact = ((ContactHeader) response.getHeader(ContactHeader.NAME));
-		if (contact != null) {
-			SipURI contactURI = (SipURI) contact.getAddress().getURI();
-			SipURI requestURI = addressFactory.createSipURI(contactURI.getUser(), contactURI.getHost());
-			requestURI.setPort(contactURI.getPort());
-			return requestURI;			
-		} 
-		return null;
+	public static URI getRequestUri(Response response, AddressFactory addressFactory) throws ParseException {
+		final ContactHeader contact = ((ContactHeader) response.getHeader(ContactHeader.NAME));
+		return (contact != null) ? (URI) contact.getAddress().getURI().clone() : null;
 	}
 }

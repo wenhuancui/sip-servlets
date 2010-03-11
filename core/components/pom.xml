@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.jainslee.core</groupId>
 		<artifactId>mobicents-slee-core</artifactId>
-		<version>2.0.0.JBCP2-Alpha-ER01</version>
+		<version>2.0.0.Alpha-JBCP2</version>
 	</parent>
 	
 	<packaging>pom</packaging>
@@ -17,7 +17,7 @@
 	<!-- DTDs have to be parsed one by one, additionaly there are elements with the same name but with different content... -->
 	<modules>
 		<!-- Library has to go first, it removes whole src -->
-		<!-- <module>library</module>
+		<module>library</module>
 		<module>du11</module>
 		<module>event11</module>
 		<module>ratype11</module>
@@ -33,7 +33,6 @@
 		<module>sbb</module>
 		<module>service</module>
 		<module>jar</module>
-		-->
 		<!-- Jar has to go last -->
 		<module>descriptors</module>
 		<module>test-du</module>

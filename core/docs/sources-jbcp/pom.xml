@@ -6,13 +6,13 @@
 	<parent>
 		<groupId>org.mobicents.servers.jainslee.core</groupId>
 		<artifactId>mobicents-slee-core-docs</artifactId>
-		<version>2.0.0.JBCP2-Alpha-ER01</version>
+		<version>2.0.0.Alpha-JBCP2</version>
 	</parent>
 	
 	<artifactId>mobicents-slee-core-docs-sources-jbcp</artifactId>
 			
 	<properties>
-		<THIS.PLATFORM>JBoss Communications</THIS.PLATFORM>
+		<THIS.PLATFORM>JBCP</THIS.PLATFORM>
 		<JEE.PLATFORM>JBoss Enterprise Application Platform</JEE.PLATFORM>
 		<MANAGEMENT.PLATFORM>JBoss Operations Network</MANAGEMENT.PLATFORM>
 		<THIS.PLATFORM.INSTALL_SECTION>Section-Install_JBCP.xml</THIS.PLATFORM.INSTALL_SECTION>
