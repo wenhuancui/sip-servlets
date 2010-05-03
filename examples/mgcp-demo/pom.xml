@@ -9,7 +9,7 @@
     
 	<artifactId>mgcp-demo-parent</artifactId>
 	<groupId>org.mobicents.examples</groupId>
-	<version>2.0.0.Alpha-JBCP2</version>    
+	<version>5.0.0.Beta-JBCP5</version>    
     <name>MGCP Demo Parent</name>
     
     <packaging>pom</packaging>

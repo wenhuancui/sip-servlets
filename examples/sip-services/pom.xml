@@ -11,7 +11,7 @@
 
 	<artifactId>mobicents-slee-example-sip-services</artifactId>
 	<groupId>org.mobicents.examples</groupId>
-	<version>2.0.0.Alpha-JBCP2</version>
+	<version>5.0.0.Beta-JBCP5</version>
 
 	<modules>
   	    <module>common</module>

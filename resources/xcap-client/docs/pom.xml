@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.mobicents.resources</groupId>
 		<artifactId>mobicents-slee-ra-xcap-client</artifactId>
-		<version>2.0.0.Alpha-JBCP2</version>
+		<version>5.0.0.Beta-JBCP5</version>
 	</parent>
 	
 	<artifactId>mobicents-slee-ra-xcap-client-docs</artifactId>
