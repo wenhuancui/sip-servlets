@@ -1,0 +1,64 @@
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<groupId>org.mobicents.servers.jainslee.core</groupId>
+		<artifactId>mobicents-slee-core</artifactId>
+		<version>5.0.0.Beta-JBCP5</version>
+	</parent>
+	
+	<artifactId>mobicents-slee-core-docs</artifactId>
+		
+	<packaging>pom</packaging>
+	
+	<modules>
+		<module>sources</module>		
+	</modules>
+
+	<profiles>
+		<profile>
+			<id>mobicents</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>			
+			<modules>
+				<module>sources-mobicents</module>
+				<module>jdocbook-mobicents</module>				
+			</modules>
+		</profile>
+		<profile>
+			<id>jbcp</id>
+			<modules>
+				<module>sources-jbcp</module>
+				<module>jdocbook-jbcp</module>
+			</modules>
+		</profile>
+	</profiles>
+
+	<!-- dupe info from parent, but it's only way to retrieve the parent without checkout -->
+
+	<repositories>
+		<repository>
+			<id>jboss-releases-repository</id>
+			<name>JBoss Releases Repository</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>jboss-snapshots-repository</id>
+			<name>JBoss Snapshots Repository</name>
+			<url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	
+</project>
