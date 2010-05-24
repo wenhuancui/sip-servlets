@@ -4,7 +4,7 @@
 
 	<groupId>org.mobicents</groupId>
 	<artifactId>mobicents-parent</artifactId>
-	<version>2.6</version>
+	<version>5.0.0.Beta2-JBCP5</version>
 	
 	<name>Mobicents :: Parent :: mobicents</name>
 	
@@ -25,22 +25,82 @@
 		<!-- dependency versions -->
 		<jboss.version>5.1.0.GA</jboss.version>
 		<junit.version>4.1</junit.version>
-		
+		<javassist.version>3.8.0.GA</javassist.version>
+		<jboss-cache.version>1.4.1.SP9</jboss-cache.version>
 		<jain-slee.version>1.1</jain-slee.version>
+		
+		<commons-lang.version>2.1</commons-lang.version>
+		<commons-jxpath.version>1.2</commons-jxpath.version>
+		<commons-fileupload.version>1.1</commons-fileupload.version>
 		<commons-pool.version>1.4</commons-pool.version>
+		<commons.httpclient.version>3.1</commons.httpclient.version>
+		<commons.codec.version>1.2</commons.codec.version>		
+		<commons-logging.version>1.0.4</commons-logging.version>
+		
+		<sleetck-ra-common.version>1.0</sleetck-ra-common.version>
+		<sleetck-minimal.version>1.0</sleetck-minimal.version>
+		<jgroups.version>2.4.1</jgroups.version>
+		<log4j.version>1.2.14</log4j.version>
+		<gwt-user.version>1.4.62</gwt-user.version>
 		<ant.version>1.6.5</ant.version>
+		
+		
 		<jain-sip-api.version>1.2</jain-sip-api.version>
-		<jain-sip-ri.version>1.2.149</jain-sip-ri.version>
+		<jain-sip-ri.version>${jain-sip-api.version}.149</jain-sip-ri.version>
+		
 		<jain-mgcp.version>1.0</jain-mgcp.version>
+		<jcc.version>1.1</jcc.version>				
+		<jsr173.version>1.0</jsr173.version>
+				
 		<servlet-api.version>2.4</servlet-api.version>
 		<rome.version>0.9</rome.version>
-		<commons.httpclient.version>3.1</commons.httpclient.version>
 		<jdom.version>1.0</jdom.version>
-		<xmlpull.version>1.1.3.4d_b4_min</xmlpull.version>
-		<jzlib.version>1.0.7</jzlib.version>
+		
 		<smpp.version>0.3.7</smpp.version>
+		<drools.version>3.0.5</drools.version>
+		<antlr.stringtemplate.version>2.3b6</antlr.stringtemplate.version>		
+		<jxl.version>2.4.2</jxl.version>
+		<eclipse-jdt.core.version>3.2.0.666</eclipse-jdt.core.version>
+		<commons-jci-core.version>1.0</commons-jci-core.version>		
+		<commons-jci-eclipse.version>${commons-jci-core.version}</commons-jci-eclipse.version>
+		<asterisk.version>0.3.1</asterisk.version>
+		<diameter.version>0.9.6.2</diameter.version>
+		
 		<jaxb.version>2.1</jaxb.version>
 		<clover.version>2.6.3</clover.version>
+		
+		<freetts.version>1.0</freetts.version>		
+		<hibernate-core.version>3.2.6.ga</hibernate-core.version>
+		<hibernate-tools.version>3.2.0.ga</hibernate-tools.version>
+		<hibernate-annotations.version>3.3.0.ga</hibernate-annotations.version>
+		<hibernate-common-annotations.version>3.0.0.ga</hibernate-common-annotations.version>
+		<hibernate-entitymanager.version>3.3.1.ga</hibernate-entitymanager.version>
+		<hibernate-search.version>3.0.1.GA</hibernate-search.version>	
+		<hibernate-validator.version>3.0.0.ga</hibernate-validator.version>	
+		
+		<asm.version>1.5.3</asm.version>		
+		<cglib.version>2.1_3</cglib.version>
+		<dom4j.version>1.6.1</dom4j.version>		
+		<jboss-archive-browsing.version>5.0.0alpha-200607201-119</jboss-archive-browsing.version>
+		<ant-antlr.version>1.7.0</ant-antlr.version>							
+		<lucene-core.version>2.2.0</lucene-core.version>
+		<antlr.version>2.7.6</antlr.version>		
+		<javax.resource.connector.version>1.0</javax.resource.connector.version>
+		<bcprov-jdk14.version>136</bcprov-jdk14.version>		
+		<cactus.version>13-1.7.2</cactus.version>
+		<ant-optional.version>1.5</ant-optional.version>
+		<jmf.version>2.1.1e</jmf.version>
+		
+		<jboss-el.version>2.0.0.GA</jboss-el.version>
+		<jsf-api.version>1.2_08</jsf-api.version>
+		<hsqldb.version>1.8.0.8-brew</hsqldb.version>
+		<xercesImpl.version>2.6.0</xercesImpl.version>
+		<concurrent.version>1.3.4</concurrent.version>
+		<jdiameter.version>1.5.1</jdiameter.version>
+		<picocontainer.version>1.2</picocontainer.version>
+		<commons-io.version>1.1</commons-io.version>
+		
+		
 		
 		<!-- SEAM -->
 		<jboss-seam.version>2.2.0.GA</jboss-seam.version>
@@ -62,9 +122,9 @@
 		<manifest.implementation.vendor>JBoss, a Red Hat division</manifest.implementation.vendor>
 		
 		<!-- default versions for mobicents maven plugins -->
-		<mobicents.tools.mavenplugin.du.version>2.0.0.BETA3</mobicents.tools.mavenplugin.du.version>
+		<mobicents.tools.mavenplugin.du.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.du.version>
 		<mobicents.tools.mavenplugin.library.version>1.0.0.BETA1</mobicents.tools.mavenplugin.library.version>
-		<mobicents.tools.mavenplugin.eclipse.version>1.0.0.BETA2</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 		
 	</properties>
 
@@ -73,7 +133,102 @@
 		
 		<!-- dependency versions -->
 		
+		<dependency>
+			<groupId>ant</groupId>
+			<artifactId>ant</artifactId>
+			<version>${ant.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>antlr</groupId>
+			<artifactId>antlr</artifactId>
+			<version>${antlr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant-antlr</artifactId>
+			<version>${ant-antlr.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>asm</groupId>
+			<artifactId>asm-attrs</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.asteriskjava</groupId>
+			<artifactId>asterisk-java</artifactId>
+			<version>${asterisk.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>bouncycastle</groupId>
+			<artifactId>bcprov-jdk14</artifactId>
+			<version>${bcprov-jdk14.version}</version>
+		</dependency>
+		
 		<!-- JBOSS AS -->
+		
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>${cglib.version}</version>
+		</dependency>
+		
+		
+		<dependency>
+			<groupId>org.mobicents.external.freetts</groupId>
+			<artifactId>cmu_time_awb</artifactId>
+			<version>${freetts.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.external.freetts</groupId>
+			<artifactId>cmu_us_kal</artifactId>
+			<version>${freetts.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.external.freetts</groupId>
+			<artifactId>cmudict04</artifactId>
+			<version>${freetts.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.external.freetts</groupId>
+			<artifactId>cmulex</artifactId>
+			<version>${freetts.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.external.freetts</groupId>
+			<artifactId>cmutimelex</artifactId>
+			<version>${freetts.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.external.freetts</groupId>
+			<artifactId>en_us</artifactId>
+			<version>${freetts.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.external.freetts</groupId>
+			<artifactId>freetts</artifactId>
+			<version>${freetts.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>${commons.codec.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>${commons-fileupload.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>${commons.httpclient.version}</version>
+		</dependency>
+
 		
 			<dependency>
 				<groupId>org.jboss.jbossas</groupId>
@@ -115,12 +270,6 @@
 			</dependency>					
 		
 		<dependency>
-			<groupId>ant</groupId>
-			<artifactId>ant</artifactId>
-			<version>${ant.version}</version>
-		</dependency>
-				
-		<dependency>
 			<groupId>commons-pool</groupId>
 			<artifactId>commons-pool</artifactId>
 			<version>${commons-pool.version}</version>
@@ -138,6 +287,130 @@
 			<version>${jain-mgcp.version}</version>
 		</dependency>
 				
+				
+			<dependency>
+			    <groupId>org.apache.commons</groupId>
+			    <artifactId>commons-jci-core</artifactId>
+			    <version>${commons-jci-core.version}</version>
+			</dependency>		
+			<dependency>
+			    <groupId>org.apache.commons</groupId>
+			    <artifactId>commons-jci-eclipse</artifactId>
+			    <version>${commons-jci-eclipse.version}</version>
+			</dependency>
+			<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-jxpath</groupId>
+			<artifactId>commons-jxpath</artifactId>
+			<version>${commons-jxpath.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>${commons-lang.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>${commons-logging.version}</version>
+		</dependency>		
+		<dependency>
+			<groupId>concurrent</groupId>
+			<artifactId>concurrent</artifactId>
+			<version>${concurrent.version}</version>
+		</dependency>
+		<dependency>
+  			<groupId>javax.resource</groupId>
+  			<artifactId>connector</artifactId>
+			<version>${javax.resource.connector.version}</version>
+		</dependency>
+		<dependency>
+				<groupId>org.eclipse.jdt</groupId>
+				<artifactId>core</artifactId>
+				<version>${eclipse-jdt.core.version}</version>
+			</dependency>
+		<dependency>
+			<groupId>dk.i1.diameter</groupId>
+			<artifactId>diameter</artifactId>
+			<version>${diameter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>${dom4j.version}</version>
+		</dependency>	
+	   	<dependency>
+      		<groupId>org.drools</groupId>
+      		<artifactId>drools-compiler</artifactId>
+      		<version>${drools.version}</version>
+    	</dependency>
+    	<dependency>
+      		<groupId>org.drools</groupId>
+      		<artifactId>drools-core</artifactId>
+      		<version>${drools.version}</version>
+    	</dependency>
+    	<dependency>
+			<groupId>org.drools</groupId>
+			<artifactId>drools-decisiontables</artifactId>
+			<version>${drools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gwt</groupId>
+			<artifactId>gwt-user</artifactId>
+			<version>${gwt-user.version}</version>
+		</dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-servlet</artifactId>
+            <version>${gwt-user.version}</version>
+        </dependency>
+       	<dependency>
+         	<groupId>org.hibernate</groupId>
+         	<artifactId>hibernate-annotations</artifactId>
+         	<version>${hibernate-annotations.version}</version>
+         </dependency>
+		 <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-commons-annotations</artifactId>
+            <version>${hibernate-common-annotations.version}</version>
+        </dependency>    
+        <dependency>
+         <groupId>org.hibernate</groupId>
+         <artifactId>hibernate</artifactId>
+         <version>${hibernate-core.version}</version>
+     </dependency>
+        <dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+			<version>${hibernate-entitymanager.version}</version>
+		</dependency>
+        <dependency>
+         	<groupId>org.hibernate</groupId>
+    		<artifactId>hibernate-search</artifactId>
+    		<version>${hibernate-search.version}</version>
+        </dependency>
+        <dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-tools</artifactId>
+			<version>${hibernate-tools.version}</version>
+		</dependency>
+        <dependency>
+        	<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>${hibernate-validator.version}</version>
+        </dependency> 
+		<dependency>
+			<groupId>javax.csapi.cc</groupId>
+			<artifactId>jcc</artifactId>
+			<version>${jcc.version}</version>
+		</dependency>
+		
+		
+				
 		<dependency>
 			<groupId>javax.sip</groupId>
 			<artifactId>jain-sip-api</artifactId>
@@ -149,6 +422,14 @@
 			<artifactId>jain-sip-ri</artifactId>
 			<version>${jain-sip-ri.version}</version>
 		</dependency>
+		
+		
+		<dependency>
+			<groupId>javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>${javassist.version}</version>
+		</dependency>
+		
 		
 		<dependency>
       		<groupId>rome</groupId>
@@ -174,11 +455,6 @@
 			<version>${jaxb.version}</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>${commons.httpclient.version}</version>
-		</dependency>
 		
 		<dependency>
       		<groupId>jdom</groupId>
@@ -191,6 +467,45 @@
 			<artifactId>smppapi</artifactId>
 			<version>${smpp.version}</version>
 		</dependency>
+		
+		
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-annotations-ejb3</artifactId>
+			<version>${jboss.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-archive-browsing</artifactId>
+			<version>${jboss-archive-browsing.version}</version>
+		</dependency>
+	   	<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss</artifactId>
+			<version>${jboss.version}</version>
+		</dependency>
+	   	<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-cache</artifactId>
+			<version>${jboss-cache.version}</version>
+		</dependency>
+	   	<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-common</artifactId>
+			<version>${jboss.version}</version>
+		</dependency>
+	   	<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-ejb3x</artifactId>
+			<version>${jboss.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-system</artifactId>
+			<version>${jboss.version}</version>
+		</dependency>
+		
 		
 		<!-- SEAM and converged demo -->
 		<dependency>
@@ -235,6 +550,95 @@
       		<type>ejb</type>
     	</dependency>
     	
+    	
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jboss-transaction</artifactId>
+			<version>${jboss.version}</version>
+		</dependency>
+			<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jbosssx-client</artifactId>
+			<version>${jboss.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>jdiameter-server-api</artifactId>
+			<groupId>jdiameter</groupId>
+			<version>${jdiameter.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>jdiameter-server-impl</artifactId>
+			<groupId>jdiameter</groupId>
+			<version>${jdiameter.version}</version>
+		</dependency>
+    	
+		 <dependency>
+    		<groupId>org.jbpm</groupId>
+			<artifactId>jbpm-jpdl</artifactId>
+    		<version>${jbpm.version}</version>
+    	</dependency>
+		<dependency>
+			<groupId>jgroups</groupId>
+			<artifactId>jgroups</artifactId>
+			<version>${jgroups.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jmx-adaptor-plugin</artifactId>
+			<version>${jboss.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jboss</groupId>
+			<artifactId>jnp-client</artifactId>
+			<version>${jboss.version}</version>
+		</dependency>
+		<dependency>
+				<groupId>jexcelapi</groupId>
+				<artifactId>jxl</artifactId>
+				<version>${jxl.version}</version>
+			</dependency>
+		<dependency>
+			<groupId>javax.faces</groupId>
+  			<artifactId>jsf-api</artifactId>
+  			<version>${jsf-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>${lucene-core.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>picocontainer</artifactId>
+			<groupId>picocontainer</groupId>
+			<version>${picocontainer.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.opencloud</groupId>
+			<artifactId>sleetck-minimal</artifactId>
+			<version>${sleetck-minimal.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.opencloud</groupId>
+			<artifactId>sleetck-ra-common</artifactId>
+			<version>${sleetck-ra-common.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>antlr</groupId>
+			<artifactId>stringtemplate</artifactId>
+			<version>${antlr.stringtemplate.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>xerces</groupId>
+  			<artifactId>xercesImpl</artifactId>
+  			<version>${xercesImpl.version}</version>
+		</dependency>	
+    	
+    	
 		</dependencies>
 	</dependencyManagement>
 
@@ -260,6 +664,12 @@
             <updatePolicy>never</updatePolicy>
           </snapshots>
         </repository>
+		<repository>
+    		<id>freehep-maven</id>
+    		<name>Maven FreeHEP</name>
+    		<url>http://java.freehep.org/maven2</url>
+  		</repository>	
+        
       </repositories>
       <pluginRepositories>
         <pluginRepository>

@@ -5,12 +5,12 @@
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
-		<version>2.2</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<artifactId>mobicents-slee-ra-xcap-client</artifactId>
 	<groupId>org.mobicents.resources</groupId>
-	<version>5.0.0.Beta-JBCP5</version>
+	<version>5.0.0.Beta2-JBCP5</version>
 	
 	<modules>
         <module>api</module>

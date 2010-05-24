@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.jainslee.core</groupId>
 		<artifactId>mobicents-slee-core-docs</artifactId>
-		<version>5.0.0.Beta-JBCP5</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 	
 	<artifactId>mobicents-slee-core-docs-jdocbook-mobicents</artifactId>

@@ -1,0 +1,18 @@
+Original Mobicents versions
+================================
+cluster:1.2
+tools/maven-du-plugin:2.0.0.BETA3
+tools/maven-eclipse-plugin:1.0.0.BETA2
+
+Build order:
+==============
+parent
+tools
+cluster
+jainslee
+
+parents:
+=========
+12
+1.19
+2.6

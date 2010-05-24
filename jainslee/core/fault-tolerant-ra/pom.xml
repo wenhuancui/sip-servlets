@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.jainslee.core</groupId>
 		<artifactId>mobicents-slee-core</artifactId>
-		<version>5.0.0.Beta-JBCP5</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<packaging>pom</packaging>
@@ -21,7 +21,7 @@
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
    				<groupId>org.mobicents.tools</groupId>
-    			<version>1.0.0.BETA2</version>
+    			<version>5.0.0.Beta2-JBCP5</version>
 				<inherited>false</inherited>
 				<executions />
 				<configuration>
