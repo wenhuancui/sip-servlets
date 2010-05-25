@@ -39,7 +39,7 @@ import org.jdiameter.api.Avp;
 import org.jdiameter.api.AvpDataException;
 import org.jdiameter.api.AvpSet;
 import org.jdiameter.api.Message;
-import org.jdiameter.client.api.parser.DecodeException;
+import org.jdiameter.client.api.parser.ParseException;
 import org.jdiameter.client.impl.parser.MessageParser;
 import org.jdiameter.common.impl.validation.DiameterMessageValidator;
 import org.mobicents.diameter.dictionary.AvpDictionary;
@@ -67,29 +67,31 @@ public class AvpUtilities {
 
   private static boolean _AVP_REMOVAL_ALLOWED = true;
 
-  public static boolean isAvpRemoveAllowed()
-  {
+  static {
+    // Just so we have it
+    parser = new MessageParser(null);
+  }
+  
+  public static void setParser(MessageParser singletonParser) {
+    parser = singletonParser;
+  }
+
+  public static MessageParser getParser() {
+    return parser;
+  }
+
+  public static boolean isAvpRemoveAllowed() {
     return _AVP_REMOVAL_ALLOWED;
   }
 
-  public static void allowRemove(boolean flag)
-  {
+  public static void allowRemove(boolean flag) {
     _AVP_REMOVAL_ALLOWED = flag;
   }
 
-  public static boolean hasAvp(int avpCode, long vendorId, AvpSet set)
-  {
+  public static boolean hasAvp(int avpCode, long vendorId, AvpSet set) {
     AvpSet inner = set.getAvps(avpCode, vendorId);
 
-    if (inner.getAvp(avpCode, vendorId) != null) {
-      return true;
-    }
-    else if (set.getAvp(avpCode, vendorId) != null) {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return ((inner.getAvp(avpCode, vendorId) != null) || (set.getAvp(avpCode, vendorId) != null));
   }
 
   /**
@@ -102,15 +104,17 @@ public class AvpUtilities {
     if (msg == null) {
       if (hasAvp(avpCode, vendorId, set) && !isAvpRemoveAllowed()) {
         throw new IllegalStateException("AVP is already present in message and cannot be overwritten.");
-      } else {
+      }
+      else {
         set.removeAvp(avpCode);
       }
-    } else {
+    }
+    else {
       // We might just invoke validate, but we need more info
-      // we need some more stuff to be sure.
       DiameterMessageValidator validator = DiameterMessageValidator.getInstance();
-      if (!validator.isOn())
+      if (!validator.isOn()) {
         return;
+      }
 
       if (!validator.isAllowed(msg.getCommandCode(), msg.getApplicationId(), msg.isRequest(), avpCode, vendorId)) {
         throw new AvpNotAllowedException("Avp defined by code: " + avpCode + ", vendorId: " + vendorId + " is not allowed in message - code: " + msg.getCommandCode() + ", appId: "
@@ -122,17 +126,19 @@ public class AvpUtilities {
         if (validator.isCountValidForMultiplicity(msg.getCommandCode(), msg.getApplicationId(), msg.isRequest(), msg.getAvps(), avpCode, vendorId)) {
           // its ok.
           return;
-        } else if (isAvpRemoveAllowed()) {
+        }
+        else if (isAvpRemoveAllowed()) {
           AvpSet removed = set.removeAvp(avpCode);
           removed.removeAvpByIndex(removed.size() - 1);
           set.addAvp(removed);
           return;
-        } else {
+        }
+        else {
           throw new AvpNotAllowedException("Avp not allowed, count exceeded.", avpCode, vendorId);
         }
-      }else
-      {
-        //FIXME: add here something in case we dont allow add in default cases;
+      }
+      else {
+        //FIXME: add here something in case we don't allow add in default cases;
       }
     }
   }
@@ -144,8 +150,7 @@ public class AvpUtilities {
    * @param vendorId the Vendor-Id of the AVP
    * @return
    */
-  private static AvpRepresentation getAvpRepresentation(int avpCode, long vendorId)
-  {
+  private static AvpRepresentation getAvpRepresentation(int avpCode, long vendorId) {
     return AvpDictionary.INSTANCE.getAvp(avpCode);
   }
 
@@ -157,8 +162,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsString(Message msg, int avpCode, boolean isOctetString, AvpSet set, String value)
-  {
+  public static void setAvpAsString(Message msg, int avpCode, boolean isOctetString, AvpSet set, String value) {
     setAvpAsString(msg, avpCode, _DEFAULT_VENDOR_ID, isOctetString, set, value);
   }
 
@@ -171,8 +175,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsString(Message msg, int avpCode, long vendorId, boolean isOctetString, AvpSet set, String value)
-  {
+  public static void setAvpAsString(Message msg, int avpCode, long vendorId, boolean isOctetString, AvpSet set, String value) {
     AvpRepresentation rep = getAvpRepresentation(avpCode, vendorId);
 
     if (rep != null) {
@@ -194,8 +197,7 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsString(Message msg, int avpCode, long vendorId, boolean isOctetString, AvpSet set, boolean isMandatory, boolean isProtected, String value)
-  {
+  public static void setAvpAsString(Message msg, int avpCode, long vendorId, boolean isOctetString, AvpSet set, boolean isMandatory, boolean isProtected, String value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     if(avpCode == Avp.SESSION_ID) {
@@ -206,8 +208,7 @@ public class AvpUtilities {
     }
   }
 
-  public static String getAvpAsOctetString(int avpCode, AvpSet set)
-  {
+  public static String getAvpAsOctetString(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getOctetString() : null;
@@ -218,16 +219,14 @@ public class AvpUtilities {
     }
   }
 
-  public static String[] getAvpsAsOctetString(int avpCode, AvpSet set)
-  {
+  public static String[] getAvpsAsOctetString(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       String[] values = new String[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getOctetString();
       }
 
@@ -239,8 +238,7 @@ public class AvpUtilities {
     }
   }
 
-  public static String getAvpAsOctetString(int avpCode, long vendorId, AvpSet set)
-  {
+  public static String getAvpAsOctetString(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getOctetString() : null;
@@ -251,16 +249,14 @@ public class AvpUtilities {
     }
   }
 
-  public static String[] getAvpsAsOctetString(int avpCode, long vendorId, AvpSet set)
-  {
+  public static String[] getAvpsAsOctetString(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       String[] values = new String[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getOctetString();
       }
 
@@ -279,8 +275,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsOctetString(Message msg, int avpCode, AvpSet set, String value)
-  {
+  public static void setAvpAsOctetString(Message msg, int avpCode, AvpSet set, String value) {
     setAvpAsOctetString(msg, avpCode, _DEFAULT_VENDOR_ID, set, value);
   }
 
@@ -292,8 +287,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsOctetString(Message msg, int avpCode, long vendorId, AvpSet set, String value)
-  {
+  public static void setAvpAsOctetString(Message msg, int avpCode, long vendorId, AvpSet set, String value) {
     AvpRepresentation rep = getAvpRepresentation(avpCode, vendorId);
 
     if (rep != null) {
@@ -314,15 +308,13 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsOctetString(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, String value)
-  {
+  public static void setAvpAsOctetString(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, String value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     set.addAvp(avpCode, value, vendorId, isMandatory, isProtected, true);
   }
 
-  public static String getAvpAsUTF8String(int avpCode, AvpSet set)
-  {
+  public static String getAvpAsUTF8String(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getUTF8String() : null;
@@ -333,16 +325,14 @@ public class AvpUtilities {
     }
   }
 
-  public static String[] getAvpsAsUTF8String(int avpCode, AvpSet set)
-  {
+  public static String[] getAvpsAsUTF8String(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       String[] values = new String[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getUTF8String();
       }
 
@@ -354,8 +344,7 @@ public class AvpUtilities {
     }
   }
 
-  public static String getAvpAsUTF8String(int avpCode, long vendorId, AvpSet set)
-  {
+  public static String getAvpAsUTF8String(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getUTF8String() : null;
@@ -366,16 +355,14 @@ public class AvpUtilities {
     }
   }
 
-  public static String[] getAvpsAsUTF8String(int avpCode, long vendorId, AvpSet set)
-  {
+  public static String[] getAvpsAsUTF8String(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       String[] values = new String[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getUTF8String();
       }
 
@@ -394,8 +381,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsUTF8String(Message msg, int avpCode, AvpSet set, String value)
-  {
+  public static void setAvpAsUTF8String(Message msg, int avpCode, AvpSet set, String value) {
     setAvpAsUTF8String(msg, avpCode, _DEFAULT_VENDOR_ID, set, value);
   }
 
@@ -407,8 +393,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsUTF8String(Message msg, int avpCode, long vendorId, AvpSet set, String value)
-  {
+  public static void setAvpAsUTF8String(Message msg, int avpCode, long vendorId, AvpSet set, String value) {
     AvpRepresentation rep = getAvpRepresentation(avpCode, vendorId);
 
     if (rep != null) {
@@ -429,8 +414,7 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsUTF8String(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, String value)
-  {
+  public static void setAvpAsUTF8String(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, String value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     if(avpCode == Avp.SESSION_ID) {
@@ -441,8 +425,7 @@ public class AvpUtilities {
     }
   }
 
-  public static long getAvpAsUnsigned32(int avpCode, AvpSet set)
-  {
+  public static long getAvpAsUnsigned32(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getUnsigned32() : Long.MIN_VALUE;
@@ -453,16 +436,14 @@ public class AvpUtilities {
     }
   }
 
-  public static long[] getAvpsAsUnsigned32(int avpCode, AvpSet set)
-  {
+  public static long[] getAvpsAsUnsigned32(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       long[] values = new long[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getUnsigned32();
       }
 
@@ -474,8 +455,7 @@ public class AvpUtilities {
     }
   }
 
-  public static long getAvpAsUnsigned32(int avpCode, long vendorId, AvpSet set)
-  {
+  public static long getAvpAsUnsigned32(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getUnsigned32() : Long.MIN_VALUE;
@@ -486,16 +466,14 @@ public class AvpUtilities {
     }
   }
 
-  public static long[] getAvpsAsUnsigned32(int avpCode, long vendorId, AvpSet set)
-  {
+  public static long[] getAvpsAsUnsigned32(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       long[] values = new long[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getUnsigned32();
       }
 
@@ -514,8 +492,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsUnsigned32(Message msg, int avpCode, AvpSet set, long value)
-  {
+  public static void setAvpAsUnsigned32(Message msg, int avpCode, AvpSet set, long value) {
     setAvpAsUnsigned32(msg, avpCode, _DEFAULT_VENDOR_ID, set, value);
   }
 
@@ -527,8 +504,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsUnsigned32(Message msg, int avpCode, long vendorId, AvpSet set, long value)
-  {
+  public static void setAvpAsUnsigned32(Message msg, int avpCode, long vendorId, AvpSet set, long value) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
     if (rep != null) {
@@ -549,15 +525,13 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsUnsigned32(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, long value)
-  { 
+  public static void setAvpAsUnsigned32(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, long value) { 
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     set.addAvp(avpCode, value, vendorId, isMandatory, isProtected, true);
   }
 
-  public static long getAvpAsUnsigned64(int avpCode, AvpSet set)
-  {
+  public static long getAvpAsUnsigned64(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getUnsigned64() : Long.MIN_VALUE;
@@ -568,16 +542,14 @@ public class AvpUtilities {
     }
   }
 
-  public static long[] getAvpsAsUnsigned64(int avpCode, AvpSet set)
-  {
+  public static long[] getAvpsAsUnsigned64(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       long[] values = new long[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getUnsigned64();
       }
 
@@ -589,8 +561,7 @@ public class AvpUtilities {
     }
   }
 
-  public static long getAvpAsUnsigned64(int avpCode, long vendorId, AvpSet set)
-  {
+  public static long getAvpAsUnsigned64(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getUnsigned64() : Long.MIN_VALUE;
@@ -601,16 +572,14 @@ public class AvpUtilities {
     }
   }
 
-  public static long[] getAvpsAsUnsigned64(int avpCode, long vendorId, AvpSet set)
-  {
+  public static long[] getAvpsAsUnsigned64(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       long[] values = new long[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getUnsigned64();
       }
 
@@ -629,8 +598,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsUnsigned64(Message msg, int avpCode, AvpSet set, long value)
-  {
+  public static void setAvpAsUnsigned64(Message msg, int avpCode, AvpSet set, long value) {
     setAvpAsUnsigned64(msg, avpCode, _DEFAULT_VENDOR_ID, set, value);
   }
 
@@ -642,8 +610,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsUnsigned64(Message msg, int avpCode, long vendorId, AvpSet set, long value)
-  {
+  public static void setAvpAsUnsigned64(Message msg, int avpCode, long vendorId, AvpSet set, long value) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
     if (rep != null) {
@@ -664,15 +631,13 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsUnsigned64(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, long value)
-  {
+  public static void setAvpAsUnsigned64(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, long value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     set.addAvp(avpCode, value, vendorId, isMandatory, isProtected, false);
   }
 
-  public static int getAvpAsInteger32(int avpCode, AvpSet set)
-  {
+  public static int getAvpAsInteger32(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getInteger32() : Integer.MIN_VALUE;
@@ -683,16 +648,14 @@ public class AvpUtilities {
     }
   }
 
-  public static int[] getAvpsAsInteger32(int avpCode, AvpSet set)
-  {
+  public static int[] getAvpsAsInteger32(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       int[] values = new int[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getInteger32();
       }
 
@@ -704,8 +667,7 @@ public class AvpUtilities {
     }
   }
 
-  public static int getAvpAsInteger32(int avpCode, long vendorId, AvpSet set)
-  {
+  public static int getAvpAsInteger32(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getInteger32() : Integer.MIN_VALUE;
@@ -716,16 +678,14 @@ public class AvpUtilities {
     }
   }
 
-  public static int[] getAvpsAsInteger32(int avpCode, long vendorId, AvpSet set)
-  {
+  public static int[] getAvpsAsInteger32(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       int[] values = new int[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getInteger32();
       }
 
@@ -744,8 +704,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsInteger32(Message msg, int avpCode, AvpSet set, int value)
-  {
+  public static void setAvpAsInteger32(Message msg, int avpCode, AvpSet set, int value) {
     setAvpAsInteger32(msg, avpCode, _DEFAULT_VENDOR_ID, set, value);
   }
 
@@ -757,8 +716,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsInteger32(Message msg, int avpCode, long vendorId, AvpSet set, int value)
-  {
+  public static void setAvpAsInteger32(Message msg, int avpCode, long vendorId, AvpSet set, int value) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
     if (rep != null) {
@@ -779,15 +737,13 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsInteger32(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, int value)
-  {
+  public static void setAvpAsInteger32(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, int value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     set.addAvp(avpCode, value, vendorId, isMandatory, isProtected);
   }
 
-  public static long getAvpAsInteger64(int avpCode, AvpSet set)
-  {
+  public static long getAvpAsInteger64(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getInteger64() : Long.MIN_VALUE;
@@ -798,16 +754,14 @@ public class AvpUtilities {
     }
   }
 
-  public static long[] getAvpsAsInteger64(int avpCode, AvpSet set)
-  {
+  public static long[] getAvpsAsInteger64(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       long[] values = new long[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getInteger64();
       }
 
@@ -819,8 +773,7 @@ public class AvpUtilities {
     }
   }
 
-  public static long getAvpAsInteger64(int avpCode, long vendorId, AvpSet set)
-  {
+  public static long getAvpAsInteger64(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getInteger64() : Long.MIN_VALUE;
@@ -831,16 +784,14 @@ public class AvpUtilities {
     }
   }
 
-  public static long[] getAvpsAsInteger64(int avpCode, long vendorId, AvpSet set)
-  {
+  public static long[] getAvpsAsInteger64(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       long[] values = new long[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getInteger64();
       }
 
@@ -859,8 +810,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsInteger64(Message msg, int avpCode, AvpSet set, long value)
-  {
+  public static void setAvpAsInteger64(Message msg, int avpCode, AvpSet set, long value) {
     setAvpAsInteger64(msg, avpCode, value, set, value);
   }
 
@@ -872,8 +822,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsInteger64(Message msg, int avpCode, long vendorId, AvpSet set, long value)
-  {
+  public static void setAvpAsInteger64(Message msg, int avpCode, long vendorId, AvpSet set, long value) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
     if (rep != null) {
@@ -894,15 +843,13 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsInteger64(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, long value)
-  {
+  public static void setAvpAsInteger64(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, long value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     set.addAvp(avpCode, value, vendorId, isMandatory, isProtected, false);
   }
 
-  public static float getAvpAsFloat32(int avpCode, AvpSet set)
-  {
+  public static float getAvpAsFloat32(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getFloat32() : Float.MIN_VALUE;
@@ -913,16 +860,14 @@ public class AvpUtilities {
     }
   }
 
-  public static float[] getAvpsAsFloat32(int avpCode, AvpSet set)
-  {
+  public static float[] getAvpsAsFloat32(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       float[] values = new float[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getFloat32();
       }
 
@@ -934,8 +879,7 @@ public class AvpUtilities {
     }
   }
 
-  public static float getAvpAsFloat32(int avpCode, long vendorId, AvpSet set)
-  {
+  public static float getAvpAsFloat32(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getFloat32() : Float.MIN_VALUE;
@@ -946,16 +890,14 @@ public class AvpUtilities {
     }
   }
 
-  public static float[] getAvpsAsFloat32(int avpCode, long vendorId, AvpSet set)
-  {
+  public static float[] getAvpsAsFloat32(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       float[] values = new float[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getFloat32();
       }
 
@@ -974,8 +916,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsFloat32(Message msg, int avpCode, AvpSet set, float value)
-  {
+  public static void setAvpAsFloat32(Message msg, int avpCode, AvpSet set, float value) {
     setAvpAsFloat32(msg, avpCode, _DEFAULT_VENDOR_ID, set, value);
   }
 
@@ -987,8 +928,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsFloat32(Message msg, int avpCode, long vendorId, AvpSet set, float value)
-  {
+  public static void setAvpAsFloat32(Message msg, int avpCode, long vendorId, AvpSet set, float value) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
     if (rep != null) {
@@ -1009,15 +949,13 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsFloat32(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, float value)
-  {
+  public static void setAvpAsFloat32(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, float value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     set.addAvp(avpCode, value, vendorId, isMandatory, isProtected);
   }
 
-  public static double getAvpAsFloat64(int avpCode, AvpSet set)
-  {
+  public static double getAvpAsFloat64(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getFloat64() : Double.MIN_VALUE;
@@ -1028,16 +966,14 @@ public class AvpUtilities {
     }
   }
 
-  public static double[] getAvpsAsFloat64(int avpCode, AvpSet set)
-  {
+  public static double[] getAvpsAsFloat64(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       double[] values = new double[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getFloat32();
       }
 
@@ -1049,8 +985,7 @@ public class AvpUtilities {
     }
   }
 
-  public static double getAvpAsFloat64(int avpCode, long vendorId, AvpSet set)
-  {
+  public static double getAvpAsFloat64(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getFloat64() : Double.MIN_VALUE;
@@ -1061,16 +996,14 @@ public class AvpUtilities {
     }
   }
 
-  public static double[] getAvpsAsFloat64(int avpCode, long vendorId, AvpSet set)
-  {
+  public static double[] getAvpsAsFloat64(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       double[] values = new double[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getFloat32();
       }
 
@@ -1090,8 +1023,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsFloat64(Message msg, int avpCode, AvpSet set, double value)
-  {
+  public static void setAvpAsFloat64(Message msg, int avpCode, AvpSet set, double value) {
     setAvpAsFloat64(msg, avpCode, _DEFAULT_VENDOR_ID, set, value);
   }
 
@@ -1103,8 +1035,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsFloat64(Message msg, int avpCode, long vendorId, AvpSet set, double value)
-  {
+  public static void setAvpAsFloat64(Message msg, int avpCode, long vendorId, AvpSet set, double value) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
     if (rep != null) {
@@ -1126,15 +1057,13 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsFloat64(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, double value)
-  {
+  public static void setAvpAsFloat64(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, double value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     set.addAvp(avpCode, value, vendorId, isMandatory, isProtected);
   }
 
-  public static Date getAvpAsTime(int avpCode, AvpSet set)
-  {
+  public static Date getAvpAsTime(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getTime() : null;
@@ -1145,16 +1074,14 @@ public class AvpUtilities {
     }
   }
 
-  public static Date[] getAvpsAsTime(int avpCode, AvpSet set)
-  {
+  public static Date[] getAvpsAsTime(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       Date[] values = new Date[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getTime();
       }
 
@@ -1166,8 +1093,7 @@ public class AvpUtilities {
     }
   }
 
-  public static Date getAvpAsTime(int avpCode, long vendorId, AvpSet set)
-  {
+  public static Date getAvpAsTime(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getTime() : null;
@@ -1178,16 +1104,14 @@ public class AvpUtilities {
     }
   }
 
-  public static Date[] getAvpsAsTime(int avpCode, long vendorId, AvpSet set)
-  {
+  public static Date[] getAvpsAsTime(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       Date[] values = new Date[avpSet.size()];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getTime();
       }
 
@@ -1206,8 +1130,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsTime(Message msg, int avpCode, AvpSet set, Date value)
-  {
+  public static void setAvpAsTime(Message msg, int avpCode, AvpSet set, Date value) {
     setAvpAsTime(msg, avpCode, _DEFAULT_VENDOR_ID, set, value);
   }
 
@@ -1219,8 +1142,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsTime(Message msg, int avpCode, long vendorId, AvpSet set, Date value)
-  {
+  public static void setAvpAsTime(Message msg, int avpCode, long vendorId, AvpSet set, Date value) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
     if (rep != null) {
@@ -1241,15 +1163,13 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsTime(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, Date value)
-  {
+  public static void setAvpAsTime(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, Date value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     set.addAvp(avpCode, value, vendorId, isMandatory, isProtected);
   }
 
-  public static byte[] getAvpAsGrouped(int avpCode, AvpSet set)
-  {
+  public static byte[] getAvpAsGrouped(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getRawData() : null;
@@ -1260,16 +1180,14 @@ public class AvpUtilities {
     }
   }
 
-  public static byte[][] getAvpsAsGrouped(int avpCode, AvpSet set)
-  {
+  public static byte[][] getAvpsAsGrouped(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       byte[][] values = new byte[avpSet.size()][];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getRawData();
       }
 
@@ -1281,8 +1199,7 @@ public class AvpUtilities {
     }
   }
 
-  public static byte[] getAvpAsGrouped(int avpCode, long vendorId, AvpSet set)
-  {
+  public static byte[] getAvpAsGrouped(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getRawData() : null;
@@ -1293,16 +1210,14 @@ public class AvpUtilities {
     }
   }
 
-  public static byte[][] getAvpsAsGrouped(int avpCode, long vendorId, AvpSet set)
-  {
+  public static byte[][] getAvpsAsGrouped(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       byte[][] values = new byte[avpSet.size()][];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getRawData();
       }
 
@@ -1321,8 +1236,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static AvpSet setAvpAsGrouped(Message msg, int avpCode, AvpSet set, DiameterAvp[] childs)
-  {
+  public static AvpSet setAvpAsGrouped(Message msg, int avpCode, AvpSet set, DiameterAvp[] childs) {
     return setAvpAsGrouped(msg, avpCode, _DEFAULT_VENDOR_ID, set, childs);
   }
 
@@ -1334,8 +1248,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static AvpSet setAvpAsGrouped(Message msg, int avpCode, long vendorId, AvpSet set, DiameterAvp[] childs)
-  {
+  public static AvpSet setAvpAsGrouped(Message msg, int avpCode, long vendorId, AvpSet set, DiameterAvp[] childs) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
     if (rep != null) {
@@ -1356,8 +1269,7 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static AvpSet setAvpAsGrouped(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, DiameterAvp[] childs)
-  {
+  public static AvpSet setAvpAsGrouped(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, DiameterAvp[] childs) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     AvpSet grouped = set.addGroupedAvp(avpCode, vendorId, isMandatory, isProtected);
@@ -1369,8 +1281,7 @@ public class AvpUtilities {
     return grouped;
   }
 
-  public static byte[] getAvpAsRaw(int avpCode, AvpSet set)
-  {
+  public static byte[] getAvpAsRaw(int avpCode, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode);
       return avp != null ? avp.getRaw() : null;
@@ -1381,16 +1292,14 @@ public class AvpUtilities {
     }
   }
 
-  public static byte[][] getAvpsAsRaw(int avpCode, AvpSet set)
-  {
+  public static byte[][] getAvpsAsRaw(int avpCode, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
       byte[][] values = new byte[avpSet.size()][];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getRaw();
       }
 
@@ -1402,8 +1311,7 @@ public class AvpUtilities {
     }
   }
 
-  public static byte[] getAvpAsRaw(int avpCode, long vendorId, AvpSet set)
-  {
+  public static byte[] getAvpAsRaw(int avpCode, long vendorId, AvpSet set) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
       return avp != null ? avp.getRaw() : null;
@@ -1414,16 +1322,14 @@ public class AvpUtilities {
     }
   }
 
-  public static byte[][] getAvpsAsRaw(int avpCode, long vendorId, AvpSet set)
-  {
+  public static byte[][] getAvpsAsRaw(int avpCode, long vendorId, AvpSet set) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
       byte[][] values = new byte[avpSet.size()][];
       int i = 0;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         values[i++] = avp.getRaw();
       }
 
@@ -1442,8 +1348,7 @@ public class AvpUtilities {
    * @param set the Vendor-Id of the AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsRaw(Message msg, int avpCode, AvpSet set, byte[] value)
-  {
+  public static void setAvpAsRaw(Message msg, int avpCode, AvpSet set, byte[] value) {
     setAvpAsRaw(msg, avpCode, _DEFAULT_VENDOR_ID, set, value);
   }
 
@@ -1455,8 +1360,7 @@ public class AvpUtilities {
    * @param set the AvpSet to add AVP
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsRaw(Message msg, int avpCode, long vendorId, AvpSet set, byte[] value)
-  {
+  public static void setAvpAsRaw(Message msg, int avpCode, long vendorId, AvpSet set, byte[] value) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
     if (rep != null) {
@@ -1477,8 +1381,7 @@ public class AvpUtilities {
    * @param isProtected the value for the protected bit
    * @param value the value of the AVP to add
    */
-  public static void setAvpAsRaw(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, byte[] value)
-  {
+  public static void setAvpAsRaw(Message msg, int avpCode, long vendorId, AvpSet set, boolean isMandatory, boolean isProtected, byte[] value) {
     performPreAddOperations(msg, avpCode, vendorId, set);
 
     if(avpCode == Avp.SESSION_ID) {
@@ -1489,25 +1392,22 @@ public class AvpUtilities {
     }
   }
 
-  public static Object getAvpAsCustom(int avpCode, AvpSet set, Class clazz)
-  {
+  public static Object getAvpAsCustom(int avpCode, AvpSet set, Class clazz) {
     return getAvpAsCustom(avpCode, 0L, set, clazz);
   }
 
-  public static Object[] getAvpsAsCustom(int avpCode, AvpSet set, Class clazz)
-  {
+  public static Object[] getAvpsAsCustom(int avpCode, AvpSet set, Class clazz) {
     try {
       AvpSet avpSet = set.getAvps(avpCode);
 
-      Object array = Array.newInstance( clazz, avpSet.size());
+      Object array = Array.newInstance(clazz, avpSet.size());
       int i = 0;
 
       Constructor c = clazz.getConstructor(int.class, long.class, int.class, int.class, byte[].class);
 
       AvpRepresentation rep = null;
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         rep = AvpDictionary.INSTANCE.getAvp(avpCode, avp.getVendorId());
 
         Array.set(array, i++, c.newInstance(rep.getCode(), rep.getVendorId(), rep.getRuleMandatoryAsInt(), rep.getRuleProtectedAsInt(), avp.getRawData()));
@@ -1521,13 +1421,11 @@ public class AvpUtilities {
     }
   }
 
-  public static Object getAvpAsCustom(int avpCode, long vendorId, AvpSet set, Class clazz)
-  {
+  public static Object getAvpAsCustom(int avpCode, long vendorId, AvpSet set, Class clazz) {
     try {
       Avp avp = set.getAvp(avpCode, vendorId);
 
-      if (avp != null)
-      {
+      if (avp != null) {
         AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
         Constructor c = null;
@@ -1543,20 +1441,18 @@ public class AvpUtilities {
     return null;
   }
 
-  public static Object[] getAvpsAsCustom(int avpCode, long vendorId, AvpSet set, Class clazz)
-  {
+  public static Object[] getAvpsAsCustom(int avpCode, long vendorId, AvpSet set, Class clazz) {
     try {
       AvpSet avpSet = set.getAvps(avpCode, vendorId);
 
-      Object array = Array.newInstance( clazz, avpSet.size());
+      Object array = Array.newInstance(clazz, avpSet.size());
       int i = 0;
 
       AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
       Constructor c = clazz.getConstructor(int.class, long.class, int.class, int.class, byte[].class);
 
-      for(Avp avp : avpSet)
-      {
+      for(Avp avp : avpSet) {
         Array.set(array, i++, c.newInstance(rep.getCode(), rep.getVendorId(), rep.getRuleMandatoryAsInt(), rep.getRuleProtectedAsInt(), avp.getRawData()));
       }
 
@@ -1568,18 +1464,15 @@ public class AvpUtilities {
     }
   }
 
-  public static void addAvp(Message msg, String avpName, AvpSet set, Object avp)
-  {
+  public static void addAvp(Message msg, String avpName, AvpSet set, Object avp) {
     AvpRepresentation rep = AvpDictionary.INSTANCE.getAvp(avpName);
 
-    if(rep != null)
-    {
+    if(rep != null) {
       addAvp(msg, rep.getCode(), rep.getVendorId(), set, avp);
     }
   }
 
-  public static void addAvp(Message msg, int avpCode, AvpSet set, Object avp)
-  {
+  public static void addAvp(Message msg, int avpCode, AvpSet set, Object avp) {
     addAvp(msg, avpCode, 0L, set, avp);
   }
 
@@ -1591,82 +1484,56 @@ public class AvpUtilities {
    * @param avp the AVP object
    * @param set the AvpSet where to add the AVP
    */
-  public static void addAvp(Message msg, int avpCode, long vendorId, AvpSet set, Object avp)
-  {
+  public static void addAvp(Message msg, int avpCode, long vendorId, AvpSet set, Object avp) {
     AvpRepresentation avpRep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
-    if(avpRep != null)
-    {
+    if(avpRep != null) {
       DiameterAvpType avpType = DiameterAvpType.fromString(avpRep.getType());
 
       boolean isMandatoryAvp = !(avpRep.getRuleMandatory().equals("mustnot") || avpRep.getRuleMandatory().equals("shouldnot"));
       boolean isProtectedAvp = avpRep.getRuleProtected().equals("must");
 
-      if(avp instanceof byte[])
-      {
+      if(avp instanceof byte[]) {
         setAvpAsRaw(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (byte[]) avp);
       }
-      else
-      {
-        switch (avpType.getType())
-        {
+      else {
+        switch (avpType.getType()) {
         case DiameterAvpType._ADDRESS:
         case DiameterAvpType._DIAMETER_IDENTITY:
         case DiameterAvpType._DIAMETER_URI:
         case DiameterAvpType._IP_FILTER_RULE:
         case DiameterAvpType._OCTET_STRING:
         case DiameterAvpType._QOS_FILTER_RULE:
-        {
           setAvpAsOctetString(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, avp.toString());
           break;
-        }
         case DiameterAvpType._ENUMERATED:
         case DiameterAvpType._INTEGER_32:
-        {
           setAvpAsInteger32(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (Integer) avp);        
           break;
-        }
         case DiameterAvpType._FLOAT_32:
-        {
           setAvpAsFloat32(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (Float) avp);        
           break;
-
-        }
         case DiameterAvpType._FLOAT_64:
-        {
           setAvpAsFloat64(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (Float) avp);        
           break;
-        }
         case DiameterAvpType._GROUPED:
-        {
           setAvpAsGrouped(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (DiameterAvp[]) avp);
           break;
-        }
         case DiameterAvpType._INTEGER_64:
-        {
           setAvpAsInteger64(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (Long) avp);
           break;
-        }
         case DiameterAvpType._TIME:
-        {
           setAvpAsTime(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (Date) avp);
           break;
-        }
         case DiameterAvpType._UNSIGNED_32:
-        {
           setAvpAsUnsigned32(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (Long) avp);
           break;
-        }
         case DiameterAvpType._UNSIGNED_64:
-        {
           setAvpAsUnsigned64(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (Long) avp);
           break;
-        }
         case DiameterAvpType._UTF8_STRING:
-        {
           setAvpAsUTF8String(msg, avpCode, vendorId, set, isMandatoryAvp, isProtectedAvp, (String) avp);
           break;
-        }
         }
       }
     }
@@ -1674,15 +1541,13 @@ public class AvpUtilities {
 
   // Some special types getter/setter
 
-  public static DiameterIdentity getAvpAsDiameterIdentity(int avpCode, AvpSet set)
-  {
+  public static DiameterIdentity getAvpAsDiameterIdentity(int avpCode, AvpSet set) {
     String value = getAvpAsOctetString(avpCode, set);
 
     return value != null ? new DiameterIdentity(value) : null;
   }
 
-  public static DiameterIdentity[] getAvpsAsDiameterIdentity(int avpCode, AvpSet set)
-  {
+  public static DiameterIdentity[] getAvpsAsDiameterIdentity(int avpCode, AvpSet set) {
     List<DiameterIdentity> values = new ArrayList<DiameterIdentity>();
 
     for(String value : getAvpsAsOctetString(avpCode, set)) {
@@ -1694,15 +1559,13 @@ public class AvpUtilities {
     return values.toArray(new DiameterIdentity[0]);
   }
 
-  public static DiameterIdentity getAvpAsDiameterIdentity(int avpCode, long vendorId, AvpSet set)
-  {
+  public static DiameterIdentity getAvpAsDiameterIdentity(int avpCode, long vendorId, AvpSet set) {
     String value = getAvpAsOctetString(avpCode, vendorId, set);
 
     return value != null ? new DiameterIdentity(value) : null;
   }
 
-  public static DiameterIdentity[] getAvpsAsDiameterIdentity(int avpCode, long vendorId, AvpSet set)
-  {
+  public static DiameterIdentity[] getAvpsAsDiameterIdentity(int avpCode, long vendorId, AvpSet set) {
     List<DiameterIdentity> values = new ArrayList<DiameterIdentity>();
 
     for(String value : getAvpsAsOctetString(avpCode, vendorId, set)) {
@@ -1714,21 +1577,19 @@ public class AvpUtilities {
     return values.toArray(new DiameterIdentity[0]);
   }
 
-  public static DiameterURI getAvpAsDiameterURI(int avpCode, AvpSet set)
-  {
+  public static DiameterURI getAvpAsDiameterURI(int avpCode, AvpSet set) {
     try {
       String value = getAvpAsOctetString(avpCode, set);
 
       return value != null ? new DiameterURI(value) : null;
     }
-    catch ( URISyntaxException e ) {
+    catch (URISyntaxException e) {
       logger.debug("Failed to obtain AVP with code " + avpCode + " as type DiameterURI.", e);
       return null;
     }
   }
 
-  public static DiameterURI[] getAvpsAsDiameterURI(int avpCode, AvpSet set)
-  {
+  public static DiameterURI[] getAvpsAsDiameterURI(int avpCode, AvpSet set) {
     try {
       List<DiameterURI> values = new ArrayList<DiameterURI>();
 
@@ -1740,27 +1601,25 @@ public class AvpUtilities {
 
       return values.toArray(new DiameterURI[0]);
     }
-    catch ( URISyntaxException e ) {
+    catch (URISyntaxException e) {
       logger.debug("Failed to obtain AVP with code " + avpCode + " as type DiameterURI.", e);
       return null;
     }
   }
 
-  public static DiameterURI getAvpAsDiameterURI(int avpCode, long vendorId, AvpSet set)
-  {
+  public static DiameterURI getAvpAsDiameterURI(int avpCode, long vendorId, AvpSet set) {
     try {
       String value = getAvpAsOctetString(avpCode, vendorId, set);
 
       return value != null ? new DiameterURI(value) : null;
     }
-    catch ( URISyntaxException e ) {
+    catch (URISyntaxException e) {
       logger.debug("Failed to obtain AVP with code " + avpCode + " and Vendor-Id " + vendorId + " as type DiameterURI.", e);
       return null;
     }
   }
 
-  public static DiameterURI[] getAvpsAsDiameterURI(int avpCode, long vendorId, AvpSet set)
-  {
+  public static DiameterURI[] getAvpsAsDiameterURI(int avpCode, long vendorId, AvpSet set) {
     try {
       List<DiameterURI> values = new ArrayList<DiameterURI>();
 
@@ -1772,27 +1631,25 @@ public class AvpUtilities {
 
       return values.toArray(new DiameterURI[0]);
     }
-    catch ( URISyntaxException e ) {
+    catch (URISyntaxException e) {
       logger.debug("Failed to obtain AVP with code " + avpCode + " and Vendor-Id " + vendorId + " as type DiameterURI.", e);
       return null;
     }
   }
 
-  public static Address getAvpAsAddress(int avpCode, AvpSet set)
-  {
+  public static Address getAvpAsAddress(int avpCode, AvpSet set) {
     try {
       byte[] value = getAvpAsRaw(avpCode, set);
 
       return value != null ? Address.decode(value) : null;
     }
-    catch ( Exception e ) {
+    catch (Exception e) {
       logger.debug("Failed to obtain AVP with code " + avpCode + " as type DiameterURI.", e);
       return null;
     }
   }
 
-  public static Address[] getAvpsAsAddress(int avpCode, AvpSet set)
-  {
+  public static Address[] getAvpsAsAddress(int avpCode, AvpSet set) {
     List<Address> values = new ArrayList<Address>();
 
     for(byte[] value : getAvpsAsRaw(avpCode, set)) {
@@ -1804,21 +1661,19 @@ public class AvpUtilities {
     return values.toArray(new Address[0]);
   }
 
-  public static Address getAvpAsAddress(int avpCode, long vendorId, AvpSet set)
-  {
+  public static Address getAvpAsAddress(int avpCode, long vendorId, AvpSet set) {
     try {
       byte[] value = getAvpAsRaw(avpCode, vendorId, set);
 
       return value != null ? Address.decode(value) : null;
     }
-    catch ( Exception e ) {
+    catch (Exception e) {
       logger.debug("Failed to obtain AVP with code " + avpCode + " and Vendor-Id " + vendorId + " as type DiameterURI.", e);
       return null;
     }
   }
 
-  public static Address[] getAvpsAsAddress(int avpCode, long vendorId, AvpSet set)
-  {
+  public static Address[] getAvpsAsAddress(int avpCode, long vendorId, AvpSet set) {
     List<Address> values = new ArrayList<Address>();
 
     for(byte[] value : getAvpsAsRaw(avpCode, vendorId, set)) {
@@ -1830,21 +1685,19 @@ public class AvpUtilities {
     return values.toArray(new Address[0]);
   }
 
-  public static Object getAvpAsEnumerated(int avpCode, AvpSet set, Class clazz)
-  {
+  public static Object getAvpAsEnumerated(int avpCode, AvpSet set, Class clazz) {
     try {
       int value = getAvpAsInteger32(avpCode, set);
 
       return clazz.getMethod("fromInt", int.class).invoke(null, value);
     }
-    catch ( Exception e ) {
+    catch (Exception e) {
       logger.debug("Failed to obtain AVP with code " + avpCode + " as type Enumerated.", e);
       return null;
     }
   }
 
-  public static Object[] getAvpsAsEnumerated(int avpCode, AvpSet set, Class clazz)
-  {
+  public static Object[] getAvpsAsEnumerated(int avpCode, AvpSet set, Class clazz) {
     Object array = Array.newInstance(clazz, 0);
 
     try {
@@ -1864,21 +1717,19 @@ public class AvpUtilities {
     return (Object[]) array;
   }
 
-  public static Object getAvpAsEnumerated(int avpCode, long vendorId, AvpSet set, Class clazz)
-  {
+  public static Object getAvpAsEnumerated(int avpCode, long vendorId, AvpSet set, Class clazz) {
     try {
       int value = getAvpAsInteger32(avpCode, vendorId, set);
 
       return clazz.getMethod("fromInt", int.class).invoke(null, value);
     }
-    catch ( Exception e ) {
+    catch (Exception e) {
       logger.debug("Failed to obtain AVP with code " + avpCode + " as type Enumerated.", e);
       return null;
     }
   }
 
-  public static Object[] getAvpsAsEnumerated(int avpCode, long vendorId, AvpSet set, Class clazz)
-  {
+  public static Object[] getAvpsAsEnumerated(int avpCode, long vendorId, AvpSet set, Class clazz) {
     Object array = Array.newInstance(clazz, 0);
 
     try {
@@ -1904,8 +1755,7 @@ public class AvpUtilities {
    * @param avpCode the code of the AVP to be removed
    * @param set the AvpSet to remove the AVP from
    */
-  public static void removeAvp(int avpCode, AvpSet set)
-  {
+  public static void removeAvp(int avpCode, AvpSet set) {
     set.removeAvp(avpCode);
   }
 
@@ -1917,8 +1767,7 @@ public class AvpUtilities {
    * 
    * @return an AVP with the given code, or null if none is present.
    */
-  public static Object getAvp(int avpCode, AvpSet set)
-  {
+  public static Object getAvp(int avpCode, AvpSet set) {
     Avp avp = set.getAvp(avpCode);
 
     if(avp != null) {
@@ -1928,8 +1777,7 @@ public class AvpUtilities {
     return null;
   }
 
-  public static Object getAvp(String avpName, AvpSet set)
-  {
+  public static Object getAvp(String avpName, AvpSet set) {
     AvpRepresentation avpRep = AvpDictionary.INSTANCE.getAvp(avpName);
 
     if(avpRep != null) {
@@ -1948,26 +1796,18 @@ public class AvpUtilities {
    * 
    * @return an AVP with the given code and Vendor-Id, or null if none is present.
    */
-  public static Object getAvp(int avpCode, long vendorId, AvpSet set)
-  {
+  public static Object getAvp(int avpCode, long vendorId, AvpSet set) {
     AvpRepresentation avpRep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
-    if(avpRep != null)
-    {
+    if(avpRep != null) {
       DiameterAvpType avpType = DiameterAvpType.fromString(avpRep.getType());
 
-      switch (avpType.getType())
-      {
+      switch (avpType.getType()) {
       case DiameterAvpType._ADDRESS:
-      {
-        return Address.decode( getAvpAsRaw(avpCode, vendorId, set) );
-      }
+        return Address.decode(getAvpAsRaw(avpCode, vendorId, set));
       case DiameterAvpType._DIAMETER_IDENTITY:
-      {
         return new DiameterIdentity(getAvpAsOctetString(avpCode, vendorId, set));
-      }
       case DiameterAvpType._DIAMETER_URI:
-      {
         try {
           return new DiameterURI(getAvpAsOctetString(avpCode, vendorId, set));
         }
@@ -1975,60 +1815,33 @@ public class AvpUtilities {
           logger.error("Failed to return AVP with code " + avpCode + " of type DiameterURI as it is malformed: " + getAvpAsOctetString(avpCode, vendorId, set), e);
           return null;
         }
-      }
       case DiameterAvpType._IP_FILTER_RULE:
-      {
         return new IPFilterRule(getAvpAsOctetString(avpCode, vendorId, set));
-      }
       case DiameterAvpType._OCTET_STRING:
-      {
         return getAvpAsOctetString(avpCode, vendorId, set);
-      }
       case DiameterAvpType._QOS_FILTER_RULE:
-      {
         return getAvpAsOctetString(avpCode, vendorId, set);
-      }
       case DiameterAvpType._ENUMERATED:
       case DiameterAvpType._INTEGER_32:
-      {
         return getAvpAsInteger32(avpCode, vendorId, set);        
-      }
       case DiameterAvpType._FLOAT_32:
-      {
         return getAvpAsFloat32(avpCode, vendorId, set);        
-      }
       case DiameterAvpType._FLOAT_64:
-      {
         return getAvpAsFloat64(avpCode, vendorId, set);        
-      }
       case DiameterAvpType._GROUPED:
-      {
         return getAvpAsGrouped(avpCode, vendorId, set);
-      }
       case DiameterAvpType._INTEGER_64:
-      {
         return getAvpAsInteger64(avpCode, vendorId, set);
-      }
       case DiameterAvpType._TIME:
-      {
         return getAvpAsTime(avpCode, vendorId, set);
-      }
       case DiameterAvpType._UNSIGNED_32:
-      {
         return getAvpAsUnsigned32(avpCode, vendorId, set);
-      }
       case DiameterAvpType._UNSIGNED_64:
-      {
         return getAvpAsUnsigned64(avpCode, vendorId, set);
-      }
       case DiameterAvpType._UTF8_STRING:
-      {
         return getAvpAsUTF8String(avpCode, vendorId, set);
-      }
       default:
-      {
         return getAvpAsRaw(avpCode, vendorId, set);
-      }
       }
     }
 
@@ -2039,8 +1852,7 @@ public class AvpUtilities {
     addAvpInternal(avp, set);
   }
 
-  private static void addAvpInternal(DiameterAvp avp, AvpSet set)
-  {
+  private static void addAvpInternal(DiameterAvp avp, AvpSet set) {
     if (avp.getType() == DiameterAvpType.GROUPED) {
       GroupedAvp gAvp = (GroupedAvp) avp;
 
@@ -2055,17 +1867,15 @@ public class AvpUtilities {
     }
   }
 
+  // AVP Factories Methods -----------------------------------------------
 
-  // AVP Factories Methods
-
-  private static MessageParser parser = new MessageParser(null);
+  private static MessageParser parser;
 
   /*
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, net.java.slee.resource.diameter.base.events.avp.DiameterAvp[])
    */
-  public static DiameterAvp createAvp( int avpCode, DiameterAvp[] avps ) throws AvpNotAllowedException
-  {
+  public static DiameterAvp createAvp(int avpCode, DiameterAvp[] avps) throws AvpNotAllowedException {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, avps);
   }
 
@@ -2073,11 +1883,10 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, net.java.slee.resource.diameter.base.events.avp.DiameterAvp[])
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, DiameterAvp[] avps ) throws AvpNotAllowedException
-  {
-    GroupedAvpImpl avp = (GroupedAvpImpl) AvpUtilities.createAvp( avpCode, vendorId, GroupedAvpImpl.class );
+  public static DiameterAvp createAvp(int avpCode, long vendorId, DiameterAvp[] avps) throws AvpNotAllowedException {
+    GroupedAvpImpl avp = (GroupedAvpImpl) AvpUtilities.createAvp(avpCode, vendorId, GroupedAvpImpl.class);
 
-    avp.setExtensionAvps( avps );
+    avp.setExtensionAvps(avps);
 
     return avp;
   }
@@ -2086,8 +1895,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, byte[])
    */
-  public static DiameterAvp createAvp(int avpCode, byte[] value)
-  {
+  public static DiameterAvp createAvp(int avpCode, byte[] value) {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, value);
   }
 
@@ -2095,8 +1903,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, byte[])
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, byte[] value )
-  {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, byte[] value) {
     return createAvpInternal(vendorId, avpCode, value);
   }
 
@@ -2104,8 +1911,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int)
    */
-  public static DiameterAvp createAvp( int avpCode, int value )
-  {
+  public static DiameterAvp createAvp(int avpCode, int value) {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, value);
   }
 
@@ -2113,8 +1919,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, int)
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, int value )
-  {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, int value) {
     return createAvpInternal(vendorId, avpCode, parser.int32ToBytes(value));    
   }
 
@@ -2122,8 +1927,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, long)
    */
-  public static DiameterAvp createAvp( int avpCode, long value )
-  {
+  public static DiameterAvp createAvp(int avpCode, long value) {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, value);
   }
 
@@ -2131,18 +1935,20 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, long)
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, long value )
-  {
-    DiameterAvpType avpType = getAvpType( avpCode, vendorId );
+  public static DiameterAvp createAvp(int avpCode, long vendorId, long value) {
+    DiameterAvpType avpType = getAvpType(avpCode, vendorId);
 
     byte[] byteValue = null;
 
-    if( avpType.getType() ==  DiameterAvpType._INTEGER_64  || avpType.getType() ==  DiameterAvpType._UNSIGNED_64 )
+    if(avpType.getType() ==  DiameterAvpType._INTEGER_64  || avpType.getType() ==  DiameterAvpType._UNSIGNED_64) {
       byteValue = parser.int64ToBytes(value);
-    else if ( avpType.getType() ==  DiameterAvpType._UNSIGNED_32 )
+    }
+    else if (avpType.getType() ==  DiameterAvpType._UNSIGNED_32) {
       byteValue = parser.intU32ToBytes(value);
-    else
+    }
+    else {
       return null;
+    }
 
     return createAvpInternal(vendorId, avpCode, byteValue);    
   }
@@ -2151,8 +1957,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, float)
    */
-  public static DiameterAvp createAvp( int avpCode, float value )
-  {
+  public static DiameterAvp createAvp(int avpCode, float value) {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, value);
   }
 
@@ -2160,8 +1965,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, float)
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, float value )
-  {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, float value) {
     return createAvpInternal(vendorId, avpCode, parser.float32ToBytes(value));
   }
 
@@ -2169,8 +1973,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, double)
    */
-  public static DiameterAvp createAvp( int avpCode, double value )
-  {
+  public static DiameterAvp createAvp(int avpCode, double value) {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, value);
   }
 
@@ -2178,8 +1981,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, double)
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, double value )
-  {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, double value) {
     return createAvpInternal(vendorId, avpCode, parser.float64ToBytes(value));
   }
 
@@ -2187,8 +1989,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, java.net.InetAddress)
    */
-  public static DiameterAvp createAvp( int avpCode, InetAddress value )
-  {
+  public static DiameterAvp createAvp(int avpCode, InetAddress value) {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, value);
   }
 
@@ -2196,8 +1997,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, java.net.InetAddress)
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, InetAddress value )
-  {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, InetAddress value) {
     return createAvpInternal(vendorId, avpCode, parser.addressToBytes(value));
   }
 
@@ -2205,17 +2005,16 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, java.util.Date)
    */
-  public static DiameterAvp createAvp( int avpCode, Date value )
-  {
+  public static DiameterAvp createAvp(int avpCode, Date value) {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, value);
+
   }
 
   /*
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, java.util.Date)
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, Date value )
-  {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, Date value) {
     return createAvpInternal(vendorId, avpCode, parser.dateToBytes(value));
   }
 
@@ -2223,8 +2022,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, java.lang.String)
    */
-  public static DiameterAvp createAvp( int avpCode, String value )
-  {
+  public static DiameterAvp createAvp(int avpCode, String value) {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, value);
   }
 
@@ -2232,23 +2030,24 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, java.lang.String)
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, String value )
-  {
-    DiameterAvpType avpType = getAvpType( avpCode, vendorId );
+  public static DiameterAvp createAvp(int avpCode, long vendorId, String value) {
+    DiameterAvpType avpType = getAvpType(avpCode, vendorId);
 
     byte[] byteValue = null;
 
-    try
-    {
-      if( avpType.getType() ==  DiameterAvpType._OCTET_STRING )
+    try {
+      if(avpType.getType() ==  DiameterAvpType._OCTET_STRING) {
         byteValue = parser.octetStringToBytes(value);
-      else if ( avpType.getType() ==  DiameterAvpType._UTF8_STRING )
+      }
+      else if (avpType.getType() ==  DiameterAvpType._UTF8_STRING) {
         byteValue = parser.utf8StringToBytes(value);
-      else
+      }
+      else {
         return null;
+      }
     }
     catch (Exception e) {
-      logger.error( "Failed to create AVP.", e );
+      logger.error("Failed to create AVP.", e);
       return null;
     }
 
@@ -2259,8 +2058,7 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, net.java.slee.resource.diameter.base.events.avp.Enumerated)
    */
-  public static DiameterAvp createAvp( int avpCode, Enumerated value )
-  {
+  public static DiameterAvp createAvp(int avpCode, Enumerated value) {
     return createAvp(avpCode, _DEFAULT_VENDOR_ID, value);
   }
 
@@ -2268,54 +2066,40 @@ public class AvpUtilities {
    * (non-Javadoc)
    * @see net.java.slee.resource.diameter.base.DiameterAvpFactory#createAvp(int, int, net.java.slee.resource.diameter.base.events.avp.Enumerated)
    */
-  public static DiameterAvp createAvp(int avpCode, long vendorId, Enumerated value )
-  {
-    try
-    {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, Enumerated value) {
+    try {
       return createAvpInternal(vendorId, avpCode, parser.objectToBytes(value));
     }
-    catch ( DecodeException e )
-    {
+    catch (ParseException e) {
       logger.error("Failed to create AVP.", e);
       return null;
     }
   }
 
-  private static DiameterAvpType getAvpType(int avpCode, long vendorId)
-  {
+  private static DiameterAvpType getAvpType(int avpCode, long vendorId) {
     AvpRepresentation avpRep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
-    if(avpRep != null)
-      return DiameterAvpType.fromString(avpRep.getType());
-
-    return null;
+    return avpRep != null ? DiameterAvpType.fromString(avpRep.getType()) : null;
   }
 
-
-  public static DiameterAvp createAvp(int avpCode, Class avpImplClass)
-  {
+  public static DiameterAvp createAvp(int avpCode, Class avpImplClass) {
     return createAvp(avpCode, 0L, null, avpImplClass);
   }
 
-  public static DiameterAvp createAvp(int avpCode, DiameterAvp[] childAVPs, Class avpImplClass)
-  {
+  public static DiameterAvp createAvp(int avpCode, DiameterAvp[] childAVPs, Class avpImplClass) {
     return createAvp(avpCode, 0L, childAVPs, avpImplClass);    
   }
 
-  public static DiameterAvp createAvp(int avpCode, long vendorId, Class avpImplClass)
-  {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, Class avpImplClass) {
     return createAvp(avpCode, vendorId, null, avpImplClass);
   }
 
-  public static DiameterAvp createAvp(int avpCode, long vendorId, DiameterAvp[] childAVPs, Class avpImplClass)
-  {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, DiameterAvp[] childAVPs, Class avpImplClass) {
     return createAvp(avpCode, vendorId, null, childAVPs, avpImplClass);
   }
 
-  public static DiameterAvp createAvp(int avpCode, long vendorId, byte[] value, DiameterAvp[] childAVPs, Class avpImplClass)
-  {
-    try
-    {
+  public static DiameterAvp createAvp(int avpCode, long vendorId, byte[] value, DiameterAvp[] childAVPs, Class avpImplClass) {
+    try {
       AvpRepresentation avpRep = AvpDictionary.INSTANCE.getAvp(avpCode, vendorId);
 
       int mandatoryAvp = avpRep.getRuleMandatoryAsInt();
@@ -2353,10 +2137,8 @@ public class AvpUtilities {
     return null;
   }
 
-  private static DiameterAvp createAvpInternal(long vendorID, int avpCode, byte[] value)
-  {
-    return createAvp( avpCode, vendorID, value, null, DiameterAvpImpl.class );
+  private static DiameterAvp createAvpInternal(long vendorID, int avpCode, byte[] value) {
+    return createAvp(avpCode, vendorID, value, null, DiameterAvpImpl.class);
   }
-
 
 }
