@@ -39,7 +39,7 @@
 		
 		<sleetck-ra-common.version>1.0</sleetck-ra-common.version>
 		<sleetck-minimal.version>1.0</sleetck-minimal.version>
-		<jgroups.version>2.6.10</jgroups.version>
+		<jgroups.version>2.6.10.GA</jgroups.version>
 		<log4j.version>1.2.14</log4j.version>
 		<gwt-user.version>1.4.62</gwt-user.version>
 		<ant.version>1.6.5</ant.version>
