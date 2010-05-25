@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>2.5</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.servers.diameter</groupId>
@@ -14,7 +14,7 @@
 
 	<name>Mobicents :: Diameter Stack :: ${pom.artifactId}</name>
 
-	<version>1.5.3.1-build353</version>
+	<version>1.5.3.1-build353-JBCP5</version>
 
 	<modules>
 		<module>api</module>
