@@ -123,7 +123,7 @@
 		
 		<!-- default versions for mobicents maven plugins -->
 		<mobicents.tools.mavenplugin.du.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.du.version>
-		<mobicents.tools.mavenplugin.library.version>1.0.0.BETA1</mobicents.tools.mavenplugin.library.version>
+		<mobicents.tools.mavenplugin.library.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.library.version>
 		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 		
 	</properties>

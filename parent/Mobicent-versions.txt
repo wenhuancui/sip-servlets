@@ -7,12 +7,20 @@ tools/maven-eclipse-plugin:1.0.0.BETA2
 Build order:
 ==============
 parent
-tools
+tools (maven du,eclipse,library plugins)
 cluster
-jainslee
+jainslee/core
+jdiameter
+diameter-mux
+slee diameter resources (base,cca,cx-dx,rf,ro,sh-client,sh-server)
+jain-sip-ha
+load-balancer
+slee other resources(sip11,http-servlet,mgcp,xcap-client,xmpp)
 
 parents:
 =========
 12
+16
 1.19
+2.2
 2.6
