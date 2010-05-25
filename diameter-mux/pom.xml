@@ -1,0 +1,76 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.mobicents</groupId>
+		<artifactId>mobicents-parent</artifactId>
+		<version>2.5</version>
+	</parent>
+
+	<groupId>org.mobicents.servers.diameter</groupId>
+	<artifactId>mobicents-diameter-mux-parent</artifactId>
+	<version>1.2.1.GA</version>
+
+	<name>Mobicents :: Diameter Multiplexer :: ${pom.artifactId}</name>
+
+	<properties>
+		<!-- Mobicents Diameter Components Versions -->
+		<mobicents.diameter.jdiameter.version>1.5.3.1-build353</mobicents.diameter.jdiameter.version>
+
+		<!-- Other Mobicents Components Versions -->
+		<mobicents.tools.mavenplugin.eclipse.version>1.0.0.BETA2</mobicents.tools.mavenplugin.eclipse.version>
+	</properties>
+
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>jar</module>
+	</modules>
+
+	<profiles>
+		<profile>
+			<id>maven-release</id>
+			<modules>
+				<module>sar-jboss-4</module>
+				<module>sar-jboss-5</module>
+			</modules>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						<version>2.0-beta-9</version>
+						<configuration>
+							<remoteTagging>true</remoteTagging>
+							<autoVersionSubmodules>true</autoVersionSubmodules>
+							<resume>false</resume>
+							<tagBase>https://mobicents.googlecode.com/svn/tags/servers/diameter/core/mux</tagBase>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>jboss4</id>
+			<modules>
+				<module>sar-jboss-4</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>jboss5</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<modules>
+				<module>sar-jboss-5</module>
+			</modules>
+		</profile>		
+	</profiles>
+
+	<scm>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/diameter/core/mux/mobicents-diameter-mux-1.2.1.GA</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/diameter/core/mux/mobicents-diameter-mux-1.2.1.GA</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/diameter/core/mux/mobicents-diameter-mux-1.2.1.GA</url>
+	</scm>
+
+</project>
