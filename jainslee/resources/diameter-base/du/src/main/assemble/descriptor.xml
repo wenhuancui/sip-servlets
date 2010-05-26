@@ -25,6 +25,7 @@
 	    <file>
 	      <source>../release/build.xml</source>
 	      <outputDirectory>/</outputDirectory>
+	      <filtered>true</filtered>
 	    </file>
 	  </files>
 </assembly>
