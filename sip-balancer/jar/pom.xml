@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.tools</groupId>
 		<artifactId>sip-balancer</artifactId>
-		<version>1.0.0.FINAL</version>		
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 	
 	<artifactId>sip-balancer-jar</artifactId>
