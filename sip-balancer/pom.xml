@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	
 	<parent>
-		<artifactId>mobicents</artifactId>
+		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
 		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
