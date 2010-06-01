@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.mobicents.cluster;
 
 import java.util.ArrayList;
@@ -5,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.transaction.TransactionManager;
 
@@ -13,14 +35,17 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.notifications.annotation.CacheListener;
+import org.jboss.cache.notifications.annotation.NodeRemoved;
 import org.jboss.cache.notifications.annotation.ViewChanged;
+import org.jboss.cache.notifications.event.NodeRemovedEvent;
 import org.jboss.cache.notifications.event.ViewChangedEvent;
 import org.jgroups.Address;
 import org.mobicents.cache.MobicentsCache;
 import org.mobicents.cluster.cache.ClusteredCacheData;
 import org.mobicents.cluster.cache.ClusteredCacheDataIndexingHandler;
 import org.mobicents.cluster.cache.DefaultClusteredCacheDataIndexingHandler;
-import org.mobicents.cluster.election.SingletonElector;
+import org.mobicents.cluster.election.ClientLocalListenerElector;
+import org.mobicents.cluster.election.ClusterElector;
 
 /**
  * Listener that is to be used for cluster wide replication(meaning no buddy
@@ -41,16 +66,21 @@ public class DefaultMobicentsCluster implements MobicentsCluster {
 
 	private static final Logger logger = Logger.getLogger(DefaultMobicentsCluster.class);
 
-	private final SortedSet<ClientLocalListener> localListeners;
+	private final SortedSet<FailOverListener> failOverListeners;
+	@SuppressWarnings("unchecked")
+	private final ConcurrentHashMap<Fqn, DataRemovalListener> dataRemovalListeners;
+	
 	private final MobicentsCache mobicentsCache;
 	private final TransactionManager txMgr;
-	private final SingletonElector elector;
+	private final ClusterElector elector;
 	private final DefaultClusteredCacheDataIndexingHandler clusteredCacheDataIndexingHandler;
 	
 	private List<Address> currentView;
 	
-	public DefaultMobicentsCluster(MobicentsCache watchedCache, TransactionManager txMgr, SingletonElector elector) {
-		this.localListeners = Collections.synchronizedSortedSet(new TreeSet<ClientLocalListener>(new ClientLocalListenerComparator()));
+	@SuppressWarnings("unchecked")
+	public DefaultMobicentsCluster(MobicentsCache watchedCache, TransactionManager txMgr, ClusterElector elector) {
+		this.failOverListeners = Collections.synchronizedSortedSet(new TreeSet<FailOverListener>(new FailOverListenerPriorityComparator()));
+		this.dataRemovalListeners = new ConcurrentHashMap<Fqn, DataRemovalListener>();
 		this.mobicentsCache = watchedCache;
 		final Cache<?,?> cache = watchedCache.getJBossCache();
 		if (!cache.getConfiguration().getCacheMode().equals(CacheMode.LOCAL)) {
@@ -140,14 +170,35 @@ public class DefaultMobicentsCluster implements MobicentsCluster {
 			public void run() {
 				for (Address oldMember : oldView) {
 					if (!currentView.contains(oldMember)) {
-						// this member is gone  
 						if (logger.isDebugEnabled()) {
 							logger.debug("onViewChangeEvent : processing lost member " + oldMember);
-						}				
-						if (elector.elect(currentView).equals(localAddress)) {
-							// local member was elected to take over the work being done by the lost member
-							performTakeOver(oldMember,localAddress);
-						}															
+						}	
+						if (logger.isDebugEnabled()) {
+							logger.debug("onViewChangeEvent : number of failover listeners " + failOverListeners.size());
+						}	
+						for (FailOverListener localListener : failOverListeners) {
+							boolean electionDone = false;
+							boolean elected = false;
+							ClientLocalListenerElector localListenerElector = localListener.getElector();
+							if (localListenerElector != null) {
+								// going to use the local listener elector instead, which gives results based on data
+								performTakeOver(localListener,oldMember,localAddress,true);
+							}
+							else {
+								if (!electionDone) {
+									electionDone = true;
+									Address electedAddress = elector.elect(currentView);
+									elected = electedAddress.equals(localAddress);
+									if (logger.isDebugEnabled()) {
+										logger.debug("onViewChangeEvent : electedAddress " + electedAddress + ", localAddress " + localAddress + " => elected = " + elected);
+									}
+								}
+								if (elected) {
+									// local member was elected to take over the work being done by the lost member
+									performTakeOver(localListener,oldMember,localAddress,false);
+								} 
+							}
+						}																	
 					}
 				}
 			}
@@ -161,16 +212,14 @@ public class DefaultMobicentsCluster implements MobicentsCluster {
 	 * 
 	 */
 	@SuppressWarnings("unchecked")
-	private void performTakeOver(Address lostMember, Address localAddress) {
+	private void performTakeOver(FailOverListener localListener, Address lostMember, Address localAddress, boolean useLocalListenerElector) {
 	
 		if (logger.isDebugEnabled()) {
 			logger.debug("onViewChangeEvent : failing over lost member " + lostMember);
 		}
 		
 		final Cache jbossCache = mobicentsCache.getJBossCache();
-		
-		for (ClientLocalListener localListener : this.localListeners) {
-			
+					
 			final Fqn rootFqnOfChanges = localListener.getBaseFqn();
 			
 			boolean createdTx = false;
@@ -191,6 +240,13 @@ public class DefaultMobicentsCluster implements MobicentsCluster {
 					if (clusteredCacheData.exists()) {
 						Address address = clusteredCacheData.getClusterNodeAddress();
 						if (address != null && address.equals(lostMember)) {
+							// may need to do election using client local listener
+							if (useLocalListenerElector) {
+								if(!localAddress.equals(localListener.getElector().elect(currentView, clusteredCacheData))) {
+									// not elected, move on
+									continue;
+								}
+							}
 							// call back the listener
 							localListener.wonOwnership(clusteredCacheData);
 							// change ownership
@@ -224,10 +280,19 @@ public class DefaultMobicentsCluster implements MobicentsCluster {
 					}
 				}
 			}
-		}
 
 	}
 
+	@NodeRemoved
+	public void onNodeRemovedEvent(NodeRemovedEvent event) {
+		if(!event.isOriginLocal()) {			
+			final DataRemovalListener dataRemovalListener = dataRemovalListeners.get(event.getFqn().getParent());
+			if (dataRemovalListener != null) {
+				dataRemovalListener.dataRemoved(event.getFqn());
+			}
+		}
+	}
+	
 	// NOTE USED FOR NOW
 	
 	/*
@@ -243,13 +308,6 @@ public class DefaultMobicentsCluster implements MobicentsCluster {
 	public void onNodeModifiedEvent(NodeModifiedEvent event) {
 		if (log.isDebugEnabled()) {
 			log.debug("onNodeModifiedEvent : pre[" + event.isPre() + "] : event local address[" + event.getCache().getLocalAddress() + "]");
-		}
-	}
-	
-	@NodeRemoved
-	public void onNodeRemovedEvent(NodeRemovedEvent event) {
-		if (log.isDebugEnabled()) {
-			log.debug("onNodeRemovedEvent : " + event.getFqn() + " : local[" + event.isOriginLocal() + "] pre[" + event.isPre() + "] ");
 		}
 	}
 
@@ -329,24 +387,45 @@ public class DefaultMobicentsCluster implements MobicentsCluster {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see org.mobicents.cluster.MobicentsCluster#addLocalListener(org.mobicents.cluster.ClientLocalListener)
+	 * @see org.mobicents.cluster.MobicentsCluster#addFailOverListener(org.mobicents.cluster.FailOverListener)
 	 */
-	public boolean addLocalListener(ClientLocalListener localListener) {
+	public boolean addFailOverListener(FailOverListener localListener) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Adding local listener " + localListener);
 		}
-		return localListeners.add(localListener);		
+		for(FailOverListener failOverListener : failOverListeners) {
+			if (failOverListener.getBaseFqn().equals(localListener.getBaseFqn())) {
+				return false; 
+			}
+		}
+		return failOverListeners.add(localListener);		
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see org.mobicents.cluster.MobicentsCluster#removeLocalListener(org.mobicents.cluster.ClientLocalListener)
+	 * @see org.mobicents.cluster.MobicentsCluster#removeFailOverListener(org.mobicents.cluster.FailOverListener)
 	 */
-	public boolean removeLocalListener(ClientLocalListener localListener) {
+	public boolean removeFailOverListener(FailOverListener localListener) {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Removing local listener " + localListener);
 		}
-		return localListeners.remove(localListener);
+		return failOverListeners.remove(localListener);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.cluster.MobicentsCluster#addDataRemovalListener(org.mobicents.cluster.DataRemovalListener)
+	 */
+	public boolean addDataRemovalListener(DataRemovalListener listener) {
+		return dataRemovalListeners.putIfAbsent(listener.getBaseFqn(), listener) == null;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.cluster.MobicentsCluster#removeDataRemovalListener(org.mobicents.cluster.DataRemovalListener)
+	 */
+	public boolean removeDataRemovalListener(DataRemovalListener listener) {
+		return dataRemovalListeners.remove(listener.getBaseFqn()) != null;
 	}
 	
 	/*

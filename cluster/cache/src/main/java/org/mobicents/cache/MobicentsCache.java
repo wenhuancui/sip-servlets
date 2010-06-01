@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.mobicents.cache;
 
 import org.apache.log4j.Logger;
@@ -20,6 +41,7 @@ public class MobicentsCache {
 
 	private static Logger logger = Logger.getLogger(MobicentsCache.class);
 
+	@SuppressWarnings("unchecked")
 	private final Cache jBossCache;
 	private boolean localMode;
 	private final boolean managedCache;
@@ -52,6 +74,7 @@ public class MobicentsCache {
 		startCache();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public MobicentsCache(Cache cache, String cacheName) {
 		this.jBossCache = cache;
 		this.managedCache = true;									
@@ -70,6 +93,7 @@ public class MobicentsCache {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Cache getJBossCache() {
 		return jBossCache;
 	}
@@ -98,6 +122,7 @@ public class MobicentsCache {
 	 * @param regionFqn
 	 * @param classLoader
 	 */
+	@SuppressWarnings("unchecked")
 	public void setReplicationClassLoader(Fqn regionFqn, ClassLoader classLoader) {
 		if (!isLocalMode()) {
 			final Region region = jBossCache.getRegion(regionFqn, true);
@@ -123,6 +148,7 @@ public class MobicentsCache {
 	 * @param regionFqn
 	 * @param classLoader
 	 */
+	@SuppressWarnings("unchecked")
 	public void unsetReplicationClassLoader(Fqn regionFqn, ClassLoader classLoader) {
 		if (!isLocalMode()) {
 			final Region region = jBossCache.getRegion(regionFqn, true);

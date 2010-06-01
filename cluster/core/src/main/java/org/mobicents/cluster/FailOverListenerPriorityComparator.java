@@ -19,30 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.mobicents.timers;
+package org.mobicents.cluster;
 
+import java.util.Comparator;
 
 /**
- * Different strategies to use when scheduling a {@link Runnable} on a {@link FaultTolerantScheduler}
  * @author martins
  *
  */
-public enum PeriodicScheduleStrategy {
+public class FailOverListenerPriorityComparator implements Comparator<FailOverListener> {
 
-	/**
-	 * Periodic action that becomes enabled first
-     * after the given initial delay, and subsequently with the given
-     * period; that is executions will commence after
-     * <tt>initialDelay</tt> then <tt>initialDelay+period</tt>, then
-     * <tt>initialDelay + 2 * period</tt>, and so on.
+	/* (non-Javadoc)
+	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
-	atFixedRate, 
-	
-	/**
-	 * Periodic action that becomes enabled first
-     * after the given initial delay, and subsequently with the
-     * given delay between the termination of one execution and the
-     * commencement of the next.
-	 */
-	withFixedDelay
+	public int compare(FailOverListener o1, FailOverListener o2) {
+		if (o1.equals(o2)) {
+			return 0;
+		}
+		else {
+			if (o1.getPriority() > o2.getPriority()) {
+				return -1;
+			}
+			else {
+				return 1;
+			}
+		}
+	}
+
 }

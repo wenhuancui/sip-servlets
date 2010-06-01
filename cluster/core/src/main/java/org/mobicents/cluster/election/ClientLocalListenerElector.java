@@ -19,30 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.mobicents.timers;
+package org.mobicents.cluster.election;
 
+import java.util.List;
 
-/**
- * Different strategies to use when scheduling a {@link Runnable} on a {@link FaultTolerantScheduler}
- * @author martins
- *
- */
-public enum PeriodicScheduleStrategy {
+import org.jgroups.Address;
+import org.mobicents.cluster.cache.ClusteredCacheData;
+
+public interface ClientLocalListenerElector {
 
 	/**
-	 * Periodic action that becomes enabled first
-     * after the given initial delay, and subsequently with the given
-     * period; that is executions will commence after
-     * <tt>initialDelay</tt> then <tt>initialDelay+period</tt>, then
-     * <tt>initialDelay + 2 * period</tt>, and so on.
+	 * 
+	 * @param nodes
+	 * @param cacheData
+	 * @return
 	 */
-	atFixedRate, 
-	
-	/**
-	 * Periodic action that becomes enabled first
-     * after the given initial delay, and subsequently with the
-     * given delay between the termination of one execution and the
-     * commencement of the next.
-	 */
-	withFixedDelay
+	public Address elect(List<Address> nodes, ClusteredCacheData cacheData);
 }

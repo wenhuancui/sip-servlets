@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.mobicents.timers.timer;
 
 import java.lang.reflect.Field;
@@ -95,7 +116,7 @@ public class FaultTolerantTimerTimerTask extends TimerTask {
 	}
 	
 	private Integer _getTaskStatus(java.util.TimerTask timerTask) {
-		Class cc = java.util.TimerTask.class;
+		Class<?> cc = java.util.TimerTask.class;
 		try {
 			Field stateField=cc.getDeclaredField("state");
 			stateField.setAccessible(true);
@@ -103,9 +124,7 @@ public class FaultTolerantTimerTimerTask extends TimerTask {
 			stateField.setAccessible(false);
 			return taskStatus;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new RuntimeException("Fialed to get status");
+			throw new RuntimeException("Fialed to get status",e);
 		}
 	}
 	
@@ -116,7 +135,7 @@ public class FaultTolerantTimerTimerTask extends TimerTask {
 	private void setPeriod(final java.util.TimerTask javaUtilTimerTask,final long period) {
 		if(System.getSecurityManager()!=null)
 		{
-			 AccessController.doPrivileged(new PrivilegedAction(){
+			 AccessController.doPrivileged(new PrivilegedAction<Object>(){
 
 				public Object run() {
 					_setPeriod(javaUtilTimerTask,period);
@@ -135,7 +154,7 @@ public class FaultTolerantTimerTimerTask extends TimerTask {
 	 * @param period
 	 */
 	private void _setPeriod(java.util.TimerTask javaUtilTimerTask, long period) {
-		Class cc = java.util.TimerTask.class;
+		Class<?> cc = java.util.TimerTask.class;
 		try {
 			Field stateField=cc.getDeclaredField("period");
 			stateField.setAccessible(true);
@@ -143,7 +162,7 @@ public class FaultTolerantTimerTimerTask extends TimerTask {
 			stateField.setAccessible(false);
 			return;
 		} catch (Throwable e) {
-			throw new RuntimeException("Failed to set task period");
+			throw new RuntimeException("Failed to set task period",e);
 		}
 		
 	}

@@ -19,30 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.mobicents.timers;
+package org.mobicents.cluster;
 
+import org.jboss.cache.Fqn;
 
 /**
- * Different strategies to use when scheduling a {@link Runnable} on a {@link FaultTolerantScheduler}
+ * 
  * @author martins
  *
  */
-public enum PeriodicScheduleStrategy {
+public interface DataRemovalListener {
 
 	/**
-	 * Periodic action that becomes enabled first
-     * after the given initial delay, and subsequently with the given
-     * period; that is executions will commence after
-     * <tt>initialDelay</tt> then <tt>initialDelay+period</tt>, then
-     * <tt>initialDelay + 2 * period</tt>, and so on.
+	 * Retrieves the base fqn the listener has interest.
+	 * @return
 	 */
-	atFixedRate, 
+	@SuppressWarnings("unchecked")
+	public Fqn getBaseFqn();
 	
 	/**
-	 * Periodic action that becomes enabled first
-     * after the given initial delay, and subsequently with the
-     * given delay between the termination of one execution and the
-     * commencement of the next.
+	 * Indicates that the data with the specified fqn was removed. 
+	 * @param clusteredCacheDataFqn
 	 */
-	withFixedDelay
+	@SuppressWarnings("unchecked")
+	public void dataRemoved(Fqn clusteredCacheDataFqn);
 }

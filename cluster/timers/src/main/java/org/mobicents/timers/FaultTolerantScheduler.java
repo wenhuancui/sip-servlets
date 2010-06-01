@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.mobicents.timers;
 
 import java.io.Serializable;
@@ -14,8 +35,11 @@ import org.apache.log4j.Logger;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.transaction.TransactionContext;
 import org.jgroups.Address;
+import org.mobicents.cluster.DataRemovalListener;
+import org.mobicents.cluster.FailOverListener;
 import org.mobicents.cluster.MobicentsCluster;
 import org.mobicents.cluster.cache.ClusteredCacheData;
+import org.mobicents.cluster.election.ClientLocalListenerElector;
 import org.mobicents.timers.cache.FaultTolerantSchedulerCacheData;
 import org.mobicents.timers.cache.TimerTaskCacheData;
 
@@ -56,6 +80,7 @@ public class FaultTolerantScheduler {
 	/**
 	 * the base fqn used to store tasks data in mobicents cluster's cache
 	 */
+	@SuppressWarnings("unchecked")
 	private final Fqn baseFqn;
 	
 	/**
@@ -94,7 +119,8 @@ public class FaultTolerantScheduler {
 		this.timerTaskFactory = timerTaskFactory;
 		this.txManager = txManager;		
 		clusterClientLocalListener = new ClientLocalListener(priority);
-		cluster.addLocalListener(clusterClientLocalListener);
+		cluster.addFailOverListener(clusterClientLocalListener);
+		cluster.addDataRemovalListener(clusterClientLocalListener);
 	}
 
 	/**
@@ -282,6 +308,10 @@ public class FaultTolerantScheduler {
 				}			
 			}		
 		}
+		else {
+			// not found locally, we remove it from the cache still in case it is present
+			remove(taskID, true);
+		}
 		
 		return task;
 	}
@@ -315,7 +345,9 @@ public class FaultTolerantScheduler {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Shutdown now.");
 		}
-		cluster.removeLocalListener(clusterClientLocalListener);
+		cluster.removeFailOverListener(clusterClientLocalListener);
+		cluster.removeDataRemovalListener(clusterClientLocalListener);
+		
 		executor.shutdownNow();
 		localRunningTasks.clear();
 	}
@@ -333,7 +365,7 @@ public class FaultTolerantScheduler {
 		this.shutdownNow();		
 	}
 	
-	private class ClientLocalListener implements org.mobicents.cluster.ClientLocalListener {
+	private class ClientLocalListener implements FailOverListener, DataRemovalListener {
 
 		/**
 		 * the priority of the scheduler as a client local listener of the mobicents cluster
@@ -347,36 +379,50 @@ public class FaultTolerantScheduler {
 			this.priority = priority;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.mobicents.cluster.client.LocalListener#getBaseFqn()
+		/*
+		 * (non-Javadoc)
+		 * @see org.mobicents.cluster.FailOverListener#getBaseFqn()
 		 */
+		@SuppressWarnings("unchecked")
 		public Fqn getBaseFqn() {
 			return baseFqn;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.mobicents.cluster.ClientLocalListener#getPriority()
+		/*
+		 * (non-Javadoc)
+		 * @see org.mobicents.cluster.FailOverListener#getElector()
+		 */
+		public ClientLocalListenerElector getElector() {
+			return null;
+		}
+		
+		/* 
+		 * (non-Javadoc)
+		 * @see org.mobicents.cluster.FailOverListener#getPriority()
 		 */
 		public byte getPriority() {
 			return priority;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.mobicents.cluster.ClientLocalListener#failOverClusterMember(org.jgroups.Address)
+		/*
+		 * (non-Javadoc)
+		 * @see org.mobicents.cluster.FailOverListener#failOverClusterMember(org.jgroups.Address)
 		 */
 		public void failOverClusterMember(Address address) {
 			
 		}
 		
-		/* (non-Javadoc)
-		 * @see org.mobicents.ftf.FTFListener#lostOwnership(org.mobicents.slee.runtime.cache.ClusteredCacheData)
+		/* 
+		 * (non-Javadoc)
+		 * @see org.mobicents.cluster.FailOverListener#lostOwnership(org.mobicents.cluster.cache.ClusteredCacheData)
 		 */
 		public void lostOwnership(ClusteredCacheData clusteredCacheData) {
 			
 		}
 
-		/* (non-Javadoc)
-		 * @see org.mobicents.ftf.FTFListener#wonOwnership(org.mobicents.slee.runtime.cache.ClusteredCacheData)
+		/* 
+		 * (non-Javadoc)
+		 * @see org.mobicents.cluster.FailOverListener#wonOwnership(org.mobicents.cluster.cache.ClusteredCacheData)
 		 */
 		public void wonOwnership(ClusteredCacheData clusteredCacheData) {
 			
@@ -392,6 +438,18 @@ public class FaultTolerantScheduler {
 			catch (Throwable e) {
 				logger.error(e.getMessage(),e);
 			}
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see org.mobicents.cluster.DataRemovalListener#dataRemoved(org.jboss.cache.Fqn)
+		 */
+		@SuppressWarnings("unchecked")
+		public void dataRemoved(Fqn clusteredCacheDataFqn) {
+			final TimerTask task = localRunningTasks.remove(clusteredCacheDataFqn.getLastElement());
+			if (task != null) {
+				task.cancel();
+			}			
 		}
 		
 		/* (non-Javadoc)
