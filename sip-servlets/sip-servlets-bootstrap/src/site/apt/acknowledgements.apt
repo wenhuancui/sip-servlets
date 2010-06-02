@@ -1,0 +1,41 @@
+Acknowledgements
+
+	Bug Reports, enhancements or features for Mobicents Sip Servlets were contributed by the following people/companies:
+	
+	* Filip Olsson from {{{http://www.telavox.se}Telavox}} : reported {{{http://code.google.com/p/mobicents/issues/detail?id=112}Issue 112}} and contributed fix + test case for it 
+	
+	* Thomas Leseney from {{{http://www.nexcom.fr/}Nexcom systems}} : 
+		
+		* Contributed fix for exploded directory deployment in Tomcat
+		
+		* Fix for SipServletMessageImpl.getAddressHeaders()
+		
+		* Fix for equals on URI
+		
+		* servlet-mapping rules parsing : {{{http://code.google.com/p/mobicents/issues/detail?id=108}issue 108}}
+		
+		* IPBX : {{{http://code.google.com/p/mobicents/issues/detail?id=122}issue 122}}
+		
+	* Eelco Cramer from {{{http://www.tno.nl}TNO ICT}} : reported {{{http://code.google.com/p/mobicents/issues/detail?id=280}Issue 280}} and contributed fix for it
+	
+	* {{{mailto:haukex@zero-g.net}Hauke D\xE4mpfling}} : 
+	
+		* reported {{{http://code.google.com/p/mobicents/issues/detail?id=410}Issue 410}} and contributed a fix for it.
+		
+		* reported {{{http://code.google.com/p/mobicents/issues/detail?id=411}Issue 411}} and contributed a fix for it.
+	
+	* Joel Soderstrom from {{{http://www.telmi.se/}Telmi Communication}} : reported {{{http://code.google.com/p/mobicents/issues/detail?id=481}Issue 481}} and contributed a fix for it.
+	
+	* Alexandre Sova from {{{http://www.codeminders.com}Codeminders}} : 
+	
+		* reported {{{http://code.google.com/p/mobicents/issues/detail?id=568}Issue 568}} and contributed a fix for it.
+		
+		* reported {{{http://code.google.com/p/mobicents/issues/detail?id=585}Issue 585}} and contributed a fix for it.
+
+	* Alexander Kozlov from {{{http://www.codeminders.com}Codeminders}} : 
+	
+		* reported {{{http://code.google.com/p/mobicents/issues/detail?id=1015}Issue 1015}} and contributed a fix for it.		
+		
+		* contributed a fix for {{{http://code.google.com/p/mobicents/issues/detail?id=1010}Issue 1010}}.
+	
+	* Eric Cheung and Tom Smith from AT&T ECharts team for making sure E4SS is working continuously on Mobicents Sip Servlets and for their excellent bug reports.
