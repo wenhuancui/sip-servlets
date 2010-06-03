@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:jboss:bean-deployer:2.0 bean-deployer_2_0.xsd"
+	xmlns="urn:jboss:bean-deployer:2.0">
+	
+    <!-- Connetion definition -->    
+    <bean name="ivr-tx-pipe-1"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="outlet">audio.mixer</property>
+        <property name="valve"><inject bean="Valve.open"></inject></property>
+    </bean>
+    
+    <bean name="ivr-tx-pipe-2"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="inlet">media.player</property>
+        <property name="outlet">audio.mixer</property>
+        <property name="valve"><inject bean="Valve.close"></inject></property>
+    </bean>
+
+    <bean name="ivr-tx-pipe-3"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="inlet">dtmf.generator</property>
+        <property name="outlet">audio.mixer</property>
+        <property name="valve"><inject bean="Valve.close"></inject></property>
+    </bean>
+    
+    <bean name="ivr-tx-pipe-4"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="inlet">audio.mixer</property>
+        <property name="valve"><inject bean="Valve.open"></inject></property>
+    </bean>
+    
+    
+    <bean name="ivr-tx-channel" class="org.mobicents.media.server.resource.ChannelFactory">
+        <property name="components">
+            <list>
+                <inject bean="audio.mixer" />
+                <inject bean="media.player" />
+                <inject bean="dtmf.generator" />
+            </list>
+        </property>
+        
+        <property name="pipes">
+            <list>
+                <inject bean="ivr-tx-pipe-1" />
+                <inject bean="ivr-tx-pipe-2" />
+                <inject bean="ivr-tx-pipe-3" />
+                <inject bean="ivr-tx-pipe-4" />
+            </list>
+        </property>
+    </bean>
+
+
+    <!-- Endpoint inner audio rx channel -->
+    <bean name="ivr-rx-pipe-1"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="outlet">audio.splitter</property>
+        <property name="valve"><inject bean="Valve.open"></inject></property>
+    </bean>
+    
+    <bean name="ivr-rx-pipe-2"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="inlet">audio.splitter</property>
+        <property name="outlet">audio.recorder</property>
+        <property name="valve"><inject bean="Valve.close"></inject></property>
+    </bean>
+
+    <bean name="ivr-rx-pipe-3"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="inlet">audio.splitter</property>
+        <property name="outlet">dtmf.detector</property>
+        <property name="valve"><inject bean="Valve.close"></inject></property>
+    </bean>
+    
+    <bean name="ivr-rx-pipe-4"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="inlet">audio.splitter</property>
+        <property name="valve"><inject bean="Valve.open"></inject></property>
+    </bean>
+    
+    
+    <bean name="ivr-rx-channel" class="org.mobicents.media.server.resource.ChannelFactory">
+        <property name="components">
+            <list>
+                <inject bean="audio.splitter" />
+                <inject bean="audio.recorder" />
+                <inject bean="dtmf.detector" />
+            </list>
+        </property>
+        
+        <property name="pipes">
+            <list>
+                <inject bean="ivr-rx-pipe-1" />
+                <inject bean="ivr-rx-pipe-2" />
+                <inject bean="ivr-rx-pipe-3" />
+                <inject bean="ivr-rx-pipe-4" />
+            </list>
+        </property>
+    </bean>
+
+    <bean name="ivr-connection" class="org.mobicents.media.server.ConnectionFactory">
+            <property name="txChannelFactory">
+                <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="org.mobicents.media.server.resource.ChannelFactory">
+                    <entry><key>audio</key><value><inject bean="ivr-tx-channel"/></value></entry>
+                </map>
+            </property>
+            <property name="rxChannelFactory">
+                <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="org.mobicents.media.server.resource.ChannelFactory">
+                    <entry><key>audio</key><value><inject bean="ivr-rx-channel"/></value></entry>
+                </map>
+            </property>
+	    <property name="connectionStateManager">
+           <inject bean="ConnectionStateManager"/>
+        </property>	
+    </bean>    
+
+    <!-- Endpoint definition  -->
+    <bean name="IVREndpoint"
+		class="org.mobicents.media.server.EndpointImpl">
+		<property name="localName">
+			/mobicents/media/IVR/[1..10]
+		</property>
+		<property name="timer">
+			<inject bean="Timer" />
+		</property>
+		<property name="sourceFactory">
+                    <map class="java.util.Hashtable" keyClass="java.lang.String" 
+                    valueClass="org.mobicents.media.ComponentFactory">
+                        <entry>
+                            <key>audio</key>
+                            <value><inject bean="AudioNoise"/></value>
+                        </entry>
+                    </map>
+		</property>
+		<property name="rtpFactory">
+                    <inject bean="RTPFactory"/>
+		</property>
+		<property name="connectionFactory">
+			<inject bean="ivr-connection" />
+		</property>
+    </bean>
+
+</deployment>

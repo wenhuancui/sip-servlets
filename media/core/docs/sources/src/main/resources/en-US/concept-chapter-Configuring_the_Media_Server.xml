@@ -1,0 +1,1512 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "User_Guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="ctms-Configuring_the_Media_Server">
+	<title>Configuring the &THIS.PLATFORM; Media Server</title>
+
+	<para>
+
+		All endpoints are plugged as POJO service in JBoss
+		Microcontainers. To create a component for the &THIS.PLATFORM; Media Server, the
+		appropriate component Factory must be used. Each component
+		within a factory has an identifier and name that is unique
+		across the server implementation. Because each component is
+		unique in the Media Server, it can be referenced and pulled into
+		other applications.
+	</para>
+
+	<section>
+		<title>Timer</title>
+
+		<para>
+			The Timer provides a time source, and functions similar to a
+			crystal oscillator. This endpoint can be configured to
+			specify the millisecond interval between two oscillations.
+		</para>
+
+		<para>The configurable aspect of the Timer is:</para>
+
+		<variablelist>
+			<varlistentry>
+				<term>heartBeat</term>
+
+				<listitem>
+					<para>
+						Time interval (in milliseconds) between two
+						subsequent oscillations.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</section>
+
+	<section>
+		<title>MainDeployer</title>
+
+		<para>
+			The MainDeployer endpoint manages hot deployment of
+			components and enpoints. Hot-deployable components and
+			endpoints are defined as those that can be added to or
+			removed from the running server.
+		</para>
+
+		<para>
+			MainDeployer scans the
+			<filename>/deploy</filename>
+			directory, looking for configuration files that have changed
+			since the last scan. When MainDeployer detects any changes
+			to the directory, any changes resulting from the removed
+			configuration file are processed. This includes re-deploying
+			changed beans, adding new beans, or removing beans that are
+			no longer required.
+		</para>
+
+		<para>
+			To understand the functionality of the MainDeployer
+			endpoint, experiment by removing the
+			<filename>ann-beans.xml</filename>
+			configuration file from the
+			<filename>/deploy</filename>
+			directory while the server is running. Observe how the
+			server behaves once the file is removed from the folder.
+		</para>
+
+		<para>The configurable aspects of MainDeployer are:</para>
+
+		<variablelist>
+			<varlistentry>
+				<term>path</term>
+
+				<listitem>
+					<para>
+						Specifies the location of the configuration XML
+						files. Generally, this is the /deploy directory.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>scanPeriod</term>
+
+				<listitem>
+					<para>
+						Specifies the time (in milliseconds) that
+						MainDeployer checks the specified path for
+						changes to the directory.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>fileFilter</term>
+
+				<listitem>
+					<para>
+						Specifies the file extensions that will be
+						deployed or monitored. Supported file extensions
+						are -beans.xml and -conf.xml
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</section>
+
+	<section id="ctms-RTPFactory">
+		<title>RTPFactory</title>
+
+		<para>
+			<literal>RTPFactory</literal>
+			is responsible for managing the actual RTP Socket. The
+			reference of
+			<literal>RTPFactory</literal>
+			is passed to each endpoint which, in turn, leverage the
+			<literal>RTPFactory</literal>
+			to create Connections and decide on supported codecs.
+		</para>
+
+		<!--TODO - This example must be updated with the new parameters and structure for the MainDeployer-->
+
+		<para>The configurable aspects of the RTPFactory are:</para>
+
+		<variablelist>
+			<varlistentry>
+				<term>formatMap</term>
+
+				<listitem>
+					<para>
+						Specifies the relationship between the RTP
+						payload type and format.
+						<xref linkend="ctms-Supported_RTP_Formats" />
+						describes the payload types and their supported
+						formats.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>bindAddress</term>
+
+				<listitem>
+					<para>
+						Specifies the IP address to which the RTP socket
+						is bound.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>portRange</term>
+
+				<listitem>
+					<para>
+						Specifies the port range within which the RTP
+						socket will be created. The first free port in
+						the given range is assigned to the socket.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>jitter</term>
+
+				<listitem>
+					<para>
+						Specifies the size of the jitter buffer (in
+						milliseconds) for incoming packets.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>timer</term>
+
+				<listitem>
+					<para>
+						Specifies the timer instance from which reading
+						process is synchronized.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>stunAddress</term>
+
+				<listitem>
+					<para>
+						Specifies the location of the STUN server to
+						use. For more information regarding STUN, refer
+						to
+						<xref linkend="ctms-MMS_STUN_Support" />
+						.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+
+		<formalpara>
+			<title>Supported RTP Formats</title>
+
+			<para>
+				The
+				<literal>RTPFactory</literal>
+				is able to receive the following RTP media types:
+			</para>
+		</formalpara>
+
+		<table frame="all" id="ctms-Supported_RTP_Formats">
+			<title>Supported RTP Formats</title>
+
+			<tgroup align="left" cols="4" colsep="1" rowsep="1">
+				<colspec colname="col1" colnum="1" />
+
+				<colspec colname="col2" colnum="2" />
+
+				<colspec colname="col3" colnum="3" />
+
+				<colspec colname="col4" colnum="4" />
+
+				<thead>
+					<row>
+						<entry>Payload Type</entry>
+
+						<entry>Format</entry>
+
+						<entry>Specification</entry>
+
+						<entry>Description</entry>
+					</row>
+				</thead>
+
+				<tbody>
+					<row>
+						<entry>0</entry>
+
+						<entry>PCMU</entry>
+
+						<entry>
+							<ulink
+								url="http://www.ietf.org/rfc/rfc1890.txt">
+								RFC 1890
+							</ulink>
+						</entry>
+
+						<entry>ITU G.711 U-law audio</entry>
+					</row>
+
+					<row>
+						<entry>3</entry>
+
+						<entry>GSM</entry>
+
+						<entry>
+							<ulink
+								url="http://www.ietf.org/rfc/rfc1890.txt">
+								RFC 1890
+							</ulink>
+						</entry>
+
+						<entry>GSM full-rate audio</entry>
+					</row>
+
+					<row>
+						<entry>8</entry>
+
+						<entry>PCMA</entry>
+
+						<entry>
+							<ulink
+								url="http://www.ietf.org/rfc/rfc1890.txt">
+								RFC 1890
+							</ulink>
+						</entry>
+
+						<entry>ITU G.711 A-law audio</entry>
+					</row>
+
+					<row>
+						<entry>18</entry>
+
+						<entry>G729</entry>
+
+						<entry>N/A</entry>
+
+						<entry>G.729 audio</entry>
+					</row>
+
+					<row>
+						<entry>31</entry>
+
+						<entry>H.261</entry>
+
+						<entry>N/A</entry>
+
+						<entry>Video</entry>
+					</row>
+
+					<row>
+						<entry>97</entry>
+
+						<entry>SPEEX</entry>
+
+						<entry>N/A</entry>
+
+						<entry>Speex narrow band audio</entry>
+					</row>
+
+					<row>
+						<entry>101</entry>
+
+						<entry>DTMF</entry>
+
+						<entry>
+							<ulink
+								url="http://www.ietf.org/rfc/rfc2893.txt">
+								RFC 2893
+							</ulink>
+						</entry>
+
+						<entry>
+							Dual-tone Multi-frequency (DTMF) Events
+						</entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</table>
+	</section>
+
+
+	<section id="ctms-Digital_Signaling_Processors">
+		<title>Digital Signal Processor (DSP)</title>
+
+		<para>The configurable aspect of the DspFactory are:</para>
+
+		<variablelist>
+			<varlistentry>
+				<term>name</term>
+				<listitem>
+					<para>The name of the processor</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>CodecFactories</term>
+				<listitem>
+					<para>The list of codecs</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</section>
+
+	<section id="ctms-Audio_Player">
+		<title>Audio Player</title>
+
+		<para>
+			The configurable aspect of the AudioPlayerFactory are:
+		</para>
+
+		<variablelist>
+			<varlistentry>
+				<term>name</term>
+				<listitem>
+					<para>The name of the Audio Player</para>
+				</listitem>
+			</varlistentry>
+
+		</variablelist>
+	</section>
+
+
+	<section id="ctms-Audio_Recorder">
+		<title>Audio Recorder</title>
+
+		<para>The configurable aspect of the RecorderFactory are:</para>
+
+		<variablelist>
+			<varlistentry>
+				<term>name</term>
+				<listitem>
+					<para>The name of the Audio Recorder</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>recordDir</term>
+				<listitem>
+					<para>
+						The location of recrodDir will be considered as
+						parent and all the audio files recorded will go
+						in this parent directory. The location specified
+						by recordDir should be present in folder
+						structure else Recorder will fail. It can be
+						relative like '${mms.home.dir}' in which case
+						all the recorded files will be stored in
+						MMS_HOME or user can specify absolute value like
+						'/home/user/workarea/myapp/recordedfiles' on
+						linux and 'c:/workarea/myapp/recordedfiles' on
+						windows
+					</para>
+				</listitem>
+			</varlistentry>
+
+		</variablelist>
+	</section>
+
+
+	<section id="ctms-Dtmf">
+		<title>DTMF</title>
+
+		<para>
+			Two different types of components are used to handle inband
+			and rfc2833 mode of detecting and generating DTMF tones.
+		</para>
+
+
+		<section id="ctms-Rfc2833_Detector">
+			<title>Rfc2833 Detector</title>
+
+			<para>
+				The configurable aspects of the Rfc2833DetectorFactory
+				are:
+			</para>
+
+			<variablelist>
+				<varlistentry>
+					<term>name</term>
+					<listitem>
+						<para>The name of the detector</para>
+					</listitem>
+				</varlistentry>
+
+
+
+			</variablelist>
+		</section>
+
+
+		<section id="ctms-Inband_Detector">
+			<title>Inband Detector</title>
+
+			<para>
+				The configurable aspects of the InbandDetectorFactory
+				are:
+			</para>
+
+			<variablelist>
+				<varlistentry>
+					<term>name</term>
+					<listitem>
+						<para>The name of the detector</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+		</section>
+
+		<section id="ctms-Rfc2833_Generator">
+			<title>Rfc2833 Generator</title>
+
+			<para>
+				The configurable aspects of the Rfc2833GeneratorFactory
+				are:
+			</para>
+
+			<variablelist>
+				<varlistentry>
+					<term>name</term>
+					<listitem>
+						<para>The name of the generator</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+		</section>
+
+		<section id="ctms-Inband_Generator">
+			<title>Inband Generator</title>
+
+			<para>
+				The configurable aspects of the InbandGeneratorFactory
+				are:
+			</para>
+
+			<variablelist>
+				<varlistentry>
+					<term>name</term>
+					<listitem>
+						<para>The name of the generator</para>
+					</listitem>
+				</varlistentry>
+			</variablelist>
+		</section>
+
+	</section>
+
+	<section id="ctms-Announcement_Server_Access_Points">
+		<title>Announcement Server Access Points</title>
+
+		<para>
+			An Announcement Server endpoint provides access to an
+			announcement service. Upon receiving requests from the call
+			agent, an Announcement Server will
+			<quote>play</quote>
+			a specified announcement. A given announcement endpoint is
+			not expected to support more than one connection at a time.
+			Connections to an Announcement Server are typically one-way
+			(
+			<quote>half-duplex</quote>
+			), therefore, the Announcement Server is not expected to
+			listen to audio signals from the connection.
+		</para>
+
+		<para>
+			Announcement endpoints do not transcode announced media; in
+			order to achieve this, the application must use Packet Relay
+			endpoints on the media path. Also note that the announcement
+			server endpoint can generate a tones such as DTMF, Busy, Congestion etc.
+		</para>
+		<mediaobject id="ctms-mms-configuration-ANN">
+			<imageobject>
+				<imagedata align="center" width="550"
+					fileref="images/mms-configuration-ANN.png" format="PNG"></imagedata>
+			</imageobject>
+		</mediaobject>
+		<example id="ctms-The_ANN_Bean">
+			<title>The Announcement Endpoint Declaration</title>
+
+			<programlisting linenumbering="unnumbered" role="XML">
+	&lt;bean name="Ann-TxChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory" /&gt;
+
+        &lt;bean name="AnnConnectionFactory" class="org.mobicents.media.server.ConnectionFactory"&gt;
+            &lt;property name="txChannelFactory"&gt;&lt;inject bean="Ann-TxChannelFactory"/&gt;&lt;/property&gt;
+        &lt;/bean&gt;    
+
+	&lt;!-- ANNOUNCEMENT  --&gt;
+	&lt;bean name="Announcement-Access-Point"
+		class="org.mobicents.media.server.EndpointImpl"&gt;
+		&lt;property name="localName"&gt;
+			/mobicents/media/aap/[1..10]
+		&lt;/property&gt;
+		&lt;property name="timer"&gt;
+			&lt;inject bean="Timer" /&gt;
+		&lt;/property&gt;
+		&lt;property name="sourceFactory"&gt;
+			&lt;inject bean="AudioPlayerFactory" /&gt;
+		&lt;/property&gt;
+		&lt;property name="rtpFactory"&gt;
+			&lt;map class="java.util.Hashtable" keyClass="java.lang.String"
+				valueClass="org.mobicents.media.server.impl.rtp.RtpFactory"&gt;
+				&lt;entry&gt;
+					&lt;key&gt;audio&lt;/key&gt;
+					&lt;value&gt;
+						&lt;inject bean="RTPAudioFactory" /&gt;
+					&lt;/value&gt;
+				&lt;/entry&gt;
+			&lt;/map&gt;
+		&lt;/property&gt;
+		&lt;property name="connectionFactory"&gt;
+			&lt;inject bean="AnnConnectionFactory" /&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+			</programlisting>
+		</example>
+		<formalpara>
+			<title>
+				Configuration of an Announcement Server Access Point
+			</title>
+
+			<para>
+				The configurable attributes of the Announcement Server
+				are as follows:
+			</para>
+		</formalpara>
+
+		<variablelist>
+			<varlistentry>
+				<term>localName</term>
+
+				<listitem>
+					<para>
+						Specifies the name under which the endpoint is
+						to be bound.
+					</para>
+
+					<para>
+						This parameter allows a set of enpoints to be
+						specified, which are then created and bound
+						automatically by the Announcement Server.
+						Consider the scenario where a total of 10
+						endpoints are required. To specify this in the
+						attribute, the following path is provided:
+						<literal>/media/aap/[1..10]</literal>
+						. The
+						<literal>[1..10]</literal>
+						in the directory path tells the Announcement
+						Server to create a set of 10 endpoints in the
+						<literal>/aap</literal>
+						directory, named according to the endpoint
+						number, which start at one and finish at ten.
+						For example,
+						<literal>
+							/media/aap/1, media/aap/2, ... media/aap/10
+						</literal>
+						.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>timer</term>
+
+				<listitem>
+					<para>
+						Specifies the timer instance from which reading
+						process is synchronized.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>sourceFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the Java bean responsible for
+						generating the source media.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>rtpFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the location of the RTP Factory. For
+						more information about the RTP Factory, refer to
+						<xref linkend="ctms-RTPFactory" />
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>connectionFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the instance of ConnectionFactory that wraps the custom transmission channel factory.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+		
+		<formalpara>
+			<title>Customization</title>
+
+			<para>
+				The Announcement Endpoint by default is configured to only play audio files. Its also possible to generate Tones like DTMF using either Rfc2833Generator or InbandDetector or both. To use these Generators you also need to declare a Multiplexer that multiplexe's the media stream from AudioPlayer and DTMF Generatot to one stream. Bellow shown is example of how Rfc2833Generator can be used.
+				
+				<screen>
+	&lt;bean name="MuxFactory"
+		class="org.mobicents.media.server.impl.resource.MuxFactory"&gt;
+		&lt;constructor&gt;
+			&lt;parameter&gt;Mux&lt;/parameter&gt;
+		&lt;/constructor&gt;
+	&lt;/bean&gt;
+
+	&lt;bean name="Rfc2833GeneratorFactory"
+		class="org.mobicents.media.server.impl.resource.dtmf.Rfc2833GeneratorFactory"&gt;
+		&lt;property name="name"&gt;Rfc2833GeneratorFactory&lt;/property&gt;
+	&lt;/bean&gt;
+
+
+	&lt;bean name="ann-Pipe-1"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="outlet"&gt;Mux&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="ann-Pipe-2"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;Rfc2833GeneratorFactory&lt;/property&gt;
+		&lt;property name="outlet"&gt;Mux&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="ann-Pipe-3"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;Mux&lt;/property&gt;
+		&lt;property name="outlet"&gt;audio.processor&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="ann-Pipe-4"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;audio.processor&lt;/property&gt;
+	&lt;/bean&gt;
+
+	&lt;bean name="TxChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory"&gt;
+		&lt;property name="components"&gt;
+			&lt;list&gt;
+				&lt;inject bean="MuxFactory" /&gt;
+				&lt;inject bean="Rfc2833GeneratorFactory" /&gt;
+				&lt;inject bean="AudioProcessorFactory" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+		&lt;property name="pipes"&gt;
+			&lt;list&gt;
+				&lt;inject bean="ann-Pipe-1" /&gt;
+				&lt;inject bean="ann-Pipe-2" /&gt;
+				&lt;inject bean="ann-Pipe-3" /&gt;
+				&lt;inject bean="ann-Pipe-4" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+
+        &lt;bean name="AnnConnectionFactory" class="org.mobicents.media.server.ConnectionFactory"&gt;
+            &lt;property name="txChannelFactory"&gt;&lt;inject bean="TxChannelFactory"/&gt;&lt;/property&gt;
+        &lt;/bean&gt;    				
+				</screen>				
+			</para>
+
+		</formalpara>		
+		
+	</section>
+
+	<section id="ctms-Interactive_Voice_Response">
+		<title>Interactive Voice Response</title>
+
+		<para>
+			An Interactive Voice Response (
+			<acronym>IVR</acronym>
+			) endpoint provides access to an IVR service. Upon requests
+			from the Call Agent, the IVR server
+			<quote>plays</quote>
+			announcements and tones, and
+			<quote>listens</quote>
+			to voice messages from the user. A given IVR endpoint is not
+			expected to support more than one connection at a time. For
+			example, if several connections were established to the same
+			endpoint, then the same tones and announcements would be
+			played simultaneously over all connections. IVR endpoints do
+			not posses the capability of transcoding played or recorded
+			media streams. IVRs record or play in the format that the
+			data was delivered.
+		</para>
+
+		<mediaobject id="ctms-mms-configuration-IVR">
+			<imageobject>
+				<imagedata align="center" width="550"
+					fileref="images/mms-configuration-IVR.png" format="PNG"></imagedata>
+			</imageobject>
+		</mediaobject>
+		<example id="ctms-The_IVREndpointManagement_MBean">
+			<title>The IVREndpointManagement MBean</title>
+
+			<programlisting linenumbering="unnumbered" role="XML">
+	&lt;bean name="IVR-TxChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory" /&gt;
+		
+	&lt;bean name="IVR-Pipe-1"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="outlet"&gt;audio.processor&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="IVR-Pipe-2"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;audio.processor&lt;/property&gt;
+		&lt;property name="outlet"&gt;DeMux&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="IVR-Pipe-3"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;DeMux&lt;/property&gt;
+		&lt;property name="outlet"&gt;Rfc2833DetectorFactory&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="IVR-Pipe-4"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;DeMux&lt;/property&gt;
+	&lt;/bean&gt;
+
+
+	&lt;bean name="IVR-RxChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory"&gt;
+		&lt;property name="components"&gt;
+			&lt;list&gt;
+				&lt;inject bean="DeMuxFactory" /&gt;
+				&lt;inject bean="Rfc2833DetectorFactory" /&gt;
+				&lt;inject bean="AudioProcessorFactory" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+		&lt;property name="pipes"&gt;
+			&lt;list&gt;
+				&lt;inject bean="IVR-Pipe-1" /&gt;
+				&lt;inject bean="IVR-Pipe-2" /&gt;
+				&lt;inject bean="IVR-Pipe-3" /&gt;
+				&lt;inject bean="IVR-Pipe-4" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+
+        &lt;bean name="IVRConnectionFactory" class="org.mobicents.media.server.ConnectionFactory"&gt;
+            &lt;property name="txChannelFactory"&gt;&lt;inject bean="IVR-TxChannelFactory"/&gt;&lt;/property&gt;
+            &lt;property name="rxChannelFactory"&gt;&lt;inject bean="IVR-RxChannelFactory"/&gt;&lt;/property&gt;
+        &lt;/bean&gt;    
+
+	&lt;!-- IVR  --&gt;
+	&lt;bean name="IVREndpoint"
+		class="org.mobicents.media.server.EndpointImpl"&gt;
+		&lt;property name="localName"&gt;
+			/mobicents/media/IVR/[1..10]
+		&lt;/property&gt;
+		&lt;property name="timer"&gt;
+			&lt;inject bean="Timer" /&gt;
+		&lt;/property&gt;
+		&lt;property name="sourceFactory"&gt;
+			&lt;inject bean="AudioPlayerFactory" /&gt;
+		&lt;/property&gt;
+		&lt;property name="sinkFactory"&gt;
+			&lt;inject bean="RecorderFactory" /&gt;
+		&lt;/property&gt;
+		&lt;property name="rtpFactory"&gt;
+			&lt;map class="java.util.Hashtable" keyClass="java.lang.String"
+				valueClass="org.mobicents.media.server.impl.rtp.RtpFactory"&gt;
+				&lt;entry&gt;
+					&lt;key&gt;audio&lt;/key&gt;
+					&lt;value&gt;
+						&lt;inject bean="RTPAudioFactory" /&gt;
+					&lt;/value&gt;
+				&lt;/entry&gt;
+			&lt;/map&gt;
+		&lt;/property&gt;
+		&lt;property name="connectionFactory"&gt;
+			&lt;inject bean="IVRConnectionFactory" /&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+			</programlisting>
+		</example>
+
+		<formalpara>
+			<title>
+				Configuration of the Interactive Voice Response Endpoint
+			</title>
+
+			<para>
+				The configurable attributes of the Interactive Voice
+				Response endpoint are as follows:
+			</para>
+		</formalpara>
+
+		<variablelist>
+			<varlistentry>
+				<term>localName</term>
+
+				<listitem>
+					<para>
+						Specifies the name under which the endpoint is
+						to be bound.
+					</para>
+
+					<para>
+						This parameter allows a set of enpoints to be
+						specified, which are then created and bound
+						automatically by the Media Server.
+						Consider the scenario where a total of 10
+						endpoints are required. To specify this in the
+						attribute, the following path is provided:
+						<literal>  /mobicents/media/IVR/[1..10]</literal>
+						. The
+						<literal>[1..10]</literal>
+						in the directory path tells the Media 
+						Server to create a set of 10 endpoints in the
+						<literal>/IVR</literal>
+						directory, named according to the endpoint
+						number, which start at one and finish at ten.
+						For example,
+						<literal>
+							/mobicents/media/IVR/1, /mobicents/media/IVR/2, ... /mobicents/media/IVR/10
+						</literal>
+						.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>timer</term>
+
+				<listitem>
+					<para>
+						Specifies the timer instance from which reading
+						process is synchronized.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>sourceFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the Java bean responsible for
+						generating the source media.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>sinkFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the Java bean responsible for using
+						the source media generated by the
+						<literal>sourceFactory</literal>
+						bean.
+					</para>
+				</listitem>
+			</varlistentry>			
+
+			<varlistentry>
+				<term>rtpFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the location of the RTP Factory. For
+						more information about the RTP Factory, refer to
+						<xref linkend="ctms-RTPFactory" />
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>connectionFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the instance of ConnectionFactory that wraps the custom transmission and receiving channel factory.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+
+		<formalpara>
+			<title>Customization</title>
+
+			<para>
+				The IVR by default detects only RFC 2833 DTMF events. However if you want to use Inband detector instead of RFC2833, replace Rfc2833DetectorFactory with InbandDetectorFactory. You will have to declare the InbandDetectorFactory bean as shown
+				
+				<screen>
+	&lt;bean name="InbandDetectorFactory"
+		class="org.mobicents.media.server.impl.resource.dtmf.InbandDetectorFactory"&gt;
+		&lt;property name="name"&gt;InbandDetectorFactory&lt;/property&gt;
+	&lt;/bean&gt;				
+				</screen>				
+			</para>
+			<para>
+			It is also possible to have RFC2833 and Inband detector both working at same time. All you need to do is declare InbandDetectorFactory as explained above and have one more pipe that connects this InbandDetectorFactory with already declared DeMux. 
+			</para>
+			<screen>
+	&lt;bean name="InbandDetectorFactory"
+		class="org.mobicents.media.server.impl.resource.dtmf.InbandDetectorFactory"&gt;
+		&lt;property name="name"&gt;InbandDetectorFactory&lt;/property&gt;
+	&lt;/bean&gt;	
+
+	&lt;bean name="IVR-TxChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory" /&gt;
+		
+	&lt;bean name="IVR-Pipe-1"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="outlet"&gt;audio.processor&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="IVR-Pipe-2"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;audio.processor&lt;/property&gt;
+		&lt;property name="outlet"&gt;DeMux&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="IVR-Pipe-3"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;DeMux&lt;/property&gt;
+		&lt;property name="outlet"&gt;Rfc2833DetectorFactory&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="IVR-Pipe-4"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;DeMux&lt;/property&gt;
+		&lt;property name="outlet"&gt;InbandDetectorFactory&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="IVR-Pipe-5"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;DeMux&lt;/property&gt;
+	&lt;/bean&gt;
+
+
+	&lt;bean name="IVR-RxChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory"&gt;
+		&lt;property name="components"&gt;
+			&lt;list&gt;
+				&lt;inject bean="DeMuxFactory" /&gt;
+				&lt;inject bean="Rfc2833DetectorFactory" /&gt;
+				&lt;inject bean="InbandDetectorFactory" /&gt;
+				&lt;inject bean="AudioProcessorFactory" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+		&lt;property name="pipes"&gt;
+			&lt;list&gt;
+				&lt;inject bean="IVR-Pipe-1" /&gt;
+				&lt;inject bean="IVR-Pipe-2" /&gt;
+				&lt;inject bean="IVR-Pipe-3" /&gt;
+				&lt;inject bean="IVR-Pipe-4" /&gt;
+				&lt;inject bean="IVR-Pipe-5" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;			
+			</screen>
+		</formalpara>
+
+	</section>
+
+	<section id="ctms-Packet_Relay_Endpoint">
+		<title>Packet Relay Endpoint</title>
+
+		<para>
+			A packet relay endpoint is a specific form of conference
+			bridge that typically only supports two connections. Packet
+			relays can be found in firewalls between a protected and an
+			open network, or in transcoding servers used to provide
+			interoperation between incompatible gateways (for example,
+			gateways which do not support compatible compression
+			algorithms, or gateways which operate over different
+			transmission networks such as IP or ATM).
+		</para>
+		<mediaobject id="ctms-mms-configuration-PR">
+			<imageobject>
+				<imagedata align="center" width="550"
+					fileref="images/mms-configuration-PR.png" format="PNG"></imagedata>
+			</imageobject>
+		</mediaobject>
+		<example id="ctms-The_PREndpointManagement_MBean">
+			<title>The PREndpointManagement MBean</title>
+
+			<programlisting linenumbering="unnumbered" role="XML">
+	&lt;bean name="PR-Pipe1"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="outlet"&gt;audio.processor&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="PR-Pipe2"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;audio.processor&lt;/property&gt;
+	&lt;/bean&gt;
+
+	&lt;bean name="PR-RxChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory"&gt;
+		&lt;property name="components"&gt;
+			&lt;list&gt;
+				&lt;inject bean="AudioProcessorFactory" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+		&lt;property name="pipes"&gt;
+			&lt;list&gt;
+				&lt;inject bean="PR-Pipe1" /&gt;
+				&lt;inject bean="PR-Pipe2" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+
+	&lt;bean name="PR-TxChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory"&gt;
+		&lt;property name="components"&gt;
+			&lt;list&gt;
+				&lt;inject bean="AudioProcessorFactory" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+		&lt;property name="pipes"&gt;
+			&lt;list&gt;
+				&lt;inject bean="PR-Pipe1" /&gt;
+				&lt;inject bean="PR-Pipe2" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+
+
+        &lt;bean name="PacketRelayConnectionFactory" class="org.mobicents.media.server.ConnectionFactory"&gt;
+            &lt;property name="txChannelFactory"&gt;&lt;inject bean="PR-TxChannelFactory"/&gt;&lt;/property&gt;
+            &lt;property name="rxChannelFactory"&gt;&lt;inject bean="PR-RxChannelFactory"/&gt;&lt;/property&gt;
+        &lt;/bean&gt;    
+
+	&lt;bean name="PacketRelayBridgeFactory"
+		class="org.mobicents.media.server.impl.resource.prelay.BridgeFactory"&gt;
+		&lt;property name="name"&gt;packet.relay&lt;/property&gt;
+	&lt;/bean&gt;
+
+	&lt;bean name="PacketRelayEndpoint"
+		class="org.mobicents.media.server.EndpointImpl"&gt;
+		&lt;property name="localName"&gt;
+			/mobicents/media/packetrelay/[1..10]
+		&lt;/property&gt;
+		&lt;property name="timer"&gt;
+			&lt;inject bean="Timer" /&gt;
+		&lt;/property&gt;
+		&lt;property name="rtpFactory"&gt;
+			&lt;map class="java.util.Hashtable" keyClass="java.lang.String"
+				valueClass="org.mobicents.media.server.impl.rtp.RtpFactory"&gt;
+				&lt;entry&gt;
+					&lt;key&gt;audio&lt;/key&gt;
+					&lt;value&gt;
+						&lt;inject bean="RTPAudioFactory" /&gt;
+					&lt;/value&gt;
+				&lt;/entry&gt;
+			&lt;/map&gt;
+		&lt;/property&gt;
+		&lt;property name="connectionFactory"&gt;
+			&lt;inject bean="PacketRelayConnectionFactory" /&gt;
+		&lt;/property&gt;
+		&lt;property name="groupFactory"&gt;
+			&lt;inject bean="PacketRelayBridgeFactory" /&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+
+			</programlisting>
+		</example>
+
+		<formalpara>
+			<title>Configuration of the Packet Relay Endpoint</title>
+
+			<para>
+				The configurable attributes of the Packet Relay endpoint
+				are as follows:
+			</para>
+		</formalpara>
+
+		<variablelist>
+			<varlistentry>
+				<term>localName</term>
+
+				<listitem>
+					<para>
+						Specifies the name under which the endpoint is
+						to be bound.
+					</para>
+
+					<para>
+						This parameter allows a set of enpoints to be
+						specified, which are then created and bound
+						automatically by the Media Server.
+						Consider the scenario where a total of 10
+						endpoints are required. To specify this in the
+						attribute, the following path is provided:
+						<literal>/mobicents/media/packetrelay/[1..10]</literal>
+						. The
+						<literal>[1..10]</literal>
+						in the directory path tells the Media 
+						Server to create a set of 10 endpoints in the
+						<literal>/packetrelay</literal>
+						directory, named according to the endpoint
+						number, which start at one and finish at ten.
+						For example,
+						<literal>
+							/mobicents/media/packetrelay/1, /mobicents/media/packetrelay/2, ... /mobicents/media/packetrelay/10
+						</literal>						.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>timer</term>
+
+				<listitem>
+					<para>
+						Specifies the timer instance from which reading
+						process is synchronized.
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>rtpFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the location of the RTP Factory. For
+						more information about the RTP Factory, refer to
+						<xref linkend="ctms-RTPFactory" />
+					</para>
+				</listitem>
+			</varlistentry>
+
+			<varlistentry>
+				<term>connectionFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the instance of ConnectionFactory that wraps the custom transmission and receiving channel factory.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>groupFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the instance of BridgeFactory that wraps the source and sink.
+					</para>
+				</listitem>
+			</varlistentry>			
+		</variablelist>
+
+	</section>
+
+	<section id="ctms-Conference_Bridge_Endpoint">
+		<title>Conference Bridge Endpoint</title>
+
+		<para>
+			The Mobicents Media Server should be able to establish
+			several connections between the endpoint and packet
+			networks, or between the endpoint and other endpoints in the
+			same gateway. The signals originating from these connections
+			shall be mixed according to the connection
+			<quote>mode</quote>
+			. The precise number of connections an endpoint supports is
+			a characteristic of the gateway, and may in fact vary
+			according with the allocation of resources within the
+			gateway. The conf endpoint can play an announcement directly
+			on connections and hence only for the participant listening
+			to an announcement, and can even detect DTMF for connection.
+		</para>
+		
+		<mediaobject id="mms-configuration-CNF">
+			<imageobject>
+				<imagedata align="center" width="550"
+					fileref="images/mms-configuration-CNF.png" format="PNG"></imagedata>
+			</imageobject>
+		</mediaobject>
+
+		<mediaobject id="mms-configuration-CNF-DSP">
+			<imageobject>
+				<imagedata align="center" width="550"
+					fileref="images/mms-configuration-CNF-DSP.png" format="PNG"></imagedata>
+			</imageobject>
+		</mediaobject>
+		
+		<example id="ctms-The_ConfEndpointManagement_MBean">
+			<title>The ConfEndpointManagement MBean</title>
+
+			<programlisting linenumbering="unnumbered" role="XML">
+	&lt;bean name="Cnf-DefaultChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory" /&gt;
+		
+	&lt;bean name="Cnf-Pipe-1"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="outlet"&gt;audio.processor&lt;/property&gt;
+	&lt;/bean&gt;
+	&lt;bean name="Cnf-Pipe-2"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+		&lt;property name="inlet"&gt;audio.processor&lt;/property&gt;
+	&lt;/bean&gt;
+
+	&lt;bean name="Cnf-Dsp-ChannelFactory"
+		class="org.mobicents.media.server.resource.ChannelFactory"&gt;
+		&lt;property name="components"&gt;
+			&lt;list&gt;
+				&lt;inject bean="AudioProcessorFactory" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+		&lt;property name="pipes"&gt;
+			&lt;list&gt;
+				&lt;inject bean="Cnf-Pipe-1" /&gt;
+				&lt;inject bean="Cnf-Pipe-2" /&gt;
+			&lt;/list&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+
+	&lt;bean name="CnfBridgeFactory"
+		class="org.mobicents.media.server.impl.resource.cnf.CnfBridgeFactory"&gt;
+		&lt;property name="name"&gt;cnf.bridge&lt;/property&gt;
+	&lt;/bean&gt;
+
+        &lt;bean name="CnfConnectionFactory" class="org.mobicents.media.server.ConnectionFactory"&gt;
+            &lt;property name="txChannelFactory"&gt;&lt;inject bean="Cnf-Dsp-ChannelFactory"/&gt;&lt;/property&gt;
+            &lt;property name="rxChannelFactory"&gt;&lt;inject bean="Cnf-Dsp-ChannelFactory"/&gt;&lt;/property&gt;
+        &lt;/bean&gt;    
+
+        &lt;!-- Conference with RTP and DSP  --&gt;
+	&lt;bean name="CnfEndpoint-1"
+		class="org.mobicents.media.server.EndpointImpl"&gt;
+		&lt;property name="localName"&gt;
+			/mobicents/media/cnf/[1..10]
+		&lt;/property&gt;
+		&lt;property name="timer"&gt;
+			&lt;inject bean="Timer" /&gt;
+		&lt;/property&gt;
+		
+                &lt;property name="groupFactory"&gt;
+			&lt;inject bean="CnfBridgeFactory" /&gt;
+		&lt;/property&gt;
+		
+		&lt;property name="rtpFactory"&gt;
+			&lt;map class="java.util.Hashtable" keyClass="java.lang.String"
+				valueClass="org.mobicents.media.server.impl.rtp.RtpFactory"&gt;
+				&lt;entry&gt;
+					&lt;key&gt;audio&lt;/key&gt;
+					&lt;value&gt;
+						&lt;inject bean="RTPAudioFactory" /&gt;
+					&lt;/value&gt;
+				&lt;/entry&gt;
+			&lt;/map&gt;
+		&lt;/property&gt;
+                
+		&lt;property name="connectionFactory"&gt;
+			&lt;inject bean="CnfConnectionFactory" /&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+
+        &lt;bean name="CnfLocalConnectionFactory" class="org.mobicents.media.server.ConnectionFactory"&gt;
+            &lt;property name="txChannelFactory"&gt;&lt;inject bean="Cnf-DefaultChannelFactory"/&gt;&lt;/property&gt;
+            &lt;property name="rxChannelFactory"&gt;&lt;inject bean="Cnf-DefaultChannelFactory"/&gt;&lt;/property&gt;
+        &lt;/bean&gt;    
+
+        &lt;!-- Conference local bridge  --&gt;
+	&lt;bean name="CnfEndpoint-local"
+		class="org.mobicents.media.server.EndpointImpl"&gt;
+		&lt;property name="localName"&gt;
+			/mobicents/media/cnf/local/[1..10]
+		&lt;/property&gt;
+		&lt;property name="timer"&gt;
+			&lt;inject bean="Timer" /&gt;
+		&lt;/property&gt;
+		
+                &lt;property name="groupFactory"&gt;
+			&lt;inject bean="CnfBridgeFactory" /&gt;
+		&lt;/property&gt;
+		&lt;property name="connectionFactory"&gt;
+			&lt;inject bean="CnfLocalConnectionFactory" /&gt;
+		&lt;/property&gt;
+                
+	&lt;/bean&gt;
+			</programlisting>
+		</example>
+
+		<formalpara>
+			<title>
+				Configuration of the Conference Bridge Endpoint
+			</title>
+
+			<para>
+				The configurable attributes of the Conference Bridge
+				endpoint are as follows:
+			</para>
+		</formalpara>
+
+		<variablelist>
+			<varlistentry>
+				<term>localName</term>
+
+				<listitem>
+					<para>
+						Specifies the name under which the endpoint is
+						to be bound.
+					</para>
+
+					<para>
+						This parameter allows a set of enpoints to be
+						specified, which are then created and bound
+						automatically by the Media Server.
+						Consider the scenario where a total of 10
+						endpoints are required. To specify this in the
+						attribute, the following path is provided:
+						<literal>/mobicents/media/cnf/local/[1..10]</literal>
+						. The
+						<literal>[1..10]</literal>
+						in the directory path tells the Media 
+						Server to create a set of 10 endpoints in the
+						<literal>/cnf</literal>
+						directory, named according to the endpoint
+						number, which start at one and finish at ten.
+						For example,
+						<literal>
+							/mobicents/media/cnf/1, /mobicents/media/cnf/2, ... /mobicents/media/cnf/10
+						</literal>						.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>timer</term>
+
+				<listitem>
+					<para>
+						Specifies the timer instance from which reading
+						process is synchronized.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>connectionFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the instance of ConnectionFactory that wraps the custom transmission and receiving channel factory.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>groupFactory</term>
+
+				<listitem>
+					<para>
+						Specifies the instance of BridgeFactory that wraps the source and sink.
+					</para>
+				</listitem>
+			</varlistentry>	
+		</variablelist>
+	</section>
+
+	<section id="ctms-MMS_STUN_Support">
+		<title>MMS STUN Support</title>
+
+		<para>
+			When using Mobicents Media Server behind a routing device
+			performing Network Address Translation, you may need to
+			employ the Simple Traversal of User Datagram Protocol
+			through Network Address Translators (abbreviated:
+			<acronym>STUN</acronym>
+			) protocol in order for the server to operate correctly. In
+			general, it is recommended to avoid deploying the MMS behind
+			a NAT, since doing so can incur significant performance
+			penalties and failures. Nevertheless, the current MMS
+			implementation does work with a static NAT, a.k.a. a
+			one-to-one (1-1) NAT, in which no port-mapping occurs. Full
+			Cone NAT should also work with Address-Restricted NAT.
+		</para>
+
+		<para>
+			For more information STUN NAT classification, refer to
+			chapter 5 of
+			<ulink url="http://www.faqs.org/rfcs/rfc3489.html">
+				RFC3489 - STUN - Simple Traversal of User Datagram
+				Protocol (UDP)
+			</ulink>
+			.
+		</para>
+
+		<formalpara>
+			<title>MMS STUN Configuration</title>
+
+			<para>
+				Each RTPFactory in the Media Server can have its own
+				STUN preferences. The STUN options are specified in the configuration file
+				<filename>mobicents-media-server/mobicents-media-server.sar/META-INF/jboss-service.xml</filename> for embedded Media Server and <filename>/conf/bootstrap-beans.xml</filename> for standalone Media Server
+				 Here is an example of an RTPFactory
+				bean with static NAT configuration:
+			</para>
+		</formalpara>
+
+		<example
+			id="ctms-Static_NAT_configuration_of_an_Announcement_Endpoint_in_jboss-service.xml">
+			<title>
+				Static NAT configuration of an RTPFactory
+			</title>
+
+			<programlisting linenumbering="unnumbered" role="XML">
+	&lt;bean name="RTPAudioFactory"
+		class="org.mobicents.media.server.impl.rtp.RtpFactory"&gt;
+		&lt;property name="formatMap"&gt;
+			&lt;map class="java.util.Hashtable"
+				keyClass="java.lang.Integer"
+				valueClass="org.mobicents.media.Format"&gt;
+				&lt;entry&gt;
+					&lt;key&gt;0&lt;/key&gt;
+					&lt;value&gt;
+						&lt;inject bean="PCMU" /&gt;
+					&lt;/value&gt;
+				&lt;/entry&gt;
+				&lt;entry&gt;
+					&lt;key&gt;8&lt;/key&gt;
+					&lt;value&gt;
+						&lt;inject bean="PCMA" /&gt;
+					&lt;/value&gt;
+				&lt;/entry&gt;
+				&lt;entry&gt;
+					&lt;key&gt;3&lt;/key&gt;
+					&lt;value&gt;
+						&lt;inject bean="GSM" /&gt;
+					&lt;/value&gt;
+				&lt;/entry&gt;
+				&lt;entry&gt;
+					&lt;key&gt;97&lt;/key&gt;
+					&lt;value&gt;
+						&lt;inject bean="SPEEX" /&gt;
+					&lt;/value&gt;
+				&lt;/entry&gt;
+				&lt;entry&gt;
+					&lt;key&gt;101&lt;/key&gt;
+					&lt;value&gt;
+						&lt;inject bean="DTMF" /&gt;
+					&lt;/value&gt;
+				&lt;/entry&gt;
+			&lt;/map&gt;
+		&lt;/property&gt;
+		&lt;property name="bindAddress"&gt;10.65.193.65&lt;/property&gt;
+		&lt;property name="localPort"&gt;9200&lt;/property&gt;
+		&lt;property name="jitter"&gt;60&lt;/property&gt;
+		&lt;property name="timer"&gt;
+			&lt;inject bean="Timer" /&gt;
+		&lt;/property&gt;
+		&lt;property name="stunAddress"&gt;stun.ekiga.net:3478&lt;/property&gt;
+
+	&lt;/bean&gt;
+			</programlisting>
+		</example>
+
+		<para>
+			In order to use stun configure stunAddress property and point to STUN server : port. If no port is specified by default it will take 3478.
+		</para>
+
+		
+	</section>
+</chapter>

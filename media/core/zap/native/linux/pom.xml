@@ -1,0 +1,190 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.mobicents.servers.media</groupId>
+		<artifactId>zap-native-parent</artifactId>
+		<version>2.0.0.CR2</version>
+	</parent>
+
+	<artifactId>zap-native-linux</artifactId>
+
+	<properties>
+		<include.zap>/usr/include/dahdi</include.zap>
+	</properties>
+	<name>Mobicents Media Server Zaptel Provider - Native - Linux</name>
+	<packaging>so</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.mobicents.servers.media</groupId>
+			<artifactId>mms-impl</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>${artifactId}</finalName>
+
+		<testSourceDirectory>../src/test/java</testSourceDirectory>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>native-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+
+					<compilerProvider>generic</compilerProvider>
+					<compilerStartOptions>
+						<compilerStartOption>
+							-fPIC -O
+						</compilerStartOption>
+					</compilerStartOptions>
+
+					<javahOS>linux</javahOS>
+
+					<sources>
+						<source>
+							<directory>../src/main/native</directory>
+							<fileNames>
+								<fileName>schannel.c</fileName>
+							</fileNames>
+						</source>
+						+
+						<source>
+							+
+							<directory>${include.zap}</directory>
+							+
+						</source>
+
+					</sources>
+
+					<linkerStartOptions>
+						<linkerStartOption>
+							-shared -lc -ldl
+						</linkerStartOption>
+					</linkerStartOptions>
+
+				</configuration>
+
+				<executions>
+					<execution>
+						<id>javah</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<classNames>
+								<className>
+									org.mobicents.media.server.impl.resource.zap.Channel
+								</className>
+							</classNames>
+						</configuration>
+						<goals>
+							<goal>javah</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>javah-1</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<classNames>
+								<className>
+									org.mobicents.media.server.impl.resource.zap.Selector
+								</className>
+							</classNames>
+						</configuration>
+						<goals>
+							<goal>javah</goal>
+						</goals>
+					</execution>
+
+
+				</executions>
+
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<forkMode>once</forkMode>
+					<environmentVariables>
+						<LD_LIBRARY_PATH>
+							${project.build.directory}
+						</LD_LIBRARY_PATH>
+						<systemProperties>
+							<property>
+								<name>lib_schannel</name>
+								<value>
+									${project.build.directory}
+								</value>
+							</property>
+						</systemProperties>
+					</environmentVariables>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>deploy</id>
+						<phase>install</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks>
+								<copy file="target/${project.build.finalName}.so" todir="../../../server-standalone/target/mms-standalone-pojo/native" />
+								<copy file="../../../server-standalone/src/main/config/ss7-beans.xml" todir="../../../server-standalone/target/mms-standalone-pojo/deploy/ss7" />
+							</tasks>
+						</configuration>
+					</execution>
+					<execution>
+						<id>undeploy</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks>
+								<delete dir="../../../server-standalone/target/mms-standalone-pojo/native" />
+								<delete dir="../../../server-standalone/target/mms-standalone-pojo/deploy/ss7" />
+							</tasks>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+		</plugins>
+
+	</build>
+
+	<profiles>
+		<!-- to build debug artifact, run maven install -Ddebug -->
+		<profile>
+			<id>debug</id>
+			<activation>
+				<property>
+					<name>debug</name>
+				</property>
+			</activation>
+			<properties>
+				<compiler.debug.options>-MDd</compiler.debug.options>
+				<linker.debug.options>/DEBUG</linker.debug.options>
+				<classifier>debug</classifier>
+			</properties>
+		</profile>
+		<profile>
+			<id>release</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<compiler.debug.options>-MD</compiler.debug.options>
+				<linker.debug.options />
+				<classifier />
+			</properties>
+		</profile>
+	</profiles>
+</project>
