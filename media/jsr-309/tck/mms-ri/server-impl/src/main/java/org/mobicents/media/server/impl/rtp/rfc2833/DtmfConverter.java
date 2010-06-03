@@ -1,0 +1,129 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.mobicents.media.server.impl.rtp.rfc2833;
+
+import java.util.ArrayList;
+import org.mobicents.media.Buffer;
+import org.mobicents.media.Format;
+import org.mobicents.media.format.AudioFormat;
+import org.mobicents.media.server.impl.resource.dtmf.DtmfEvent;
+import org.mobicents.media.server.impl.rtp.RtpPacket;
+import org.mobicents.media.server.spi.dsp.Codec;
+import org.mobicents.media.server.spi.dsp.CodecFactory;
+
+/**
+ *
+ * @author kulikov
+ */
+public class DtmfConverter {
+    
+    private final static AudioFormat LINEAR_AUDIO = new AudioFormat(
+            AudioFormat.LINEAR, 8000, 16, 1,
+            AudioFormat.LITTLE_ENDIAN,
+            AudioFormat.SIGNED);
+    
+    private double dt = 1 / LINEAR_AUDIO.getSampleRate();
+    private short A = Short.MAX_VALUE / 2;
+    private int volume = 0;
+    private int f1,  f2;
+    private double time = 0;
+
+    public final static String[] TONE = new String[] {
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "#", "A",
+        "B", "C", "D"
+    };
+    
+    public final static String[][] events = new String[][]{
+        {"1", "2", "3", "A"},
+        {"4", "5", "6", "B"},
+        {"7", "8", "9", "C"},
+        {"*", "0", "#", "D"}
+    };
+    
+    private int[] lowFreq = new int[]{697, 770, 852, 941};
+    private int[] highFreq = new int[]{1209, 1336, 1477, 1633};
+    
+    private Codec codec;
+
+    private final static ArrayList<CodecFactory> codecFactories = new ArrayList();
+    static {
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g711.alaw.DecoderFactory());
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g711.alaw.EncoderFactory());
+
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g711.ulaw.DecoderFactory());
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g711.ulaw.EncoderFactory());
+
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.gsm.DecoderFactory());
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.gsm.EncoderFactory());
+
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.speex.DecoderFactory());
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.speex.EncoderFactory());
+
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g729.DecoderFactory());
+        codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g729.EncoderFactory());
+    }
+    
+    private short getValue(double t) {
+        return (short) (A * (Math.sin(2 * Math.PI * f1 * t) + Math.sin(2 * Math.PI * f2 * t)));
+    }
+    
+    public void setPreffered(Format fmt) {
+        codec = selectCodec(fmt);
+    }
+
+    private Codec selectCodec(Format f) {
+        for (CodecFactory factory : codecFactories) {
+            if (factory.getSupportedOutputFormat().matches(f) &&
+                    factory.getSupportedInputFormat().matches(Codec.LINEAR_AUDIO)) {
+                return factory.getCodec();
+            }
+        }
+        return null;
+    }
+    
+    public void process(RtpPacket packet, int duration, Buffer buffer) {
+        if (packet.getMarker() == true) {
+            time = 0;
+        }
+        
+        byte[] data = packet.getPayload();
+        
+        String digit = TONE[data[0]];
+        volume = data[1] & 0x3F;
+        
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (events[i][j].equalsIgnoreCase(digit)) {
+                    f1 = lowFreq[i];
+                    f2 = highFreq[j];
+                }
+            }
+        }
+        
+        int k = 0;
+        int frameSize = 160;
+
+        data = new byte[2 * frameSize];
+        for (int i = 0; i < frameSize; i++) {
+            short v = getValue(time + dt * i);
+            data[k++] = (byte) v;
+            data[k++] = (byte) (v >> 8);
+        }
+        
+        buffer.setHeader(new DtmfEvent(null, DtmfEvent.getId(digit), volume));
+        buffer.setData(data);
+        buffer.setOffset(0);
+        buffer.setLength(320);
+        buffer.setFormat(LINEAR_AUDIO);
+
+        time += ((double) duration) / 1000.0;
+        
+        if (codec != null) {
+            codec.process(buffer);
+        }
+    }
+    
+}

@@ -1,0 +1,33 @@
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+    <bean name="Package.Dtmf"
+		class="org.mobicents.media.server.ctrl.mgcp.evt.MgcpPackage">
+        <property name="name">D</property>
+        <property name="generators">
+            <list>
+                <inject bean="Signal.Dtmf0" />
+                <inject bean="Signal.Dtmf1" />
+            </list>
+        </property>
+        <property name="detectors">
+            <list>
+                <inject bean="Event.Dtmf0" />
+                <inject bean="Event.Dtmf1" />
+                <inject bean="Event.Dtmf2" />
+                <inject bean="Event.Dtmf3" />
+                <inject bean="Event.Dtmf4" />
+                <inject bean="Event.Dtmf5" />
+                <inject bean="Event.Dtmf6" />
+                <inject bean="Event.Dtmf7" />
+                <inject bean="Event.Dtmf8" />
+                <inject bean="Event.Dtmf9" />
+                <inject bean="Event.DtmfA" />
+                <inject bean="Event.DtmfB" />
+                <inject bean="Event.DtmfC" />
+                <inject bean="Event.DtmfD" />
+                <inject bean="Event.DtmfStar" />
+                <inject bean="Event.DtmfHash" />
+            </list>
+        </property>
+    </bean>
+</deployment>

@@ -1,0 +1,82 @@
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+    <bean name="G711.ulaw.encoder"
+		class="org.mobicents.media.server.impl.dsp.audio.g711.ulaw.EncoderFactory" />
+    <bean name="G711.ulaw.decoder"
+		class="org.mobicents.media.server.impl.dsp.audio.g711.ulaw.DecoderFactory" />
+    <bean name="G711.alaw.encoder"
+		class="org.mobicents.media.server.impl.dsp.audio.g711.alaw.EncoderFactory" />
+    <bean name="G711.alaw.decoder"
+		class="org.mobicents.media.server.impl.dsp.audio.g711.alaw.DecoderFactory" />
+    <bean name="Speex.encoder"
+		class="org.mobicents.media.server.impl.dsp.audio.speex.EncoderFactory" />
+    <bean name="Speex.decoder"
+		class="org.mobicents.media.server.impl.dsp.audio.speex.DecoderFactory" />
+    <bean name="G729.encoder"
+		class="org.mobicents.media.server.impl.dsp.audio.g729.EncoderFactory" />
+    <bean name="G729.decoder"
+		class="org.mobicents.media.server.impl.dsp.audio.g729.DecoderFactory" />
+    <bean name="GSM.encoder"
+		class="org.mobicents.media.server.impl.dsp.audio.gsm.EncoderFactory" />
+    <bean name="GSM.decoder"
+		class="org.mobicents.media.server.impl.dsp.audio.gsm.DecoderFactory" />
+                
+    <bean name="DSP"
+		class="org.mobicents.media.server.impl.dsp.DspFactory">
+        <property name="name">dsp</property>
+        <property name="codecFactories">
+            <list>
+                <inject bean="G711.ulaw.encoder" />
+                <inject bean="G711.ulaw.decoder" />
+                <inject bean="G711.alaw.encoder" />
+                <inject bean="G711.alaw.decoder" />
+                <inject bean="Speex.encoder" />
+                <inject bean="Speex.decoder" />
+                <inject bean="GSM.encoder" />
+                <inject bean="GSM.decoder" />
+                <inject bean="G729.encoder" />
+                <inject bean="G729.decoder" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean name="SoundCard" class="org.mobicents.media.server.impl.resource.audio.soundcard.PlayerFactory">
+        <property name="name">soundcard</property>
+    </bean>
+    
+    <bean name="audio.mixer"
+		class="org.mobicents.media.server.impl.resource.cnf.AudioMixerFactory">
+        <property name="name">audio.mixer</property>
+    </bean>
+
+    <bean name="audio.splitter"
+		class="org.mobicents.media.server.impl.resource.cnf.SplitterFactory">
+        <property name="name">audio.splitter</property>
+    </bean>
+    
+    <bean name="audio.player" class="org.mobicents.media.server.impl.resource.audio.AudioPlayerFactory">
+        <property name="name">audio.player</property>
+    </bean>
+    <bean name="AudioNoise" class="org.mobicents.media.server.impl.resource.audio.AudioNoiseGeneratorFactory">
+        <property name="name">audio.noise</property>
+    </bean>
+    
+    <bean name="advanced.audio.player" class="org.mobicents.media.server.impl.resource.audio.AdvancedAudioPlayerFactory">
+        <property name="name">advanced.audio.player</property>
+	<property name="mediaDir">${mms.media.dir}</property>
+    </bean>
+    
+    <bean name="audio.recorder" class="org.mobicents.media.server.impl.resource.audio.RecorderFactory">
+        <property name="name">audio.recorder</property>
+        <property name="recordDir">${mms.media.dir}</property>
+    </bean>
+
+    <bean name="dtmf.detector" class="org.mobicents.media.server.impl.resource.dtmf.DetectorFactory">
+        <property name="name">dtmf.detector</property>
+    </bean>
+    
+    <bean name="dtmf.generator" class="org.mobicents.media.server.impl.resource.dtmf.GeneratorFactory">
+        <property name="name">dtmf.generator</property>
+    </bean>
+</deployment>
