@@ -209,9 +209,9 @@
 		</profile>
 		<profile>			
 			<id>tomcat</id>
-			<activation>
+			<!-- activation>
 				<activeByDefault>true</activeByDefault>
-			</activation>			
+			</activation-->			
 			<modules>				
 				<module>sip-servlets-tomcat-jboss4</module>				
 			</modules>			
@@ -245,6 +245,9 @@
 		</profile>
 		<profile>			
 			<id>jboss-5-distro</id>			
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>			
 			<modules>
 				<module>sip-servlets-jboss5-metadata</module>	
 				<module>sip-servlets-jboss5-deployer</module>					
