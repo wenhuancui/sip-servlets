@@ -3,28 +3,28 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip.example</groupId>
 		<artifactId>sip-servlets-examples-parent</artifactId>
-		<version>1.7</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.mobicents.servlet.sip.example</groupId>
 	<artifactId>diameter-event-charging</artifactId>
 	<packaging>war</packaging>
-	<version>1.7</version>
+	<version>5.0.0.Beta2-JBCP5</version>
 	<name>Diameter Event Charging Sip Servlet Example</name>
 	<dependencies>
     <dependency>
       <groupId>org.mobicents.servers.diameter</groupId>
       <artifactId>jdiameter-api</artifactId>
-      <version>1.5.3.1-build353</version>
+	  <version>1.5.3.1-build353-JBCP5</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.mobicents.servers.diameter</groupId>
       <artifactId>mobicents-diameter-mux-jar</artifactId>
-      <version>1.2.1.GA</version>
+	<version>${pom.version}</version>
       <scope>provided</scope>
     </dependency>    
-    <dependency>
+    <!-- dependency>
 		  <groupId>jboss</groupId>
 		  <artifactId>jboss-system</artifactId>
 		  <version>${jboss.version}</version>
@@ -35,7 +35,7 @@
 		  <artifactId>jboss-jmx</artifactId>
 		  <version>${jboss.version}</version>
 		  <scope>provided</scope>
-    </dependency>    
+    </dependency-->    
 	</dependencies>
 	<url>http://www.mobicents.org/diameter_event_charging.html</url>
 	<build>

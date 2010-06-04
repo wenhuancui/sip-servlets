@@ -129,8 +129,8 @@
 					<compilerArguments>
 						<g />
 					</compilerArguments>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.5</source>
+					<target>1.5</target>
 				</configuration>
 			</plugin>			
 			<plugin>
@@ -254,6 +254,17 @@
 				<module>sip-servlets-jboss5-deployer</module>					
 				<module>sip-servlets-jboss5-ha-server-cache</module>
 				<module>sip-servlets-jboss5</module>				
+				<module>sip-servlets-management</module>				
+				<module>sip-servlets-jboss5</module>				
+				<module>jopr-plugin-as-5</module>				
+				<module>sip-servlets-examples/diameter-event-charging</module>				
+				<module>sip-servlets-examples/click-to-call</module>				
+				<module>sip-servlets-examples/click2call-distributable</module>				
+				<module>sip-servlets-examples/simple-sip-servlet-distributable</module>				
+				<module>sip-servlets-default-beans</module>				
+				<module>sip-servlets-default-deployer</module>				
+				<module>sip-servlets-all-beans</module>				
+				<module>sip-servlets-all-deployer</module>				
 			</modules>			
 		</profile>
 		<profile>			
