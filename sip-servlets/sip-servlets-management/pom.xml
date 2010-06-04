@@ -220,7 +220,7 @@
 				don't have GWT installed already, or you just want a maven way to
 				handle gwt deps)
 			-->
-			<plugin>
+			<!-- plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
@@ -245,7 +245,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin-->
 			<!--
 				If you want to use the target/web.xml file mergewebxml produces,
 				tell the war plugin to use it. 
