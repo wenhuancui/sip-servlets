@@ -20,7 +20,7 @@
 	    <file>
 	      <source>${basedir}/../sip-servlets-jboss5/lib/jboss-web-deployer-${jboss.version}.jar</source>
 	      <destName>jboss-web-deployer.jar</destName>
-	      <outputDirectory>/</outputDirectory>
+	      <outputDirectory>/jbossweb.deployer</outputDirectory>
 	    </file>
 	    
 	  <!-- Config files -->
@@ -37,7 +37,7 @@
 	  
 	<dependencySets>
 		<dependencySet>
-			<outputDirectory>/</outputDirectory>
+			<outputDirectory>/jbossweb.deployer</outputDirectory>
 			<useTransitiveDependencies>false</useTransitiveDependencies>
 			<useProjectArtifact>false</useProjectArtifact>
 			<scope>compile</scope>
