@@ -6,6 +6,7 @@
         	<groupId>org.mobicents</groupId>
 			<version>5.0.0.Beta2-JBCP5</version>
     	</parent>
+	<groupId>org.mobicents.servlet.sip</groupId>
 
 	<artifactId>sip-servlets-all-deployer</artifactId>
 	<version>5.0.0.Beta2-JBCP5</version>
