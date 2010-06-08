@@ -36,7 +36,7 @@
   <profiles>
   <profile>
       <id>release</id>
-      <build>
+      <!-- build>
         <plugins>
           <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
@@ -69,7 +69,7 @@
             </executions>
           </plugin>
         </plugins>
-      </build>
+      </build-->
     </profile>
     <profile>
       <id>maven-release</id>
