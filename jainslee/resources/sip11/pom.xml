@@ -25,7 +25,10 @@
 	
 	<properties>
 		<mobicents.slee.version>5.0.0.Beta2-JBCP5</mobicents.slee.version>
-		<jsip.ha.version>5.0.0.Beta2-JBCP5</jsip.ha.version>
+		<!-- Leave jain sip ha to 0.7 till Slee 2.1 is out then use version:5.0.0.Beta2-JBCP5
+				based on 0.8
+		 -->
+		<jsip.ha.version>0.7</jsip.ha.version>
 		<loadbalancer.version>5.0.0.Beta2-JBCP5</loadbalancer.version>
 		<docs.profile>mobicents</docs.profile>
 		<docs.ra.name>SIP11</docs.ra.name>
