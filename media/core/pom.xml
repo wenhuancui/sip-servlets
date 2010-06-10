@@ -41,6 +41,7 @@
 		<module>controllers</module>
 		<module>server-standalone</module>
 		<module>zap</module>
+		<module>server-standalone-assembly</module>
 		<!-- >module>docs</module-->
 	</modules>
 		<dependencies>
