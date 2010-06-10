@@ -6,6 +6,9 @@ tools/maven-eclipse-plugin:1.0.0.BETA2
 
 Build order:
 ==============
+
+Slee,Diameter,RA's
+-------------------
 parent
 tools (maven du,eclipse,library plugins)
 cluster
@@ -16,6 +19,26 @@ slee diameter resources (base,cca,cx-dx,rf,ro,sh-client,sh-server)
 load-balancer
 jain-sip-ha
 slee other resources(sip11,http-servlet,mgcp,xcap-client,xmpp)
+
+SIP servlets
+----------------
+[All nodes]
+copy config files
+sip-servlets/pom.xml -Pjboss-5-distro
+sip-servlets-management/pom.xml
+jopr-plugin-as-5/pom.xml
+[Cluster nodes (All,production)]
+copy cluster config files
+sip-servlets/pom.xml -Pjboss-5-cluster-distro
+simple-sip-servlet-distributable/pom.xml
+click2call-distributable/pom.xml
+[Default node]
+diameter-event-charging/pom.xml
+click-to-call/pom.xml
+
+
+
+ 
 
 parents:
 =========

@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>2.5</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.protocols.mgcp</groupId>
 	<artifactId>mgcp-impl</artifactId>
-	<version>2.0.0.GA</version>
+	<version>5.0.0.Beta2-JBCP5</version>
 	<name>Mobicents MGCP Impl</name>
 	<url>http://www.mobicents.org/mms/mms-main.html</url>
 	<developers>
@@ -57,14 +57,14 @@
 
 	<properties>
 		<!--  maven.test.skip>false</maven.test.skip -->
-		<log4j.version>1.2.9</log4j.version>
+		<!-- log4j.version>1.2.9</log4j.version-->
 		<release.name>
 			${release.name.prefix}${parent.version}${release.name.suffix}
 		</release.name>
 
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
 		<mobicents.tools.mavenplugin.eclipse.version>
-			1.0.0.BETA2
+				5.0.0.Beta2-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 

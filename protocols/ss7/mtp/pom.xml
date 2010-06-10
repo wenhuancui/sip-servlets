@@ -5,12 +5,12 @@
 	<parent>
 		<artifactId>ss7-parent</artifactId>
 		<groupId>org.mobicents.protocols.ss7</groupId>
-		<version>1.0.0.BETA1</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<artifactId>MTP</artifactId>
 	<groupId>org.mobicents.protocols.ss7.mtp</groupId>
-	<version>1.0.0.BETA1</version>
+	<version>5.0.0.Beta2-JBCP5</version>
 
 	<packaging>jar</packaging>
 
@@ -19,7 +19,7 @@
 	</name>
 	<properties>
 		<mobicents.tools.mavenplugin.eclipse.version>
-			1.0.0.BETA2
+			5.0.0.Beta2-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 	<dependencies>
@@ -58,7 +58,7 @@
 					</eclipseProjectName>
 				</configuration>
 			</plugin>
-			<plugin>
+			<!-- plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.0.2</version>
 				<configuration>
@@ -83,7 +83,7 @@
 						https://mobicents.googlecode.com/svn/tags/protocols/ss7/mtp
 					</tagBase>
 				</configuration>
-			</plugin>			
+			</plugin-->			
 			
 		</plugins>
 	</build>
