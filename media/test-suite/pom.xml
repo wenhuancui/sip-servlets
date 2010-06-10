@@ -4,8 +4,8 @@
 
 	<parent>
 		<groupId>org.mobicents</groupId>
-		<artifactId>mobicents</artifactId>
-		<version>12</version>
+		<artifactId>mobicents-parent</artifactId>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.testsuite</groupId>
@@ -23,10 +23,10 @@
 	</modules>
 
 	<properties>
-		<mgcp-stack.version>2.0.0.RC4</mgcp-stack.version>
-		<mms.version>2.0.0.BETA2</mms.version>
+		<mgcp-stack.version>5.0.0.Beta2-JBCP5</mgcp-stack.version>
+		<mms.version>5.0.0.Beta2-JBCP5</mms.version>
 		<jfree-chart.version>1.0.0</jfree-chart.version>
-		<mobicents.tools.mavenplugin.eclipse.version>1.0.0.BETA2</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 
 	<dependencyManagement>

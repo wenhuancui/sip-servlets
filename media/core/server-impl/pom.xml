@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.media</groupId>
 		<artifactId>mms-core</artifactId>
-		<version>2.0.0.CR2</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.servers.media</groupId>
@@ -104,7 +104,7 @@
 		<dependency>
 			<artifactId>MTP</artifactId>
 			<groupId>org.mobicents.protocols.ss7.mtp</groupId>
-			<version>1.0.0.BETA1</version>
+			<version>5.0.0.Beta2-JBCP5</version>
 		</dependency>
 	</dependencies>
 	<build>
