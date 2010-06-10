@@ -41,7 +41,7 @@
 		<module>controllers</module>
 		<module>server-standalone</module>
 		<module>zap</module>
-		<module>docs</module>
+		<!-- >module>docs</module-->
 	</modules>
 		<dependencies>
 			<dependency>
