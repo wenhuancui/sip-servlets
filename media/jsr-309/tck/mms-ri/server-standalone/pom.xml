@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.mobicents.jsr309.mms-ri</groupId>
 		<artifactId>mms-ri</artifactId>
-		<version>1.0.0.BETA1-SNAPSHOT</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 	<artifactId>mms-ri-standalone</artifactId>
 	<name>Mobicents Media Server RI [Standalone]</name>

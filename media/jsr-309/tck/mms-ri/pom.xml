@@ -5,13 +5,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>2.2</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.jsr309.mms-ri</groupId>
 	<artifactId>mms-ri</artifactId>
-	<version>1.0.0.BETA1-SNAPSHOT</version>
-
+	<version>5.0.0.Beta2-JBCP5</version>
 	<name>Mobicents Media Server RI for JSR 309 Impl</name>
 
 	<properties>
@@ -21,7 +20,7 @@
 		</release.name>
 
 		<mobicents.tools.mavenplugin.eclipse.version>
-			1.0.0.BETA2
+			5.0.0.Beta2-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 
 		<version.jboss.jbossas>5.0.1.GA</version.jboss.jbossas>

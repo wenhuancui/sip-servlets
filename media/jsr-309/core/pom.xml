@@ -1,15 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
-                <groupId>org.mobicents</groupId>
-                <artifactId>mobicents-parent</artifactId>
-                <version>2.5</version>
+        <groupId>org.mobicents</groupId>
+        <artifactId>mobicents-parent</artifactId>
+        <version>5.0.0.Beta2-JBCP5</version>
     </parent>
 
 	<groupId>org.mobicents.jsr309</groupId>
 	<artifactId>mobicents-jsr309-impl</artifactId>
-	<version>2.0.0.BETA4</version>
+	<version>5.0.0.Beta2-JBCP5</version>
 	<name>Mobicents JSR-309 Impl</name>
 	<url>http://www.mobicents.org/products_media_server.html</url>
 
@@ -21,7 +20,7 @@
 
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
 		<mobicents.tools.mavenplugin.eclipse.version>
-			1.0.0.BETA2
+			5.0.0.Beta2-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 		<mobicents.mgcp.impl.version>
 			5.0.0.Beta2-JBCP5
@@ -46,7 +45,7 @@
 		<dependency>
 			<groupId>javax.sip</groupId>
 			<artifactId>jain-sip-ri</artifactId>
-			<version>1.2.146</version>
+			<version>1.2.149</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
