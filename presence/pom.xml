@@ -20,7 +20,7 @@
 	<groupId>org.mobicents.servers.sippresence</groupId>
 	<version>5.0.0.Beta2-JBCP5</version>
 	
-	<modules>
+	<!-- modules>
 	
 		<module>xdm/server/core/configuration</module>
 		<module>sip-event/client/publication</module>
@@ -52,7 +52,7 @@
 		<module>examples/internal-rls</module>
 		
 		 
-	</modules>
+	</modules-->
 	
 	<properties>
 		
