@@ -2,12 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 
 	<parent>
 		<artifactId>sip-presence-parent</artifactId>
 		<groupId>org.mobicents.servers.sippresence</groupId>
-		<version>5.0.0.Beta-JBCP5</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 

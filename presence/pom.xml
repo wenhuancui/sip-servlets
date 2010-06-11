@@ -13,57 +13,44 @@
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
-		<version>2.0</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 		
 	<artifactId>sip-presence-parent</artifactId>
 	<groupId>org.mobicents.servers.sippresence</groupId>
-	<version>5.0.0.Beta-JBCP5</version>
+	<version>5.0.0.Beta2-JBCP5</version>
 	
-	<modules>		
+	<modules>
 	
+		<module>xdm/server/core/configuration</module>
+		<module>sip-event/client/publication</module>
 		<module>xdm/commons</module>
 		<module>xdm/client</module>
-		
-		<module>xdm/server/core/configuration</module>
-		 
-		<module>user-profile</module>
-		
-		<module>sip-event/server/publication/pojo</module>
-		<module>sip-event/client/publication</module>
-		<module>sip-event/server/publication/configuration</module>
-		<module>sip-event/server/publication/sbb-local-object</module>
-		<module>sip-event/server/publication/library</module>
-		<module>sip-event/server/publication/sbb</module>
-	
-		<module>sip-event/server/subscription/pojo</module>
 		<module>sip-event/client/subscription</module>
-		<module>sip-event/server/subscription/configuration</module>
-		<module>sip-event/server/subscription/event</module>
-		<module>sip-event/server/subscription/sbb-local-object</module>
-		<module>sip-event/server/subscription/library</module>
-		<module>sip-event/server/subscription/sbb</module>
+		<module>sip-event/server/subscription</module>
+		<module>sip-event/server/publication</module>
 		
-		<module>xdm/server/core/appusage-cache</module>
+		<module>user-profile</module>
 		<module>xdm/server/core/datasource</module>
-		<module>xdm/server/core/xcap-control/sbb</module>
+		<module>xdm/server/core/appusage-cache</module>
+		<module>xdm/server/core/xcap-control</module>
 		<module>xdm/server/appusages</module>
-		<module>xdm/server/core/xcap-control/library</module>
-		<module>xdm/server/core/xcap-control/du</module>
 		<module>xdm/server/core/internal-client</module>
 		<module>xdm/server/core/subscription-control</module>
+		<module>xdm/server/installer</module>
 				
 		<module>presence/client</module>
-		<module>presence/server/jaxb-pojos</module>
-		<module>presence/server/library</module>
-		<module>presence/server/configuration</module>
-		<module>presence/server/publication-sbb</module>
-		<module>presence/server/subscription-sbb</module>
-		<module>presence/server/internal-client-sbb</module>
+		<module>presence/server</module>
 
 		<module>integrated/server/subscription-library</module>
 		<module>integrated/server/subscription-sbb</module>
 		<module>integrated/server/deployable-unit</module>
+
+		
+		<module>examples/internal-publisher</module>
+		<module>examples/internal-subscriber</module>
+		<module>examples/internal-rls</module>
+		
 		 
 	</modules>
 	
@@ -87,8 +74,8 @@
 		<sipevent.server.subscription.eventListSupportOn>true</sipevent.server.subscription.eventListSupportOn>
 		      
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
-		<mobicents.servers.jainslee.version>2.0.0.BETA2</mobicents.servers.jainslee.version>
-		<mobicents.tools.mavenplugin.du.version>2.0.0.BETA3</mobicents.tools.mavenplugin.du.version>
+		<mobicents.servers.jainslee.version>5.0.0.Beta2-JBCP5</mobicents.servers.jainslee.version>
+		<mobicents.tools.mavenplugin.du.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.du.version>
 	</properties>			
 	
 	<dependencyManagement>
@@ -176,12 +163,12 @@
 			<modules>
 				<module>sip-event/server/subscription/rls-test</module>
 				<module>xdm/server/tests</module>
-				<module>xdm/server/installer</module>
+				<!-- module>xdm/server/installer</module-->
 				<module>integrated/server/installer</module>
-				<module>examples/internal-publisher</module>
+				<!-- module>examples/internal-publisher</module>
 				<module>examples/internal-subscriber</module>
 				<module>examples/internal-rls</module>
-				<module>docs</module> 				
+				<module>docs</module--> 				
 			</modules>
             <build>
 				<plugins>

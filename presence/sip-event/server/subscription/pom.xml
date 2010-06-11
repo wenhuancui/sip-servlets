@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>sip-presence-parent</artifactId>
 		<groupId>org.mobicents.servers.sippresence</groupId>
-		<version>5.0.0.Beta-JBCP5</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 	
@@ -16,6 +16,7 @@
 	<modules>
 		<module>configuration</module>
 		<!-- module>pojo</module-->
+		<module>pojo</module>
 		<module>sbb-local-object</module>
 		<module>sbb</module>
 		<module>event</module>

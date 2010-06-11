@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.sippresence</groupId>
 		<artifactId>sip-presence-server-configuration</artifactId>
-		<version>5.0.0.Beta-JBCP5</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 	
 	<artifactId>sip-presence-server-configuration-jar</artifactId>

@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>org.mobicents.slee.enabler.userprofile</groupId>
-		<version>5.0.0.Beta-JBCP5</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 	
 	<artifactId>sbb</artifactId>

@@ -4,8 +4,10 @@
 	<parent>
 		<groupId>org.mobicents.servers.xdm</groupId>
 		<artifactId>xdms-appusages-xcap-caps</artifactId>
-		<version>5.0.0.Beta-JBCP5</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
+	
+	<packaging>jar</packaging>
 			
 	<artifactId>xdms-appusages-xcap-caps-sbb</artifactId>	
 	
