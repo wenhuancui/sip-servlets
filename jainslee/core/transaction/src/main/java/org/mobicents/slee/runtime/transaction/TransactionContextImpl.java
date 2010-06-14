@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.mobicents.slee.container.eventrouter.EventRoutingTransactionData;
+import org.mobicents.slee.container.transaction.TransactionContext;
+import org.mobicents.slee.container.transaction.TransactionalAction;
 
 /**
  * 
@@ -27,9 +30,9 @@ import org.apache.log4j.Logger;
  * @author martins
  *
  */
-public class TransactionContext {
+public class TransactionContextImpl implements TransactionContext {
 
-	private static final Logger logger = Logger.getLogger(TransactionContext.class);
+	private static final Logger logger = Logger.getLogger(TransactionContextImpl.class);
 	
 	/**
 	 * {@link TransactionalAction}s which should be executed first after transaction commit succeeds
@@ -65,19 +68,12 @@ public class TransactionContext {
 	/**
 	 * place holder for event routing data related with a tx
 	 */
-	private Object eventRoutingTransactionData;
+	private EventRoutingTransactionData eventRoutingTransactionData;
 	
 	/**
 	 * indicates if the tx context should do traces or not
 	 */
-	private boolean trace;
-	
-	/**
-	 * 
-	 */
-	public TransactionContext() {
-		trace = logger.isTraceEnabled();
-	}
+	private final static boolean trace = logger.isTraceEnabled();
 	
 	/**
 	 * Retrieves the list of actions which should be executed after commit succeeds 
@@ -227,11 +223,11 @@ public class TransactionContext {
 		eventRoutingTransactionData = null;
 	}
 
-	public Object getEventRoutingTransactionData() {
+	public EventRoutingTransactionData getEventRoutingTransactionData() {
 		return eventRoutingTransactionData;
 	}
 
-	public void setEventRoutingTransactionData(Object eventRoutingTransactionData) {
+	public void setEventRoutingTransactionData(EventRoutingTransactionData eventRoutingTransactionData) {
 		this.eventRoutingTransactionData = eventRoutingTransactionData;
 	}
 	
