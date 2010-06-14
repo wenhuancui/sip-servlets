@@ -14,9 +14,9 @@
 	<packaging>pom</packaging>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/parent/mobicents-jain-sip-ha-0.8</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/parent/mobicents-jain-sip-ha-0.8</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/parent/mobicents-jain-sip-ha-0.8</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/parent/mobicents-jain-sip-ha-0.9</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/parent/mobicents-jain-sip-ha-0.9</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/parent/mobicents-jain-sip-ha-0.9</url>
 	</scm>
 
 	<properties>
