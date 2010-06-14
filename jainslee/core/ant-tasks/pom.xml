@@ -8,13 +8,11 @@
 	</parent>
 
 	<artifactId>ant-tasks</artifactId>
-
-	<name>Mobicents :: JAIN SLEE Server :: Core :: ${pom.artifactId}</name>
 	
 	<dependencies>
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
-			<artifactId>jar</artifactId>
+			<artifactId>common</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
 		<dependency>
