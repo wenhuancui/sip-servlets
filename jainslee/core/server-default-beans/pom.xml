@@ -9,10 +9,80 @@
 
 	<artifactId>server-default-beans</artifactId>
 
-	<name>Mobicents :: JAIN SLEE Server :: Core :: ${pom.artifactId}</name>
-
 	<dependencies>
 
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>spi</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>common</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>congestion</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>usage</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>events</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>remote</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>router</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>resource</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>slee-timers</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>profiles</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>activities</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>services</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
 			<artifactId>transaction</artifactId>
@@ -21,7 +91,7 @@
 		
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
-			<artifactId>components-jaxb-jar</artifactId>
+			<artifactId>components</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
 
@@ -46,12 +116,6 @@
 		<dependency>
 			<groupId>${pom.groupId}</groupId>
 			<artifactId>fault-tolerant-ra-impl</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>jar</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
 
@@ -114,7 +178,7 @@
 						</goals>
 						<configuration>
 							<artifactItems>
-								<artifactItem>
+								<!-- artifactItem>
 									<groupId>${pom.groupId}</groupId>
 									<artifactId>rar</artifactId>
 									<version>${pom.version}</version>
@@ -122,7 +186,7 @@
 									<overWrite>true</overWrite>
 									<outputDirectory>src/main/resources</outputDirectory>
 									<destFileName>mobicents.rar</destFileName>
-								</artifactItem>
+								</artifactItem-->
 								<artifactItem>
 									<groupId>${pom.groupId}</groupId>
 									<artifactId>standard-components-du</artifactId>
@@ -187,7 +251,6 @@
 							<tasks>
 								<delete failonerror="false">
 									<fileset dir="${basedir}/src/main/resources">
-										<include name="mobicents.rar" />
 										<include name="standard-components-du.jar" />
 									</fileset>
 								</delete>
