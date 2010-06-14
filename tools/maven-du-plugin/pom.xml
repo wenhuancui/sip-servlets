@@ -180,9 +180,9 @@
 	</reporting>
 	
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/maven-du-plugin/maven-du-plugin-2.0.0.BETA3</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/maven-du-plugin/maven-du-plugin-2.0.0.BETA3</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/tools/maven-du-plugin/maven-du-plugin-2.0.0.BETA3</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/maven-du-plugin/maven-du-plugin-2.0.0.BETA4</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/maven-du-plugin/maven-du-plugin-2.0.0.BETA4</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/tools/maven-du-plugin/maven-du-plugin-2.0.0.BETA4</url>
 	</scm>
 	
 	<!-- dupe info from parent, but it's only way to retrieve the parent without checkout -->

@@ -379,6 +379,10 @@ public abstract class AbstractDuMojo extends AbstractMojo {
     properties.put("pom.artifactId", project.getArtifactId());
     properties.put("pom.groupId", project.getGroupId());
     properties.put("pom.version", project.getVersion());
+    properties.put("project.artifactId", project.getArtifactId());
+    properties.put("project.groupId", project.getGroupId());
+    properties.put("project.version", project.getVersion());
+    properties.put("version", project.getVersion());
     properties.put("parent.artifactId", project.getParent().getArtifactId());
     properties.put("parent.groupId", project.getParent().getGroupId());
     properties.put("parent.version", project.getParent().getVersion());
@@ -597,7 +601,7 @@ public abstract class AbstractDuMojo extends AbstractMojo {
       includedFiles = Arrays.asList(scanner.getIncludedFiles());
 
       getLog().info(
-          "Copying " + includedFiles.size() + " resource "
+          "Copying " + includedFiles.size() + " resource"
           + (includedFiles.size() > 1 ? "s" : "")
           + (targetPath == null ? "" : " to " + targetPath));
 
@@ -819,7 +823,7 @@ public abstract class AbstractDuMojo extends AbstractMojo {
       // now the services descriptors
       for (Iterator i = includedFiles.iterator(); i.hasNext();) {
         String fileName = (String) i.next();
-        if (fileName.startsWith("services" + File.separator)) {
+        if (isValidService(fileName)) {
 
           File serviceDescriptorFile = new File(outputDirectory, fileName);
 
@@ -995,7 +999,7 @@ public abstract class AbstractDuMojo extends AbstractMojo {
           getLog().debug("Processing File: " + fileName);
         }
 
-        if (fileName.startsWith("services" + File.separator)) {
+        if (isValidService(fileName)) {
           // in the form services/service.xml
           if (fileName.contains("\\")) {
             fileName = fileName.replace("\\", "/");
@@ -1021,5 +1025,15 @@ public abstract class AbstractDuMojo extends AbstractMojo {
       IOUtil.close(printWriter);
       this.duFile = duFile;
     }
+  }
+
+  /**
+   * Validates a filename as a service descriptor
+   * 
+   * @param fileName
+   * @return
+   */
+  private boolean isValidService(String fileName) {
+    return fileName.endsWith(".xml") && fileName.startsWith("services" + File.separator);
   }
 }
