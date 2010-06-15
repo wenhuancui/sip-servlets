@@ -14,8 +14,8 @@
 	<artifactId>xdms-core-xcap-control</artifactId>
 			
 	<modules>
-		<module>sbb</module>
-		<module>library</module>
+		<!-- module>sbb</module>
+		<module>library</module-->
 		<module>du</module>
 	</modules>
 	
