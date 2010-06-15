@@ -9,58 +9,18 @@
 
 	<artifactId>descriptors</artifactId>
 
-	<name>Mobicents :: Components :: ${pom.artifactId}</name>
-
 	<dependencies>
-		
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>transaction</artifactId>
-			<scope>compile</scope>
-			<version>${pom.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${pom.groupId}</groupId>
-			<artifactId>components-jaxb-jar</artifactId>
-			<scope>compile</scope>
-			<version>${pom.version}</version>
-		</dependency>
 		
 		<dependency>
 			<groupId>javax.xml.bind</groupId>
 			<artifactId>jaxb-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
-			<groupId>javassist</groupId>
-			<artifactId>javassist</artifactId>
+			<groupId>javax.xml</groupId>
+			<artifactId>jaxb-impl</artifactId>
 		</dependency>
+		
 	</dependencies>
-
-	<build>
-		<finalName>mobicents-slee-core-components-descriptors</finalName>
-		<plugins>			
-			<plugin>
-				<artifactId>maven-eclipse-plugin</artifactId>
-				<groupId>org.mobicents.tools</groupId>
-				<inherited>false</inherited>
-				<executions />
-				<configuration>
-					<eclipseProjectName>${build.finalName}</eclipseProjectName>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>
