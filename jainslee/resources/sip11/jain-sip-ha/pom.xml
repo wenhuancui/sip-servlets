@@ -15,7 +15,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.mobicents.servers.jainslee.core</groupId>
-			<artifactId>jar</artifactId>
+			<artifactId>spi</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.ha.javax.sip</groupId>
@@ -26,40 +26,5 @@
 			<artifactId>mobicents-jain-sip-jboss5</artifactId>
 		</dependency>
 	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<inherited>false</inherited>
-				<executions>
-					<execution>
-						<phase>install</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<tasks>							
-								<copy todir="${env.JBOSS_HOME}/server/all/deploy/mobicents-slee/lib">
-									<fileset dir="${basedir}/target">
-										<include name="**.jar" />
-									</fileset>
-								</copy>
-								<copy todir="${env.JBOSS_HOME}/server/default/deploy/mobicents-slee/lib">
-									<fileset dir="${basedir}/target">
-										<include name="**.jar" />
-									</fileset>
-								</copy>
-								<copy todir="${env.JBOSS_HOME}/server/production/deploy/mobicents-slee/lib">
-									<fileset dir="${basedir}/target">
-										<include name="**.jar" />
-									</fileset>
-								</copy>
-							</tasks>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 		
 </project>

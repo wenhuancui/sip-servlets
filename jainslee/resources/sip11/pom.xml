@@ -25,10 +25,7 @@
 	
 	<properties>
 		<mobicents.slee.version>5.0.0.Beta2-JBCP5</mobicents.slee.version>
-		<!-- Leave jain sip ha to 0.7 till Slee 2.1 is out then use version:5.0.0.Beta2-JBCP5
-				based on 0.8
-		 -->
-		<jsip.ha.version>0.7</jsip.ha.version>
+		<jsip.ha.version>5.0.0.Beta2-JBCP5</jsip.ha.version>
 		<loadbalancer.version>5.0.0.Beta2-JBCP5</loadbalancer.version>
 		<docs.profile>mobicents</docs.profile>
 		<docs.ra.name>SIP11</docs.ra.name>
@@ -56,7 +53,7 @@
 			<dependency>
 				<groupId>org.mobicents.servers.jainslee.core</groupId>
 				<version>${mobicents.slee.version}</version>
-				<artifactId>jar</artifactId>
+				<artifactId>spi</artifactId>
 			</dependency>
 			<dependency>
 				<groupId>org.mobicents.tools</groupId>
@@ -118,9 +115,9 @@
 		</profile>
 		<profile>
 			<id>maven-release</id>
-			<modules>
+			<!-- modules>
 				<module>docs</module>
-			</modules>
+			</modules-->
 			<build>
 				<plugins>
 					<plugin>
@@ -129,6 +126,7 @@
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
 						<tagBase>https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11</tagBase>
+						<branchBase>https://mobicents.googlecode.com/svn/branches/servers/jain-slee/2.x.y/resources/sip11</branchBase>
 						<preparationGoals>clean install</preparationGoals>
 					</configuration>
 					</plugin>
@@ -138,9 +136,9 @@
 	</profiles>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11/2.0.0.GA</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11/2.0.0.GA</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11/2.0.0.GA</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/trunk/servers/jain-slee/resources/sip11</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/trunk/servers/jain-slee/resources/sip11</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/trunk/servers/jain-slee/resources/sip11</url>
 	</scm>
 	
 <build>
@@ -167,22 +165,17 @@
 
 	<repositories>
 		<repository>
-			<id>jboss-releases-repository</id>
-			<name>JBoss Releases Repository</name>
-			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>jboss-snapshots-repository</id>
-			<name>JBoss Snapshots Repository</name>
-			<url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Maven Repository Group</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public</url>
+			<layout>default</layout>
 			<releases>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
 			</releases>
 			<snapshots>
 				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
 			</snapshots>
 		</repository>
 	</repositories>
