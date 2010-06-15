@@ -25,9 +25,9 @@
 	</modules>
 
 	<properties>
-		<mobicents.resources.sip11.version>5.0.0.Beta2-JBCP5</mobicents.resources.sip11.version>
-		<mobicents.servers.jainslee.version>5.0.0.Beta2-JBCP5</mobicents.servers.jainslee.version>
-		<mobicents.resources.mgcp.version>5.0.0.Beta2-JBCP5</mobicents.resources.mgcp.version>
+		<mobicents.resources.sip11.version>${pom.version}</mobicents.resources.sip11.version>
+		<mobicents.servers.jainslee.version>${pom.version}</mobicents.servers.jainslee.version>
+		<mobicents.resources.mgcp.version>${pom.version}</mobicents.resources.mgcp.version>
 	</properties>
 
 	<dependencyManagement>
@@ -51,6 +51,11 @@
 			<groupId>org.mobicents.resources</groupId>
 			<artifactId>mgcp-ratype</artifactId>
 			<version>${mobicents.resources.mgcp.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>common</artifactId>
+			<groupId>org.mobicents.servers.jainslee.core</groupId>
+			<version>${mobicents.servers.jainslee.version}</version>
 		</dependency>
 		</dependencies>
 	</dependencyManagement>
