@@ -20,8 +20,8 @@
     </modules>
     
 	<properties>
-		<mobicents.resources.sip11.version>2.0.0.GA</mobicents.resources.sip11.version>
-		<mobicents.resources.mgcp.version>2.0.0.GA</mobicents.resources.mgcp.version>
+		<mobicents.resources.sip11.version>${pom.version}</mobicents.resources.sip11.version>
+		<mobicents.resources.mgcp.version>${pom.version}</mobicents.resources.mgcp.version>
 	</properties>
 	
 	<dependencyManagement>
@@ -61,9 +61,9 @@
 		</profile>	    
 	    <profile>
 		    <id>release</id>
-			<modules>
+			<!-- modules>
 				<module>docs</module>
-			</modules>
+			</modules-->
 		    <properties>
 			    <release.dir>${basedir}/../../release/${release.name}/examples/mgcp-demo</release.dir>
 		    </properties>

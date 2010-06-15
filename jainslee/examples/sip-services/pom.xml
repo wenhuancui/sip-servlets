@@ -24,8 +24,8 @@
 	</modules>
 
 	<properties>
-		<mobicents.core.jar.version>2.0.0.GA</mobicents.core.jar.version>
-		<mobicents.resources.sip11.version>2.0.0.GA</mobicents.resources.sip11.version>
+		<mobicents.core.jar.version>${pom.version}</mobicents.core.jar.version>
+		<mobicents.resources.sip11.version>${pom.version}</mobicents.resources.sip11.version>
 		<!-- define which location service to use -->
 		<!-- location.service.className>org.mobicents.slee.services.sip.location.jpa.JPALocationService</location.service.className-->
 		<location.service.className>org.mobicents.slee.services.sip.location.nonha.NonHALocationService</location.service.className>
@@ -38,7 +38,7 @@
     		<modules>
     			<module>proxy-with-initial-invite-services-DU</module>
     			<module>proxy-without-initial-invite-services-DU</module>
-				<module>docs</module>
+				<!-- module>docs</module-->
     		</modules>
 			<build>
 				<plugins>
