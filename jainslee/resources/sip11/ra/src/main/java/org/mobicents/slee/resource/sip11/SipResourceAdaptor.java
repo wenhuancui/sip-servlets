@@ -76,6 +76,7 @@ import org.mobicents.slee.resource.sip11.wrappers.TimeoutEventWrapper;
 import org.mobicents.slee.resource.sip11.wrappers.TransactionWrapper;
 import org.mobicents.slee.resource.sip11.wrappers.Wrapper;
 
+
 public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdaptor<SipActivityHandle, String> {
 
 	// Config Properties Names -------------------------------------------
@@ -896,7 +897,6 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 	 * @see javax.slee.resource.ResourceAdaptor#raActive()
 	 */
 	public void raActive() {
-		
 		try {
 			final Properties properties = new Properties();
 			// load properties for the stack
@@ -920,6 +920,31 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 			properties.setProperty(ClusteredSipStack.CACHE_CLASS_NAME_PROPERTY,SipResourceAdaptorMobicentsSipCache.class.getName());
 			this.sipFactory = SipFactory.getInstance();
 			this.sipFactory.setPathName("org.mobicents.ha");
+			
+			// Fix of Issue 1357 : http://code.google.com/p/mobicents/issues/detail?id=1357
+			// remove stack IP address and use the stack name instead
+			//>>>
+			String confValue = properties.getProperty(SIP_BIND_ADDRESS);
+			if (confValue != null) {
+				properties.remove(SIP_BIND_ADDRESS);// so we can have
+				// multiple stacks on
+				// one IP.
+				confValue = null;
+			}
+
+			// we need to alter stack name slightly
+			confValue = properties.getProperty(STACK_NAME_BIND);
+			if (confValue == null) {
+				confValue = "SipResourceAdaptorStack_" + this.stackAddress + "_"
+						+ this.port;
+			} else {
+				confValue += "_" + this.stackAddress + "_" + this.port;
+			}
+			properties.put(STACK_NAME_BIND, confValue);
+			confValue = null;
+			tracer.info("Properties before sip stack creation: " + properties);
+			//<<<
+	        
 			this.sipStack = (ClusteredSipStack) this.sipFactory.createSipStack(properties);
 			this.sipStack.start();
 			if (inLocalMode()) {
@@ -1116,7 +1141,6 @@ public class SipResourceAdaptor implements SipListener,FaultTolerantResourceAdap
 	 * @see javax.slee.resource.ResourceAdaptor#raConfigure(javax.slee.resource.ConfigProperties)
 	 */
 	public void raConfigure(ConfigProperties properties) {
-		
 		if (tracer.isFineEnabled()) {
 			tracer.fine("Configuring RA.");
 		}
