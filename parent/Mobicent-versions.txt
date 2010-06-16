@@ -36,6 +36,17 @@ click2call-distributable/pom.xml
 diameter-event-charging/pom.xml
 click-to-call/pom.xml
 
+Media
+----------
+media/jain-mgcp
+protocols/ss7
+protocols/ss7/mtp
+protocols/jain-mgcp
+media/core
+media/jsr-309/core
+media/jsr-309/tck/mms-ri
+media/rtsp
+
 
 
  
