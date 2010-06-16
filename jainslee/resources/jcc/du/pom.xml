@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>mobicents-slee-ra-jcc</artifactId>
 		<groupId>org.mobicents.resources.jcc</groupId>
-		<version>2.1.0.GA</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<artifactId>jcc-ra-DU</artifactId>
@@ -80,6 +80,25 @@
 					</execution>
 				</executions>
 			</plugin>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<configuration>
+				<descriptors>
+					<descriptor>src/main/assemble/descriptor.xml</descriptor>
+				</descriptors>
+			</configuration>
+			<executions>
+				<execution>
+					<id>make-assembly</id>
+					<phase>package</phase>
+					<goals>
+						<goal>single</goal>
+						<goal>directory-single</goal>							
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+			
 		</plugins>
 	</build>
 

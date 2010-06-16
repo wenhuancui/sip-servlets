@@ -5,12 +5,12 @@
 	<parent>
 		<artifactId>mobicents-slee-ra-jcc-docs</artifactId>
 		<groupId>org.mobicents.resources.jcc</groupId>
-		<version>2.1.0.GA</version>
+		<version>5.0.0.Beta2-JBCP5</version>
 	</parent>
 
 	<artifactId>mobicents-slee-ra-jcc-docs-sources</artifactId>
 	<groupId>org.mobicents.resources.jcc</groupId>
-	<version>2.1.0.GA</version>
+	<version>5.0.0.Beta2-JBCP5</version>
 
 	<properties>
 
