@@ -1,0 +1,220 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>sip-presence-parent</artifactId>
+		<groupId>org.mobicents.servers.sippresence</groupId>
+		<version>5.0.0.Beta2-JBCP5</version>
+	</parent>
+
+	<artifactId>sip-presence-assemble</artifactId>
+	<version>5.0.0.Beta2-JBCP5</version>
+	<packaging>pom</packaging>
+		
+	<name>SipPresence assembly</name>
+	
+	
+			<properties>
+				<deploy.dir.parent>${jboss.home}/server/${node}/deploy</deploy.dir.parent>
+				<deploy.dir.name>mobicents-sip-presence</deploy.dir.name>
+				<deploy.dir>${deploy.dir.parent}/${deploy.dir.name}</deploy.dir>
+				
+				<!-- note: deploy order must be kept-->
+				
+				<libs.dir.name>1-libs</libs.dir.name>
+				<jpa.dir.name>2-jpa</jpa.dir.name>
+				<beans.dir.name>3-beans</beans.dir.name>
+				<slee.dir.name>4-slee</slee.dir.name>
+			</properties>
+	
+	<dependencies>
+		<!--  beans -->
+			<!-- meta -->	
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-core-configuration-meta</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sipevent</groupId>
+			<artifactId>sip-event-publication-control-configuration-meta</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sipevent</groupId>
+			<artifactId>sip-event-subscription-control-configuration-meta</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sippresence</groupId>
+			<artifactId>sip-presence-server-configuration-meta</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<!-- beans -->
+			<!-- libs -->
+		<dependency>
+			<groupId>org.mobicents.slee.enabler.userprofile</groupId>
+			<artifactId>user-profile-jmx</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-core-configuration-jar</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sipevent</groupId>
+			<artifactId>sip-event-publication-control-configuration-jar</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sipevent</groupId>
+			<artifactId>sip-event-subscription-control-configuration-jar</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sippresence</groupId>
+			<artifactId>sip-presence-server-configuration-jar</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+			
+		<!-- libs -->
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>commons</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>client-appusages-pres-rules</artifactId>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>client-appusages-oma-pres-rules</artifactId>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>client-appusages-resource-lists</artifactId>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>commons</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>client-appusages-rls-services</artifactId>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>client-appusages-xcap-caps</artifactId>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<!-- jpa -->
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-core-datasource-pu</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.slee.enabler.userprofile</groupId>
+			<artifactId>user-profile-pu</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sipevent</groupId>
+			<artifactId>sip-event-publication-control-pojo</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sipevent</groupId>
+			<artifactId>sip-event-subscription-control-pojo</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<!-- slee -->
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-core-datasource-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-core-internal-client-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-core-appusagecache-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-core-xcap-control-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.slee.enabler.userprofile</groupId>
+			<artifactId>user-profile-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sippresence</groupId>
+			<artifactId>integrated-server-subscription-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-appusages-pres-rules-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-appusages-oma-pres-rules-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-appusages-resource-lists-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-appusages-rls-services-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		
+		
+	</dependencies>	
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>
+							src/main/assemble/descriptor.xml
+						</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+							<goal>directory-single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
