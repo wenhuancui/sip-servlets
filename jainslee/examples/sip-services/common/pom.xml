@@ -18,7 +18,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servers.jainslee.core</groupId>
-			<artifactId>jar</artifactId>
+			<artifactId>spi</artifactId>
 			<version>${mobicents.core.jar.version}</version>
 		</dependency>
 	</dependencies>
