@@ -21,7 +21,8 @@
 		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 	<modules>
-		<module>jar</module>		
+		<module>jar</module>	
+		<module>assemble</module>	
 	</modules>
 	
 	<profiles>
