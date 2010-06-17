@@ -23,9 +23,7 @@ package org.mobicents.cluster.election;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.jgroups.Address;
-import org.mobicents.cluster.DefaultMobicentsCluster;
 
 /**
  * Simplest of elector. Use reminder of fixed index to determine master.
@@ -34,7 +32,7 @@ import org.mobicents.cluster.DefaultMobicentsCluster;
  * @author martins
  */
 public class DefaultClusterElector implements ClusterElector{
-	private static final Logger logger = Logger.getLogger(DefaultClusterElector.class);
+
 	protected int shift = 5; // lets set default to something other than zero
 
 	/*
@@ -50,12 +48,8 @@ public class DefaultClusterElector implements ClusterElector{
 		int index = (this.shift % size) +size;
 		index = index % size;
 
-		Address address = list.get(index);
-		if (logger.isDebugEnabled()) {
-			logger.debug("address elected[" + address + "]");
-		}
-			
-		return address;
+		return list.get(index);
+
 	}
 
 	/*
