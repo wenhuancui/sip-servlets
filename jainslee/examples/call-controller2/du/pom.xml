@@ -34,7 +34,7 @@
 				<configuration />
 				<executions>
 					<execution>
-						<phase>install</phase>
+						<phase>generate-resources</phase>
 						<goals>
 							<goal>create</goal>
 						</goals>
@@ -70,7 +70,26 @@
 					</execution>
 				</executions>
 			</plugin>
+		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<configuration>
+				<descriptors>
+					<descriptor>src/main/assemble/descriptor.xml</descriptor>
+				</descriptors>
+			</configuration>
+			<executions>
+				<execution>
+					<id>make-assembly</id>
+					<phase>package</phase>
+					<goals>
+						<goal>single</goal>
+						<goal>directory-single</goal>							
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
 		</plugins>
+		
 	</build>
 
 </project>

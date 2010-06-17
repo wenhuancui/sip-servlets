@@ -21,6 +21,8 @@
 		<module>proxy-sbb</module>
 		<module>proxy-sbb-with-initial-invite</module>
 		<module>proxy-sbb-without-initial-invite</module>
+		<module>proxy-with-initial-invite-services-DU</module>
+		<module>proxy-without-initial-invite-services-DU</module>
 	</modules>
 
 	<properties>
