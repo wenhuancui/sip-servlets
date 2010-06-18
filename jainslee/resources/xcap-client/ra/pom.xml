@@ -19,7 +19,7 @@
                <dependency>
 					<groupId>org.mobicents.servers.jainslee.core</groupId>
 					<version>5.0.0.Beta2-JBCP5</version>
-					<artifactId>jar</artifactId>
+					<artifactId>spi</artifactId>
 			   </dependency>
 	    </dependencies>
 	
