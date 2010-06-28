@@ -80,6 +80,11 @@
 			<artifactId>mobicents-jain-sip-ha-core</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
+		<dependency>			
+			<groupId>org.mobicents.servlet.sip</groupId>
+			<artifactId>sip-servlets-jboss5-ha-server-cache</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.mobicents.tools</groupId>
 			<artifactId>sip-balancer-jar</artifactId>
