@@ -14,9 +14,9 @@
 	<packaging>pom</packaging>
 		
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/cluster/mobicents-cluster-1.4</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/cluster/mobicents-cluster-1.4</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/cluster/mobicents-cluster-1.4</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/mobicents-cluster-1.5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/mobicents-cluster-1.5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/mobicents-cluster-1.5</url>
 	</scm>
 
 	<modules>

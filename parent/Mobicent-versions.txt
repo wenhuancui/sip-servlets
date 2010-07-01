@@ -18,7 +18,7 @@ diameter-mux
 slee diameter resources (base,cca,cx-dx,rf,ro,sh-client,sh-server)
 load-balancer
 jain-sip-ha
-slee other resources(sip11,http-servlet,mgcp,xcap-client,xmpp)
+slee other resources(sip11,http-servlet,mgcp,xcap-client,xmpp,jcc,map)
 
 SIP servlets
 ----------------
