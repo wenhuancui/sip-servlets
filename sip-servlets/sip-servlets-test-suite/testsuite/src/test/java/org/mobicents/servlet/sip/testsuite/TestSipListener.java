@@ -269,6 +269,10 @@ public class TestSipListener implements SipListener {
 	private int referResponseToSend = 202;
 
 	private boolean sendNotifyForRefer = true;
+	
+	private Response inviteOkResponse;
+
+	private boolean sendNotify = true;
 
 	class MyEventSource implements Runnable {
 		private TestSipListener notifier;
@@ -572,7 +576,7 @@ public class TestSipListener implements SipListener {
 				// subscribe dialogs do not terminate on bye.
 				this.dialog.terminateOnBye(false);
 			} else {
-				response = protocolObjects.messageFactory.createResponse(200, request);
+				response = protocolObjects.messageFactory.createResponse(202, request);
 				this.dialog = st.getDialog();
 				// subscribe dialogs do not terminate on bye.
 				this.dialog.terminateOnBye(false);
@@ -611,44 +615,45 @@ public class TestSipListener implements SipListener {
 			 * subscription at this time. The "terminated" value indicates that
 			 * the subscription is not active.
 			 */
-		
-			Request notifyRequest = dialog.createRequest( "NOTIFY" );
-			
-			
-			// Mark the contact header, to check that the remote contact is updated
-//			((SipURI)contactHeader.getAddress().getURI()).setParameter("id","not");
-			
-			// Initial state is pending, second time we assume terminated (Expires==0)		
-			SubscriptionStateHeader sstate = protocolObjects.headerFactory.createSubscriptionStateHeader(
-					expires.getExpires() != 0 ? SubscriptionStateHeader.PENDING : SubscriptionStateHeader.TERMINATED );
-			allSubscriptionStates.add(sstate.getState().toLowerCase());
-			
-			
-			// Need a reason for terminated
-			if ( sstate.getState().equalsIgnoreCase("terminated") ) {
-				sstate.setReasonCode( "deactivated" );
-			}
-			
-			notifyRequest.addHeader(sstate);
-			notifyRequest.setHeader(eventHeader);
-			notifyRequest.setHeader(contactHeader);
-			// notifyRequest.setHeader(routeHeader);
-			ClientTransaction ct = sipProvider.getNewClientTransaction(notifyRequest);
-
-			if(sstate.getState().equals(SubscriptionStateHeader.TERMINATED)) {
-				Thread.sleep(timeToWaitBetweenSubsNotify);
-			}
-			// Let the other side know that the tx is pending acceptance
-			//
-			dialog.sendRequest(ct);
-			logger.info("NOTIFY Branch ID " +
-				((ViaHeader)request.getHeader(ViaHeader.NAME)).getParameter("branch"));
-			logger.info("Dialog " + dialog);
-			logger.info("Dialog state after pending NOTIFY: " + dialog.getState());
-			
-			if (expires.getExpires() != 0) {
-				Thread myEventSource = new Thread(new MyEventSource(this,eventHeader));
-				myEventSource.start();
+			if(sendNotify ) {
+				Request notifyRequest = dialog.createRequest( "NOTIFY" );
+				
+				
+				// Mark the contact header, to check that the remote contact is updated
+	//			((SipURI)contactHeader.getAddress().getURI()).setParameter("id","not");
+				
+				// Initial state is pending, second time we assume terminated (Expires==0)		
+				SubscriptionStateHeader sstate = protocolObjects.headerFactory.createSubscriptionStateHeader(
+						expires.getExpires() != 0 ? SubscriptionStateHeader.PENDING : SubscriptionStateHeader.TERMINATED );
+				allSubscriptionStates.add(sstate.getState().toLowerCase());
+				
+				
+				// Need a reason for terminated
+				if ( sstate.getState().equalsIgnoreCase("terminated") ) {
+					sstate.setReasonCode( "deactivated" );
+				}
+				
+				notifyRequest.addHeader(sstate);
+				notifyRequest.setHeader(eventHeader);
+				notifyRequest.setHeader(contactHeader);
+				// notifyRequest.setHeader(routeHeader);
+				ClientTransaction ct = sipProvider.getNewClientTransaction(notifyRequest);
+	
+				if(sstate.getState().equals(SubscriptionStateHeader.TERMINATED)) {
+					Thread.sleep(timeToWaitBetweenSubsNotify);
+				}
+				// Let the other side know that the tx is pending acceptance
+				//
+				dialog.sendRequest(ct);
+				logger.info("NOTIFY Branch ID " +
+					((ViaHeader)request.getHeader(ViaHeader.NAME)).getParameter("branch"));
+				logger.info("Dialog " + dialog);
+				logger.info("Dialog state after pending NOTIFY: " + dialog.getState());
+				
+				if (expires.getExpires() != 0) {
+					Thread myEventSource = new Thread(new MyEventSource(this,eventHeader));
+					myEventSource.start();
+				}
 			}
 		} catch (Throwable ex) {
 			logger.info(ex.getMessage(), ex);
@@ -934,6 +939,15 @@ public class TestSipListener implements SipListener {
 		        dsam = new DigestServerAuthenticationMethod();
 		        dsam.initialize(); // it should read values from file, now all static
 		        if ( !checkProxyAuthorization(request) ) {
+		        	 Thread.sleep(600);
+		        	Response response180 = protocolObjects.messageFactory.createResponse(100,request);
+		        	 if (serverTransaction!=null)
+			                serverTransaction.sendResponse(response180);
+			            else 
+			                sipProvider.sendResponse(response180);
+		        	 
+		        	 Thread.sleep(600);
+		    		
 		            Response responseauth = protocolObjects.messageFactory.createResponse(Response.PROXY_AUTHENTICATION_REQUIRED,request);
 		
 		            ProxyAuthenticateHeader proxyAuthenticate = 
@@ -1241,6 +1255,7 @@ public class TestSipListener implements SipListener {
 
 		try {			
 			if(response.getStatusCode() >= 200 && response.getStatusCode() < 700) {
+				logger.info("final response received : status code " + response.getStatusCode());
 				finalResponseReceived = true;
 				setFinalResponseStatus(response.getStatusCode());
 				setFinalResponse(response);
@@ -1248,6 +1263,7 @@ public class TestSipListener implements SipListener {
 			if (response.getStatusCode() == Response.OK) {
 				logger.info("response = " + response);
 				if (cseq.getMethod().equals(Request.INVITE) && sendAck) {
+					inviteOkResponse = response;
 					Request ackRequest = tid.getDialog().createAck(cseq.getSeqNumber());
 					if (useToURIasRequestUri) {
 						ackRequest.setRequestURI(requestURI);	
@@ -2012,6 +2028,12 @@ public class TestSipListener implements SipListener {
 	}
 
 	/**
+	 */
+	public void setCancelReceived(boolean cancelReceived) {
+		this.cancelReceived = cancelReceived;
+	}
+	
+	/**
 	 * @return the cancelOkReceived
 	 */
 	public boolean isCancelOkReceived() {
@@ -2255,6 +2277,10 @@ public class TestSipListener implements SipListener {
 	public void setTimeToWaitBetweenProvisionnalResponse(
 			long timeToWaitBetweenProvisionnalResponse) {
 		this.timeToWaitBetweenProvisionnalResponse = timeToWaitBetweenProvisionnalResponse;
+	}
+	
+	public Response getInviteOkResponse() {
+		return inviteOkResponse;
 	}
 
 	/**
@@ -2591,6 +2617,20 @@ public class TestSipListener implements SipListener {
 	 */
 	public boolean isSendNotifyForRefer() {
 		return sendNotifyForRefer;
+	}
+
+	/**
+	 * @param sendNotify the sendNotify to set
+	 */
+	public void setSendNotify(boolean sendNotify) {
+		this.sendNotify = sendNotify;
+	}
+
+	/**
+	 * @return the sendNotify
+	 */
+	public boolean isSendNotify() {
+		return sendNotify;
 	}
 
 }

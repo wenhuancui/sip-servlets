@@ -16,10 +16,10 @@
  */
 package org.mobicents.servlet.sip.core.session;
 
-import gov.nist.javax.sip.DialogExt;
 import gov.nist.javax.sip.ServerTransactionExt;
 import gov.nist.javax.sip.message.MessageExt;
 import gov.nist.javax.sip.message.SIPMessage;
+import gov.nist.javax.sip.message.SIPRequest;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -59,7 +59,6 @@ import javax.servlet.sip.SipSessionListener;
 import javax.servlet.sip.URI;
 import javax.servlet.sip.ar.SipApplicationRouterInfo;
 import javax.servlet.sip.ar.SipApplicationRoutingRegion;
-import javax.sip.ClientTransaction;
 import javax.sip.Dialog;
 import javax.sip.DialogState;
 import javax.sip.InvalidArgumentException;
@@ -70,7 +69,6 @@ import javax.sip.SipException;
 import javax.sip.SipProvider;
 import javax.sip.Transaction;
 import javax.sip.TransactionState;
-import javax.sip.TransactionUnavailableException;
 import javax.sip.header.CSeqHeader;
 import javax.sip.header.CallIdHeader;
 import javax.sip.header.ContactHeader;
@@ -392,6 +390,10 @@ public class SipSessionImpl implements MobicentsSipSession {
 						logger.debug("orignal tx for creating susbequent request " + method + " on session " + key +" was a Client Tx");
 					}
 					Request request = (Request) sessionCreatingTransactionRequest.getMessage().clone();
+					// Issue 1524 :	Caused by: java.text.ParseException: CSEQ method mismatch with Request-Line
+					javax.sip.address.URI requestUri = (javax.sip.address.URI) request.getRequestURI().clone();					
+					((SIPRequest)request).setMethod(method);
+					((SIPRequest)request).setRequestURI(requestUri);
 					((SIPMessage)request).setApplicationData(null);
 					
 					final CSeqHeader cSeqHeader = (CSeqHeader) request.getHeader((CSeqHeader.NAME));					
@@ -424,40 +426,9 @@ public class SipSessionImpl implements MobicentsSipSession {
 		    				sipNetworkInterfaceManager, request, branch, outboundInterface);
 		    		request.addHeader(viaHeader);
 					
-					try {
-						ClientTransaction retryTran = sipProvider
-							.getNewClientTransaction(request);
-						retryTran.setRetransmitTimer(sipApplicationDispatcher.getBaseTimerInterval());
-						
-						sipServletRequest = new SipServletRequestImpl(
-								request, this.sipFactory, this, retryTran, retryTran.getDialog(),
-								true);
-						
-						// SIP Request is ALWAYS pointed to by the client tx.
-						// Notice that the tx appplication data is cached in the request
-						// copied over to the tx so it can be quickly accessed when response
-						// arrives.
-						retryTran.setApplicationData(sipServletRequest.getTransactionApplicationData());
-						
-						Dialog dialog = retryTran.getDialog();
-						if (dialog == null && JainSipUtils.DIALOG_CREATING_METHODS.contains(sipServletRequest.getMethod())) {					
-							dialog = sipProvider.getNewDialog(retryTran);
-							((DialogExt)dialog).disableSequenceNumberValidation();
-							dialog.setApplicationData(sipServletRequest.getTransactionApplicationData());
-							if(logger.isDebugEnabled()) {
-								logger.debug("new Dialog for request " + sipServletRequest + ", ref = " + dialog);
-							}
-						}													
-						sessionCreatingDialog = dialog;
-						
-						sipServletRequest.setTransaction(retryTran);					
-					} catch (TransactionUnavailableException e) {
-						logger.error("Cannot get a new transaction for the newly created susbequent request " + sipServletRequest,e);
-						throw new IllegalArgumentException("Cannot get a new transaction for the newly created susbequent request " + sipServletRequest,e);
-					} catch (SipException e) {
-						logger.error("Cannot get a new dialog for the the newly created susbequent request " + sipServletRequest,e);
-						throw new IllegalArgumentException("Cannot get a new dialog for the newly created subsequent request " + sipServletRequest,e);
-					}
+					sipServletRequest = new SipServletRequestImpl(
+							request, this.sipFactory, this, null, sessionCreatingDialog,
+							true);
 				} else {
 					if(logger.isDebugEnabled()) {
 						logger.debug("orignal tx for creating susbequent request " + method + " on session " + key +" was a Server Tx");
@@ -857,11 +828,26 @@ public class SipSessionImpl implements MobicentsSipSession {
 		sipSessionAttributeMap = null;
 //		key = null;
 		if(sessionCreatingDialog != null) {
+			// terminating dialog to make sure there is not retention, if the app didn't send a BYE for invite tx by example
+			if(!DialogState.TERMINATED.equals(sessionCreatingDialog.getState())) {
+				sessionCreatingDialog.delete();
+			}
 //			sessionCreatingDialog.setApplicationData(null);
 			sessionCreatingDialog = null;
 		}
 		if(sessionCreatingTransactionRequest != null) {
 //			sessionCreatingTransaction.setApplicationData(null);
+			Transaction sessionCreatingTransaction = sessionCreatingTransactionRequest.getTransaction();
+			if(sessionCreatingTransaction != null) {
+				// terminating transaction to make sure there is not retention
+				if(!TransactionState.TERMINATED.equals(sessionCreatingTransaction.getState())) {
+					try {
+						sessionCreatingTransaction.terminate();
+					} catch (ObjectInUseException e) {
+						// never thrown by jain sip and anyway there is nothing we can do about it
+					}
+				}
+			}
 			sessionCreatingTransactionRequest.cleanUp();
 			sessionCreatingTransactionRequest = null;
 		}
@@ -1416,7 +1402,9 @@ public class SipSessionImpl implements MobicentsSipSession {
 			TransactionApplicationData inviteAppData = (TransactionApplicationData) 
 				inviteTransaction.getApplicationData();			
 			SipServletRequestImpl inviteRequest = (SipServletRequestImpl)inviteAppData.getSipServletMessage();
-			if((inviteRequest != null && inviteRequest.getLastFinalResponse() == null) || 
+			// Issue 1484 : http://code.google.com/p/mobicents/issues/detail?id=1484
+			// we terminate the session only for initial requests
+			if((inviteRequest != null && inviteRequest.isInitial() && inviteRequest.getLastFinalResponse() == null) || 
 						(proxy != null && proxy.getBestResponse() == null))  {
 				this.setState(State.TERMINATED);
 				if(logger.isDebugEnabled()) {
@@ -1825,7 +1813,8 @@ public class SipSessionImpl implements MobicentsSipSession {
 		final long localCseq = cseq;		
 		final long remoteCseq =  ((CSeqHeader) request.getHeader(CSeqHeader.NAME)).getSeqNumber();
 		final String method = request.getMethod();
-		final boolean isAck = Request.ACK.equalsIgnoreCase(method);		
+		final boolean isAck = Request.ACK.equalsIgnoreCase(method);
+		final boolean isPrackCancel= Request.PRACK.equalsIgnoreCase(method) || Request.CANCEL.equalsIgnoreCase(method);
 		final boolean isAckRetranmission = isAckReceived() && isAck;			
 		
 		if(isAck) {
@@ -1841,8 +1830,8 @@ public class SipSessionImpl implements MobicentsSipSession {
 			return false;
 		}		
 		if(localCseq > remoteCseq) {				
-			if(!isAck) {
-				logger.error("CSeq out of order for the following request");
+			if(!isAck && !isPrackCancel) {
+				logger.error("CSeq out of order for the following request " + sipServletRequest);
 				final SipServletResponse response = sipServletRequest.createResponse(Response.SERVER_INTERNAL_ERROR, "CSeq out of order");
 				try {
 					response.send();

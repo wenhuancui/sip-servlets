@@ -845,24 +845,24 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 								sipSessionKey.getApplicationName(), 
 								sipSessionKey.getApplicationSessionId());
 						sipApplicationSession = sipContext.getSipManager().getSipApplicationSession(sipApplicationSessionKey, false);
-						
-						if(sipApplicationSession != null) {
-							if(logger.isDebugEnabled()) {
-								logger.debug("sip app session " + sipApplicationSessionKey + " is valid ? :" + sipApplicationSession.isValidInternal());
-								if(sipApplicationSession.isValidInternal()) {
-									logger.debug("Sip app session " + sipApplicationSessionKey + " is ready to be invalidated ? :" + sipApplicationSession.isReadyToInvalidate());
-								}
-							}
-							if(sipApplicationSession.isValidInternal() && sipApplicationSession.isReadyToInvalidate()) {
-								sipContext.enterSipApp(sipApplicationSession, sipSessionImpl);
-								try {
-									sipApplicationSession.tryToInvalidate();
-								} finally {
-									sipContext.exitSipApp(sipApplicationSession, sipSessionImpl);
-								}
-							}							
-						}
 					}
+					if(sipApplicationSession != null) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("sip app session " + sipApplicationSession.getKey() + " is valid ? :" + sipApplicationSession.isValidInternal());
+							if(sipApplicationSession.isValidInternal()) {
+								logger.debug("Sip app session " + sipApplicationSession.getKey() + " is ready to be invalidated ? :" + sipApplicationSession.isReadyToInvalidate());
+							}
+						}
+						if(sipApplicationSession.isValidInternal() && sipApplicationSession.isReadyToInvalidate()) {
+							sipContext.enterSipApp(sipApplicationSession, sipSessionImpl);
+							try {
+								sipApplicationSession.tryToInvalidate();
+							} finally {
+								sipContext.exitSipApp(sipApplicationSession, sipSessionImpl);
+							}
+						}							
+					}
+
 				} finally {
 					Thread.currentThread().setContextClassLoader(oldClassLoader);
 				}
@@ -928,6 +928,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 						SipServletResponseImpl response = (SipServletResponseImpl) sipServletRequestImpl.createResponse(408, null, false);
 
 						MessageDispatcher.callServlet(response);
+						sipSession.updateStateOnResponse(response, true);
 					} catch (Throwable t) {
 						logger.error("Failed to deliver 408 response on transaction timeout" + transaction, t);
 					}
@@ -954,7 +955,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 			((SipServletRequestImpl)sipServletMessage).getLastFinalResponse();
 		final ProxyImpl proxy = sipSession.getProxy();
 		if(logger.isDebugEnabled()) {
-			logger.debug("last Final Response" + lastFinalResponse);
+			logger.debug("checkForAckNotReceived : last Final Response " + lastFinalResponse);
 		}		
 		boolean notifiedApplication = false;
 		if(sipServletMessage instanceof SipServletRequestImpl &&
@@ -997,7 +998,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 			((SipServletRequestImpl)sipServletMessage).getLastInformationalResponse();
 		final ProxyImpl proxy = sipSession.getProxy();
 		if(logger.isDebugEnabled()) {
-			logger.debug("last Informational Response" + lastInfoResponse);
+			logger.debug("checkForPrackNotReceived : last Informational Response " + lastInfoResponse);
 		}
 		boolean notifiedApplication = false;
 		if(sipServletMessage instanceof SipServletRequestImpl &&
@@ -1135,7 +1136,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	public final boolean isExternal(String host, int port, String transport) {
 		boolean isExternal = true;
 		ExtendedListeningPoint listeningPoint = sipNetworkInterfaceManager.findMatchingListeningPoint(host, port, transport);		
-		if((hostNames.contains(host) || listeningPoint != null)) {
+		if((hostNames.contains(host) || hostNames.contains(host+":" + port) || listeningPoint != null)) {
 			if(logger.isDebugEnabled()) {
 				logger.debug("hostNames.contains(host)=" + 
 						hostNames.contains(host) +

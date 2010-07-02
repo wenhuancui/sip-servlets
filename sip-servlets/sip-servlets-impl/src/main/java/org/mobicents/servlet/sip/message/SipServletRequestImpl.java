@@ -77,12 +77,14 @@ import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.JainSipUtils;
+import org.mobicents.servlet.sip.SipConnector;
 import org.mobicents.servlet.sip.SipFactories;
 import org.mobicents.servlet.sip.address.AddressImpl;
 import org.mobicents.servlet.sip.address.SipURIImpl;
 import org.mobicents.servlet.sip.address.TelURLImpl;
 import org.mobicents.servlet.sip.address.URIImpl;
 import org.mobicents.servlet.sip.core.ApplicationRoutingHeaderComposer;
+import org.mobicents.servlet.sip.core.ExtendedListeningPoint;
 import org.mobicents.servlet.sip.core.RoutingState;
 import org.mobicents.servlet.sip.core.SipNetworkInterfaceManager;
 import org.mobicents.servlet.sip.core.dispatchers.MessageDispatcher;
@@ -95,6 +97,7 @@ import org.mobicents.servlet.sip.proxy.ProxyImpl;
 import org.mobicents.servlet.sip.security.AuthInfoEntry;
 import org.mobicents.servlet.sip.security.AuthInfoImpl;
 import org.mobicents.servlet.sip.security.authentication.DigestAuthenticator;
+import org.mobicents.servlet.sip.startup.StaticServiceHolder;
 import org.mobicents.servlet.sip.startup.loading.SipServletImpl;
 
 public class SipServletRequestImpl extends SipServletMessageImpl implements
@@ -213,19 +216,12 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 			throw new IllegalStateException("final response already sent!");
 		}
 		
-		try {
-			Request request = (Request) super.message;
-			String transport = JainSipUtils.findTransport(request);
-			SipProvider sipProvider = sipFactoryImpl.getSipNetworkInterfaceManager().findMatchingListeningPoint(transport, false).getSipProvider();					
-			
+		try {			
 			Request cancelRequest = ((ClientTransaction) getTransaction())
 					.createCancel();
-			ClientTransaction clientTransaction = sipProvider
-					.getNewClientTransaction(cancelRequest);
-			clientTransaction.setRetransmitTimer(sipFactoryImpl.getSipApplicationDispatcher().getBaseTimerInterval());
 			SipServletRequest newRequest = new SipServletRequestImpl(
 					cancelRequest, sipFactoryImpl, getSipSession(),
-					clientTransaction, getTransaction().getDialog(), false);
+					null, getTransaction().getDialog(), false);
 
 			return newRequest;
 		} catch (SipException ex) {
@@ -309,9 +305,22 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 					if(session != null) {
 						outboundInterface = session.getOutboundInterface();
 					}		
-				    // Add the contact header for the dialog.					    
-				    final ContactHeader contactHeader = JainSipUtils.createContactHeader(
-				    		super.sipFactoryImpl.getSipNetworkInterfaceManager(), request, null, outboundInterface);
+				    // Add the contact header for the dialog.				    
+				    ContactHeader contactHeader = JainSipUtils.createContactHeader(
+			    			super.sipFactoryImpl.getSipNetworkInterfaceManager(), request, null, outboundInterface);
+				    String transport = "udp";
+				    if(session != null && session.getTransport() != null) transport = session.getTransport();
+					SipConnector sipConnector = StaticServiceHolder.sipStandardService.findSipConnector(transport);
+					if(sipConnector != null && sipConnector.isUseStaticAddress()) {
+						if(session != null && session.getProxy() == null) {
+							boolean sipURI = contactHeader.getAddress().getURI().isSipURI();
+							if(sipURI) {
+								javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) contactHeader.getAddress().getURI();
+								sipUri.setHost(sipConnector.getStaticServerAddress());
+								sipUri.setPort(sipConnector.getStaticServerPort());
+							}
+						}
+					}
 				    if(logger.isDebugEnabled()) {
 				    	logger.debug("We're adding this contact header to our new response: '" + contactHeader + ", transport=" + JainSipUtils.findTransport(request));
 				    }
@@ -354,33 +363,14 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		B2buaHelperImpl b2buaHelper = session.getB2buaHelper();
 		if (b2buaHelper != null)
 			return b2buaHelper;
-		try {
-			b2buaHelper = new B2buaHelperImpl();
-			b2buaHelper.setSipFactoryImpl(sipFactoryImpl);
-			b2buaHelper.setSipManager(session.getSipApplicationSession().getSipContext().getSipManager());
-			Request request = (Request) super.message;
-			if (this.getTransaction() != null
-					&& this.getTransaction().getDialog() == null
-					&& JainSipUtils.DIALOG_CREATING_METHODS.contains(request.getMethod())) {
-				
-				String transport = JainSipUtils.findTransport(request);
-				SipProvider sipProvider = sipFactoryImpl.getSipNetworkInterfaceManager().findMatchingListeningPoint(
-						transport, false).getSipProvider();
-				
-				Dialog dialog = sipProvider.getNewDialog(this
-						.getTransaction());
-				((DialogExt)dialog).disableSequenceNumberValidation();
-				session.setSessionCreatingDialog(dialog);
-				dialog.setApplicationData( this.transactionApplicationData);				
-			}			
-			if(JainSipUtils.DIALOG_CREATING_METHODS.contains(method)) {
-				this.createDialog = true; // flag that we want to create a dialog for outgoing request.
-			}
-			session.setB2buaHelper(b2buaHelper);
-			return b2buaHelper;
-		} catch (SipException ex) {
-			throw new IllegalStateException("Cannot get B2BUAHelper", ex);
+		b2buaHelper = new B2buaHelperImpl();
+		b2buaHelper.setSipFactoryImpl(sipFactoryImpl);
+		b2buaHelper.setSipManager(session.getSipApplicationSession().getSipContext().getSipManager());
+		if(JainSipUtils.DIALOG_CREATING_METHODS.contains(getMethod())) {
+			this.createDialog = true; // flag that we want to create a dialog for outgoing request.
 		}
+		session.setB2buaHelper(b2buaHelper);
+		return b2buaHelper;
 	}		
 
 	public ServletInputStream getInputStream() throws IOException {
@@ -870,6 +860,40 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		return routingDirective;
 	}
 
+	public static void optimizeRouteHeaderAddressForInternalRoutingrequest(SipConnector sipConnector, Request request, MobicentsSipSession session,  SipFactoryImpl sipFactoryImpl, String transport) {
+		SipNetworkInterfaceManager sipNetworkInterfaceManager = sipFactoryImpl.getSipNetworkInterfaceManager();
+		RouteHeader rh = (RouteHeader) request.getHeader(RouteHeader.NAME);
+		if(rh != null) {
+			javax.sip.address.URI uri = rh.getAddress().getURI();
+			if(uri.isSipURI()) {
+				try {
+					javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
+					boolean isExternal = sipFactoryImpl.getSipApplicationDispatcher().isExternal(sipUri.getHost(), sipUri.getPort(), transport);
+					if(!isExternal) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("The request is going internally due to RR = " + rh);
+						}
+						ExtendedListeningPoint lp = null;
+						if(session.getOutboundInterface() != null) {
+
+							javax.sip.address.SipURI outboundInterfaceURI = (javax.sip.address.SipURI) SipFactories.addressFactory.createURI(session.getOutboundInterface());
+							lp = sipNetworkInterfaceManager.findMatchingListeningPoint(outboundInterfaceURI, false);
+						} else {
+							lp = sipNetworkInterfaceManager.findMatchingListeningPoint(transport, false);
+						}
+
+						sipUri.setHost(lp.getHost(false));
+						sipUri.setPort(lp.getPort());
+						sipUri.setTransportParam(lp.getTransport());
+					}
+				} catch (ParseException e) {
+					logger.error("AR optimization error", e);
+				}
+
+			}
+		}
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -890,6 +914,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 			((MessageExt)message).setApplicationData(session.getTransport());			
 			
 			ViaHeader viaHeader = (ViaHeader) message.getHeader(ViaHeader.NAME);
+		
 			//Issue 112 fix by folsson
 		    if(!getMethod().equalsIgnoreCase(Request.CANCEL) && viaHeader == null) {
 		    	boolean addViaHeader = false;
@@ -919,6 +944,29 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		    if(logger.isDebugEnabled()) {
 		    	logger.debug("The found transport for sending request is '" + transport + "'");
 		    }
+		    
+		    SipConnector sipConnector = StaticServiceHolder.sipStandardService.findSipConnector(transport);
+		    
+		    // Bypass the load balancer for outgoing requests by removing the route header for them
+		    if(sipConnector != null && sipConnector.isUseStaticAddress()) {
+		    	RouteHeader rh = (RouteHeader) request.getHeader(RouteHeader.NAME);
+		    	if(logger.isDebugEnabled()) {
+		    		logger.debug("We are looking at route header " + rh + " and SC is" + sipConnector.getStaticServerAddress() + ":" + sipConnector.getStaticServerPort());
+		    	}
+		    	if(rh != null) {
+		    		if(rh.getAddress().getURI().isSipURI()) {
+		    			javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI)rh.getAddress().getURI();
+		    			if(sipUri.getHost().equals(sipConnector.getStaticServerAddress())) {
+		    				int port = sipUri.getPort();
+		    				if(port <= 0) port = 5060;
+		    				if(port == sipConnector.getStaticServerPort()) {
+		    					request.removeHeader(RouteHeader.NAME);
+		    				}
+		    			}
+		    		}
+		    	}
+		    }
+		    
 		    final String requestMethod = getMethod();
 			if(Request.ACK.equals(requestMethod)) {
 				session.getSessionCreatingDialog().sendAck(request);
@@ -934,6 +982,9 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				}
 				return;
 			}
+			
+			
+			
 			//Added for initial requests only (that are not REGISTER) not for subsequent requests 
 			if(isInitial() && !Request.REGISTER.equalsIgnoreCase(requestMethod)) {
 				// Additional checks for https://sip-servlets.dev.java.net/issues/show_bug.cgi?id=29
@@ -980,7 +1031,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				getSipSession().getSipApplicationSession().getSipContext().getSipManager().dumpSipSessions();
 			}
 			if (super.getTransaction() == null) {				
-				
+
 				ContactHeader contactHeader = (ContactHeader)request.getHeader(ContactHeader.NAME);
 				if(contactHeader == null && !Request.REGISTER.equalsIgnoreCase(requestMethod) && JainSipUtils.CONTACT_HEADER_METHODS.contains(requestMethod) && proxy == null) {
 					final FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
@@ -991,24 +1042,72 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 					}
 					// Create the contact name address.						
 					contactHeader = 
-						JainSipUtils.createContactHeader(sipNetworkInterfaceManager, request, fromName, session.getOutboundInterface());										
+						JainSipUtils.createContactHeader(sipNetworkInterfaceManager, request, fromName, session.getOutboundInterface());	
 					request.addHeader(contactHeader);
 				}
-				
+				if(sipConnector != null && sipConnector.isUseStaticAddress()) {
+					if(proxy == null && contactHeader != null) {
+						boolean sipURI = contactHeader.getAddress().getURI().isSipURI();
+						if(sipURI) {
+							javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) contactHeader.getAddress().getURI();
+							sipUri.setHost(sipConnector.getStaticServerAddress());
+							sipUri.setPort(sipConnector.getStaticServerPort());
+						}
+					}
+				}
+
 				if(logger.isDebugEnabled()) {
 					logger.debug("Getting new Client Tx for request " + request);
 				}
 				final SipProvider sipProvider = sipNetworkInterfaceManager.findMatchingListeningPoint(
 						transport, false).getSipProvider();
-				final ClientTransaction ctx = sipProvider
-						.getNewClientTransaction(request);				
+				
+				/* 
+				 * If we the next hop is in this container we optimize the traffic by directing it here instead of going through load balancers.
+				 * This is must be done before creating the transaction, otherwise it will go to the host/port specified prior to the changes here.
+				 */
+				if(!isInitial() && sipConnector != null && // Initial requests already use local address in RouteHeader.
+						sipConnector.isUseStaticAddress()) {
+					optimizeRouteHeaderAddressForInternalRoutingrequest(sipConnector, request, session, sipFactoryImpl, transport);
+				}
+				
+				final ClientTransaction ctx = sipProvider.getNewClientTransaction(request);				
 				ctx.setRetransmitTimer(sipFactoryImpl.getSipApplicationDispatcher().getBaseTimerInterval());								
-				
+
 				Dialog dialog = ctx.getDialog();
+
+				if(session.getProxy() != null) {
+					// no dialogs in proxy
+					dialog = null;
+					
+					// take care of the RRH
+					if(isInitial()) {
+						if(session.getProxy().getRecordRoute()) {
+							RecordRouteHeader rrh = (RecordRouteHeader) request.getHeader(RecordRouteHeader.NAME);
+							if(rrh == null) {
+								if(logger.isDebugEnabled()) {
+									logger.debug("Unexpected RRH = null for this request" + request);
+								}
+							} else {
+								javax.sip.address.URI uri = rrh.getAddress().getURI();
+								if(uri.isSipURI()) {
+									javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
+									if(sipConnector != null && sipConnector.isUseStaticAddress()) {
+										sipUri.setHost(sipConnector.getStaticServerAddress());
+										sipUri.setPort(sipConnector.getStaticServerPort());
+									}
+									sipUri.setTransportParam(transport);
+									if(logger.isDebugEnabled()) {
+										logger.debug("Updated the RRH with static server address " + sipUri);
+									}
+								}
+							}
+						}
+					}
+				}
 				
-				if(session.getProxy() != null) dialog = null;
-				
-				if (dialog == null && this.createDialog) {					
+
+				if (dialog == null && this.createDialog && JainSipUtils.DIALOG_CREATING_METHODS.contains(getMethod())) {					
 					dialog = sipProvider.getNewDialog(ctx);
 					((DialogExt)dialog).disableSequenceNumberValidation();
 					session.setSessionCreatingDialog(dialog);
@@ -1070,6 +1169,10 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				ctx.setApplicationData(this.transactionApplicationData);
 				
 				setTransaction(ctx);
+			} else {
+				if(logger.isDebugEnabled()) {
+					logger.debug("Transaction is not null, where was it created? " + getTransaction());
+				}
 			}
 
 			//tells the application dispatcher to stop routing the linked request
@@ -1080,12 +1183,14 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 					linkedRequest.setRoutingState(RoutingState.RELAYED);
 				}
 			}		
-			if(!Request.ACK.equals(method)) {				
+			if(!Request.ACK.equals(getMethod())) {				
 				session.addOngoingTransaction(getTransaction());
 			}
 			// Update Session state
-			session.updateStateOnSubsequentRequest(this, false);			
-			if(Request.NOTIFY.equals(getMethod())) {
+			session.updateStateOnSubsequentRequest(this, false);
+			// Issue 1481 http://code.google.com/p/mobicents/issues/detail?id=1481
+			// proxy should not add or remove subscription since there is no dialog associated with it
+			if(Request.NOTIFY.equals(getMethod()) && session.getProxy() == null) {
 				final SubscriptionStateHeader subscriptionStateHeader = (SubscriptionStateHeader) 
 					getMessage().getHeader(SubscriptionStateHeader.NAME);		
 			
@@ -1191,7 +1296,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	 * @throws ParseException if anything goes wrong while creating the record route header
 	 * @throws SipException 
 	 * @throws NullPointerException 
-	 */
+	 
 	public void addAppCompositionRRHeader()
 			throws ParseException, SipException {
 		final Request request = (Request) super.message;
@@ -1208,7 +1313,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
         RecordRouteHeader recordRouteHeader = 
                 SipFactories.headerFactory.createRecordRouteHeader(recordRouteAddress);
         request.addFirst(recordRouteHeader);
-	}
+	}*/
 
 	public void setLinkedRequest(SipServletRequestImpl linkedRequest) {
 		this.linkedRequest = linkedRequest;

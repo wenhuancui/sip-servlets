@@ -27,6 +27,7 @@ import javax.sip.message.Response;
 import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.SipServletTestCase;
+import org.mobicents.servlet.sip.annotation.ConcurrencyControlMode;
 import org.mobicents.servlet.sip.core.session.SipStandardManager;
 import org.mobicents.servlet.sip.startup.SipContextConfig;
 import org.mobicents.servlet.sip.startup.SipStandardContext;
@@ -44,6 +45,7 @@ public class SessionStateUACSipServletTest extends SipServletTestCase {
 	private List<String> send_subsequent_487_sessionStateList;
 
 	private static final int TIMEOUT = 35000;
+	private static final int TIMEOUT_EXPIRATION = 70000;
 	
 	TestSipListener receiver;
 	
@@ -56,16 +58,17 @@ public class SessionStateUACSipServletTest extends SipServletTestCase {
 
 	@Override
 	protected void deployApplication() {
-		deployApplication(null, null);
+		deployApplication(null, null, ConcurrencyControlMode.None);
 	}
 	
-	public void deployApplication(String name, String value) {
+	public void deployApplication(String name, String value, ConcurrencyControlMode concurrencyControlMode) {
 		SipStandardContext context = new SipStandardContext();
 		context.setDocBase(projectHome + "/sip-servlets-test-suite/applications/session-state-uac/src/main/sipapp");
 		context.setName("sip-test-context");
 		context.setPath("sip-test");
 		context.addLifecycleListener(new SipContextConfig());
 		context.setManager(new SipStandardManager());
+		context.setConcurrencyControlMode(concurrencyControlMode);
 		if(name != null) {
 			ApplicationParameter applicationParameter = new ApplicationParameter();
 			applicationParameter.setName(name);
@@ -178,6 +181,7 @@ public class SessionStateUACSipServletTest extends SipServletTestCase {
 	}	
 	
 	// Test for SS spec 11.1.6 transaction timeout notification
+	// Also Tests Issue 1470 http://code.google.com/p/mobicents/issues/detail?id=1470
 	public void testTransactionTimeoutResponse() throws Exception {
 		receiverProtocolObjects =new ProtocolObjects(
 				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
@@ -192,15 +196,17 @@ public class SessionStateUACSipServletTest extends SipServletTestCase {
 		receiverProvider.addSipListener(receiver);
 		receiverProtocolObjects.start();
 		
-		deployApplication("testTimeout", "true");
+		deployApplication("testTimeout", "true", ConcurrencyControlMode.SipSession);
 		
-		Thread.sleep(TIMEOUT);
+		Thread.sleep(TIMEOUT_EXPIRATION);
 		
 		Iterator<String> allMessagesIterator = receiver.getAllMessagesContent().iterator();		
 		while (allMessagesIterator.hasNext()) {
 			String message = (String) allMessagesIterator.next();
 			logger.info(message);
+			
 		}
+		assertTrue(receiver.getAllMessagesContent().contains("sessionExpired"));
 		assertTrue(receiver.txTimeoutReceived);
 	}	
 

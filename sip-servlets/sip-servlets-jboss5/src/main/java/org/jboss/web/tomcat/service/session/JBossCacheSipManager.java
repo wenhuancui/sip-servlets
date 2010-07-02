@@ -75,7 +75,6 @@ import org.jboss.web.tomcat.service.session.notification.IgnoreUndeployLegacyClu
 import org.mobicents.cache.MobicentsCache;
 import org.mobicents.cluster.DefaultMobicentsCluster;
 import org.mobicents.cluster.MobicentsCluster;
-import org.mobicents.cluster.cache.DefaultClusteredCacheDataIndexingHandler;
 import org.mobicents.cluster.election.DefaultClusterElector;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
@@ -1551,10 +1550,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
    }
    
    
-	public boolean storeSipSession(SipSession baseSession) {
+	public boolean storeSipSession(ClusteredSipSession session) {
 		boolean stored = false;
-		if (baseSession != null && started_) {
-			ClusteredSipSession<? extends OutgoingDistributableSessionData> session = uncheckedCastSipSession(baseSession);
+		if (session != null && started_) {			
 
 			synchronized (session) {
 				if (logger.isDebugEnabled()) {
@@ -1565,10 +1563,10 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 				if (session.isValidInternal()
 						&& (session.isSessionDirty() || session
 								.getMustReplicateTimestamp()) && State.CONFIRMED.equals(session.getState())) {
-					if(logger.isInfoEnabled()) {
-						logger.info("replicating following sip session " + session.getId());
-					}
-					String realId = session.getId();
+					final String realId = session.getId();
+					if(logger.isDebugEnabled()) {
+						logger.debug("replicating following sip session " + session.getId());
+					}					
 
 					// Notify all session attributes that they get serialized
 					// (SRV 7.7.2)
@@ -1590,11 +1588,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 		return stored;
 	}
 	
-	public boolean storeSipApplicationSession(SipApplicationSession baseSession) {
+	public boolean storeSipApplicationSession(ClusteredSipApplicationSession session) {
 		boolean stored = false;
-		if (baseSession != null && started_) {
-			ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> session = uncheckedCastSipApplicationSession(baseSession);			
-
+		if (session != null && started_) {					
 			synchronized (session) {
 				if (logger.isDebugEnabled()) {
 					log_.debug("check to see if needs to store and replicate "
@@ -1604,10 +1600,10 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 				if (session.isValidInternal()
 						&& (session.isSessionDirty() || session
 								.getMustReplicateTimestamp())) {
-					if(logger.isInfoEnabled()) {
-						logger.info("replicating following sip application session " + session.getId());
+					final String realId = session.getId();
+					if(logger.isDebugEnabled()) {
+						logger.debug("replicating following sip application session " + session.getId());
 					}
-					String realId = session.getId();
 
 					// Notify all session attributes that they get serialized
 					// (SRV 7.7.2)
@@ -2939,8 +2935,12 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 		container_ = container;
 		sipManagerDelegate.setContainer(container);
 		DistributedCacheConvergedSipManager<? extends OutgoingDistributableSessionData> distributedCacheConvergedSipManager = getDistributedCacheConvergedSipManager();
-		distributedCacheConvergedSipManager.setApplicationName(((SipContext)getContainer()).getApplicationName());
-		distributedCacheConvergedSipManager.setApplicationNameHashed(((SipContext)getContainer()).getApplicationNameHashed());
+		// Issue 1514: http://code.google.com/p/mobicents/issues/detail?id=1514	
+		// only set this up if the application is a SIP or converged application	
+		if(container instanceof SipContext) {
+			distributedCacheConvergedSipManager.setApplicationName(((SipContext)getContainer()).getApplicationName());
+			distributedCacheConvergedSipManager.setApplicationNameHashed(((SipContext)getContainer()).getApplicationNameHashed());
+		}
 	}
 
 	/**
@@ -3646,7 +3646,7 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 		super.startExtensions();		
 		
 		mobicentsCache = new MobicentsCache(getDistributedCacheConvergedSipManager().getJBossCache(), null);
-		mobicentsCluster = new DefaultMobicentsCluster(mobicentsCache, null, new DefaultClusterElector());
+		mobicentsCluster = new DefaultMobicentsCluster(mobicentsCache, getDistributedCacheConvergedSipManager().getJBossCache().getConfiguration().getRuntimeConfig().getTransactionManager(), new DefaultClusterElector());
 		if(logger.isDebugEnabled()) {
 			logger.debug("Mobicents Sip Servlets Default Mobicents Cluster " + mobicentsCluster + " created");
 		}
