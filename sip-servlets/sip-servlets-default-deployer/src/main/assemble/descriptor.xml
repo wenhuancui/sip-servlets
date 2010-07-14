@@ -17,11 +17,11 @@
 	    </fileSet>
 	  </fileSets>
 	  <files>
-	    <file>
+	    <!-- file>
 	      <source>${basedir}/../sip-servlets-jboss5/lib/jboss-web-deployer-${jboss.version}.jar</source>
 	      <destName>jboss-web-deployer.jar</destName>
 	      <outputDirectory>/jbossweb.deployer</outputDirectory>
-	    </file>
+	    </file-->
 	    
 	  <!-- Config files -->
 	    <file>
