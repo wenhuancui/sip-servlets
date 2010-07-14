@@ -33,11 +33,11 @@
 	    </fileSet>
 	  </fileSets>
 	  <files>
-	    <file>
+	    <!-- file>
 	      <source>${basedir}/../sip-servlets-jboss5/lib/jboss-web-service-${jboss.version}.jar</source>
 	      <destName>jboss-web-service.jar</destName>
 	      <outputDirectory>/jbossweb.sar</outputDirectory>
-	    </file>
+	    </file-->
 	    <file>
 	      <source>${basedir}/../sip-servlets-examples/diameter-event-charging/target/diameter-event-charging-${pom.version}.war</source>
 	      <destName>diameter-event-charging.war</destName>
