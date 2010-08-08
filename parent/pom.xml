@@ -4,7 +4,7 @@
 
 	<groupId>org.mobicents</groupId>
 	<artifactId>mobicents-parent</artifactId>
-	<version>5.0.0.Beta2-JBCP5</version>
+	<version>5.0.0.CR01-JBCP5</version>
 	
 	<name>Mobicents :: Parent :: mobicents</name>
 	
@@ -46,7 +46,7 @@
 		
 		
 		<jain-sip-api.version>1.2</jain-sip-api.version>
-		<jain-sip-ri.version>${jain-sip-api.version}.151</jain-sip-ri.version>
+		<jain-sip-ri.version>${jain-sip-api.version}.153</jain-sip-ri.version>
 		
 		<jain-mgcp.version>1.0</jain-mgcp.version>
 		<jcc.version>1.1</jcc.version>				
@@ -801,9 +801,9 @@
 	</build>
 	
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/parent/mobicents-parent-2.6</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/parent/mobicents-parent-2.6</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/parent/mobicents-parent-2.6</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/mobicents-parent-2.10</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/mobicents-parent-2.10</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/mobicents-parent-2.10</url>
 	</scm>
 	
 </project>

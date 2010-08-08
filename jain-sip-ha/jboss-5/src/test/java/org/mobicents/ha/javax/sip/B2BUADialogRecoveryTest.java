@@ -64,7 +64,7 @@ import junit.framework.TestCase;
  */
 public class B2BUADialogRecoveryTest extends TestCase {
 
-	public static final String IP_ADDRESS = "192.168.0.10";
+	public static final String IP_ADDRESS = "192.168.0.11";
 	
     public static final int BALANCER_PORT = 5050;
 

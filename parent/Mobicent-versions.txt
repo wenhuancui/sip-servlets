@@ -1,7 +1,7 @@
 Original Mobicents versions
 ================================
-cluster:1.2
-tools/maven-du-plugin:2.0.0.BETA3
+cluster:1.6
+tools/maven-du-plugin:2.0.0.BETA4
 tools/maven-eclipse-plugin:1.0.0.BETA2
 
 Build order:
