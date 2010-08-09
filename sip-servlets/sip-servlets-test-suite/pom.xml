@@ -9,7 +9,7 @@
 	<groupId>org.mobicents.servlet.sip</groupId>
 	<artifactId>sip-servlets-test-suite-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>1.7.2</version>
+	<version>5.0.0.CR01-JBCP5</version>
 	<name>sip-servlets-test-suite-parent</name>
 	<url>http://www.mobicents.org/tests.html</url>
 	<modules>

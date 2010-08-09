@@ -13,7 +13,8 @@
 	<name>Sip Servlets Loading Specifics for JBoss 5</name>
 	<url>http://www.mobicents.org/products_sip_servlets.html</url>
 	<properties>
-		<jboss.version>5.1.0.GA</jboss.version>	
+		<jboss.version>5.1.0.GA</jboss.version>
+		<jboss.ws.version>5.0.1.EAP</jboss.ws.version>		
 	</properties>
 	<dependencies>
 		<dependency>
@@ -85,7 +86,7 @@
 			<artifactId>jboss-web-service</artifactId>
 			<version>${jboss.version}</version>
 			<scope>system</scope>
-			<systemPath>${basedir}/lib/jboss-web-service-${jboss.version}.jar</systemPath>
+			<systemPath>${basedir}/lib/jboss-web-service-${jboss.ws.version}.jar</systemPath>
 			<optional>true</optional>
 		</dependency>
 		
@@ -94,7 +95,7 @@
 			<artifactId>jboss-web-deployer</artifactId>
 			<version>${jboss.version}</version>
 			<scope>system</scope>
-			<systemPath>${basedir}/lib/jboss-web-deployer-${jboss.version}.jar</systemPath>
+			<systemPath>${basedir}/lib/jboss-web-deployer-${jboss.ws.version}.jar</systemPath>
 			<optional>true</optional>
 		</dependency>					
 				

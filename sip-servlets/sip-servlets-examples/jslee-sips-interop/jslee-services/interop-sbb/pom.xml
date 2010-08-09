@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip.example</groupId>
 		<artifactId>jslee-sips-interop-demo-jslee-services-parent</artifactId>
-		<version>1.7.2</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 	
 	<artifactId>jslee-sips-interop-demo-jslee-interop-sbb</artifactId>
@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>org.mobicents.servlet.sip.example</groupId>
 			<artifactId>jslee-sips-interop-commons</artifactId>
-			<version>1.7.2</version>
+			<version>5.0.0.CR01-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -27,7 +27,7 @@
 		<dependency>		
 			<groupId>org.mobicents.servlet.sip.example</groupId>
 			<artifactId>jslee-sips-interop-demo-slee-custom-events</artifactId>
-			<version>1.7.2</version>
+			<version>5.0.0.CR01-JBCP5</version>
 		</dependency>
 		<dependency>		
 			<groupId>org.mobicents.servers.media</groupId>
