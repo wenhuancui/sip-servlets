@@ -77,6 +77,7 @@ public class SipBalancerForwarderTest extends TestCase {
 //		fwd.start();
 //		fwd.stop();
 //		fwd.start();
-//		fwd.stop();	}
+//		fwd.stop();
+		}
 
 }
