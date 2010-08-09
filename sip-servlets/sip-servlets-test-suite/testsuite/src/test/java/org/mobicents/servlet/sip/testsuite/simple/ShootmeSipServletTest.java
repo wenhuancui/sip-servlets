@@ -117,7 +117,10 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isAckSent());
-		assertTrue(sender.getOkToByeReceived());		
+		assertTrue(sender.getOkToByeReceived());	
+		// test non regression for Issue 1687 : Contact Header is present in SIP Message where it shouldn't
+		Response response = sender.getFinalResponse();
+		assertNull(response.getHeader(ContactHeader.NAME));
 	}
 	
 	public void testShootmeSendBye() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
@@ -168,7 +171,7 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 		String toSipAddress = "sip-servlets.com";
 		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
 				toUser, toSipAddress);
-		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, new String[] {"additionalParameterableHeader","nonParameterableHeader"}, new String[] {"none","none"});		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, new String[] {"additionalParameterableHeader","nonParameterableHeader"}, new String[] {"none","none"}, true);		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isAckSent());
 		assertTrue(sender.getOkToByeReceived());		
@@ -212,6 +215,11 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 		assertTrue(sender.isFinalResponseReceived());
 		assertEquals(486, sender.getFinalResponseStatus());
 		assertTrue(!sender.getAllMessagesContent().contains("ackReceived"));
+		Thread.sleep(DIALOG_TIMEOUT);
+		List<String> allMessagesContent = sender.getAllMessagesContent();
+		assertEquals(2,allMessagesContent.size());
+		assertTrue("sipSessionReadyToInvalidate", allMessagesContent.contains("sipSessionReadyToInvalidate"));
+		assertTrue("sipAppSessionReadyToInvalidate", allMessagesContent.contains("sipAppSessionReadyToInvalidate"));
 	}
 	
 	public void testShootmeRegisterNoContact() throws Exception {
@@ -365,18 +373,24 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 	}
 	
 	// test for http://code.google.com/p/mobicents/issues/detail?id=1061
+	// Also test http://code.google.com/p/mobicents/issues/detail?id=1681
 	public void testNoAckReceived() throws Exception {
 		String fromName = "noAckReceived";
 		String fromSipAddress = "sip-servlets.com";
 		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
 				fromName, fromSipAddress);		
-		
-		sender.sendSipRequest("INVITE", fromAddress, fromAddress, null, null, false);
+				
 		sender.setSendAck(false);
+		sender.setCountRetrans(true);
+		sender.sendSipRequest("INVITE", fromAddress, fromAddress, null, null, false);		
 		Thread.sleep(TIMEOUT);
 		assertEquals( 200, sender.getFinalResponseStatus());
 		assertFalse(sender.isAckSent());
-		Thread.sleep(DIALOG_TIMEOUT);
+		Thread.sleep(DIALOG_TIMEOUT + TIMEOUT);
+		// test http://code.google.com/p/mobicents/issues/detail?id=1681
+		// Make sure we get the 10 retrans for 200 to INVITE when no ACK is sent
+		// corresponding to Timer G
+		assertEquals( 10, sender.getNbRetrans());
 		List<String> allMessagesContent = sender.getAllMessagesContent();
 		assertEquals(1,allMessagesContent.size());
 		assertEquals("noAckReceived", allMessagesContent.get(0));

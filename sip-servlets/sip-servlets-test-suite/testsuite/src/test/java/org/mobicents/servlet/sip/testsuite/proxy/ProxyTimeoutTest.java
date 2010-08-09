@@ -17,30 +17,41 @@
 package org.mobicents.servlet.sip.testsuite.proxy;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.sip.ListeningPoint;
 import javax.sip.SipProvider;
 import javax.sip.address.SipURI;
 
+import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.log4j.Logger;
 import org.mobicents.javax.servlet.sip.ResponseType;
 import org.mobicents.servlet.sip.SipServletTestCase;
+import org.mobicents.servlet.sip.core.session.SipStandardManager;
+import org.mobicents.servlet.sip.startup.SipContextConfig;
+import org.mobicents.servlet.sip.startup.SipStandardContext;
 import org.mobicents.servlet.sip.testsuite.ProtocolObjects;
 import org.mobicents.servlet.sip.testsuite.TestSipListener;
 
 public class ProxyTimeoutTest extends SipServletTestCase {	
+	private static final String SESSION_EXPIRED = "sessionExpired";
+	private static final String SESSION_READY_TO_INVALIDATE = "sessionReadyToInvalidate";
+	private static final String SIP_SESSION_READY_TO_INVALIDATE = "sipSessionReadyToInvalidate";
 	private static transient Logger logger = Logger.getLogger(ProxyTimeoutTest.class);
 	private static final boolean AUTODIALOG = true;
 	TestSipListener sender;
+	TestSipListener neutral;
 	TestSipListener receiver;
 	ProtocolObjects senderProtocolObjects;
 	ProtocolObjects	receiverProtocolObjects;
+	ProtocolObjects neutralProto;
 
 
 	private static final int TIMEOUT = 20000;
 
 	public ProxyTimeoutTest(String name) {
 		super(name);
+		autoDeployOnStartup = false;
 	}
 
 	@Override
@@ -50,6 +61,8 @@ public class ProxyTimeoutTest extends SipServletTestCase {
 				"gov.nist", ListeningPoint.UDP, AUTODIALOG, null);
 		receiverProtocolObjects = new ProtocolObjects("proxy-receiver",
 				"gov.nist", ListeningPoint.UDP, AUTODIALOG, null);
+		neutralProto = new ProtocolObjects("neutral",
+				"gov.nist", ListeningPoint.UDP, AUTODIALOG, null);
 		sender = new TestSipListener(5080, 5070, senderProtocolObjects, false);
 		sender.setRecordRoutingProxyTesting(true);
 		SipProvider senderProvider = sender.createProvider();
@@ -57,12 +70,18 @@ public class ProxyTimeoutTest extends SipServletTestCase {
 		receiver = new TestSipListener(5057, 5070, receiverProtocolObjects, false);
 		receiver.setRecordRoutingProxyTesting(true);
 		SipProvider receiverProvider = receiver.createProvider();
+		
+		neutral = new TestSipListener(5058, 5070, neutralProto, false);
+		neutral.setRecordRoutingProxyTesting(true);
+		SipProvider neutralProvider = neutral.createProvider();
 
 		receiverProvider.addSipListener(receiver);
 		senderProvider.addSipListener(sender);
+		neutralProvider.addSipListener(neutral);
 
 		senderProtocolObjects.start();
 		receiverProtocolObjects.start();
+		neutralProto.start();
 	}
 
 	/**
@@ -71,6 +90,7 @@ public class ProxyTimeoutTest extends SipServletTestCase {
 	 * @throws Exception
 	 */
 	public void testProxy1xxResponseTimeout() throws Exception {
+		deployApplication();
 		String fromName = "sequential-1xxResponseTimeout";
 		String fromSipAddress = "sip-servlets.com";
 		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
@@ -87,9 +107,11 @@ public class ProxyTimeoutTest extends SipServletTestCase {
 		Thread.sleep(TIMEOUT);
 		assertEquals(0,receiver.getFinalResponseStatus());
 		assertTrue(!sender.isAckSent());
-		assertEquals(2, sender.getAllMessagesContent().size());
+		assertEquals(4, sender.getAllMessagesContent().size());
 		assertTrue(sender.getAllMessagesContent().contains(ResponseType.INFORMATIONAL.toString()));
 		assertTrue(sender.getAllMessagesContent().contains(ResponseType.FINAL.toString()));
+		assertTrue(sender.getAllMessagesContent().contains(SESSION_READY_TO_INVALIDATE));
+		assertTrue(sender.getAllMessagesContent().contains(SIP_SESSION_READY_TO_INVALIDATE));
 	}
 	
 	/**
@@ -97,6 +119,7 @@ public class ProxyTimeoutTest extends SipServletTestCase {
 	 * @throws Exception
 	 */
 	public void testProxyNoTimeout() throws Exception {
+		deployApplication();
 		String fromName = "sequential-reverse-NoResponseTimeout";
 		String fromSipAddress = "sip-servlets.com";
 		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
@@ -112,12 +135,64 @@ public class ProxyTimeoutTest extends SipServletTestCase {
 		Thread.sleep(TIMEOUT);		
 		assertTrue(sender.isAckSent());
 		assertEquals(0, sender.getAllMessagesContent().size());		
+	}
+	
+	/**
+	 * Test Issue 1678 : SipApplicationSession.setExpires() doesn't work sometimes
+	 * Test Issue 1676 : SipApplicationSession.getExpirationTime() is incorrect
+	 */
+	public void testProxySipApplicationSessionTimeout() throws Exception {
+		deployApplication("sipApplicationSessionTimeout", "1");
+		String fromName = "sipApplicationSessionTimeout";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);		
+		
+		String toSipAddress = "sip-servlets.com";
+		String toUser = "proxy-receiver";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		receiver.setProvisionalResponsesToSend(new ArrayList<Integer>());		
+		sender.setSendBye(true);
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
+		Thread.sleep(70000);		
+		assertTrue(sender.isAckSent());
+		Iterator<String> allMessagesIterator = sender.getAllMessagesContent().iterator();
+		while (allMessagesIterator.hasNext()) {
+			String message = (String) allMessagesIterator.next();
+			logger.info(message);
+		}
+		assertEquals(3, sender.getAllMessagesContent().size());
+		assertTrue(sender.getAllMessagesContent().contains(SESSION_EXPIRED));
+		assertTrue(sender.getAllMessagesContent().contains(SESSION_READY_TO_INVALIDATE));
+		assertTrue(sender.getAllMessagesContent().contains(SIP_SESSION_READY_TO_INVALIDATE));
+			
 	}	
+	
+	public void testNonExistLegTimeout() throws Exception {
+		deployApplication();
+		String fromName = "sequential-nonexist";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);		
+		
+		String toSipAddress = "sip-servlets.com";
+		String toUser = "proxy-receiver";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		receiver.setProvisionalResponsesToSend(new ArrayList<Integer>());		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
+		Thread.sleep(50000);		
+		assertTrue(sender.getMessageRequest() != null);		
+	}
 
 	@Override
 	public void tearDown() throws Exception {
 		senderProtocolObjects.destroy();
-		receiverProtocolObjects.destroy();			
+		receiverProtocolObjects.destroy();		
+		neutralProto.destroy();
 		logger.info("Test completed");
 		super.tearDown();
 	}
@@ -129,6 +204,21 @@ public class ProxyTimeoutTest extends SipServletTestCase {
 						projectHome
 								+ "/sip-servlets-test-suite/applications/proxy-sip-servlet/src/main/sipapp",
 						"sip-test-context", "sip-test"));
+	}
+	
+	public SipStandardContext deployApplication(String name, String value) {
+		SipStandardContext context = new SipStandardContext();
+		context.setDocBase(projectHome + "/sip-servlets-test-suite/applications/proxy-sip-servlet/src/main/sipapp");
+		context.setName("sip-test-context");
+		context.setPath("sip-test");
+		context.addLifecycleListener(new SipContextConfig());
+		context.setManager(new SipStandardManager());
+		ApplicationParameter applicationParameter = new ApplicationParameter();
+		applicationParameter.setName(name);
+		applicationParameter.setValue(value);
+		context.addApplicationParameter(applicationParameter);
+		assertTrue(tomcat.deployContext(context));
+		return context;
 	}
 
 	@Override

@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sip.ClientTransaction;
 import javax.sip.Dialog;
-import javax.sip.DialogState;
 import javax.sip.DialogTerminatedEvent;
 import javax.sip.IOExceptionEvent;
 import javax.sip.InvalidArgumentException;
@@ -169,6 +168,8 @@ public class TestSipListener implements SipListener {
 	
 	private Response finalResponse;
 	
+	private Response informationalResponse;
+	
 	private boolean cancelSent;
 
 	private boolean waitForCancel;
@@ -273,6 +274,9 @@ public class TestSipListener implements SipListener {
 	private Response inviteOkResponse;
 
 	private boolean sendNotify = true;
+	
+	private boolean countRetrans = false;	
+	private int nbRetrans = 0;
 
 	class MyEventSource implements Runnable {
 		private TestSipListener notifier;
@@ -815,7 +819,7 @@ public class TestSipListener implements SipListener {
 						toUser, toHost);
 				String[] headerNames = new String[] {"Join"};
 				String[] headerContents = new String[] {lastMessageContent};
-				sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerContents);
+				sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerContents, true);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				logger.error("error sending INVITE with Join", ex);
@@ -834,7 +838,7 @@ public class TestSipListener implements SipListener {
 						toUser, toHost);
 				String[] headerNames = new String[] {"Replaces"};
 				String[] headerContents = new String[] {lastMessageContent};
-				sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerContents);
+				sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerContents, true);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				logger.error("error sending INVITE with Join", ex);
@@ -1213,12 +1217,12 @@ public class TestSipListener implements SipListener {
 		if(abortProcessing) {
 			logger.error("Processing aborted");
 			return ;
-		}
+		}		
 		Response response = (Response) responseReceivedEvent.getResponse();
 		RecordRouteHeader recordRouteHeader = (RecordRouteHeader)response.getHeader(RecordRouteHeader.NAME);
 		if(!recordRoutingProxyTesting && recordRouteHeader != null) {
 			abortProcessing = true;
-			throw new IllegalArgumentException("we received a record route header in a  response !");			
+			throw new IllegalArgumentException("we received a record route header in a response !");			
 		}
 		ContactHeader contactHeader = (ContactHeader)response.getHeader(ContactHeader.NAME);
 		if(contactHeader != null && "0.0.0.0".equals(((SipURI)contactHeader.getAddress().getURI()).getHost())) {
@@ -1242,6 +1246,9 @@ public class TestSipListener implements SipListener {
 				+ response.getStatusCode() + " " + cseq);
 		// not dropping in PRACK case on REINVITE the ClientTx can be null it seems		
 		if (tid == null && !prackSent) {
+			if(countRetrans) {
+				nbRetrans++;
+			}
 			logger.info("Stray response -- dropping ");
 			return;
 		}
@@ -1254,6 +1261,9 @@ public class TestSipListener implements SipListener {
 		}
 
 		try {			
+			if(response.getStatusCode() > 100 && response.getStatusCode() < 200) {
+				informationalResponse = response;
+			}
 			if(response.getStatusCode() >= 200 && response.getStatusCode() < 700) {
 				logger.info("final response received : status code " + response.getStatusCode());
 				finalResponseReceived = true;
@@ -1667,10 +1677,10 @@ public class TestSipListener implements SipListener {
 	}
 
 	public Request sendSipRequest(String method, URI fromURI, URI toURI, String messageContent, SipURI route, boolean useToURIasRequestUri) throws SipException, ParseException, InvalidArgumentException {
-		return sendSipRequest(method, fromURI, toURI, messageContent, route, useToURIasRequestUri, null, null);
+		return sendSipRequest(method, fromURI, toURI, messageContent, route, useToURIasRequestUri, null, null, true);
 	}
 
-	public Request sendSipRequest(String method, URI fromURI, URI toURI, String messageContent, SipURI route, boolean useToURIasRequestUri, String[] headerNames, String[] headerContents) throws SipException, ParseException, InvalidArgumentException {
+	public Request sendSipRequest(String method, URI fromURI, URI toURI, String messageContent, SipURI route, boolean useToURIasRequestUri, String[] headerNames, String[] headerContents, boolean setHeader) throws SipException, ParseException, InvalidArgumentException {
 		this.useToURIasRequestUri = useToURIasRequestUri;
 		// create >From Header
 		Address fromNameAddress = protocolObjects.addressFactory
@@ -1788,7 +1798,11 @@ public class TestSipListener implements SipListener {
 		if(headerNames != null) {
 			for(int q=0; q<headerNames.length; q++) {
 				Header h = protocolObjects.headerFactory.createHeader(headerNames[q], headerContents[q]);
-				request.setHeader(h);
+				if(setHeader) {
+					request.setHeader(h);
+				} else {
+					request.addHeader(h);
+				}
 			}
 		}
 		addSpecificHeaders(method, request);
@@ -2175,12 +2189,7 @@ public class TestSipListener implements SipListener {
 	 * @return the lastMessageContent
 	 */
 	public String getLastMessageContent() {
-		String content = null;
-		if(lastMessageContent != null) {
-			content = new String(lastMessageContent);
-			lastMessageContent = null;
-		}
-		return content;
+		return lastMessageContent;
 	}
 
 	/**
@@ -2631,6 +2640,48 @@ public class TestSipListener implements SipListener {
 	 */
 	public boolean isSendNotify() {
 		return sendNotify;
+	}
+
+	/**
+	 * @param informationalResponse the informationalResponse to set
+	 */
+	public void setInformationalResponse(Response informationalResponse) {
+		this.informationalResponse = informationalResponse;
+	}
+
+	/**
+	 * @return the informationalResponse
+	 */
+	public Response getInformationalResponse() {
+		return informationalResponse;
+	}
+
+	/**
+	 * @param countRetrans the countRetrans to set
+	 */
+	public void setCountRetrans(boolean countRetrans) {
+		this.countRetrans = countRetrans;
+	}
+
+	/**
+	 * @return the countRetrans
+	 */
+	public boolean isCountRetrans() {
+		return countRetrans;
+	}
+
+	/**
+	 * @param nbRetrans the nbRetrans to set
+	 */
+	public void setNbRetrans(int nbRetrans) {
+		this.nbRetrans = nbRetrans;
+	}
+
+	/**
+	 * @return the nbRetrans
+	 */
+	public int getNbRetrans() {
+		return nbRetrans;
 	}
 
 }

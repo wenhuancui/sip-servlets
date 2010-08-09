@@ -103,16 +103,27 @@ public class ResponseDispatcher extends MessageDispatcher {
 			} //there is no client transaction associated with it, it means that this is a retransmission
 			else if(dialog != null) {				
 				applicationData = (TransactionApplicationData)dialog.getApplicationData();
-				if(applicationData.getSipServletMessage() instanceof SipServletRequestImpl) {
-					tmpOriginalRequest = (SipServletRequestImpl)applicationData.getSipServletMessage();
-				}
-				final ProxyBranchImpl proxyBranch = applicationData.getProxyBranch();
-				if(proxyBranch == null) {
-					if(logger.isDebugEnabled()) {
-						logger.debug("retransmission received for a non proxy application, dropping the response " + response);
+				// Issue 1468 : application data can be null in case of forked response and max fork time property stack == 0
+				if(applicationData != null) {
+					if(applicationData.getSipServletMessage() instanceof SipServletRequestImpl) {
+						tmpOriginalRequest = (SipServletRequestImpl)applicationData.getSipServletMessage();
 					}
-//					forwardResponseStatefully(sipServletResponse);
-					return ;
+					final ProxyBranchImpl proxyBranch = applicationData.getProxyBranch();
+					if(proxyBranch == null) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("retransmission received for a non proxy application, dropping the response " + response);
+						}
+	//					forwardResponseStatefully(sipServletResponse);
+						return ;
+					}
+				} else {
+					// Issue 1468 : Dropping response in case of forked response and max fork time property stack == 0 to
+					// Guard against exceptions that will arise later if we don't drop it since the support for it is not enabled
+					if(logger.isDebugEnabled()) {
+						logger.debug("application data is null, it means that this is a forked response, please enable stack property support for it through gov.nist.javax.sip.MAX_FORK_TIME_SECONDS");
+						logger.debug("Dropping forked response " + response);
+						return; 
+					}
 				}
 			} 
 			final SipServletRequestImpl originalRequest = tmpOriginalRequest;
@@ -288,6 +299,10 @@ public class ResponseDispatcher extends MessageDispatcher {
 							else {
 								//if this is a trying response, the response is dropped
 								if(Response.TRYING == status) {
+									// We will transition from INITIAL to EARLY here (not clear from the spec)
+									// Figure 6-1 The SIP Dialog State Machine
+									// and Figure 6-2 The SipSession State Machine
+									session.updateStateOnResponse(sipServletResponse, true);
 									if(logger.isDebugEnabled()) {
 										logger.debug("the response is dropped accordingly to JSR 289 " +
 												"since this a 100 for a non proxy application");

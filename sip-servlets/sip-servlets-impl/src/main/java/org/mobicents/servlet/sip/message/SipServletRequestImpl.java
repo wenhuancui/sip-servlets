@@ -17,6 +17,8 @@
 package org.mobicents.servlet.sip.message;
 
 import gov.nist.javax.sip.DialogExt;
+import gov.nist.javax.sip.SipStackImpl;
+import gov.nist.javax.sip.TransactionExt;
 import gov.nist.javax.sip.header.ims.PathHeader;
 import gov.nist.javax.sip.message.MessageExt;
 import gov.nist.javax.sip.stack.SIPTransaction;
@@ -66,7 +68,6 @@ import javax.sip.header.FromHeader;
 import javax.sip.header.MaxForwardsHeader;
 import javax.sip.header.ProxyAuthenticateHeader;
 import javax.sip.header.RecordRouteHeader;
-import javax.sip.header.RequireHeader;
 import javax.sip.header.RouteHeader;
 import javax.sip.header.SubscriptionStateHeader;
 import javax.sip.header.ToHeader;
@@ -155,6 +156,9 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	
 	private transient boolean isReadOnly;		
 	
+	// This field is only used in CANCEL requests where we need the INVITe transaction
+	private transient Transaction inviteTransactionToCancel;
+	
 	public SipServletRequestImpl(Request request, SipFactoryImpl sipFactoryImpl,
 			MobicentsSipSession sipSession, Transaction transaction, Dialog dialog,
 			boolean createDialog) {
@@ -219,10 +223,10 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		try {			
 			Request cancelRequest = ((ClientTransaction) getTransaction())
 					.createCancel();
-			SipServletRequest newRequest = new SipServletRequestImpl(
+			SipServletRequestImpl newRequest = new SipServletRequestImpl(
 					cancelRequest, sipFactoryImpl, getSipSession(),
 					null, getTransaction().getDialog(), false);
-
+			newRequest.inviteTransactionToCancel = super.getTransaction();
 			return newRequest;
 		} catch (SipException ex) {
 			throw new IllegalStateException("Could not create cancel", ex);
@@ -295,8 +299,13 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 					}
 				}
 				// Following restrictions in JSR 289 Section 4.1.3 Contact Header Field
+				// + constraints from Issue 1687 : Contact Header is present in SIP Message where it shouldn't
 				boolean setContactHeader = true;
-				if ((statusCode >= 300 && statusCode < 400) || statusCode == 485 || Request.REGISTER.equals(requestMethod) || Request.OPTIONS.equals(requestMethod)) {
+				if ((statusCode >= 300 && statusCode < 400) || statusCode == 485 
+						|| Request.REGISTER.equals(requestMethod) || Request.OPTIONS.equals(requestMethod)
+						|| Request.BYE.equals(requestMethod) || Request.CANCEL.equals(requestMethod)
+						|| Request.PRACK.equals(requestMethod) || Request.MESSAGE.equals(requestMethod)
+						|| Request.PUBLISH.equals(requestMethod)) {
 					// don't set the contact header in those case
 					setContactHeader = false;					
 				} 				
@@ -910,8 +919,11 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				proxy = session.getProxy();
 			}
 			final SipNetworkInterfaceManager sipNetworkInterfaceManager = sipFactoryImpl.getSipNetworkInterfaceManager();
-			 
-			((MessageExt)message).setApplicationData(session.getTransport());			
+			final String sessionTransport = session.getTransport();
+			if(logger.isDebugEnabled()) {
+		    	logger.debug("session transport is " + sessionTransport);
+		    }
+			((MessageExt)message).setApplicationData(sessionTransport);			
 			
 			ViaHeader viaHeader = (ViaHeader) message.getHeader(ViaHeader.NAME);
 		
@@ -927,18 +939,38 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		    	} else if(proxy.getFinalBranchForSubsequentRequests() != null && proxy.getFinalBranchForSubsequentRequests().getRecordRoute()) {
 		    		addViaHeader = true;
 		    	}
-		    	if(addViaHeader) {
-		    		if(logger.isDebugEnabled()) {
-				    	logger.debug("Adding via Header");
-				    }
+		    	if(addViaHeader) {		    		
 		    		// Issue 					
 		    		viaHeader = JainSipUtils.createViaHeader(
 		    				sipNetworkInterfaceManager, request, null, session.getOutboundInterface());
 		    		message.addHeader(viaHeader);
+		    		if(logger.isDebugEnabled()) {
+				    	logger.debug("Added via Header" + viaHeader);
+				    }
 			    }
+		    } else {
+		    	if(getMethod().equalsIgnoreCase(Request.CANCEL)) {
+		    		if(getSipSession().getState().equals(State.INITIAL)) {
+		    			Transaction tx = inviteTransactionToCancel;
+		    			if(tx != null) {
+		    				logger.debug("Can not send CANCEL. Will try to STOP retransmissions " + tx);
+		    				// We still haven't received any response on this call, so we can not send CANCEL,
+		    				// we will just stop the retransmissions
+		    				StaticServiceHolder.disableRetransmissionTimer.invoke(tx);
+		    				if(tx.getApplicationData() instanceof TransactionApplicationData) {
+		    					TransactionApplicationData tad = (TransactionApplicationData) tx.getApplicationData();
+		    					tad.setCanceled(true);
+		    				}
+		    				return;
+		    			} else {
+		    				logger.debug("Can not send CANCEL because noe response arrived. " +
+		    						"Can not stop retransmissions. The transaction is null");
+		    			}
+		    		}
+		    	}
 		    }
 			final String transport = JainSipUtils.findTransport(request);
-			if(session.getTransport() == null) {
+			if(sessionTransport == null) {
 				session.setTransport(transport);
 			}
 		    if(logger.isDebugEnabled()) {
@@ -972,13 +1004,20 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				session.getSessionCreatingDialog().sendAck(request);
 				final Transaction transaction = getTransaction();
 				final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
-				session.removeOngoingTransaction(transaction);
-				tad.cleanUp();
-				transaction.setApplicationData(null);
 				final B2buaHelperImpl b2buaHelperImpl = sipSession.getB2buaHelper();
-				if(b2buaHelperImpl != null) {
+				if(b2buaHelperImpl != null && tad != null) {
 					// we unlink the originalRequest early to avoid keeping the messages in mem for too long
-					b2buaHelperImpl.unlinkOriginalRequestInternal(session.getKey());
+					b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage());
+				}				
+				session.removeOngoingTransaction(transaction);	
+				if(tad != null) {
+					tad.cleanUp();
+				}
+				final SipProvider sipProvider = sipNetworkInterfaceManager.findMatchingListeningPoint(
+						transport, false).getSipProvider();	
+				// Issue 1468 : to handle forking, we shouldn't cleanup the app data since it is needed for the forked responses
+				if(((SipStackImpl)sipProvider.getSipStack()).getMaxForkTime() == 0) {
+					transaction.setApplicationData(null);
 				}
 				return;
 			}
@@ -1072,7 +1111,10 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				}
 				
 				final ClientTransaction ctx = sipProvider.getNewClientTransaction(request);				
-				ctx.setRetransmitTimer(sipFactoryImpl.getSipApplicationDispatcher().getBaseTimerInterval());								
+				ctx.setRetransmitTimer(sipFactoryImpl.getSipApplicationDispatcher().getBaseTimerInterval());
+			    ((TransactionExt)ctx).setTimerT2(sipFactoryImpl.getSipApplicationDispatcher().getT2Interval());
+			    ((TransactionExt)ctx).setTimerT4(sipFactoryImpl.getSipApplicationDispatcher().getT4Interval());
+			    ((TransactionExt)ctx).setTimerD(sipFactoryImpl.getSipApplicationDispatcher().getTimerDInterval());
 
 				Dialog dialog = ctx.getDialog();
 
@@ -1149,6 +1191,10 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				final SipProvider sipProvider = sipNetworkInterfaceManager.findMatchingListeningPoint(
 						transport, false).getSipProvider();				
 				final ClientTransaction ctx = sipProvider.getNewClientTransaction(request);
+				ctx.setRetransmitTimer(sipFactoryImpl.getSipApplicationDispatcher().getBaseTimerInterval());
+			    ((TransactionExt)ctx).setTimerT2(sipFactoryImpl.getSipApplicationDispatcher().getT2Interval());
+			    ((TransactionExt)ctx).setTimerT4(sipFactoryImpl.getSipApplicationDispatcher().getT4Interval());
+			    ((TransactionExt)ctx).setTimerD(sipFactoryImpl.getSipApplicationDispatcher().getTimerDInterval());
 				//Keeping the transactions mapping in application data for CANCEL handling
 				if(linkedRequest != null) {
 					//keeping the client transaction in the server transaction's application data
@@ -1463,13 +1509,13 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	/**
 	 * @param finalResponse the finalResponse to set
 	 */
-	public void setResponse(SipServletResponse response) {		
+	public void setResponse(SipServletResponseImpl response) {		
 		if(response.getStatus() >= 200 && 
 				(lastFinalResponse == null || lastFinalResponse.getStatus() < response.getStatus())) {
 			this.lastFinalResponse = response;
 		}
 		// we keep the last informational response for noPrackReceived only
-		if(SipServletResponseImpl.REL100_OPTION_TAG.equals(response.getHeader(RequireHeader.NAME)) && (response.getStatus() > 100 && response.getStatus() < 200) && 
+		if(containsRel100(response.getMessage()) && (response.getStatus() > 100 && response.getStatus() < 200) && 
 				(lastInformationalResponse == null || lastInformationalResponse.getStatus() < response.getStatus())) {
 			this.lastInformationalResponse = response;
 		}

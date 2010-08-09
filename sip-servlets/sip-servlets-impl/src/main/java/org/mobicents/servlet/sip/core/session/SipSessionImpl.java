@@ -56,9 +56,11 @@ import javax.servlet.sip.SipSessionBindingEvent;
 import javax.servlet.sip.SipSessionBindingListener;
 import javax.servlet.sip.SipSessionEvent;
 import javax.servlet.sip.SipSessionListener;
+import javax.servlet.sip.SipURI;
 import javax.servlet.sip.URI;
 import javax.servlet.sip.ar.SipApplicationRouterInfo;
 import javax.servlet.sip.ar.SipApplicationRoutingRegion;
+import javax.sip.ClientTransaction;
 import javax.sip.Dialog;
 import javax.sip.DialogState;
 import javax.sip.InvalidArgumentException;
@@ -84,6 +86,7 @@ import javax.sip.message.Response;
 import org.apache.catalina.Container;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.mobicents.ha.javax.sip.SipLoadBalancer;
 import org.mobicents.servlet.sip.JainSipUtils;
 import org.mobicents.servlet.sip.SipFactories;
@@ -294,6 +297,10 @@ public class SipSessionImpl implements MobicentsSipSession {
 				SipSessionEvent sipSessionEvent = new SipSessionEvent(this.getSession());
 				for (SipSessionListener sipSessionListener : sipSessionListeners) {
 					try {
+						if(logger.isDebugEnabled()) {
+							logger.debug("notifying sip session listener " + sipSessionListener.getClass().getName() + " of context " + 
+									key.getApplicationName() + " of following event " + sipSessionEventType);
+						}
 						if(SipSessionEventType.CREATION.equals(sipSessionEventType)) {
 							sipSessionListener.sessionCreated(sipSessionEvent);
 						} else if (SipSessionEventType.DELETION.equals(sipSessionEventType)) {
@@ -790,6 +797,9 @@ public class SipSessionImpl implements MobicentsSipSession {
 		sipApplicationSession.getSipContext().getSipSessionsUtil().removeCorrespondingSipSession(key);
 		sipApplicationSession.onSipSessionReadyToInvalidate(this);
 		if(ongoingTransactions != null) {
+			if(logger.isDebugEnabled()) {
+				logger.debug(ongoingTransactions.size() + " ongoing transactions still present in the following sip session " + key + " on invalidation");
+			}
 			for(Transaction transaction : ongoingTransactions) {
 				if(!TransactionState.TERMINATED.equals(transaction.getState())) {
 					if(transaction.getApplicationData() != null) {
@@ -852,6 +862,11 @@ public class SipSessionImpl implements MobicentsSipSession {
 			sessionCreatingTransactionRequest = null;
 		}
 		if(proxy != null) {
+			try {
+				proxy.cancel();
+			} catch (Exception e) {
+				logger.debug("Problem cancelling proxy. We just try our best. This is not a critical error.", e);
+			}
 			proxy.getTransactionMap().clear();
 			proxy.getProxyBranchesMap().clear();
 			proxy = null;
@@ -1264,8 +1279,11 @@ public class SipSessionImpl implements MobicentsSipSession {
 		
 		if(logger.isDebugEnabled()) {
 			logger.debug("transaction "+ transaction +" has been removed from sip session's ongoingTransactions" );
-		}		
+		}	
+		
+		updateReadyToInvalidate(transaction);
 	}
+	
 	
 	public Set<Transaction> getOngoingTransactions() {
 		return this.ongoingTransactions;
@@ -1293,8 +1311,11 @@ public class SipSessionImpl implements MobicentsSipSession {
 		if( (State.INITIAL.equals(state) || State.EARLY.equals(state)) && 
 				response.getStatus() >= 200 && response.getStatus() < 300 && 
 				!JainSipUtils.DIALOG_TERMINATING_METHODS.contains(method)) {
-			this.setState(State.CONFIRMED);
-			if(this.proxy != null && this.proxy.getFinalBranchForSubsequentRequests() != null && !this.proxy.getFinalBranchForSubsequentRequests().getRecordRoute()) {
+			this.setState(State.CONFIRMED);			
+			if(this.proxy != null && response.getProxyBranch() != null && !response.getProxyBranch().getRecordRoute()) {
+				// Section 6.2.4.1.2 Invalidate When Ready Mechanism :
+		    	// "The container determines the SipSession to be in the ready-to-invalidate state under any of the following conditions:
+		    	// 2. A SipSession transitions to the CONFIRMED state when it is acting as a non-record-routing proxy."
 				setReadyToInvalidate(true);
 			}
 			if(logger.isDebugEnabled()) {
@@ -1302,6 +1323,9 @@ public class SipSessionImpl implements MobicentsSipSession {
 			}
 		}
 		// Mapping to the sip session state machine
+		// We will transition from INITIAL to EARLY here for 100 Trying (not clear from the spec)
+		// Figure 6-1 The SIP Dialog State Machine
+		// and Figure 6-2 The SipSession State Machine
 		if( State.INITIAL.equals(state) && response.getStatus() >= 100 && response.getStatus() < 200 ) {
 			this.setState(State.EARLY);
 			if(logger.isDebugEnabled()) {
@@ -1382,6 +1406,19 @@ public class SipSessionImpl implements MobicentsSipSession {
 			}
 			okToByeSentOrReceived = true;						
 		}
+		if(response.getTransactionApplicationData().isCanceled()) {
+			SipServletRequest request = (SipServletRequest) response.getTransactionApplicationData().getSipServletMessage();
+			try {
+				request.createCancel().send();
+			} catch (IOException e) {
+				if(logger.isEnabledFor(Priority.WARN)) {
+				logger.warn("Couldn't send CANCEL for a transaction that has been CANCELLED but " +
+						"CANCEL was not sent because there was no response from the other side. We" +
+						" just stopped the retransmissions." + response + "\nThe transaction" + 
+						response.getTransaction(), e);
+				}
+			}
+		}
 	}
 	
 	/**
@@ -1419,6 +1456,20 @@ public class SipSessionImpl implements MobicentsSipSession {
 			}
 		}
 		
+	}
+    
+    
+    private void updateReadyToInvalidate(Transaction transaction) {
+    	// Section 6.2.4.1.2 Invalidate When Ready Mechanism :
+    	// "The container determines the SipSession to be in the ready-to-invalidate state under any of the following conditions:
+    	// 3. A SipSession acting as a UAC transitions from the EARLY state back to 
+    	// the INITIAL state on account of receiving a non-2xx final response (6.2.1 Relationship to SIP Dialogs, point 4)
+    	// and has not initiated any new requests (does not have any pending transactions)."
+    	if(!readyToInvalidate && (ongoingTransactions == null || ongoingTransactions.isEmpty()) && 
+    			transaction instanceof ClientTransaction && getProxy() == null && 
+    			state != null && state.equals(State.INITIAL) ) {
+    		setReadyToInvalidate(true);
+    	}
 	}
     
     /**
@@ -1559,6 +1610,9 @@ public class SipSessionImpl implements MobicentsSipSession {
 	 * @param readyToInvalidate the readyToInvalidate to set
 	 */
 	protected void setReadyToInvalidate(boolean readyToInvalidate) {
+		if(logger.isDebugEnabled()) {
+    		logger.debug("readyToInvalidate flag is set to " + readyToInvalidate);
+    	}
 		this.readyToInvalidate = readyToInvalidate;
 	}
 
@@ -1573,8 +1627,9 @@ public class SipSessionImpl implements MobicentsSipSession {
 		invalidateWhenReady = arg0;
 	}
 	
-	/**
-	 * {@inheritDoc}
+	/*
+	 * (non-Javadoc)
+	 * @see javax.servlet.sip.SipSession#setOutboundInterface(java.net.InetAddress)
 	 */
 	public void setOutboundInterface(InetAddress inetAddress) {
 		if(!isValid()) {
@@ -1582,9 +1637,19 @@ public class SipSessionImpl implements MobicentsSipSession {
 		}
 		if(inetAddress == null) {
 			throw new NullPointerException("parameter is null");
-		}
-		//TODO check against our defined outbound interfaces
+		}		
 		String address = inetAddress.getHostAddress();
+		List<SipURI> list = sipFactory.getSipNetworkInterfaceManager().getOutboundInterfaces();
+		SipURI networkInterface = null;
+		for(SipURI networkInterfaceURI : list) {
+			if(networkInterfaceURI.toString().contains(address)) {
+				networkInterface = networkInterfaceURI;
+				break;
+			}
+		}
+		
+		if(networkInterface == null) throw new IllegalArgumentException("Network interface for " +
+				address + " not found");		
 		try {
 			outboundInterface = new SipURIImpl(SipFactories.addressFactory.createSipURI(null, address)).toString();
 		} catch (ParseException e) {
@@ -1594,8 +1659,9 @@ public class SipSessionImpl implements MobicentsSipSession {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
+	/*
+	 * (non-Javadoc)
+	 * @see javax.servlet.sip.SipSession#setOutboundInterface(java.net.InetSocketAddress)
 	 */
 	public void setOutboundInterface(InetSocketAddress inetSocketAddress) {
 		if(!isValid()) {
@@ -1603,9 +1669,19 @@ public class SipSessionImpl implements MobicentsSipSession {
 		}
 		if(inetSocketAddress == null) {
 			throw new NullPointerException("parameter is null");
-		}
-		//TODO check against our defined outbound interfaces		
+		}		
 		String address = inetSocketAddress.getAddress().getHostAddress() + ":" + inetSocketAddress.getPort();
+		List<SipURI> list = sipFactory.getSipNetworkInterfaceManager().getOutboundInterfaces();
+		SipURI networkInterface = null;
+		for(SipURI networkInterfaceURI : list) {
+			if(networkInterfaceURI.toString().contains(address)) {
+				networkInterface = networkInterfaceURI;
+				break;
+			}
+		}
+		
+		if(networkInterface == null) throw new IllegalArgumentException("Network interface for " +
+				address + " not found");
 		try {
 			outboundInterface = new SipURIImpl(SipFactories.addressFactory.createSipURI(null, address)).toString();
 		} catch (ParseException e) {
@@ -1613,6 +1689,31 @@ public class SipSessionImpl implements MobicentsSipSession {
 					+ "] HOST[" + address + "]", e);
 			throw new IllegalArgumentException("Could not create SIP URI user = " + null + " host = " + address);
 		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.javax.servlet.sip.SipSessionExt#setOutboundInterface(javax.servlet.sip.SipURI)
+	 */
+	public void setOutboundInterface(SipURI outboundInterface) {
+		if(!isValid()) {
+			throw new IllegalStateException("the session has been invalidated");
+		}
+		if(outboundInterface == null) {
+			throw new NullPointerException("parameter is null");
+		}				
+		List<SipURI> list = sipFactory.getSipNetworkInterfaceManager().getOutboundInterfaces();
+		SipURI networkInterface = null;
+		for(SipURI networkInterfaceURI : list) {
+			if(networkInterfaceURI.equals(outboundInterface)) {
+				networkInterface = networkInterfaceURI;
+				break;
+			}
+		}
+		
+		if(networkInterface == null) throw new IllegalArgumentException("Network interface for " +
+				outboundInterface + " not found");
+		this.outboundInterface = outboundInterface.toString();		
 	}
 	
 	/**
@@ -1701,8 +1802,8 @@ public class SipSessionImpl implements MobicentsSipSession {
 		} else {
 			eventHeader =  (EventHeader) sipServletMessageImpl.getMessage().getHeader(EventHeader.NAME);
 		}
-		if(logger.isInfoEnabled()) {
-			logger.info("adding subscription " + eventHeader + " to sip session " + getId());
+		if(logger.isDebugEnabled()) {
+			logger.debug("adding subscription " + eventHeader + " to sip session " + getId());
 		}
 		if(subscriptions == null) {
 			this.subscriptions = new CopyOnWriteArraySet<EventHeader>();
@@ -1723,8 +1824,8 @@ public class SipSessionImpl implements MobicentsSipSession {
 	 */
 	public void removeSubscription(SipServletMessageImpl sipServletMessageImpl) {
 		EventHeader eventHeader =  (EventHeader) sipServletMessageImpl.getMessage().getHeader(EventHeader.NAME);
-		if(logger.isInfoEnabled()) {
-			logger.info("removing subscription " + eventHeader + " to sip session " + getId());
+		if(logger.isDebugEnabled()) {
+			logger.debug("removing subscription " + eventHeader + " to sip session " + getId());
 		}
 		boolean hasOngoingSubscriptions = false;
 		if(subscriptions != null) {
@@ -1742,8 +1843,8 @@ public class SipSessionImpl implements MobicentsSipSession {
 			}
 		}
 		if(isReadyToInvalidateInternal()) {
-			if(logger.isInfoEnabled()) {
-				logger.info("no more subscriptions in session " + getId());
+			if(logger.isDebugEnabled()) {
+				logger.debug("no more subscriptions in session " + getId());
 			}
 			if(sessionCreatingDialog != null) {
 				sessionCreatingDialog.delete();

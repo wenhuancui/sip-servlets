@@ -119,12 +119,14 @@ public abstract class JBossCacheClusteredSipApplicationSession extends Clustered
 		}
 		sipSessions.clear();
 		SipSessionKey[] sipSessionKeys = (SipSessionKey[]) proxy_.getSipApplicationSessionMetaData(sipAppSessionId, SIP_SESSIONS);
-		for (SipSessionKey sipSessionKey : sipSessionKeys) {
-			sipSessionKey.setApplicationName(proxy_.getSipApplicationName());
-			sipSessionKey.setApplicationName(sipAppSessionId);
-			sipSessionKey.computeToString();
-			sipSessions.add(sipSessionKey);
-		}		
+		if(sipSessionKeys != null && sipSessionKeys.length > 0) {
+			for (SipSessionKey sipSessionKey : sipSessionKeys) {
+				sipSessionKey.setApplicationName(proxy_.getSipApplicationName());
+				sipSessionKey.setApplicationName(sipAppSessionId);
+				sipSessionKey.computeToString();
+				sipSessions.add(sipSessionKey);
+			}		
+		}
 		String[] httpSessionIds = (String[]) proxy_.getSipApplicationSessionMetaData(sipAppSessionId, HTTP_SESSIONS);
 		if(httpSessionIds != null && httpSessionIds.length > 0) {
 			if(httpSessions == null) {
@@ -142,13 +144,16 @@ public abstract class JBossCacheClusteredSipApplicationSession extends Clustered
 	/**
 	 * Increment our version and place ourself in the cache.
 	 */
-	public void processSessionRepl() {
+	public synchronized void processSessionRepl() {
 		// Replicate the session.
 		if (logger.isDebugEnabled()) {
 			logger.debug("processSessionRepl(): session is dirty. Will increment "
 					+ "version from: " + getVersion() + " and replicate.");
 		}
 		final String sipAppSessionKey = getHaId();
+		if (logger.isDebugEnabled()) {
+			logger.debug("processSessionRepl(): replicating sip app session " + sipAppSessionKey);
+		}
 		if(isNew) {
 			proxy_.putSipApplicationSessionMetaData(sipAppSessionKey, CREATION_TIME, creationTime);
 			proxy_.putSipApplicationSessionMetaData(sipAppSessionKey, INVALIDATION_POLICY, invalidationPolicy);

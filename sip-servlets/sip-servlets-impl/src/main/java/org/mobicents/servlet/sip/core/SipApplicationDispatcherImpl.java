@@ -16,15 +16,22 @@
  */
 package org.mobicents.servlet.sip.core;
 
+import gov.nist.javax.sip.ClientTransactionExt;
 import gov.nist.javax.sip.DialogTimeoutEvent;
+import gov.nist.javax.sip.ResponseEventExt;
+import gov.nist.javax.sip.SipStackImpl;
+import gov.nist.javax.sip.TransactionExt;
 import gov.nist.javax.sip.DialogTimeoutEvent.Reason;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -89,6 +96,7 @@ import org.mobicents.servlet.sip.annotation.ConcurrencyControlMode;
 import org.mobicents.servlet.sip.core.dispatchers.DispatcherException;
 import org.mobicents.servlet.sip.core.dispatchers.MessageDispatcher;
 import org.mobicents.servlet.sip.core.dispatchers.MessageDispatcherFactory;
+import org.mobicents.servlet.sip.core.session.DistributableSipManager;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
 import org.mobicents.servlet.sip.core.session.SessionManagerUtil;
@@ -212,6 +220,9 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	private boolean bypassResponseExecutor = true;
 	private boolean bypassRequestExecutor = true;			
 	private int baseTimerInterval = 500; // base timer interval for jain sip tx
+	private int t2Interval = 4000; // t2 timer interval for jain sip tx
+	private int t4Interval = 5000; // t4 timer interval for jain sip tx
+	private int timerDInterval = 32000; // timer D interval for jain sip tx
 	private ConcurrencyControlMode concurrencyControlMode;
 	
 	// This executor is used for async things that don't need to wait on session executors, like CANCEL requests
@@ -327,8 +338,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 			started = Boolean.TRUE;
 		} finally {
 			statusLock.unlock();
-		}
-		
+		}		
 		congestionControlTimerTask = new CongestionControlTimerTask();
 		if(congestionControlTimerFuture == null && congestionControlCheckingInterval > 0) { 
 				congestionControlTimerFuture = congestionControlThreadPool.scheduleWithFixedDelay(congestionControlTimerTask, congestionControlCheckingInterval, congestionControlCheckingInterval, TimeUnit.MILLISECONDS);
@@ -340,8 +350,25 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 		 		logger.info("No Congestion control background task started since the checking interval is equals to " + congestionControlCheckingInterval + " milliseconds.");
 		 	}
 		}
-		if(logger.isDebugEnabled()) {
-			logger.debug("Sip Application Dispatcher started");
+		if(logger.isInfoEnabled()) {
+			Properties versionProperties = new Properties();
+			try {
+				InputStream in = SipApplicationDispatcherImpl.class.getResourceAsStream("version.properties");
+				if(in != null) {
+					versionProperties.load(in);
+					in.close();
+					String version = versionProperties.getProperty("release.version");
+					if(version != null) {
+						logger.info("Mobicents Sip Servlets " + version + " started." );
+					} else {
+						logger.warn("Unable to extract the version of Mobicents Sip Servlets currently running");
+					}
+				} else {
+					logger.warn("Unable to extract the version of Mobicents Sip Servlets currently running");
+				}
+			} catch (IOException e) {
+				logger.warn("Unable to extract the version of Mobicents Sip Servlets currently running", e);
+			}		
 		}
 		// outbound interfaces set here and not in sipstandardcontext because
 		// depending on jboss or tomcat context can be started before or after
@@ -574,6 +601,9 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 					}
 				    requestTransaction = sipProvider.getNewServerTransaction(request);
 				    requestTransaction.setRetransmitTimer(baseTimerInterval);
+				    ((TransactionExt)requestTransaction).setTimerT2(t2Interval);
+				    ((TransactionExt)requestTransaction).setTimerT4(t4Interval);
+				    ((TransactionExt)requestTransaction).setTimerD(timerDInterval);
 				} catch ( TransactionUnavailableException tae) {
 					logger.error("cannot get a new Server transaction for this request " + request, tae);
 					// Sends a 500 Internal server error and stops processing.				
@@ -741,8 +771,27 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 		}
 
 		updateResponseStatistics(response);
-		final ClientTransaction clientTransaction = responseEvent.getClientTransaction();		
+		ClientTransaction clientTransaction = responseEvent.getClientTransaction();		
 		final Dialog dialog = responseEvent.getDialog();
+		final boolean isForkedResponse = ((ResponseEventExt)responseEvent).isForkedResponse();
+		final ClientTransactionExt originalTransaction = ((ResponseEventExt)responseEvent).getOriginalTransaction();
+		if(logger.isDebugEnabled()) {
+			logger.debug("is Forked Response " + isForkedResponse);
+			logger.debug("Client Transaction " + clientTransaction);
+			logger.debug("Original Transaction " + originalTransaction);
+			logger.debug("Dialog " + dialog);
+		}
+		// Issue 1468 : Handling forking 
+		if(isForkedResponse && originalTransaction != null) {
+			final Dialog defaultDialog = originalTransaction.getDefaultDialog();
+			final Dialog orginalTransactionDialog = originalTransaction.getDialog();
+			if(logger.isDebugEnabled()) {				
+				logger.debug("Original Transaction Dialog " + orginalTransactionDialog);
+				logger.debug("Original Transaction Default Dialog " + defaultDialog);
+			}
+			clientTransaction = originalTransaction;			
+		}
+		
 		// Transate the response to SipServletResponse
 		final SipServletResponseImpl sipServletResponse = new SipServletResponseImpl(
 				response, 
@@ -805,28 +854,47 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 				try {
 					final ClassLoader cl = sipContext.getLoader().getClassLoader();
 					Thread.currentThread().setContextClassLoader(cl);
-									
-					MobicentsSipSession sipSessionImpl = sipContext.getSipManager().getSipSession(sipSessionKey, false, sipFactoryImpl, null);
-	
+					final SipManager sipManager = sipContext.getSipManager();					
+					final SipApplicationSessionKey sipApplicationSessionKey = SessionManagerUtil.getSipApplicationSessionKey(
+							sipSessionKey.getApplicationName(), 
+							sipSessionKey.getApplicationSessionId());
+					
+					MobicentsSipSession sipSessionImpl = null;
 					MobicentsSipApplicationSession sipApplicationSession = null;
+					if(sipManager instanceof DistributableSipManager) {
+						// we check only locally if the sessions are present, no need to check in the cache since
+						// what triggered this method call was either a transaction or a dialog terminating or timeout
+						// so the sessions should be present locally, if they are not it means that it has already been invalidated
+						// perf optimization and fix for Issue 1688 : MSS HA on AS5 : Version is null Exception occurs sometimes
+						DistributableSipManager distributableSipManager = (DistributableSipManager) sipManager;
+						sipApplicationSession = distributableSipManager.getSipApplicationSession(sipApplicationSessionKey, false, true);
+						sipSessionImpl = distributableSipManager.getSipSession(sipSessionKey, false, sipFactoryImpl, sipApplicationSession, true);						
+					} else {						
+						sipApplicationSession = sipManager.getSipApplicationSession(sipApplicationSessionKey, false);
+						sipSessionImpl = sipManager.getSipSession(sipSessionKey, false, sipFactoryImpl, sipApplicationSession);
+					}									
+															
 					if(sipSessionImpl != null) {
-						if(sipSessionImpl.getProxy() != null) {
-							// If this is a client transaction no need to invalidate proxy session http://code.google.com/p/mobicents/issues/detail?id=1024
-							if(!invalidateProxySession) {
-								return;
-							} else {
-								if(logger.isDebugEnabled()) {
-									logger.debug("Proxy session is being invalidated on server transaction termination " + sipSessionKey);
-								}
+						final ProxyImpl proxy = sipSessionImpl.getProxy();
+						if(!invalidateProxySession && (proxy == null || (proxy != null && proxy.getFinalBranchForSubsequentRequests() != null && !proxy.getFinalBranchForSubsequentRequests().getRecordRoute()))) {
+							if(logger.isDebugEnabled()) {
+								logger.debug("try to Invalidate Proxy session if it is non record routing " + sipSessionKey);
 							}
+							invalidateProxySession = true;
 						}
+						// If this is a client transaction no need to invalidate proxy session http://code.google.com/p/mobicents/issues/detail?id=1024
+						if(!invalidateProxySession) {
+							if(logger.isDebugEnabled()) {
+								logger.debug("don't Invalidate Proxy session");
+							}
+							return;
+						} 
 						if(logger.isDebugEnabled()) {
 							logger.debug("sip session " + sipSessionKey + " is valid ? :" + sipSessionImpl.isValidInternal());
 							if(sipSessionImpl.isValidInternal()) {
 								logger.debug("Sip session " + sipSessionKey + " is ready to be invalidated ? :" + sipSessionImpl.isReadyToInvalidate());
 							}
-						}
-						sipApplicationSession = sipSessionImpl.getSipApplicationSession();
+						}						
 						if(sipSessionImpl.isValidInternal() && sipSessionImpl.isReadyToInvalidate()) {
 							sipContext.enterSipApp(sipApplicationSession, sipSessionImpl);
 							try {
@@ -839,13 +907,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 						if(logger.isDebugEnabled()) {
 							logger.debug("sip session already invalidated" + sipSessionKey);
 						}
-					}										
-					if(sipApplicationSession == null) {
-						final SipApplicationSessionKey sipApplicationSessionKey = SessionManagerUtil.getSipApplicationSessionKey(
-								sipSessionKey.getApplicationName(), 
-								sipSessionKey.getApplicationSessionId());
-						sipApplicationSession = sipContext.getSipManager().getSipApplicationSession(sipApplicationSessionKey, false);
-					}
+					}															
 					if(sipApplicationSession != null) {
 						if(logger.isDebugEnabled()) {
 							logger.debug("sip app session " + sipApplicationSession.getKey() + " is valid ? :" + sipApplicationSession.isValidInternal());
@@ -921,13 +983,18 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 			if(sipSession != null) {
 				// session can be null if a message was sent outside of the container by the container itself during Initial request dispatching
 				// but the external host doesn't send any response so we call out to the applicationonly if the session is not null
-				if(sipServletMessage instanceof SipServletRequestImpl) {
+				// naoki : Fix for Issue 1618 http://code.google.com/p/mobicents/issues/detail?id=1618 on Timeout don't do the 408 processing for Server Transactions
+				if(sipServletMessage instanceof SipServletRequestImpl && !timeoutEvent.isServerTransaction()) {
 					try {
 						SipServletRequestImpl sipServletRequestImpl = (SipServletRequestImpl) sipServletMessage;
 						sipServletMessage.setTransaction(transaction);
 						SipServletResponseImpl response = (SipServletResponseImpl) sipServletRequestImpl.createResponse(408, null, false);
 
 						MessageDispatcher.callServlet(response);
+						if(tad.getProxyBranch() != null) {
+							tad.getProxyBranch().setResponse(response);
+							tad.getProxyBranch().onResponse(response, response.getStatus());
+						}
 						sipSession.updateStateOnResponse(response, true);
 					} catch (Throwable t) {
 						logger.error("Failed to deliver 408 response on transaction timeout" + transaction, t);
@@ -1061,20 +1128,38 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 				if(logger.isDebugEnabled()) {
 					logger.debug("no sip session were returned for this key " + sipServletMessageImpl.getSipSessionKey() + " and message " + sipServletMessageImpl);
 				}
-			} else {
-				// If it is a client transaction, do not kill the proxy session http://code.google.com/p/mobicents/issues/detail?id=1024
-				tryToInvalidateSession(sipSessionKey, transactionTerminatedEvent.isServerTransaction());				
-//				sipSessionImpl.removeOngoingTransaction(transaction);
 			}			
 			
 			// Issue 1333 : B2buaHelper.getPendingMessages(linkedSession, UAMode.UAC) returns empty list
 			// don't remove the transaction on terminated state for INVITE Tx because it won't be possible
 			// to create the ACK on second leg for B2BUA apps
-			if(sipSession != null && 
-					(b2buaHelperImpl == null && transaction instanceof ClientTransaction && !Request.INVITE.equals(sipServletMessageImpl.getMethod()))) {
-				sipSession.removeOngoingTransaction(transaction);
-				tad.cleanUp();
-				transaction.setApplicationData(null);
+			if(sipSession != null) {
+				boolean removeTx = true;
+				if(b2buaHelperImpl != null && transaction instanceof ClientTransaction && Request.INVITE.equals(sipServletMessageImpl.getMethod())) {
+					removeTx = false;
+				}
+				if(removeTx) {
+					if(b2buaHelperImpl != null && tad.getSipServletMessage() instanceof SipServletRequestImpl) {
+						b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage());
+					}
+					sipSession.removeOngoingTransaction(transaction);
+					tad.cleanUp();
+					// Issue 1468 : to handle forking, we shouldn't cleanup the app data since it is needed for the forked responses
+					boolean nullifyAppData = true;					
+					if(((SipStackImpl)((SipProvider)transactionTerminatedEvent.getSource()).getSipStack()).getMaxForkTime() > 0 && Request.INVITE.equals(sipServletMessageImpl.getMethod())) {
+						nullifyAppData = false;
+					}
+					if(nullifyAppData) {
+						transaction.setApplicationData(null);
+					}
+				} else {
+					if(logger.isDebugEnabled()) {
+						logger.debug("Transaction " + transaction + " not removed from session " + sipSessionKey + " because the B2BUA might still need it to create the ACK");
+					}
+				}
+				// If it is a client transaction, do not kill the proxy session http://code.google.com/p/mobicents/issues/detail?id=1024
+				tryToInvalidateSession(sipSessionKey, transactionTerminatedEvent.isServerTransaction());				
+
 			}			
 		} else {
 			if(logger.isDebugEnabled()) {
@@ -1650,11 +1735,11 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	 */
 	public void setBaseTimerInterval(int baseTimerInterval) {
 		if(baseTimerInterval < 1) {
-			logger.error("It's forbidden to set the Base Timer Interval to a non positive value");
+			throw new IllegalArgumentException("It's forbidden to set the Base Timer Interval to a non positive value");
 		}
 		this.baseTimerInterval = baseTimerInterval;
 		if(logger.isInfoEnabled()) {
-			logger.info("Base Timer Interval set to " + this.baseTimerInterval +"ms");
+			logger.info("SIP Base Timer Interval set to " + this.baseTimerInterval +"ms");
 		}
 	}
 
@@ -1663,6 +1748,74 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	 */
 	public int getBaseTimerInterval() {
 		return baseTimerInterval;
+	}
+	
+	/**
+	 * @param t2Interval the t2Interval to set
+	 */
+	public void setT2Interval(int t2Interval) {
+		if(t2Interval < 1) {
+			throw new IllegalArgumentException("It's forbidden to set the SIP Timer T2 Interval to a non positive value");
+		}
+		this.t2Interval = t2Interval;
+		if(logger.isInfoEnabled()) {
+			logger.info("SIP Timer T2 Interval set to " + this.t2Interval +"ms");
+		}
+	}
+
+
+	/**
+	 * @return the t2Interval
+	 */
+	public int getT2Interval() {
+		return t2Interval;
+	}
+
+
+	/**
+	 * @param t4Interval the t4Interval to set
+	 */
+	public void setT4Interval(int t4Interval) {
+		if(t4Interval < 1) {
+			throw new IllegalArgumentException("It's forbidden to set the SIP Timer T4 Interval to a non positive value");
+		}
+		this.t4Interval = t4Interval;
+		if(logger.isInfoEnabled()) {
+			logger.info("SIP Timer T4 Interval set to " + this.t4Interval +"ms");
+		}
+	}
+
+
+	/**
+	 * @return the t4Interval
+	 */
+	public int getT4Interval() {
+		return t4Interval;
+	}
+
+
+	/**
+	 * @param timerDInterval the timerDInterval to set
+	 */
+	public void setTimerDInterval(int timerDInterval) {
+		if(timerDInterval < 1) {
+			throw new IllegalArgumentException("It's forbidden to set the SIP Timer TD Interval to a non positive value");
+		}
+		if(timerDInterval < 32000) {
+			throw new IllegalArgumentException("It's forbidden to set the SIP Timer TD Interval to a value lower than 32s");
+		}
+		this.timerDInterval = timerDInterval;
+		if(logger.isInfoEnabled()) {
+			logger.info("SIP Timer D Interval set to " + this.timerDInterval +"ms");
+		}
+	}
+
+
+	/**
+	 * @return the timerDInterval
+	 */
+	public int getTimerDInterval() {
+		return timerDInterval;
 	}
 
 	public String[] getExtensionsSupported() {

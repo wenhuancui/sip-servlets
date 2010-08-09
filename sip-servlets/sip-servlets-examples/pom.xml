@@ -3,12 +3,12 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip</groupId>
 		<artifactId>sip-servlets-bootstrap</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.mobicents.servlet.sip.example</groupId>
 	<artifactId>sip-servlets-examples-parent</artifactId>
-	<version>5.0.0.Beta2-JBCP5</version>
+	<version>1.7.2</version>
 	<packaging>pom</packaging>
 	<name>Mobicents Sip Servlet Examples</name>
 	<url>http://www.mobicents.org/examples.html</url>
@@ -22,6 +22,7 @@
 		<module>click-to-call</module>
 		<module>conference-demo</module>
 		<module>conference-demo-jsr309</module>
+		<module>custom-call-forwarding-distributable</module>
 		<module>diameter-event-charging</module>
 		<module>diameter-openims</module>
 		<module>facebook-c2c</module>
@@ -40,7 +41,6 @@
 		<module>speed-dial</module>
 		<module>uac-register</module>
 	</modules>
-	
 
 	<properties>
 		<!-- MOBICENTS MEDIA SERVER VERSIONS -->
@@ -83,7 +83,7 @@
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-spec</artifactId>
-			<version>1.1.13.1</version>
+			<version>1.1.13.2</version>
 			<scope>provided</scope>
 		</dependency>		
 	</dependencies>	

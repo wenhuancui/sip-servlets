@@ -66,6 +66,8 @@ import javax.sip.header.FromHeader;
 import javax.sip.header.Header;
 import javax.sip.header.HeaderAddress;
 import javax.sip.header.Parameters;
+import javax.sip.header.RequireHeader;
+import javax.sip.header.SupportedHeader;
 import javax.sip.header.ToHeader;
 import javax.sip.message.Message;
 import javax.sip.message.Request;
@@ -104,6 +106,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Serial
 	private static final String MULTIPART_START = "start";
 	private static final String MULTIPART_BOUNDARY_DELIM = "--";
 	private static final String LINE_RETURN_DELIM = "\n";
+	public static final String REL100_OPTION_TAG = "100rel";
 //	private static final String HCOLON = " : ";
 	
 	protected Message message;
@@ -116,6 +119,10 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Serial
 	// Made it transient for Issue 1523 : http://code.google.com/p/mobicents/issues/detail?id=1523
 	// NotSerializableException happens if a message is stored in the sip session during HA
 	private transient Transaction transaction;
+	
+	// We need this object separate from transaction.getApplicationData, because the actualy transaction
+	// may be create later and we still need to accumulate useful data. Also the transaction might be
+	// cleaned up earlier. The transaction and this object have different lifecycle.
 	protected TransactionApplicationData transactionApplicationData;		
 
 	protected HeaderForm headerForm = HeaderForm.DEFAULT;
@@ -156,7 +163,14 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Serial
 		if(sipSession != null) {
 			this.sessionKey = sipSession.getKey();
 		}
-		this.transactionApplicationData = new TransactionApplicationData(this);
+		if(transaction != null && getMethod().equals(Request.INVITE)) {
+			if(transaction.getApplicationData() != null) {
+				this.transactionApplicationData = (TransactionApplicationData) transaction.getApplicationData();
+			}
+		} 
+		if(transactionApplicationData == null){
+			this.transactionApplicationData = new TransactionApplicationData(this);
+		}
 		isMessageSent = false;
 		this.dialog = dialog;
 		
@@ -995,11 +1009,13 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Serial
 	 * Retrieve the sip session implementation
 	 * @return the sip session implementation
 	 */
-	public final MobicentsSipSession getSipSession() {		
+	public final MobicentsSipSession getSipSession() {	
 		if(sipSession == null && sessionKey != null) {
 			final String applicationName = sessionKey.getApplicationName(); 
-			final SipContext sipContext = sipFactoryImpl.getSipApplicationDispatcher().findSipApplication(applicationName); 
-			sipSession = sipContext.getSipManager().getSipSession(sessionKey, false, sipFactoryImpl, null);	
+			final SipContext sipContext = sipFactoryImpl.getSipApplicationDispatcher().findSipApplication(applicationName);
+			SipApplicationSessionKey sipApplicationSessionKey = new SipApplicationSessionKey(sessionKey.getApplicationSessionId(), sessionKey.getApplicationName());
+			MobicentsSipApplicationSession sipApplicationSession = sipContext.getSipManager().getSipApplicationSession(sipApplicationSessionKey, false);
+			sipSession = sipContext.getSipManager().getSipSession(sessionKey, false, sipFactoryImpl, sipApplicationSession);	
 		} 
 		return sipSession; 
 	}
@@ -1524,11 +1540,6 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Serial
 		return this.message.toString();
 	}
 
-	protected void setTransactionApplicationData(
-			TransactionApplicationData applicationData) {
-		this.transactionApplicationData = applicationData;
-	}
-
 	public TransactionApplicationData getTransactionApplicationData() {
 		return this.transactionApplicationData;
 	}
@@ -1538,11 +1549,13 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Serial
 	}
 
 	public Dialog getDialog() {
-		if (this.dialog != null) return dialog;
-		if (this.transaction != null)
+		if (this.dialog != null) {
+			return dialog;
+		}
+		if (this.transaction != null) {
 			return this.transaction.getDialog();
-		else
-			return null;
+		}
+		return null;
 	}
 
 	/**
@@ -1676,6 +1689,28 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Serial
 			final ExtendedListeningPoint listeningPoint = sipFactoryImpl.getSipNetworkInterfaceManager().findMatchingListeningPoint(transport, false);		
 			return listeningPoint.getPort();
 		}
+	}
+	// Fix for Issue 1552 http://code.google.com/p/mobicents/issues/detail?id=1552
+	// Container does not recognise 100rel if there are other extensions on the Require or Supported line
+	// we check all the values of Require and Supported headers to make sure the 100rel is present	
+	protected boolean containsRel100(Message message) {
+		ListIterator<SIPHeader> requireHeaders = message.getHeaders(RequireHeader.NAME);
+		if(requireHeaders != null) {
+			while (requireHeaders.hasNext()) {
+				if(REL100_OPTION_TAG.equals(requireHeaders.next().getValue())) {
+					return true;
+				}
+			}
+		}
+		ListIterator<SIPHeader> supportedHeaders = message.getHeaders(SupportedHeader.NAME);
+		if(supportedHeaders != null) {
+			while (supportedHeaders.hasNext()) {
+				if(REL100_OPTION_TAG.equals(supportedHeaders.next().getValue())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public abstract void cleanUp();

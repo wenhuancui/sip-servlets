@@ -49,9 +49,7 @@ import javax.sip.header.ContactHeader;
 import javax.sip.header.Header;
 import javax.sip.header.ProxyAuthenticateHeader;
 import javax.sip.header.RecordRouteHeader;
-import javax.sip.header.RequireHeader;
 import javax.sip.header.RouteHeader;
-import javax.sip.header.SupportedHeader;
 import javax.sip.header.ViaHeader;
 import javax.sip.header.WWWAuthenticateHeader;
 import javax.sip.message.Request;
@@ -75,9 +73,6 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 		SipServletResponse {
 	
 	private static final long serialVersionUID = 1L;
-
-	public static final String REL100_OPTION_TAG = "100rel";
-
 	private static final Logger logger = Logger.getLogger(SipServletResponseImpl.class);
 	
 	Response response;
@@ -147,8 +142,8 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 				.getMethod();
 		//Killer condition, see comment above for meaning
 		if (method.equals(Request.REGISTER)
-				|| (Response.MULTIPLE_CHOICES <= sipResponse.getStatusCode() && sipResponse.getStatusCode() < Response.BAD_REQUEST)
-				|| sipResponse.getStatusCode() == Response.AMBIGUOUS
+				|| ((Response.MULTIPLE_CHOICES <= sipResponse.getStatusCode() && sipResponse.getStatusCode() < Response.BAD_REQUEST) && !method.equals(Request.CANCEL))
+				|| (sipResponse.getStatusCode() == Response.AMBIGUOUS && !method.equals(Request.PRACK) && !method.equals(Request.CANCEL))
 				|| (sipResponse.getStatusCode() == Response.OK && method.equals(Request.OPTIONS))) {
 			isContactSystem = false;
 		} else {
@@ -171,6 +166,9 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 	@SuppressWarnings("unchecked")
 	public SipServletRequest createAck() {
 		if(!Request.INVITE.equals(((SIPTransaction)getTransaction()).getMethod()) || (response.getStatusCode() >= 100 && response.getStatusCode() < 200) || isAckGenerated) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("transaction state " + ((SIPTransaction)getTransaction()).getMethod() + " status code " + response.getStatusCode() + " isAckGenerated " + isAckGenerated);
+			}
 			throw new IllegalStateException("the transaction state is such that it doesn't allow an ACK to be sent now, e.g. the original request was not an INVITE, or this response is provisional only, or an ACK has already been generated");
 		}
 		final MobicentsSipSession session = getSipSession();
@@ -328,8 +326,8 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 		}
 		if(!Request.INVITE.equals(originalRequest.getMethod())) {
 			throw new Rel100Exception(Rel100Exception.NOT_INVITE);
-		}
-		if(!REL100_OPTION_TAG.equals(originalRequest.getHeader(RequireHeader.NAME)) && !REL100_OPTION_TAG.equals(originalRequest.getHeader(SupportedHeader.NAME))) {
+		}		
+		if(!containsRel100(originalRequest.getMessage())) {
 			throw new Rel100Exception(Rel100Exception.NO_REQ_SUPPORT);
 		}
 		send(true);
@@ -465,8 +463,13 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 			}
 			// RFC 3262 Section 3 UAS Behavior
 			if(sendReliably) {
-				final Header requireHeader = SipFactories.headerFactory.createRequireHeader(REL100_OPTION_TAG);
-				response.addHeader(requireHeader);
+				// fix for Issue 1564 : http://code.google.com/p/mobicents/issues/detail?id=1564
+				// Send reliably can add a duplicate 100rel to the requires line
+				// don't add it if it is already present (the app can add it)
+				if(!containsRel100(response)) {
+					final Header requireHeader = SipFactories.headerFactory.createRequireHeader(REL100_OPTION_TAG);
+					response.addHeader(requireHeader);
+				}
 				final Header rseqHeader = SipFactories.headerFactory.createRSeqHeader(getTransactionApplicationData().getRseqNumber().getAndIncrement());
 				response.addHeader(rseqHeader);
 			}
@@ -626,37 +629,42 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 	 * @see javax.servlet.sip.SipServletMessage#isCommitted()
 	 */
 	public boolean isCommitted() {
-		//the message is an incoming non-reliable provisional response received by a servlet acting as a UAC
-		if(getTransaction() instanceof ClientTransaction && getStatus() >= 101 && getStatus() <= 199 && getHeader("RSeq") == null) {
-			if(this.proxyBranch == null) { // Make sure this is not a proxy. Proxies are allowed to modify headers.
-				return true;
-			} else {
-				return false;
+		Transaction tx = getTransaction();
+		// Issue 1571 : http://code.google.com/p/mobicents/issues/detail?id=1571 
+		// NullPointerException in SipServletResponseImpl.isCommitted
+		if(tx != null) {
+			//the message is an incoming non-reliable provisional response received by a servlet acting as a UAC
+			if(tx instanceof ClientTransaction && getStatus() >= 101 && getStatus() <= 199 && getHeader("RSeq") == null) {
+				if(this.proxyBranch == null) { // Make sure this is not a proxy. Proxies are allowed to modify headers.
+					return true;
+				} else {
+					return false;
+				}
 			}
-		}
-		//the message is an incoming reliable provisional response for which PRACK has already been generated. (Note that this scenario applies to containers that support the 100rel extension.)
-		if(getTransaction() instanceof ClientTransaction && getStatus() >= 101 && getStatus() <= 199 && getHeader("RSeq") != null && TransactionState.TERMINATED.equals(getTransaction().getState())) {
-			if(this.proxyBranch == null) { // Make sure this is not a proxy. Proxies are allowed to modify headers.
-				return true;
-			} else {
-				return false;
+			//the message is an incoming reliable provisional response for which PRACK has already been generated. (Note that this scenario applies to containers that support the 100rel extension.)
+			if(tx instanceof ClientTransaction && getStatus() >= 101 && getStatus() <= 199 && getHeader("RSeq") != null && TransactionState.TERMINATED.equals(tx.getState())) {
+				if(this.proxyBranch == null) { // Make sure this is not a proxy. Proxies are allowed to modify headers.
+					return true;
+				} else {
+					return false;
+				}
 			}
-		}
-		//the message is an incoming final response received by a servlet acting as a UAC for a Non INVITE transaction
-		if(getTransaction() instanceof ClientTransaction && getStatus() >= 200 && getStatus() <= 999 && !Request.INVITE.equals(((SIPClientTransaction)getTransaction()).getMethod())) {
-			if(this.proxyBranch == null) { // Make sure this is not a proxy. Proxies are allowed to modify headers.
-				return true;
-			} else {
-				return false;
+			//the message is an incoming final response received by a servlet acting as a UAC for a Non INVITE transaction
+			if(tx instanceof ClientTransaction && getStatus() >= 200 && getStatus() <= 999 && !Request.INVITE.equals(((SIPClientTransaction)tx).getMethod())) {
+				if(this.proxyBranch == null) { // Make sure this is not a proxy. Proxies are allowed to modify headers.
+					return true;
+				} else {
+					return false;
+				}
 			}
-		}
-		//the message is a response which has been forwarded upstream
-		if(isResponseForwardedUpstream) {
-			return true;
-		}
-		//message is an incoming final response to an INVITE transaction and an ACK has been generated
-		if(getTransaction() instanceof ClientTransaction && getStatus() >= 200 && getStatus() <= 999 && TransactionState.TERMINATED.equals(getTransaction().getState()) && isAckGenerated) {
-			return true;
+			//the message is a response which has been forwarded upstream
+			if(isResponseForwardedUpstream) {
+				return true;
+			}
+			//message is an incoming final response to an INVITE transaction and an ACK has been generated
+			if(tx instanceof ClientTransaction && getStatus() >= 200 && getStatus() <= 999 && TransactionState.TERMINATED.equals(tx.getState()) && isAckGenerated) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -669,6 +677,9 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 	}
 
 	public void setOriginalRequest(SipServletRequestImpl originalRequest) {
+		if(logger.isDebugEnabled()) {
+			logger.debug("original request set to " + originalRequest + " for response " + message);
+		}
 		this.originalRequest = originalRequest;
 	}
 

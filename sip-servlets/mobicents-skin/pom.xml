@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-        <artifactId>mobicents-parent</artifactId>
+        <artifactId>mobicents</artifactId>
         <groupId>org.mobicents</groupId>
-        <version>5.0.0.Beta2-JBCP5</version>
+        <version>1.18-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 	<groupId>org.mobicents</groupId>

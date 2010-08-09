@@ -15,17 +15,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.mobicents.servlet.sip.testsuite.simple;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
+import javax.sip.ListeningPoint;
 import javax.sip.SipProvider;
 import javax.sip.address.SipURI;
 import javax.sip.header.ContactHeader;
+import javax.sip.header.ProxyAuthenticateHeader;
+import javax.sip.header.ProxyAuthorizationHeader;
 import javax.sip.header.ToHeader;
 import javax.sip.header.UserAgentHeader;
 import javax.sip.message.Request;
+import javax.sip.message.Response;
 
 import org.apache.catalina.deploy.ApplicationParameter;
 import org.apache.log4j.Logger;
@@ -42,6 +48,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	private static final String TRANSPORT = "udp";
 	private static final boolean AUTODIALOG = true;
 	private static final int TIMEOUT = 10000;	
+	private static final int DIALOG_TIMEOUT = 40000;
 //	private static final int TIMEOUT = 100000000;
 	
 	TestSipListener receiver;
@@ -135,7 +142,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 		Thread.sleep(TIMEOUT);
 		assertTrue(receiver.getByeReceived());		
 	}
-	
+	// Also Tests Issue 1693 http://code.google.com/p/mobicents/issues/detail?id=1693
 	public void testShootistCancel() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
@@ -150,8 +157,12 @@ public class ShootistSipServletTest extends SipServletTestCase {
 		receiverProtocolObjects.start();
 		tomcat.startTomcat();
 		deployApplication("cancel", "true");
-		Thread.sleep(TIMEOUT);
-		assertTrue(receiver.isCancelReceived());		
+		Thread.sleep(DIALOG_TIMEOUT + TIMEOUT);
+		assertTrue(receiver.isCancelReceived());	
+		List<String> allMessagesContent = receiver.getAllMessagesContent();
+		assertEquals(2,allMessagesContent.size());
+		assertTrue("sipSessionReadyToInvalidate", allMessagesContent.contains("sipSessionReadyToInvalidate"));
+		assertTrue("sipAppSessionReadyToInvalidate", allMessagesContent.contains("sipAppSessionReadyToInvalidate"));
 	}
 	
 	public void testShootistSetContact() throws Exception {
@@ -413,6 +424,29 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	}
 	
 	/**
+	 * non regression test for Issue 1150 http://code.google.com/p/mobicents/issues/detail?id=1150
+	 * 	Contact header contains "transport" parameter even when there are two connectors (UDP and TCP)
+	 */
+	public void testShootistOutboundInterfaceTransport() throws Exception {
+		receiverProtocolObjects =new ProtocolObjects(
+				"sender", "gov.nist", ListeningPoint.TCP, AUTODIALOG, null);				
+		
+		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
+		SipProvider senderProvider = receiver.createProvider();			
+		
+		senderProvider.addSipListener(receiver);
+		
+		receiverProtocolObjects.start();
+		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5071, "tcp", null);
+		tomcat.startTomcat();
+		deployApplication("outboundInterface", "tcp");
+		Thread.sleep(TIMEOUT);
+		assertTrue(receiver.getByeReceived());
+		ContactHeader contactHeader = (ContactHeader) receiver.getInviteRequest().getHeader(ContactHeader.NAME);	
+		assertFalse(((SipURI)contactHeader.getAddress().getURI()).toString().contains("transport=udp"));
+	}
+	
+	/**
 	 * non regression test for Issue 1412 http://code.google.com/p/mobicents/issues/detail?id=1412
 	 * Contact header is added to REGISTER request by container
 	 */
@@ -431,6 +465,50 @@ public class ShootistSipServletTest extends SipServletTestCase {
 		deployApplication("method", "REGISTER");
 		Thread.sleep(TIMEOUT);		
 		assertNull(receiver.getRegisterReceived().getHeader(ContactHeader.NAME));		
+	}
+	
+	/**
+	 * non regression test for Issue 1547 http://code.google.com/p/mobicents/issues/detail?id=1547
+	 * Can't add a Proxy-Authorization using SipServletMessage.addHeader
+	 */
+	public void testShootistProxyAuthorization() throws Exception {
+//		receiver.sendInvite();
+		receiverProtocolObjects =new ProtocolObjects(
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+					
+		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
+		SipProvider senderProvider = receiver.createProvider();			
+		
+		senderProvider.addSipListener(receiver);
+		
+		receiverProtocolObjects.start();
+		tomcat.startTomcat();
+		deployApplication("auth-header", "Digest username=\"1001\", realm=\"172.16.0.37\", algorithm=MD5, uri=\"sip:66621@172.16.0.37;user=phone\", qop=auth, nc=00000001, cnonce=\"b70b470bedf75db7\", nonce=\"1276678944:394f0b0b049fbbda8c94ae28d08f2301\", response=\"561389d4ce5cb38020749b8a27798343\"");
+		Thread.sleep(TIMEOUT);		
+		assertNotNull(receiver.getInviteRequest().getHeader(ProxyAuthorizationHeader.NAME));		
+		assertNotNull(receiver.getInviteRequest().getHeader(ProxyAuthenticateHeader.NAME));
+	}
+	
+	// Tests Issue 1693 http://code.google.com/p/mobicents/issues/detail?id=1693
+	public void testShootistErrorResponse() throws Exception {
+		receiverProtocolObjects =new ProtocolObjects(
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+					
+		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
+		receiver.setProvisionalResponsesToSend(new ArrayList<Integer>());
+		receiver.setFinalResponseToSend(Response.SERVER_INTERNAL_ERROR);
+		SipProvider senderProvider = receiver.createProvider();			
+		
+		senderProvider.addSipListener(receiver);
+		
+		receiverProtocolObjects.start();
+		tomcat.startTomcat();		
+		deployApplication("testErrorResponse", "true");
+		Thread.sleep(DIALOG_TIMEOUT + TIMEOUT);
+		List<String> allMessagesContent = receiver.getAllMessagesContent();
+		assertEquals(2,allMessagesContent.size());
+		assertTrue("sipSessionReadyToInvalidate", allMessagesContent.contains("sipSessionReadyToInvalidate"));
+		assertTrue("sipAppSessionReadyToInvalidate", allMessagesContent.contains("sipAppSessionReadyToInvalidate"));
 	}
 
 	@Override

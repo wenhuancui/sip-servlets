@@ -16,8 +16,11 @@
  */
 package org.mobicents.servlet.sip.testsuite.simple.prack;
 
+import gov.nist.javax.sip.header.SIPHeader;
+
 import java.text.ParseException;
 import java.util.List;
+import java.util.ListIterator;
 
 import javax.sip.InvalidArgumentException;
 import javax.sip.SipException;
@@ -104,10 +107,65 @@ public class ShootmePrackSipServletTest extends SipServletTestCase {
 		String[] headerNames = new String[]{"require"};
 		String[] headerValues = new String[]{"100rel"};
 		
-		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerValues);		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerValues, true);		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isPrackSent());
 		assertTrue(sender.isOkToPrackReceived());
+		assertTrue(sender.isAckSent());
+		assertTrue(sender.getOkToByeReceived());		
+	}
+	
+	// non regression test for Issue 1552 http://code.google.com/p/mobicents/issues/detail?id=1552
+	// Container does not recognise 100rel if there are other extensions on the Require or Supported line
+	public void testShootmePrackMultipleRequire() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+		String fromName = "prack";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+				
+		String toUser = "receiver";
+		String toSipAddress = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		String[] headerNames = new String[]{"Require", "Require"};
+		String[] headerValues = new String[]{"timer", "100rel"};
+		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerValues, false);		
+		Thread.sleep(TIMEOUT);
+		assertTrue(sender.isPrackSent());
+		assertTrue(sender.isOkToPrackReceived());
+		assertTrue(sender.isAckSent());
+		assertTrue(sender.getOkToByeReceived());		
+	}
+	
+	// non regression test for Issue 1564 : http://code.google.com/p/mobicents/issues/detail?id=1564
+	// Send reliably can add a duplicate 100rel to the requires line
+	public void testShootmePrackRequirePresent() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+		String fromName = "prack-require-present";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+				
+		String toUser = "receiver";
+		String toSipAddress = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		String[] headerNames = new String[]{"Require"};
+		String[] headerValues = new String[]{"100rel"};
+		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerValues, true);		
+		Thread.sleep(TIMEOUT);
+		assertTrue(sender.isPrackSent());
+		assertTrue(sender.isOkToPrackReceived());
+		ListIterator<SIPHeader> iterator = sender.getInformationalResponse().getHeaders("Require");
+		int nbRequire = 0;
+		while (iterator.hasNext()) {
+			SIPHeader sipHeader = iterator.next();
+			nbRequire++;
+		}
+		assertEquals(1, nbRequire);
 		assertTrue(sender.isAckSent());
 		assertTrue(sender.getOkToByeReceived());		
 	}		
@@ -128,7 +186,7 @@ public class ShootmePrackSipServletTest extends SipServletTestCase {
 		
 		sender.setSendReinvite(true);
 		sender.setSendBye(true);
-		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerValues);		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerValues, true);		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isPrackSent());
 		assertTrue(sender.isOkToPrackReceived());
@@ -145,7 +203,7 @@ public class ShootmePrackSipServletTest extends SipServletTestCase {
 		String[] headerNames = new String[]{"require"};
 		String[] headerValues = new String[]{"100rel"};
 		
-		sender.sendSipRequest("INVITE", fromAddress, fromAddress, null, null, false, headerNames, headerValues);
+		sender.sendSipRequest("INVITE", fromAddress, fromAddress, null, null, false, headerNames, headerValues, true);
 		sender.setSendAck(false);
 		Thread.sleep(TIMEOUT);
 		assertEquals( 200, sender.getFinalResponseStatus());

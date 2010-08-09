@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
+import javax.servlet.sip.SipSession.State;
 
 import org.apache.catalina.Container;
 import org.apache.log4j.Logger;
@@ -325,8 +326,9 @@ public abstract class SipManagerDelegate {
 		}
 //		sipSessionImpl.setRoutingRegion(parentSipSession.getRegion());
 		// dialog will be set when the response will be associated with this session
-//		sipSessionImpl.sessionCreatingDialog = dialog;
-		sipSessionImpl.setState(parentSipSession.getState());
+//		sipSessionImpl.sessionCreatingDialog = dialog;		
+		// the state should be different than the parent on forking
+		sipSessionImpl.setState(State.INITIAL);
 		sipSessionImpl.setStateInfo(parentSipSession.getStateInfo());
 		sipSessionImpl.setProxy(parentSipSession.getProxy());
 		if(parentSipSession.getSipSubscriberURI() != null) {
@@ -681,8 +683,8 @@ public abstract class SipManagerDelegate {
 	}
 
 	public void updateStats() {
-		if(logger.isDebugEnabled()) {
-			logger.debug("updating sip manager " + container.getName() + " statistics");
+		if(logger.isTraceEnabled()) {
+			logger.trace("updating sip manager " + container.getName() + " statistics");
 		}
 		long now = System.currentTimeMillis();
 		// Updating the number of Sip Application Session Creation Per Seconds
@@ -694,10 +696,10 @@ public abstract class SipManagerDelegate {
 		}
 		lastUpdatedSasCreationCounter = sipApplicationSessionCounter;
 		lastSipApplicationSessionUpdatedTime = now;
-		if(logger.isDebugEnabled()) {
-			logger.debug("elapsedNumberOfSasCreationCounter "+ elapsedNumberOfSasCreationCounter);
-			logger.debug("lastUpdatedSasCreationCounter "+ lastUpdatedSasCreationCounter);
-			logger.debug("lastSipApplicationSessionUpdatedTime "+ lastSipApplicationSessionUpdatedTime);
+		if(logger.isTraceEnabled()) {
+			logger.trace("elapsedNumberOfSasCreationCounter "+ elapsedNumberOfSasCreationCounter);
+			logger.trace("lastUpdatedSasCreationCounter "+ lastUpdatedSasCreationCounter);
+			logger.trace("lastSipApplicationSessionUpdatedTime "+ lastSipApplicationSessionUpdatedTime);
 		}
 		// Updating the number of Sip Application Session Creation Per Seconds
 		int elapsedNumberOfSsCreationCounter = sipSessionCounter - lastUpdatedSsCreationCounter;
@@ -708,10 +710,10 @@ public abstract class SipManagerDelegate {
 		}
 		lastUpdatedSsCreationCounter = sipSessionCounter;
 		lastSipSessionUpdatedTime = now;
-		if(logger.isDebugEnabled()) {
-			logger.debug("elapsedNumberOfSsCreationCounter "+ elapsedNumberOfSsCreationCounter);
-			logger.debug("lastUpdatedSsCreationCounter "+ lastUpdatedSsCreationCounter);
-			logger.debug("lastSipSessionUpdatedTime "+ lastSipSessionUpdatedTime);
+		if(logger.isTraceEnabled()) {
+			logger.trace("elapsedNumberOfSsCreationCounter "+ elapsedNumberOfSsCreationCounter);
+			logger.trace("lastUpdatedSsCreationCounter "+ lastUpdatedSsCreationCounter);
+			logger.trace("lastSipSessionUpdatedTime "+ lastSipSessionUpdatedTime);
 		}
 	}
 }

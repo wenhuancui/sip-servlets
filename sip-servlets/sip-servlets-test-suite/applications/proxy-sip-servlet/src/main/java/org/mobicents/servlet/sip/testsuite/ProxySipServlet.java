@@ -28,12 +28,16 @@ import javax.servlet.sip.Address;
 import javax.servlet.sip.Proxy;
 import javax.servlet.sip.ProxyBranch;
 import javax.servlet.sip.ServletParseException;
+import javax.servlet.sip.SipApplicationSessionEvent;
+import javax.servlet.sip.SipApplicationSessionListener;
 import javax.servlet.sip.SipErrorEvent;
 import javax.servlet.sip.SipErrorListener;
 import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServlet;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
+import javax.servlet.sip.SipSessionEvent;
+import javax.servlet.sip.SipSessionListener;
 import javax.servlet.sip.SipURI;
 import javax.servlet.sip.URI;
 
@@ -42,12 +46,15 @@ import org.mobicents.javax.servlet.sip.ProxyBranchListener;
 import org.mobicents.javax.servlet.sip.ProxyExt;
 import org.mobicents.javax.servlet.sip.ResponseType;
 
-public class ProxySipServlet extends SipServlet implements SipErrorListener, ProxyBranchListener {
+public class ProxySipServlet extends SipServlet implements SipErrorListener, ProxyBranchListener, SipSessionListener, SipApplicationSessionListener {
+	private static final String ERROR = "ERROR";
+	private static final String SIP_APPLICATION_SESSION_TIMEOUT = "sipApplicationSessionTimeout";
 	private static final long serialVersionUID = 1L;
 	private static transient Logger logger = Logger.getLogger(ProxySipServlet.class);
 	String host = "127.0.0.1";
 	private static String USE_HOSTNAME = "useHostName";
 	private static String CHECK_URI = "check_uri";
+	private static String CHECK_READY_TO_INVALIDATE = "check_rti";
 	private static String NON_RECORD_ROUTING = "nonRecordRouting";
 	private static String RECORD_ROUTING = "recordRouting";
 	private static final String CONTENT_TYPE = "text/plain;charset=UTF-8";
@@ -65,17 +72,39 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 	protected void doInvite(SipServletRequest request) throws ServletException,
 			IOException {
 
+		logger.info("Got request:\n" + request.getMethod());
+		String error = (String) request.getApplicationSession().getAttribute(ERROR);
+		if(error != null) {
+			SipServletResponse sipServletResponse = request.createResponse(SipServletResponse.SC_SERVER_INTERNAL_ERROR, error);
+			sipServletResponse.send();
+			return;
+		}
+		final String from = request.getFrom().getURI().toString();
+		SipURI fromURI = ((SipURI)request.getFrom().getURI());		
+		logger.info("invalidate when ready "
+				+ request.getApplicationSession().getInvalidateWhenReady());
+		if(fromURI.getUser().equals(CHECK_READY_TO_INVALIDATE)) {
+			if(!request.getApplicationSession().getInvalidateWhenReady()) {
+				SipServletResponse sipServletResponse = request.createResponse(SipServletResponse.SC_SERVER_INTERNAL_ERROR);
+				sipServletResponse.send();
+				return;
+			}
+		}
+		Address contactAddress = request.getAddressHeader("Contact");
+		int contactPort = ((SipURI)contactAddress.getURI()).getPort();
+		request.getApplicationSession().setAttribute("contactPort", contactPort);
+		request.getSession().setAttribute("contactPort", contactPort);
+		if(fromURI.getUser().equals(SIP_APPLICATION_SESSION_TIMEOUT)) {			
+			logger.info("testing session expiration, setting invalidateWhenReady to false");
+			request.getApplicationSession().setAttribute(SIP_APPLICATION_SESSION_TIMEOUT, "true");			
+		}
 		if(!request.isInitial()){
 			return;
 		}
-			
-		logger.info("Got request:\n"
-				+ request.getMethod());		
+						
 		//This is a proxying sample.
 		SipFactory sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
-
-		
-		SipURI fromURI = ((SipURI)request.getFrom().getURI());
+			
 		if(USE_HOSTNAME.equals(fromURI.getUser())) {		
 			host = "localhost";
 			logger.info("using Host Name for proxy test");
@@ -84,8 +113,19 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 		URI uri1 = sipFactory.createAddress("sip:receiver@" + host + ":5057").getURI();		
 		URI uri2 = sipFactory.createAddress("sip:cutme@" + host + ":5056").getURI();
 		URI uri3 = sipFactory.createAddress("sip:nonexist@" + host + ":5856").getURI();
-
-		final String from = request.getFrom().getURI().toString();
+		String via = request.getHeader("Via");
+		if(via.contains("TCP")) {
+			logger.info("setting transport param to tcp ");
+			((SipURI)uri1).setTransportParam("tcp");
+			((SipURI)uri2).setTransportParam("tcp");
+			((SipURI)uri3).setTransportParam("tcp");
+			request.getApplicationSession().setAttribute("transport", "tcp");
+			request.getSession().setAttribute("transport", "tcp");
+		} else {
+			request.getApplicationSession().setAttribute("transport", "udp");
+			request.getSession().setAttribute("transport", "udp");
+		}
+		
 		if(from.contains("sequential")) {
 			Proxy proxy = request.getProxy();
 			proxy.setParallel(false);
@@ -109,6 +149,9 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 				uris.add(uri1);
 			} else if(from.contains("sequential-cut")) {
 				uris.add(uri2);
+			} else if(from.contains("nonexist")) {
+				uris.add(uri3);
+				proxy.setProxyTimeout(40);
 			} else {
 				uris.add(uri2);
 				uris.add(uri1);
@@ -118,7 +161,7 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 		} else {
 			ArrayList<URI> uris = new ArrayList<URI>();
 			uris.add(uri1);
-			if(!fromURI.getUser().equals("unique-location")) {
+			if(!fromURI.getUser().contains("unique-location")) {
 				uris.add(uri2);
 			}
 			Proxy proxy = request.getProxy();
@@ -140,7 +183,7 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 			if(obi == null) throw new NullPointerException("No loopback interface found.");
 
 			boolean recordRoute = true;
-			if(NON_RECORD_ROUTING.equals(fromURI.getUser())) {		
+			if(fromURI.getUser().contains(NON_RECORD_ROUTING)) {		
 				recordRoute = false;
 				logger.info("not record routing");
 			}
@@ -179,6 +222,13 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 		String doBranchRespValue = (String) request.getApplicationSession().getAttribute("branchResponseReceived");
 		if("true".equals(doBranchRespValue))
 			sipServletResponse.send();
+		
+		SipURI fromURI = ((SipURI)request.getFrom().getURI());
+		logger.info("invalidate when ready "
+				+ request.getApplicationSession().getInvalidateWhenReady());
+		if(fromURI.getUser().equals(CHECK_READY_TO_INVALIDATE)) {
+			request.getApplicationSession().setExpires(1);
+		}
 	}
 
 	/**
@@ -270,7 +320,7 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 			ProxyBranch proxyBranch) {
 		logger.info("onProxyBranchResponseTimeout callback was called. responseType = " + responseType + " , branch = " + proxyBranch + ", request " + proxyBranch.getRequest() + ", response " + proxyBranch.getResponse());
 		if(proxyBranch.getRequest() != null && proxyBranch.getRequest().getFrom().getURI().toString().contains("ResponseTimeout")) {
-			sendMessage(responseType.toString());
+			sendMessage(responseType.toString(), 5080, "udp");
 		}
 	}
 
@@ -278,7 +328,7 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 	 * @param sipApplicationSession
 	 * @param storedFactory
 	 */
-	private void sendMessage(String content) {
+	private void sendMessage(String content, int port, String transport) {
 		try {
 			SipFactory sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
 			SipServletRequest sipServletRequest = sipFactory.createRequest(
@@ -286,7 +336,8 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 					"MESSAGE", 
 					"sip:sender@sip-servlets.com", 
 					"sip:receiver@sip-servlets.com");
-			SipURI sipUri = sipFactory.createSipURI("receiver", "127.0.0.1:5080");			
+			SipURI sipUri = sipFactory.createSipURI("receiver", "127.0.0.1:"+ port);
+			sipUri.setTransportParam(transport);
 			sipServletRequest.setRequestURI(sipUri);
 			sipServletRequest.setContentLength(content.length());
 			sipServletRequest.setContent(content, CONTENT_TYPE);
@@ -295,6 +346,59 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 			logger.error("Exception occured while parsing the addresses",e);
 		} catch (IOException e) {
 			logger.error("Exception occured while sending the request",e);			
+		}
+	}
+
+	public void sessionCreated(SipApplicationSessionEvent ev) {
+		logger.info("sessionCreated " +  ev.getApplicationSession().getId());
+		String expires = getServletContext().getInitParameter(SIP_APPLICATION_SESSION_TIMEOUT);
+		if(expires != null) {
+			logger.info("setting expires to " +  expires);
+			long now = System.currentTimeMillis();
+			ev.getApplicationSession().setExpires(Integer.valueOf(expires));
+			long expirationTime = ev.getApplicationSession().getExpirationTime();
+			logger.info("expirationTime " +  expirationTime);
+			if(expirationTime < (now + (Integer.valueOf(expires) * 60 * 1000L))) {
+				ev.getApplicationSession().setAttribute(ERROR, "sip App Sesion getExpirationTime() returns incorrect value");
+			}
+		}
+	}
+
+	public void sessionDestroyed(SipApplicationSessionEvent ev) {
+		logger.info("sessionDestroyed " +  ev.getApplicationSession().getId());
+	}
+
+	public void sessionExpired(SipApplicationSessionEvent ev) {
+		logger.info("sessionExpired " +  ev.getApplicationSession().getId());
+		if(ev.getApplicationSession().getAttribute(SIP_APPLICATION_SESSION_TIMEOUT) != null) {
+			sendMessage("sessionExpired", (Integer) ev.getApplicationSession().getAttribute("contactPort"), (String) ev.getApplicationSession().getAttribute("transport"));
+		}
+	}
+
+	public void sessionReadyToInvalidate(SipApplicationSessionEvent ev) {
+		logger.info("sessionReadyToInvalidate " +  ev.getApplicationSession().getId());
+		if(ev.getApplicationSession().getAttribute("contactPort") != null) {
+			sendMessage("sessionReadyToInvalidate", (Integer) ev.getApplicationSession().getAttribute("contactPort"), (String) ev.getApplicationSession().getAttribute("transport"));
+			if(ev.getApplicationSession().getAttribute(SIP_APPLICATION_SESSION_TIMEOUT) != null) {
+				ev.getApplicationSession().setInvalidateWhenReady(false);
+			}
+		}
+	}
+
+	public void sessionCreated(SipSessionEvent se) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void sessionDestroyed(SipSessionEvent se) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void sessionReadyToInvalidate(SipSessionEvent se) {
+		logger.info("sipSessionReadyToInvalidate " +  se.getSession().getId());
+		if(se.getSession().getAttribute("contactPort") != null) {
+			sendMessage("sipSessionReadyToInvalidate", (Integer) se.getSession().getAttribute("contactPort"), (String) se.getSession().getAttribute("transport"));
 		}
 	}
 }

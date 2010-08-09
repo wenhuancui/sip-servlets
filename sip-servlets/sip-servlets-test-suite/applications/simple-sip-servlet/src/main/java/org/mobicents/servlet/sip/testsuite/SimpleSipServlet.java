@@ -28,6 +28,8 @@ import javax.servlet.sip.Parameterable;
 import javax.servlet.sip.ServletParseException;
 import javax.servlet.sip.ServletTimer;
 import javax.servlet.sip.SipApplicationSession;
+import javax.servlet.sip.SipApplicationSessionEvent;
+import javax.servlet.sip.SipApplicationSessionListener;
 import javax.servlet.sip.SipErrorEvent;
 import javax.servlet.sip.SipErrorListener;
 import javax.servlet.sip.SipFactory;
@@ -35,6 +37,8 @@ import javax.servlet.sip.SipServlet;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipSession;
+import javax.servlet.sip.SipSessionEvent;
+import javax.servlet.sip.SipSessionListener;
 import javax.servlet.sip.SipURI;
 import javax.servlet.sip.TimerListener;
 import javax.servlet.sip.TimerService;
@@ -45,7 +49,10 @@ import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.SipConnector;
 import org.mobicents.servlet.sip.listener.SipConnectorListener;
 
-public class SimpleSipServlet extends SipServlet implements SipErrorListener, TimerListener, SipConnectorListener {
+public class SimpleSipServlet 
+		extends SipServlet 
+		implements SipErrorListener, TimerListener, SipConnectorListener, SipSessionListener, SipApplicationSessionListener {
+	
 	private static transient Logger logger = Logger.getLogger(SimpleSipServlet.class);
 	private static final long serialVersionUID = 1L;
 	private static final String TEST_PRACK = "prack";
@@ -70,6 +77,8 @@ public class SimpleSipServlet extends SipServlet implements SipErrorListener, Ti
 	private static final String TEST_IS_SIP_SERVLET_SEND_BYE = "SSsendBye";
 	private static final String TEST_CANCEL_USERNAME = "cancel";
 	private static final String TEST_BYE_ON_DESTROY = "testByeOnDestroy";
+	private static final String TEST_NO_ACK_RECEIVED = "noAckReceived";
+	
 	@Resource
 	SipFactory sipFactory;
 	@Resource
@@ -101,14 +110,20 @@ public class SimpleSipServlet extends SipServlet implements SipErrorListener, Ti
 	 */
 	protected void doInvite(SipServletRequest request) throws ServletException,
 			IOException {
-		logger.info("from : " + request.getFrom());
+		String fromString = request.getFrom().toString();
+		// case for http://code.google.com/p/mobicents/issues/detail?id=1681
+		if(fromString.contains(TEST_NO_ACK_RECEIVED)) {
+			request.createResponse(SipServletResponse.SC_OK).send();
+			return;
+		}		
+		logger.info("from : " + fromString);
 		logger.info("Got request: "
 				+ request.getMethod());	
 		if(!request.getApplicationSession().getInvalidateWhenReady()) {
 			SipServletResponse sipServletResponse = request.createResponse(SipServletResponse.SC_SERVER_INTERNAL_ERROR);
 			sipServletResponse.send();
 			return;
-		}
+		}		
 		if(request.getParameterableHeader("additionalParameterableHeader") != null) {
 			request.getParameterableHeader("additionalParameterableHeader").setParameter("dsfds", "value");
 			boolean error = false;
@@ -122,15 +137,14 @@ public class SimpleSipServlet extends SipServlet implements SipErrorListener, Ti
 				request.createResponse(200).send();
 			}
 			return;
-		}
-		
+		}		
 		request.createResponse(SipServletResponse.SC_TRYING).send();
-		
-		String fromString = request.getFrom().toString();
+				
 		if(fromString.contains(TEST_BYE_ON_DESTROY)) {
 			inviteSipSession = request.getSession();
 		}
-		if(fromString.contains(TEST_ERROR_RESPONSE)) {			
+		if(fromString.contains(TEST_ERROR_RESPONSE)) {	
+			request.getApplicationSession().setAttribute(TEST_ERROR_RESPONSE, "true");
 			SipServletResponse sipServletResponse = request.createResponse(SipServletResponse.SC_BUSY_HERE);
 			sipServletResponse.send();
 			return;
@@ -218,8 +232,11 @@ public class SimpleSipServlet extends SipServlet implements SipErrorListener, Ti
 			sendRegister();
 			return;
 		}
-		if(fromString.contains(TEST_PRACK)) {
+		if(fromString.contains(TEST_PRACK)) {			
 			SipServletResponse sipServletResponse = request.createResponse(SipServletResponse.SC_RINGING);
+			if(fromString.contains("require-present")) {
+				sipServletResponse.addHeader("Require", "100rel");
+			}
 			sipServletResponse.sendReliably();
 			sipServletResponse = request.createResponse(SipServletResponse.SC_OK);
 			sipServletResponse.getSession().setAttribute("okResponse", sipServletResponse);
@@ -619,5 +636,56 @@ public class SimpleSipServlet extends SipServlet implements SipErrorListener, Ti
 			}
 		}
 		super.destroy();
+	}
+
+
+
+	public void sessionCreated(SipSessionEvent se) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	public void sessionDestroyed(SipSessionEvent se) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	public void sessionReadyToInvalidate(SipSessionEvent se) {
+		if(se.getSession().getApplicationSession().getAttribute(TEST_ERROR_RESPONSE) != null) {
+			sendMessage(sipFactory.createApplicationSession(), sipFactory, "sipSessionReadyToInvalidate", null);
+		}
+	}
+
+
+
+	public void sessionCreated(SipApplicationSessionEvent ev) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	public void sessionDestroyed(SipApplicationSessionEvent ev) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	public void sessionExpired(SipApplicationSessionEvent ev) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	public void sessionReadyToInvalidate(SipApplicationSessionEvent ev) {
+		if(ev.getApplicationSession().getAttribute(TEST_ERROR_RESPONSE) != null) {
+			sendMessage(sipFactory.createApplicationSession(), sipFactory, "sipAppSessionReadyToInvalidate", null);
+		}
 	}
 }

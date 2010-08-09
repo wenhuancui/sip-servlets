@@ -16,6 +16,7 @@
  */
 package org.mobicents.servlet.sip.proxy;
 
+import gov.nist.javax.sip.TransactionExt;
 import gov.nist.javax.sip.message.SIPMessage;
 import gov.nist.javax.sip.stack.SIPClientTransaction;
 import gov.nist.javax.sip.stack.SIPTransaction;
@@ -169,17 +170,17 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 				} else {
 					// We dont send cancel, but we must stop the invite retrans
 					SIPClientTransaction tx = (SIPClientTransaction) outgoingRequest.getTransaction();
-
-					Method disableRetransmissionTimer = SIPTransaction.class.getDeclaredMethod("disableRetransmissionTimer");
-					Method disableTimeoutTimer = SIPTransaction.class.getDeclaredMethod("disableTimeoutTimer");
-					disableRetransmissionTimer.setAccessible(true);
-					disableTimeoutTimer.setAccessible(true);
-					disableRetransmissionTimer.invoke(tx);
-					disableTimeoutTimer.invoke(tx);
+					
+					if(tx != null) {
+						StaticServiceHolder.disableRetransmissionTimer.invoke(tx);
+						//disableTimeoutTimer.invoke(tx);
+					} else {
+						logger.warn("Transaction is null. Can not stop retransmission, they are already dead in the branch.");
+					}
 					/*
 					try {
 						//tx.terminate();
-						// Do not terminate the tx here, because ProxyCancel test is failing. If the tx
+						// Do not terminate the tx here, because com.bea.sipservlet.tck.agents.spec.ProxyTest.testProxyCancel test is failing. If the tx
 						// is terminated 100 Trying is dropped at JSIP.
 					} catch(Exception e2) {
 						logger.error("Can not terminate transaction", e2);
@@ -340,8 +341,8 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 			proxyBranch1xxTimerStarted = true;
 		}
 		
-		forwardRequest(cloned, false);		
 		started = true;
+		forwardRequest(cloned, false);		
 	}
 	
 	/**
@@ -662,6 +663,9 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 			ClientTransaction ctx = sipProvider
 				.getNewClientTransaction(clonedRequest);			
 			ctx.setRetransmitTimer(sipApplicationDispatcher.getBaseTimerInterval());
+		    ((TransactionExt)ctx).setTimerT2(sipApplicationDispatcher.getT2Interval());
+		    ((TransactionExt)ctx).setTimerT4(sipApplicationDispatcher.getT4Interval());
+		    ((TransactionExt)ctx).setTimerD(sipApplicationDispatcher.getTimerDInterval());
 			
 			TransactionApplicationData appData = (TransactionApplicationData) request.getTransactionApplicationData();
 			appData.setProxyBranch(this);
@@ -804,9 +808,23 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	 * {@inheritDoc}
 	 */
 	public void setOutboundInterface(InetAddress inetAddress) {
-		//TODO check against our defined outbound interfaces
+		if(inetAddress == null) {
+			throw new NullPointerException("outbound Interface param shouldn't be null");
+		}
 		checkSessionValidity();
 		String address = inetAddress.getHostAddress();
+		
+		List<SipURI> list = proxy.getSipFactoryImpl().getSipNetworkInterfaceManager().getOutboundInterfaces();
+		SipURI networkInterface = null;
+		for(SipURI networkInterfaceURI : list) {
+			if(networkInterfaceURI.toString().contains(address)) {
+				networkInterface = networkInterfaceURI;
+				break;
+			}
+		}
+		if(networkInterface == null) throw new IllegalArgumentException("Network interface for " +
+				outboundInterface + " not found");	
+		
 		outboundInterface = proxy.getSipFactoryImpl().createSipURI(null, address);		
 	}
 
@@ -814,10 +832,48 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	 * {@inheritDoc}
 	 */
 	public void setOutboundInterface(InetSocketAddress inetSocketAddress) {
-		//TODO check against our defined outbound interfaces		
+		if(inetSocketAddress == null) {
+			throw new NullPointerException("outbound Interface param shouldn't be null");
+		}
 		checkSessionValidity();
 		String address = inetSocketAddress.getAddress().getHostAddress() + ":" + inetSocketAddress.getPort();
+		
+		List<SipURI> list = proxy.getSipFactoryImpl().getSipNetworkInterfaceManager().getOutboundInterfaces();
+		SipURI networkInterface = null;
+		for(SipURI networkInterfaceURI : list) {
+			if(networkInterfaceURI.toString().contains(address)) {
+				networkInterface = networkInterfaceURI;
+				break;
+			}
+		}
+		if(networkInterface == null) throw new IllegalArgumentException("Network interface for " +
+				outboundInterface + " not found");	
+		
 		outboundInterface = proxy.getSipFactoryImpl().createSipURI(null, address);		
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.javax.servlet.sip.ProxyExt#setOutboundInterface(javax.servlet.sip.SipURI)
+	 */
+	public void setOutboundInterface(SipURI outboundInterface) {
+		checkSessionValidity();
+		if(outboundInterface == null) {
+			throw new NullPointerException("outbound Interface param shouldn't be null");
+		}
+		List<SipURI> list = proxy.getSipFactoryImpl().getSipNetworkInterfaceManager().getOutboundInterfaces();
+		SipURI networkInterface = null;
+		for(SipURI networkInterfaceURI : list) {
+			if(networkInterfaceURI.equals(outboundInterface)) {
+				networkInterface = networkInterfaceURI;
+				break;
+			}
+		}
+		
+		if(networkInterface == null) throw new IllegalArgumentException("Network interface for " +
+				outboundInterface + " not found");		
+		
+		this.outboundInterface = networkInterface;
 	}
 
 	/**

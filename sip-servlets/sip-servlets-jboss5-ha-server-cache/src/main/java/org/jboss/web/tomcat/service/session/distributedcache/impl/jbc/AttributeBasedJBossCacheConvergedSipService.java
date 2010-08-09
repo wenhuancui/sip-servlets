@@ -190,6 +190,13 @@ public class AttributeBasedJBossCacheConvergedSipService extends
 				marshalled.put(entry.getKey(), getMarshalledValue(entry
 						.getValue()));
 			}
+			if(log_.isDebugEnabled()) {
+				String attribLog = "\n";
+				for(String name : sessionData.getModifiedSessionAttributes().keySet()) {
+					attribLog += "ATTRIBUTE(" + name + ") -> " + sessionData.getModifiedSessionAttributes().get(name) + "\n";
+				}
+				log_.debug(attribLog);
+			}
 			cacheWrapper_.put(fqn, marshalled);
 		}
 
@@ -211,6 +218,14 @@ public class AttributeBasedJBossCacheConvergedSipService extends
 			for (Map.Entry<String, Object> entry : map.entrySet()) {
 				marshalled.put(entry.getKey(), getMarshalledValue(entry
 						.getValue()));
+			}
+
+			if(log_.isDebugEnabled()) {
+				String attribLog = "\n";
+				for(String name : sessionData.getModifiedSessionAttributes().keySet()) {
+					attribLog += "ATTRIBUTE(" + name + ") -> " + sessionData.getModifiedSessionAttributes().get(name) + "\n";
+				}
+				log_.debug(attribLog);
 			}
 			cacheWrapper_.put(fqn, marshalled);
 		}
@@ -268,7 +283,7 @@ public class AttributeBasedJBossCacheConvergedSipService extends
 		Node<Object, Object> node = getCache().getRoot().getChild(Fqn.fromString(fqn.toString() + "/" + AbstractJBossCacheService.ATTRIBUTE_KEY));
 		Map<Object, Object> rawData = node.getData();
 
-		return getSessionAttributes(rawData);
+		return getSessionAttributes(null, rawData);
 	}
 
 	/**
@@ -278,16 +293,18 @@ public class AttributeBasedJBossCacheConvergedSipService extends
 	 * <strong>Note:</strong> This operation may alter the contents of the
 	 * passed in map. If this is unacceptable, pass in a defensive copy.
 	 */
-	protected Map<String, Object> getSessionAttributes(
-			Map<Object, Object> distributedCacheData) {
+	public Map<String, Object> getConvergedSessionAttributes(
+			String realId, Map<Object, Object> distributedCacheData) {
 		Map<String, Object> attrs = new HashMap<String, Object>();
-		for (Map.Entry<Object, Object> entry : distributedCacheData.entrySet()) {
-			if (entry.getKey() instanceof String) {
-				attrs.put((String) entry.getKey(), getUnMarshalledValue(entry
-						.getValue()));
+		// fix for Issue 1621 http://code.google.com/p/mobicents/issues/detail?id=1621
+		if(distributedCacheData != null) {
+			for (Map.Entry<Object, Object> entry : distributedCacheData.entrySet()) {
+				if (entry.getKey() instanceof String) {
+					attrs.put((String) entry.getKey(), getUnMarshalledValue(entry
+							.getValue()));
+				}
 			}
 		}
-
 		return attrs;
 	}
 
@@ -388,7 +405,7 @@ public class AttributeBasedJBossCacheConvergedSipService extends
 		Node<Object, Object> node = getCache().getRoot().getChild(Fqn.fromString(fqn.toString() + "/" + AbstractJBossCacheService.ATTRIBUTE_KEY));
 		Map<Object, Object> rawData = node.getData();
 
-		return getSessionAttributes(rawData);
+		return getSessionAttributes(null, rawData);
 	}
 
 	public void putSipSessionAttribute(String sipApplicationSessionKey,

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip</groupId>
 		<artifactId>sip-servlets-bootstrap</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	
@@ -12,7 +12,7 @@
 	<groupId>org.mobicents.servlet.sip.management</groupId>
 	<artifactId>sip-servlets-management</artifactId>
 	<packaging>war</packaging>
-	<version>5.0.0.Beta2-JBCP5</version>
+	<version>5.0.0.CR01-JBCP5</version>
 	<name>sip-servlets-management</name>
 
 	<!--  include pluginRepository and repository for GWT-Maven -->
@@ -129,37 +129,38 @@
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-spec</artifactId>
-			<version>1.1.13.1</version>
+			<version>1.1.13.2</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-annotations</artifactId>
-			<version>5.0.0.Beta2-JBCP5</version>
+			<version>5.0.0.CR01-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-impl</artifactId>
-			<version>5.0.0.Beta2-JBCP5</version>
+			<version>5.0.0.CR01-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-application-router</artifactId>
-			<version>5.0.0.Beta2-JBCP5</version>
+			<version>5.0.0.CR01-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>gwt-dnd</groupId>
 			<artifactId>gwt-dnd</artifactId>
 			<version>2.0.7</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-		<!-- plugin>
+		<plugin>
 				<artifactId>maven-install-plugin</artifactId>
 				<groupId>org.apache.maven.plugins</groupId>
 				<inherited>false</inherited>
@@ -179,7 +180,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin-->
+			</plugin>
 			<!--  configure the GWT-Maven plugin -->
 			<plugin>
 				<groupId>com.totsp.gwt</groupId>
@@ -220,7 +221,7 @@
 				don't have GWT installed already, or you just want a maven way to
 				handle gwt deps)
 			-->
-			<!-- plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
@@ -245,7 +246,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin-->
+			</plugin>
 			<!--
 				If you want to use the target/web.xml file mergewebxml produces,
 				tell the war plugin to use it. 
