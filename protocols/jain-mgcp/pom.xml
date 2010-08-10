@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.protocols.mgcp</groupId>
 	<artifactId>mgcp-impl</artifactId>
-	<version>5.0.0.Beta2-JBCP5</version>
+	<version>5.0.0.CR01-JBCP5</version>
 	<name>Mobicents MGCP Impl</name>
 	<url>http://www.mobicents.org/mms/mms-main.html</url>
 	<developers>
