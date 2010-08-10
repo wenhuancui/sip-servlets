@@ -23,12 +23,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mobicents.media.Server;
 import static org.junit.Assert.*;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.resource.mediaplayer.audio.AudioPlayerImpl;
 import org.mobicents.media.server.impl.resource.mediaplayer.video.VideoPlayerImpl;
 import org.mobicents.media.server.spi.MediaType;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.resource.Player;
 
 /**
@@ -37,8 +36,9 @@ import org.mobicents.media.server.spi.resource.Player;
  */
 public class MediaPlayerImplTest {
 
+    private Server server;
+    
     private MediaPlayerImpl mediaPlayer;
-    private Timer timer;
     
     public MediaPlayerImplTest() {
     }
@@ -52,16 +52,15 @@ public class MediaPlayerImplTest {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        timer.start();
-        
-        mediaPlayer = new MediaPlayerImpl("test", timer, null, null);
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
+        mediaPlayer = new MediaPlayerImpl("test", null, null);
     }
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     /**

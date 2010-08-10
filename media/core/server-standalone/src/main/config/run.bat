@@ -136,7 +136,7 @@ echo ===========================================================================
 echo.
 
 :RESTART
-"%JAVA%" %JAVA_OPTS% -Djava.ext.dirs="%MMS_ENDORSED_DIRS%" -Dmbrola.base="$MMS_HOME/mbrola" -classpath "%MMS_CLASSPATH%" org.mobicents.media.server.bootstrap.Main %*
+"%JAVA%" %JAVA_OPTS% -Djava.ext.dirs="%MMS_ENDORSED_DIRS%" -Dmbrola.base="%MMS_HOME%/mbrola" -classpath "%MMS_CLASSPATH%" org.mobicents.media.server.bootstrap.Main %*
 rem if ERRORLEVEL 10 goto RESTART
 
 :END

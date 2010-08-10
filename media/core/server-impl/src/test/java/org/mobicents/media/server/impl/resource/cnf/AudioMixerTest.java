@@ -24,14 +24,13 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mobicents.media.Server;
 import static org.junit.Assert.*;
 import org.mobicents.media.Utils;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.resource.fft.SpectraAnalyzer;
 import org.mobicents.media.server.impl.resource.fft.SpectrumEvent;
 import org.mobicents.media.server.impl.resource.test.SineGenerator;
 import org.mobicents.media.server.spi.NotificationListener;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
 /**
@@ -40,6 +39,8 @@ import org.mobicents.media.server.spi.events.NotifyEvent;
  */
 public class AudioMixerTest {
 
+    private Server server;
+    
     private final static int FREQ_ERROR = 5;
     private int MAX_ERRORS = 3;
     private final static int[] FREQ = new int[]{50, 150, 250};
@@ -48,7 +49,6 @@ public class AudioMixerTest {
     private SpectraAnalyzer a;
     
     private AudioMixer mixer;
-    private Timer timer;
     
     private ArrayList<double[]> s;
     
@@ -64,10 +64,9 @@ public class AudioMixerTest {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        timer.start();
-        
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
         s = new ArrayList();
         
         short A = (short)(Short.MAX_VALUE / 3);
@@ -75,23 +74,24 @@ public class AudioMixerTest {
         a = new SpectraAnalyzer("a1");
         a.addListener(new AnalyzerListener(s));
 
-        g1 = new SineGenerator("g1", timer);
+        g1 = new SineGenerator("g1");
         g1.setFrequency(FREQ[0]);
         g1.setAmplitude(A);
 
-        g2 = new SineGenerator("g2", timer);
+        g2 = new SineGenerator("g2");
         g2.setFrequency(FREQ[1]);
         g2.setAmplitude(A);
         
-        g3 = new SineGenerator("g3", timer);
+        g3 = new SineGenerator("g3");
         g3.setFrequency(FREQ[2]);
         g3.setAmplitude(A);
         
-        mixer = new AudioMixer("mixer", timer);
+        mixer = new AudioMixer("mixer");
     }
 
     @After
     public void tearDown() {
+        server.stop();
     }
 
     /**

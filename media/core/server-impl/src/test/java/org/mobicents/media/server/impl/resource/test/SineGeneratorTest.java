@@ -27,11 +27,10 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
+import org.mobicents.media.Server;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSink;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.spi.NotificationListener;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.FailureEvent;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
@@ -52,13 +51,14 @@ public class SineGeneratorTest implements NotificationListener {
     private SineGenerator gen;
     private Sink det;
     
-    private Timer timer;    //15 second audio buffer
     private short[] data = new short[8000 * 15];
     private int len;
 
     private Semaphore semaphore = new Semaphore(0);
     private volatile boolean failed;
     private String message;
+
+    private Server server;
     
     public SineGeneratorTest() {
     }
@@ -72,11 +72,10 @@ public class SineGeneratorTest implements NotificationListener {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        timer.start();
-        
-        gen = new SineGenerator("test.sine", timer);
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
+        gen = new SineGenerator("test.sine");
         gen.setAmplitude(A);
         gen.setFrequency(f);
         
@@ -88,7 +87,7 @@ public class SineGeneratorTest implements NotificationListener {
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     /**

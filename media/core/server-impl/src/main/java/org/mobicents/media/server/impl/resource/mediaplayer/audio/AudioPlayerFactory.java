@@ -15,12 +15,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  */
-
 package org.mobicents.media.server.impl.resource.mediaplayer.audio;
 
-import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.mobicents.media.ComponentFactory;
+import org.mobicents.media.server.impl.resource.mediaplayer.audio.tts.VoicesCache;
 import org.mobicents.media.server.spi.Endpoint;
 import org.mobicents.media.server.spi.ResourceUnavailableException;
 
@@ -29,37 +30,56 @@ import org.mobicents.media.server.spi.ResourceUnavailableException;
  * @author kulikov
  */
 public class AudioPlayerFactory implements ComponentFactory {
-	private String name;
-	private String audioMediaDirectory;
 
-	public String getName() {
-		return name;
-	}
+    private String name;
+    private String audioMediaDirectory;
+    private VoicesCache voiceCache = new VoicesCache();
+    private Map<String, Integer> voices = new HashMap<String, Integer>();
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public Map<String, Integer> getVoices() {
+        return voices;
+    }
 
-	/**
-	 * @return the audioMediaDirectory
-	 */
-	public String getAudioMediaDirectory() {
-		return audioMediaDirectory;
-	}
+    public void setVoices(Map<String, Integer> voices) {
+        if (voices != null) {
+            this.voices.putAll(voices);
+        }
 
-	/**
-	 * @param audioMediaDirectory
-	 *            the audioMediaDirectory to set
-	 */
-	public void setAudioMediaDirectory(String audioMediaDirectory) {
-		this.audioMediaDirectory = audioMediaDirectory;
-	}
+        try {
+            voiceCache.clear();
+            voiceCache.init(this.voices);
+        } catch (Exception e) {
+        }
+    }
 
-	public AudioPlayerImpl newInstance(Endpoint endpoint)
-			throws ResourceUnavailableException {
-		AudioPlayerImpl p = new AudioPlayerImpl(name, endpoint.getTimer(),
-				audioMediaDirectory);
-		p.setEndpoint(endpoint);
-		return p;
-	}
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * @return the audioMediaDirectory
+     */
+    public String getAudioMediaDirectory() {
+        return audioMediaDirectory;
+    }
+
+    /**
+     * @param audioMediaDirectory
+     *            the audioMediaDirectory to set
+     */
+    public void setAudioMediaDirectory(String audioMediaDirectory) {
+        this.audioMediaDirectory = audioMediaDirectory;
+    }
+
+    public AudioPlayerImpl newInstance(Endpoint endpoint)
+            throws ResourceUnavailableException {
+        AudioPlayerImpl p = new AudioPlayerImpl(name, audioMediaDirectory,
+                voiceCache);
+        p.setEndpoint(endpoint);
+        return p;
+    }
 }

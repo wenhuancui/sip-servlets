@@ -23,8 +23,10 @@ import java.io.Serializable;
 /**
  *
  * @author Oleg Kulikov
+ * @author amit bhayani
  */
 public interface ConnectionListener extends Serializable {
     public void onStateChange(Connection connection,ConnectionState oldState);
     public void onModeChange(Connection connection, ConnectionMode oldMode);
+    public void onError(Connection connection, Exception e);
 }

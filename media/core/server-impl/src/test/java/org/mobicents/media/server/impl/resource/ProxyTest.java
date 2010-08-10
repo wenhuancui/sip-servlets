@@ -23,10 +23,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mobicents.media.Server;
 import static org.junit.Assert.*;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.resource.test.TransmissionTester;
-import org.mobicents.media.server.spi.clock.Timer;
 
 /**
  *
@@ -34,8 +33,9 @@ import org.mobicents.media.server.spi.clock.Timer;
  */
 public class ProxyTest {
 
+    private Server server;
+    
     private Proxy proxy;
-    private Timer timer;
     private TransmissionTester tester;
     
     public ProxyTest() {
@@ -50,16 +50,16 @@ public class ProxyTest {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        timer.start();
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
         proxy = new Proxy("test");
-        tester = new TransmissionTester(timer);
+        tester = new TransmissionTester();
     }
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     /**

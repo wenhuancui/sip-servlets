@@ -26,7 +26,6 @@ import org.mobicents.media.MediaSource;
 import org.mobicents.media.server.impl.resource.fft.SpectraAnalyzer;
 import org.mobicents.media.server.impl.resource.fft.SpectrumEvent;
 import org.mobicents.media.server.spi.NotificationListener;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.FailureEvent;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
@@ -55,8 +54,8 @@ public class TransmissionTester2 implements NotificationListener {
     
     private Semaphore semaphore = new Semaphore(0);
     
-    public TransmissionTester2(Timer timer) {
-        gen = new SineGenerator("sine.generator", timer);
+    public TransmissionTester2() {
+        gen = new SineGenerator("sine.generator");
         gen.setAmplitude(A);
         gen.setFrequency(f);
         

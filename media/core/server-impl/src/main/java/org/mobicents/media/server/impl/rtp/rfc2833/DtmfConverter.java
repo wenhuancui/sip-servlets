@@ -21,6 +21,7 @@ package org.mobicents.media.server.impl.rtp.rfc2833;
 import java.util.ArrayList;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
+import org.mobicents.media.Server;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.resource.dtmf.DtmfEvent;
 import org.mobicents.media.server.impl.rtp.RtpClock;
@@ -83,6 +84,9 @@ public class DtmfConverter {
         codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g729.EncoderFactory());
     }
     
+    //This is the time when last RTP event arrives
+    private long timestamp;
+    
     public void setClock(RtpClock clock) {
         this.clock = clock;
     }
@@ -106,10 +110,17 @@ public class DtmfConverter {
     }
     
     public void process(RtpPacket packet,  Buffer buffer) {
-        if (packet.getMarker() == true) {
+        long now = Server.scheduler.getTimestamp();
+        
+        //the first packet has marker set but this packet may be lost
+        //so if time between two packets excceds 1 second we count is as first
+        if (packet.getMarker() == true || (now - timestamp) > 1000) {
             time = 0;
             rtpTime = 0;
-        }
+        } 
+        
+        //remember when this packet was processed
+        timestamp = now;
         
         byte[] data = packet.getPayload();
         

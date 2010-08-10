@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
 import org.mobicents.media.server.impl.AbstractSource;
-import org.mobicents.media.server.spi.SyncSource;
 import org.mobicents.media.server.spi.dsp.Codec;
 import org.mobicents.media.server.spi.dsp.CodecFactory;
 
@@ -72,9 +71,8 @@ public class AudioNoiseGenerator extends AbstractSource  {
         codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g729.EncoderFactory());
     }
     
-    public AudioNoiseGenerator(String name, SyncSource syncSource) {
+    public AudioNoiseGenerator(String name) {
         super(name);
-        setSyncSource(syncSource);
     }
 
     @Override
@@ -104,7 +102,6 @@ public class AudioNoiseGenerator extends AbstractSource  {
         buffer.setOffset(0);
         buffer.setLength(320);
         buffer.setFormat(Codec.LINEAR_AUDIO);
-        buffer.setTimeStamp(getSyncSource().getTimestamp());
         buffer.setFlags(Buffer.FLAG_SILENCE);
         
         if (codec != null) {

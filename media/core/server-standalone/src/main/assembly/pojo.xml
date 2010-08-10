@@ -14,12 +14,28 @@
 			<destName>conf/bootstrap-beans.xml</destName>
 		</file>
 		<file>
+			<source>src/main/config/server-beans.xml</source>
+			<destName>deploy/server-beans.xml</destName>
+		</file>
+		<file>
 			<source>src/main/config/components-beans.xml</source>
 			<destName>deploy/comp-beans.xml</destName>
 		</file>
 		<file>
+			<source>src/main/config/avprofile-beans.xml</source>
+			<destName>deploy/avprofile-beans.xml</destName>
+		</file>
+		<file>
+			<source>src/main/config/connection-states-beans.xml</source>
+			<destName>deploy/connection-states-beans.xml</destName>
+		</file>
+		<file>
 			<source>src/main/config/rtp-beans.xml</source>
 			<destName>deploy/rtp-beans.xml</destName>
+		</file>
+		<file>
+			<source>src/main/config/connection-beans.xml</source>
+			<destName>deploy/connection-beans.xml</destName>
 		</file>
 		<file>
 			<source>src/main/config/ann-beans.xml</source>
@@ -34,16 +50,16 @@
 			<destName>deploy/endpoint/ivr-beans.xml</destName>
 		</file>
 		<file>
-			<source>src/main/config/echo-beans.xml</source>
-			<destName>deploy/endpoint/echo-beans.xml</destName>
-		</file>
-		<file>
 			<source>src/main/config/cnf-beans.xml</source>
 			<destName>deploy/endpoint/cnf-beans.xml</destName>
 		</file>
-		<file>
+		<!-- file>
 			<source>src/main/config/rtsp-beans.xml</source>
 			<destName>deploy/endpoint/rtsp-beans.xml</destName>
+		</file -->
+		<file>
+			<source>src/main/config/mgw-beans.xml</source>
+			<destName>deploy/endpoint/mgw-beans.xml</destName>
 		</file>
 <!-- MGCP Controller -->                
 		<file>

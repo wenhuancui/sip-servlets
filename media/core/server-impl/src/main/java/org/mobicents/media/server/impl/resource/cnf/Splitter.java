@@ -30,9 +30,6 @@ import org.mobicents.media.server.impl.AbstractSource;
 import org.mobicents.media.server.impl.AbstractSourceSet;
 import org.mobicents.media.server.spi.Connection;
 import org.mobicents.media.server.spi.Endpoint;
-import org.mobicents.media.server.spi.SyncSource;
-import org.mobicents.media.server.spi.clock.Task;
-import org.mobicents.media.server.spi.clock.TimerTask;
 import org.mobicents.media.server.spi.dsp.Codec;
 
 /**
@@ -78,7 +75,6 @@ public class Splitter extends AbstractSourceSet implements Inlet {
     @Override
     public AbstractSource createSource(MediaSink otherParty) {
         Output output = new Output(getName() + "[output]");
-        output.setSyncSource(input);
         output.setEndpoint(getEndpoint());
         output.setConnection(getConnection());
 
@@ -133,7 +129,7 @@ public class Splitter extends AbstractSourceSet implements Inlet {
      * Implements input stream of the Demultiplxer.
      * 
      */
-    private class Input extends AbstractSink implements SyncSource {
+    private class Input extends AbstractSink {
 
         /**
          * Creates new instance of input stream.
@@ -175,19 +171,6 @@ public class Splitter extends AbstractSourceSet implements Inlet {
             return formats;
         }
 
-        public void sync(MediaSource mediaSource) {
-        }
-
-        public void unsync(MediaSource mediaSource) {
-        }
-
-        public long getTimestamp() {
-            return timestamp;
-        }
-
-        public TimerTask sync(Task task) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     }
 
     /**
@@ -199,13 +182,15 @@ public class Splitter extends AbstractSourceSet implements Inlet {
             super(parent);
         }
 
-//        @Override
-//        public void start() {
-//        }
+        @Override
+        public void start() {
+            setStarted(true);
+        }
 
-//        @Override
-//        public void stop() {
-//        }
+        @Override
+        public void stop() {
+            setStarted(false);
+        }
 
         @Override
         public void connect(MediaSink sink) {

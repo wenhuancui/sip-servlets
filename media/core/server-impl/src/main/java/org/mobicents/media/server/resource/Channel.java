@@ -54,6 +54,9 @@ public class Channel {
     private List<Pipe> pipes = new ArrayList();
     private Proxy localPipe = new Proxy("Channel");
     
+    private Proxy input = new Proxy("input.channel");
+    private Proxy output = new Proxy("output.channel");
+    
     //The external sink to which this channel is attached
 //    private MediaSink sink;
     //The external source to which this channel is attached
@@ -230,7 +233,9 @@ public class Channel {
         //we have to consider it as intake.
         if (inlet == null && outlet != null) {
             if (sinks.containsKey(outlet)) {
-                intake = sinks.get(outlet);
+                intake = input.getInput();
+                input.getOutput().connect(sinks.get(outlet));
+//                intake = sinks.get(outlet);
             }  else throw new UnknownComponentException(outlet);
         } 
         //when outlet is null then pipe acts as exhaust for the channel
@@ -238,7 +243,9 @@ public class Channel {
         //we are assigning this component to exhaust varibale
         else if (inlet != null && outlet == null) {
             if (sources.containsKey(inlet)) {
-                exhaust = sources.get(inlet);
+                exhaust = output.getOutput();
+                output.getInput().connect(sources.get(inlet));
+//                exhaust = sources.get(inlet);
             } else throw new UnknownComponentException(inlet);
         } 
         //it is an internal pipe. just join to components and save 

@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mobicents.media.server.impl.FailureEventImpl;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.resource.mediaplayer.audio.AudioPlayerImpl;
 import org.mobicents.media.server.spi.NotificationListener;
 import org.mobicents.media.server.spi.events.NotifyEvent;
@@ -45,7 +44,6 @@ public class PlayerTest {
 
 	Logger logger = Logger.getLogger(PlayerTest.class);
 
-	private TimerImpl timer;
 	private Semaphore semaphore;
 	private AudioPlayerImpl audioPlayer;
 
@@ -67,9 +65,7 @@ public class PlayerTest {
 	@Before
 	public void setUp() {
 
-		timer = new TimerImpl();
-
-		audioPlayer = new AudioPlayerImpl("test", timer, null);
+		audioPlayer = new AudioPlayerImpl("test", null, null);
 		audioPlayer.addListener(new AudioPlayerListener());
 
 		soundCardPlayer = new PlayerImpl("soundCardPlayerTest");

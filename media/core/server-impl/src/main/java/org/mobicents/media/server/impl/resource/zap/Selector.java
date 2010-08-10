@@ -19,16 +19,19 @@ package org.mobicents.media.server.impl.resource.zap;
 
 import java.io.File;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.mobicents.protocols.ss7.mtp.ChannelSelector;
 import org.mobicents.protocols.ss7.mtp.Mtp1;
 
 import org.apache.log4j.Logger;
+import org.mobicents.protocols.stream.api.SelectorKey;
+import org.mobicents.protocols.stream.api.Stream;
+import org.mobicents.protocols.stream.api.StreamSelector;
 
-public class Selector implements ChannelSelector {
+public class Selector implements StreamSelector {
 
     private final static String MMS_HOME = "MMS_HOME";
     private final static String LIB_NAME = "zap-native-linux.so";
@@ -42,9 +45,11 @@ public class Selector implements ChannelSelector {
     /** array of registered channels */
     private ArrayList<Mtp1> registered = new ArrayList();    
     
+    private int ops;
+    
     /** array of selected channels */
-    private ArrayList<Mtp1> selected = new ArrayList();
-    private static Logger logger = Logger.getLogger(ChannelSelector.class);
+    private ArrayList<SelectorKey> selected = new ArrayList();
+    private static Logger logger = Logger.getLogger(Selector.class);
     
     static {
 	try {
@@ -58,18 +63,25 @@ public class Selector implements ChannelSelector {
 	}
     }
     
+    public Selector() {
+        
+    }
+    
     /**
      * Register channel with this selector.
      *
      * @param channel the channel to register.
      */ 
-    public void register(Mtp1 channel) {
+    public SelectorKey register(Channel channel) {
 	//add channel instance to the collection
 	registered.add(channel);
 	//perform actual registration
 	logger.info("Registering file descriptor:" + ((Channel) channel).fd);
  	doRegister(((Channel)channel).fd);
 	
+        SelectorKeyImpl key = new SelectorKeyImpl(channel, this);
+        channel.selectorKey = key;
+        return key;
     }
     
     /**
@@ -77,30 +89,10 @@ public class Selector implements ChannelSelector {
      *
      * @param channel the channel to unregister.
      */
-    public void unregister(Mtp1 channel) {
+    public void unregister(Channel channel) {
 	registered.remove(channel);
+        channel.selectorKey = null;
 	doUnregister(((Channel)channel).fd);
-    }
-    
-    /**
-     * Selects channels wich are ready for specified IO operations.
-     *
-     * @param key selection key
-     * @param timeout the time out for select.
-     * @return the list of channel ready for input or output.
-     */
-    public Collection<Mtp1> select(int key, int timeout) {
-	int count = doPoll(fds, key, timeout);
-	selected.clear();
-	for (int i = 0; i < count; i++) {
-	    for (Mtp1 chan : registered) {
-		Channel channel = (Channel) chan;
-		if (channel.fd == fds[i]) {
-		    selected.add(chan);
-		}
-	    }
-	} 
-	return selected;
     }
     
     /**
@@ -125,4 +117,46 @@ public class Selector implements ChannelSelector {
      * @return the number of selected channels.
      */ 
     public native int doPoll(int[] fds, int key, int timeout);
+
+    public Collection<SelectorKey> selectNow(int ops, int timeout) throws IOException {
+	int count = doPoll(fds, ops, 20);
+	selected.clear();
+	for (int i = 0; i < count; i++) {
+	    for (Mtp1 chan : registered) {
+		Channel channel = (Channel) chan;
+		if (channel.fd == fds[i]) {
+		    selected.add(channel.selectorKey);
+		}
+	    }
+	} 
+	return selected;
+    }
+
+    public void setOperation(int v) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getOperations() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isReadOperation() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isWriteOperation() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isClosed() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void close() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Collection<Stream> getRegisteredStreams() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

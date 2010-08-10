@@ -19,6 +19,7 @@ package org.mobicents.media.server.impl.rtp.sdp;
 
 import org.mobicents.media.Format;
 import org.mobicents.media.format.VideoFormat;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  *

@@ -3,6 +3,18 @@
 	xsi:schemaLocation="urn:jboss:bean-deployer:2.0 bean-deployer_2_0.xsd"
 	xmlns="urn:jboss:bean-deployer:2.0">
 
+    <bean name="MediaType.audio" class="org.mobicents.media.server.spi.MediaType">
+        <constructor factoryClass="org.mobicents.media.server.spi.MediaType" factoryMethod="getInstance">
+            <parameter>audio</parameter>
+        </constructor>
+    </bean>
+
+    <bean name="MediaType.Video" class="org.mobicents.media.server.spi.MediaType">
+        <constructor factoryClass="org.mobicents.media.server.spi.MediaType" factoryMethod="getInstance">
+            <parameter>video</parameter>
+        </constructor>
+    </bean>
+
     <bean name="G711.ulaw.encoder"
 		class="org.mobicents.media.server.impl.dsp.audio.g711.ulaw.EncoderFactory" />
     <bean name="G711.ulaw.decoder"
@@ -43,7 +55,7 @@
         </property>
     </bean>
     
-    <bean name="SoundCard" class="org.mobicents.media.server.impl.resource.audio.soundcard.PlayerFactory">
+    <bean name="soundcard" class="org.mobicents.media.server.impl.resource.audio.soundcard.PlayerFactory">
         <property name="name">soundcard</property>
     </bean>
     
@@ -57,112 +69,85 @@
         <property name="name">audio.splitter</property>
     </bean>
     
-    <bean name="AudioNoise" class="org.mobicents.media.server.impl.resource.audio.AudioNoiseGeneratorFactory">
-        <property name="name">audio.noise</property>
+    <bean name="media.video" class="org.mobicents.media.server.impl.resource.mediaplayer.video.VideoPlayerFactory">
+        <property name="name">media.player</property>
+        <property name="videoMediaDirectory">${mms.media.dir}</property>
     </bean>
+    
+    <bean name="media.audio" class="org.mobicents.media.server.impl.resource.mediaplayer.audio.AudioPlayerFactory">
+        <property name="name">media.player</property>
+        <property name="audioMediaDirectory">${mms.media.dir}</property>
+ 
+        <property name="voices">
+       			<map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="java.lang.Integer">
+       			
+                    <entry>
+                    	<key>alan</key>
+                    	<value>1</value>
+                    </entry>
+                    <entry>
+                    	<key>kevin16</key>
+                    	<value>1</value>
+                    </entry>
+                    <entry>
+                    	<key>kevin</key>
+                    	<value>1</value>
+                    </entry>
+                    <entry>
+                    	<key>mbrola_us3</key>
+                    	<value>1</value>
+                    </entry>
+                    <entry>
+                    	<key>mbrola_us2</key>
+                    	<value>1</value>
+                    </entry>
+                    <entry>
+                    	<key>mbrola_us1</key>
+                    	<value>1</value>
+                    </entry>
+                 
+               </map>
+        </property>
+
+    </bean>
+    
     
     <bean name="media.player" class="org.mobicents.media.server.impl.resource.mediaplayer.MediaPlayerFactory">
         <property name="name">media.player</property>
-        <property name="audioMediaDirectory">
-		${mms.media.dir}
-        </property>
-        <property name="videoMediaDirectory">
-        	${mms.media.dir}
-        </property>
-	<!-- property name="mediaDir">${mms.media.dir}</property -->
+        <property name="audioPlayerFactory"><inject bean="media.audio" /></property>
+        <property name="videoPlayerFactory"><inject bean="media.video" /></property>
     </bean>
     
     <bean name="audio.recorder" class="org.mobicents.media.server.impl.resource.audio.RecorderFactory">
         <property name="name">audio.recorder</property>
-        <property name="recordDir">
-        	${mms.media.dir}
-        </property>
+        <property name="recordDir">${mms.media.dir}</property>
     </bean>
 
     <bean name="dtmf.detector" class="org.mobicents.media.server.impl.resource.dtmf.DetectorFactory">
         <property name="name">dtmf.detector</property>
+        <property name="duration">40</property>
+        <property name="interdigitInterval">150</property>
     </bean>
     
     <bean name="dtmf.generator" class="org.mobicents.media.server.impl.resource.dtmf.GeneratorFactory">
         <property name="name">dtmf.generator</property>
+        <property name="duration">40</property>
     </bean>
 
     <bean name="attenuator" class="org.mobicents.media.server.impl.dsp.AttenuatorFactory">
         <property name="name">attenuator</property>
     </bean>
     
-	<bean name="Valve.open"
-		class="org.mobicents.media.server.spi.Valve">
-		<constructor factoryClass="org.mobicents.media.server.spi.Valve"
-			factoryMethod="getInstance">
-			<parameter>open</parameter>
-		</constructor>
-	</bean>
+    <bean name="Valve.open" class="org.mobicents.media.server.spi.Valve">
+	<constructor factoryClass="org.mobicents.media.server.spi.Valve" factoryMethod="getInstance">
+		<parameter>open</parameter>
+	</constructor>
+    </bean>
 
-	<bean name="Valve.close"
-		class="org.mobicents.media.server.spi.Valve">
-		<constructor factoryClass="org.mobicents.media.server.spi.Valve"
-			factoryMethod="getInstance">
-			<parameter>close</parameter>
-		</constructor>
-	</bean> 
-	
-	 <bean name="ConnectionState.NULL" class="org.mobicents.media.server.spi.ConnectionState">
-    	<constructor factoryClass="org.mobicents.media.server.spi.ConnectionState" factoryMethod="getInstance">
-        	<parameter>NULL</parameter>
-    	</constructor>
+    <bean name="Valve.close" class="org.mobicents.media.server.spi.Valve">
+	<constructor factoryClass="org.mobicents.media.server.spi.Valve" factoryMethod="getInstance">
+		<parameter>close</parameter>
+	</constructor>
     </bean>
-    
-	<bean name="ConnectionState.IDLE" class="org.mobicents.media.server.spi.ConnectionState">
-    	<constructor factoryClass="org.mobicents.media.server.spi.ConnectionState" factoryMethod="getInstance">
-        	<parameter>IDLE</parameter>
-    	</constructor>
-    </bean>
-    
-	<bean name="ConnectionState.HALF_OPEN" class="org.mobicents.media.server.spi.ConnectionState">
-    	<constructor factoryClass="org.mobicents.media.server.spi.ConnectionState" factoryMethod="getInstance">
-        	<parameter>HALF_OPEN</parameter>
-    	</constructor>
-    </bean> 
-    
-	<bean name="ConnectionState.OPEN" class="org.mobicents.media.server.spi.ConnectionState">
-    	<constructor factoryClass="org.mobicents.media.server.spi.ConnectionState" factoryMethod="getInstance">
-        	<parameter>OPEN</parameter>
-    	</constructor>
-    </bean>
-    
-	<bean name="ConnectionState.CLOSED" class="org.mobicents.media.server.spi.ConnectionState">
-    	<constructor factoryClass="org.mobicents.media.server.spi.ConnectionState" factoryMethod="getInstance">
-        	<parameter>CLOSED</parameter>
-    	</constructor>
-    </bean>
-    
-	<bean name="ConnectionStateManager" class="org.mobicents.media.server.ConnectionStateManager">
-      <constructor>
-		<parameter>
-            <map class="java.util.Hashtable" keyClass="org.mobicents.media.server.spi.ConnectionState" valueClass="java.lang.Integer">
-                <entry>
-                    <key><inject bean="ConnectionState.NULL"></inject></key>
-                    <value>0</value>
-                </entry>
-                <entry>
-                    <key><inject bean="ConnectionState.IDLE"></inject></key>
-                    <value>30000</value>
-                </entry>
-                <entry>
-                    <key><inject bean="ConnectionState.HALF_OPEN"></inject></key>
-                    <value>3600000</value>
-                </entry>
-                <entry>
-                    <key><inject bean="ConnectionState.OPEN"></inject></key>
-                    <value>3600000</value>
-                </entry>
-                <entry>
-                    <key><inject bean="ConnectionState.CLOSED"></inject></key>
-                    <value>0</value>
-                </entry>
-            </map>
-		</parameter>	
-      </constructor>
-   </bean>
+
 </deployment>

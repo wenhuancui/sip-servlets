@@ -23,11 +23,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import org.mobicents.media.MediaSource;
 import org.mobicents.media.server.impl.BaseComponent;
+import org.mobicents.media.server.impl.resource.mediaplayer.audio.AudioPlayerFactory;
 import org.mobicents.media.server.impl.resource.mediaplayer.audio.AudioPlayerImpl;
+import org.mobicents.media.server.impl.resource.mediaplayer.video.VideoPlayerFactory;
 import org.mobicents.media.server.impl.resource.mediaplayer.video.VideoPlayerImpl;
 import org.mobicents.media.server.spi.MediaType;
 import org.mobicents.media.server.spi.MultimediaSource;
-import org.mobicents.media.server.spi.clock.Timer;
+import org.mobicents.media.server.spi.ResourceUnavailableException;
 
 /**
  * @author baranowb
@@ -49,17 +51,19 @@ public class MediaPlayerImpl extends BaseComponent implements MultimediaSource {
      * Creates new instance of MediaPlayer
      * 
      * @param name the name of media player component
-     * @param videoMediaDirectory 
-     * @param audioMediaDirectory 
+     * @param videoPlayerFactory 
+     * @param audioPlayerFactory 
+     * @throws ResourceUnavailableException 
      */
-    public MediaPlayerImpl(String name, Timer timer, String audioMediaDirectory, String videoMediaDirectory) {
+    public MediaPlayerImpl(String name, AudioPlayerFactory audioPlayerFactory, VideoPlayerFactory videoPlayerFactory) throws ResourceUnavailableException {
         super(name);        
         //create audio processing engine
-        engines.put(MediaType.AUDIO, new AudioPlayerImpl(name, timer,audioMediaDirectory));
-        engines.put(MediaType.VIDEO, new VideoPlayerImpl(name, timer,videoMediaDirectory));
+        engines.put(MediaType.AUDIO, audioPlayerFactory.newInstance(getEndpoint()));
+        engines.put(MediaType.VIDEO, videoPlayerFactory.newInstance(getEndpoint()));
     }
-    
-    /**
+
+
+	/**
      * (Non Java-doc.)
      * 
      * @see org.mobicents.media.server.spi.MultimediaSource#getMediaTypes() 

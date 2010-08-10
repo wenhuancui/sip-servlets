@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.media</groupId>
 		<artifactId>mms-core</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.servers.media</groupId>
@@ -64,47 +64,52 @@
 		<dependency>
 			<groupId>org.mobicents.external.freetts</groupId>
 			<artifactId>freetts</artifactId>
-			<version>${freetts.version}</version>
+			<version>${version.freetts}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.external.freetts</groupId>
 			<artifactId>cmu_time_awb</artifactId>
-			<version>${freetts.version}</version>
+			<version>${version.freetts}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.external.freetts</groupId>
 			<artifactId>cmu_us_kal</artifactId>
-			<version>${freetts.version}</version>
+			<version>${version.freetts}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.external.freetts</groupId>
 			<artifactId>cmudict04</artifactId>
-			<version>${freetts.version}</version>
+			<version>${version.freetts}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.external.freetts</groupId>
 			<artifactId>cmulex</artifactId>
-			<version>${freetts.version}</version>
+			<version>${version.freetts}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.external.freetts</groupId>
 			<artifactId>cmutimelex</artifactId>
-			<version>${freetts.version}</version>
+			<version>${version.freetts}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.external.freetts</groupId>
 			<artifactId>en_us</artifactId>
-			<version>${freetts.version}</version>
+			<version>${version.freetts}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.external.freetts</groupId>
 			<artifactId>mbrola</artifactId>
-			<version>${freetts.version}</version>
+			<version>${version.freetts}</version>
 		</dependency>
 		<dependency>
-			<artifactId>MTP</artifactId>
+			<artifactId>mtp</artifactId>
 			<groupId>org.mobicents.protocols.ss7.mtp</groupId>
-			<version>5.0.0.Beta2-JBCP5</version>
+			<version>${version.mtp}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.stream</groupId>
+			<artifactId>stream</artifactId>
+			<version>${version.stream}</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -123,14 +128,10 @@
 				<configuration>
 					<forkMode>pertest</forkMode>
 					<!-- So we dont have to juse xxxTest.java.bak "_" -->
-					<!-- 
-						<excludes>
-						<exclude>**/TestCircle.java</exclude>
-						<exclude>**/TestSquare.java</exclude>
-						</excludes>
-						<includes>
-						<include>Sample.java</include>
-						</includes>
+					<!--
+						<excludes> <exclude>**/TestCircle.java</exclude>
+						<exclude>**/TestSquare.java</exclude> </excludes> <includes>
+						<include>Sample.java</include> </includes>
 					-->
 				</configuration>
 

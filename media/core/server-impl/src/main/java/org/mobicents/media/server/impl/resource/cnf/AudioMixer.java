@@ -29,7 +29,6 @@ import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.AbstractSinkSet;
 import org.mobicents.media.server.spi.Connection;
 import org.mobicents.media.server.spi.Endpoint;
-import org.mobicents.media.server.spi.clock.Timer;
 
 /**
  * 
@@ -42,11 +41,13 @@ public class AudioMixer extends AbstractSinkSet implements Outlet {
             AudioFormat.LITTLE_ENDIAN,
             AudioFormat.SIGNED);
     protected final static Format[] formats = new Format[]{LINEAR};
-    private int packetSize;
-    private int packetPeriod = 20;
-    private MixerOutput mixerOutput;
-    private int channelCount;
-    private byte[][] frames;
+    protected int packetSize;
+    protected int packetPeriod = 20;
+    protected MixerOutput mixerOutput;
+    protected int channelCount;
+    protected byte[][] frames;
+    
+    private Object header;
 
     /**
      * Creates a new instance of AudioMixer.
@@ -56,10 +57,9 @@ public class AudioMixer extends AbstractSinkSet implements Outlet {
      * @param fmt
      *            format of the output stream.
      */
-    public AudioMixer(String name, Timer timer) {
+    public AudioMixer(String name) {
         super(name);
         mixerOutput = new MixerOutput(this);
-        mixerOutput.setSyncSource(timer);
         init();
     }
 
@@ -68,7 +68,7 @@ public class AudioMixer extends AbstractSinkSet implements Outlet {
      * 
      * @throws javax.media.format.UnsupportedFormatException
      */
-    private void init() {
+    protected void init() {
         this.packetSize = 16 * packetPeriod;
     }
 
@@ -157,6 +157,8 @@ public class AudioMixer extends AbstractSinkSet implements Outlet {
      * @see org.mobicents.media.server.impl.AbstractSource#evolve(org.mobicents.media.Buffer, long). 
      */
     public void evolve(Buffer buffer, long timestamp) {
+        //clean header
+        this.header = null;
         channelCount = this.getStreams().size();
         int i = 0;
         frames = new byte[channelCount][320];
@@ -164,9 +166,13 @@ public class AudioMixer extends AbstractSinkSet implements Outlet {
         for (AbstractSink stream : streams) {
             MixerInputStream input = (MixerInputStream) stream;
             frames[i++] = input.read(packetPeriod);
+            if (input.header != null) {
+                this.header = input.header;
+            }
         }
 
         byte[] data = mix(frames);
+        buffer.setHeader(header);
         buffer.setData(data);
         buffer.setOffset(0);
         buffer.setLength(data.length);

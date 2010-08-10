@@ -162,7 +162,7 @@ public class SetupAction implements Callable<HttpResponse> {
 
         int ssrc =  268435456 + (int) ( Math.random()*(Integer.MAX_VALUE - 268435456) );
         
-        Player player = (Player) endpoint.getComponent("player");
+        Player player = null;//(Player) endpoint.getComponent("player");
         player.setURL(f.getAbsolutePath());
 //        player.setSSRC(trackID, ssrc);
         
@@ -175,8 +175,8 @@ public class SetupAction implements Callable<HttpResponse> {
         
         connection.setOtherParty(trackID, remoteAddress);
         
-        int port = endpoint.getLocalPort(trackID);
-        String source = endpoint.getLocalAddress(trackID);
+        int port = 0;//endpoint.getLocalPort(trackID);
+        String source = null;//endpoint.getLocalAddress(trackID);
 		String lastModified = formatter.format(new Date(f.lastModified()));
 		String date = formatter.format(new Date());
         

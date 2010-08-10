@@ -38,26 +38,34 @@ public class SessionDescriptor {
 	private int count;
 
 	public SessionDescriptor(String sdp) {
-		// BufferedReader reader = new BufferedReader(new StringReader(sdp));
+		this(sdp, true);
+	}
+
+	public SessionDescriptor(String sdp, boolean processMandatoryFields) {
+
 		BufferedReader reader = init(sdp);
 		try {
-			// parse version
 			String line = reader.readLine();
-			int pos = line.indexOf('=') + 1;
-			version = line.substring(pos, line.length());
+			if (processMandatoryFields) {
 
-			// parse origin
-			line = reader.readLine();
-			origin = new Origin(line);
+				int pos = line.indexOf('=') + 1;
+				version = line.substring(pos, line.length());
 
-			// parse session
-			line = reader.readLine();
-			pos = line.indexOf('=') + 1;
-			session = line.substring(pos, line.length());
+				// parse origin
+				line = reader.readLine();
+				origin = new Origin(line);
 
-			// From here on rest of the lines are optional but time and media
-			// description
-			line = next(reader);
+				// parse session
+				line = reader.readLine();
+				pos = line.indexOf('=') + 1;
+				session = line.substring(pos, line.length());
+
+				// From here on rest of the lines are optional but time and
+				// media
+				// description
+				line = next(reader);
+			}
+
 			char c;
 			while (line != null) {
 				c = line.charAt(0);
@@ -79,6 +87,7 @@ public class SessionDescriptor {
 
 				line = next(reader);
 			}
+
 		} catch (IOException e) {
 		}
 

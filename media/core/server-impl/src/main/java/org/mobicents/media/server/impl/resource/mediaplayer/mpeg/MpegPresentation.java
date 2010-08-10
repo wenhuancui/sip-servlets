@@ -24,6 +24,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
+import org.mobicents.media.Format;
+import org.mobicents.media.server.impl.rtp.sdp.MediaDescriptor;
+import org.mobicents.media.server.impl.rtp.sdp.SessionDescriptor;
+import org.mobicents.media.server.spi.MediaType;
+
 
 /**
  * 
@@ -49,6 +54,9 @@ public class MpegPresentation {
     
     private AudioTrack audioTrack;
     private VideoTrack videoTrack;
+    
+    private Format audioForamt = null;
+    private Format videFormat = null;
     
     public MpegPresentation(URL url) throws IOException {
         File file = new File(url.getPath());
@@ -81,7 +89,17 @@ public class MpegPresentation {
         return videoTrack;
     }
     
-    public void prepareTracks() {
+    public Format getAudioForamt() {
+		return audioForamt;
+	}
+
+
+	public Format getVideFormat() {
+		return videFormat;
+	}
+
+
+	public void prepareTracks() {
         for (TrackBox tBox : this.movieBox.getTrackBoxes()) {
             String type = tBox.getMediaBox().getHandlerReferenceBox().getHandlerType();
             if (type.equalsIgnoreCase("soun")) {
@@ -101,6 +119,20 @@ public class MpegPresentation {
                         // FIXME audioTrackBox can be still null if hint track is placed before audioTrack
                         if (audioTrackBox.getTrackHeaderBox().getTrackID() == trackId) {
                             audioHintTrackBox = tBox;
+                            
+                            //Calculate the Format
+                            for(Box b : audioHintTrackBox.getUserDataBox().getUserDefinedBoxes()){
+                            	if(b.getType().compareTo(TrackHintInformation.TYPE_S) == 0){
+                            		TrackHintInformation trackHintInfBox = (TrackHintInformation)b;
+                            		RTPTrackSdpHintInformation rtpTrackSdpHintInf = trackHintInfBox.getRtpTrackSdpHintInformation();
+                            		if(rtpTrackSdpHintInf != null ){
+                            			String sdp = rtpTrackSdpHintInf.getSdpText();
+                            			SessionDescriptor sessionDescriptor = new SessionDescriptor(sdp, false);
+                            			MediaDescriptor md = sessionDescriptor.getMediaDescriptor(MediaType.AUDIO);
+                            			audioForamt = md.getFormat(0);
+                            		}
+                            	}
+                            }
                         } else if (videoTrackBox.getTrackHeaderBox().getTrackID() == trackId) {
                             videoHintTrackBox = tBox;
                         }

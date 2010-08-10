@@ -28,20 +28,40 @@ import org.mobicents.media.server.spi.ResourceUnavailableException;
  *
  */
 public class GeneratorFactory implements ComponentFactory {
-	private String name;
 
-	public String getName() {
-		return name;
-	}
+    private String name;
+    private int duration;
 
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public Component newInstance(Endpoint endpoint) throws ResourceUnavailableException {
-		GeneratorImpl generator = new GeneratorImpl(this.name, endpoint.getTimer());
-		generator.setEndpoint(endpoint);
-		return generator;
-	}
+    public String getName() {
+        return name;
+    }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Gets the minum length of generated tone.
+     * 
+     * @return tone duration in milliseconds.
+     */
+    public int getDuration() {
+        return duration;
+    }
+
+    /**
+     * Modify minim duration of generated tone.
+     * 
+     * @param duration the duration of the tone in milliseconds
+     */
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public Component newInstance(Endpoint endpoint) throws ResourceUnavailableException {
+        GeneratorImpl generator = new GeneratorImpl(this.name);
+        generator.setEndpoint(endpoint);
+        generator.setToneDuration(duration);
+        return generator;
+    }
 }

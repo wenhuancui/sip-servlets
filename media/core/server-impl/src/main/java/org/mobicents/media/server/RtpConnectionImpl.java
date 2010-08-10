@@ -25,18 +25,22 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import org.mobicents.media.Format;
-import org.mobicents.media.server.impl.rtp.RtpFactory;
-import org.mobicents.media.server.impl.rtp.RtpSocket;
+import org.mobicents.media.server.impl.rtp.ReceiveStream;
+import org.mobicents.media.server.impl.rtp.RtpSocketImpl;
 import org.mobicents.media.server.impl.rtp.RtpSocketListener;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
 import org.mobicents.media.server.impl.rtp.sdp.MediaDescriptor;
 import org.mobicents.media.server.impl.rtp.sdp.SessionDescriptor;
 import org.mobicents.media.server.resource.Channel;
 import org.mobicents.media.server.spi.Connection;
+import org.mobicents.media.server.spi.ConnectionListener;
 import org.mobicents.media.server.spi.ConnectionState;
+import org.mobicents.media.server.spi.Endpoint;
 import org.mobicents.media.server.spi.MediaType;
 import org.mobicents.media.server.spi.ResourceUnavailableException;
 import org.mobicents.media.server.spi.dsp.Codec;
+import org.mobicents.media.server.spi.rtp.AVProfile;
+import org.mobicents.media.server.spi.rtp.RtpManager;
+import org.mobicents.media.server.spi.rtp.RtpSocket;
 
 /**
  * 
@@ -65,20 +69,21 @@ public class RtpConnectionImpl extends ConnectionImpl implements RtpSocketListen
     private int prefferedPayload;
     private Format prefferedFormat;
     
-    public RtpConnectionImpl(EndpointImpl endpoint) throws ResourceUnavailableException {
-        super(endpoint);
+    public RtpConnectionImpl(Endpoint endpoint, ConnectionFactory connectionFactory, RtpManager rtpFactory) throws ResourceUnavailableException {
+        super(endpoint, connectionFactory);
         
         //Get media available media types
         Collection<MediaType> mediaTypes = endpoint.getMediaTypes();
         
         //Get rtp factory
-        RtpFactory factory = endpoint.getRtpFactory();
+        RtpManager factory = rtpFactory;
         bindAddress = factory.getBindAddress();
         
         for (MediaType mediaType : mediaTypes) {
             int i = mediaType.getCode();
             try {
                 sockets[i] = factory.getRTPSocket(mediaType);
+                ((RtpSocketImpl)sockets[i]).setListener(this);
             } catch (IOException e) {
                 throw new ResourceUnavailableException(e);
             }
@@ -111,22 +116,17 @@ public class RtpConnectionImpl extends ConnectionImpl implements RtpSocketListen
     
     @Override
     protected void join() {       
-        Collection<MediaType> mediaTypes = ((EndpointImpl)getEndpoint()).getMediaTypes();
+        Collection<MediaType> mediaTypes = ((BaseEndpointImpl)getEndpoint()).getMediaTypes();
         for (MediaType mediaType : mediaTypes) {
             this.join(mediaType);
         }
     }
     
-    private void print(Format[] f, int count) {
-        for (int i = 0; i < count; i++) {
-            System.out.println(f[i]);
-        }
-    }
     
     @Override
     protected void bind(MediaType mediaType) throws ResourceUnavailableException {
     	if((this.stream & mediaType.getMask()) != 0x0){
-    		 try {
+            try {
                  sockets[mediaType.getCode()].bind();
              } catch (IOException e) {
                  throw new ResourceUnavailableException(e);
@@ -139,7 +139,7 @@ public class RtpConnectionImpl extends ConnectionImpl implements RtpSocketListen
     
     //This is just helper method if Controller doesn't care of MediaType.
     protected void bind() throws ResourceUnavailableException {
-        Collection<MediaType> mediaTypes = ((EndpointImpl)getEndpoint()).getMediaTypes();
+        Collection<MediaType> mediaTypes = ((BaseEndpointImpl)getEndpoint()).getMediaTypes();
         for (MediaType mediaType : mediaTypes) {
            this.bind(mediaType);
         }
@@ -284,7 +284,7 @@ public class RtpConnectionImpl extends ConnectionImpl implements RtpSocketListen
         sdp.createConnection(networkType, addressType, bindAddress);
 
         // encode formats
-        Collection<MediaType> mediaTypes = ((EndpointImpl)getEndpoint()).getMediaTypes();        
+        Collection<MediaType> mediaTypes = ((BaseEndpointImpl)getEndpoint()).getMediaTypes();        
         for (MediaType mediaType : mediaTypes) {
             int i = mediaType.getCode();
             if (formatCount[i] > 0) { 
@@ -331,7 +331,7 @@ public class RtpConnectionImpl extends ConnectionImpl implements RtpSocketListen
         InetAddress address = getAddress(sdp.getConnection().getAddress());
 
         //analyze media descriptions 
-        Collection<MediaType> mediaTypes = ((EndpointImpl)getEndpoint()).getMediaTypes();
+        Collection<MediaType> mediaTypes = ((BaseEndpointImpl)getEndpoint()).getMediaTypes();
         //negotiate formats
         for (MediaType mediaType : mediaTypes) {
             subset(sdp.getMediaDescriptor(mediaType.getCode()), mediaType.getCode());
@@ -545,14 +545,18 @@ public class RtpConnectionImpl extends ConnectionImpl implements RtpSocketListen
 
     @Override
     public void close() {
-        Collection<MediaType> mediaTypes = ((EndpointImpl)getEndpoint()).getMediaTypes();
+        Collection<MediaType> mediaTypes = ((BaseEndpointImpl)getEndpoint()).getMediaTypes();
         for (MediaType mediaType : mediaTypes) {
         	this.close(mediaType);
         }
     }
 
     public void error(Exception e) {
-        getEndpoint().deleteConnection(this.getId());
+        //getEndpoint().deleteConnection(this.getId());
+    	for (Object ocl : this.connectionListeners.keySet()) {
+            ConnectionListener cl = (ConnectionListener) ocl;
+            cl.onError(this, e);
+        }    	
     }
 
     /**
@@ -640,7 +644,7 @@ public class RtpConnectionImpl extends ConnectionImpl implements RtpSocketListen
         int count = 0;
         for (int i = 0; i < sockets.length; i++) {
             if (sockets[i] != null) {
-                res += sockets[i].getReceiveStream().getInterArrivalJitter();
+                res += ((ReceiveStream)sockets[i].getReceiveStream()).getInterArrivalJitter();
                 count++;
             }
         }

@@ -28,9 +28,6 @@ import org.mobicents.media.Outlet;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.AbstractSource;
 import org.mobicents.media.server.impl.BaseComponent;
-import org.mobicents.media.server.spi.SyncSource;
-import org.mobicents.media.server.spi.clock.Task;
-import org.mobicents.media.server.spi.clock.TimerTask;
 
 /**
  * Implements media proxy component. 
@@ -64,7 +61,6 @@ public class Proxy extends BaseComponent implements Inlet, Outlet {
         super(name);
         input = new Input(name);
         output = new Output(name);
-        output.setSyncSource(input);
     }
     
     /**
@@ -169,7 +165,7 @@ public class Proxy extends BaseComponent implements Inlet, Outlet {
     /**
      * Implements input channel.
      */
-    private class Input extends AbstractSink implements SyncSource {
+    private class Input extends AbstractSink {
 
         private volatile boolean started = false;
         /**
@@ -192,7 +188,9 @@ public class Proxy extends BaseComponent implements Inlet, Outlet {
             if (!output.isStarted()) {
                 output.start();
             }
-            super.start();
+            if (otherParty != null && !otherParty.isStarted()) {
+                otherParty.start();
+            }
         }
         
         @Override
@@ -201,7 +199,9 @@ public class Proxy extends BaseComponent implements Inlet, Outlet {
             if (output.isStarted()) {
                 output.stop();
             }
-            super.stop();
+            if (otherParty != null && otherParty.isStarted()) {
+                otherParty.stop();
+            }
         }
         
         @Override
@@ -244,21 +244,10 @@ public class Proxy extends BaseComponent implements Inlet, Outlet {
             return otherParty.getFormats();
         }
 
-        public void sync(MediaSource mediaSource) {
-        }
-
-        public void unsync(MediaSource mediaSource) {
-        }
-
         public long getTimestamp() {
             return timestamp;
         }
 
-        public TimerTask sync(Task task) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-     
-        
     }
     
     /**
@@ -288,7 +277,9 @@ public class Proxy extends BaseComponent implements Inlet, Outlet {
             if (!input.isStarted()) {
                 input.start();
             }
-            super.start();
+            if (otherParty != null && !otherParty.isStarted()) {
+                otherParty.start();
+            }            
         }
         
         @Override
@@ -297,7 +288,9 @@ public class Proxy extends BaseComponent implements Inlet, Outlet {
             if (input.isStarted()) {
                 input.stop();
             }
-            super.stop();
+            if (otherParty != null && otherParty.isStarted()) {
+                otherParty.stop();
+            }
         }
 
         @Override

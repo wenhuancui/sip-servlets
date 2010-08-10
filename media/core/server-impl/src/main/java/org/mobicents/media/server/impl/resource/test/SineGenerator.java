@@ -19,10 +19,10 @@ package org.mobicents.media.server.impl.resource.test;
 
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
+import org.mobicents.media.Server;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSource;
 import org.mobicents.media.server.spi.Endpoint;
-import org.mobicents.media.server.spi.clock.Timer;
 
 /**
  * Generates sine wave signal with specified Amplitude and frequence.
@@ -44,9 +44,8 @@ public class SineGenerator extends AbstractSource {
     private int pSize;
     private double time;
 
-    public SineGenerator(String name, Timer timer) {
+    public SineGenerator(String name) {
         super(name);
-        setSyncSource(timer);
         init();
 //        setFormat(LINEAR_AUDIO);
     }
@@ -54,7 +53,6 @@ public class SineGenerator extends AbstractSource {
     /** Creates a new instance of Generator */
     public SineGenerator(Endpoint endpoint, String name) {
         super(name);
-        setSyncSource(endpoint.getTimer());
         init();
     }
 
@@ -98,7 +96,7 @@ public class SineGenerator extends AbstractSource {
         buffer.setOffset(0);
         buffer.setLength(data.length);
         buffer.setDuration(20);
-        buffer.setTimeStamp(getSyncSource().getTimestamp());
+        buffer.setTimeStamp(Server.scheduler.getTimestamp());
         time += ((double) 20) / 1000.0;
     }
 

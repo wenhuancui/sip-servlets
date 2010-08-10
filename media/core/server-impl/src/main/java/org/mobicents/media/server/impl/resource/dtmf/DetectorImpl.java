@@ -27,7 +27,6 @@ import org.mobicents.media.server.impl.resource.GoertzelFilter;
 import org.mobicents.media.server.spi.dsp.Codec;
 import org.mobicents.media.server.spi.dsp.CodecFactory;
 import org.mobicents.media.server.spi.resource.DtmfDetector;
-import org.mobicents.media.server.spi.resource.DtmfGenerator;
 
 /**
  * Implements inband DTMF detector.
@@ -104,6 +103,7 @@ public class DetectorImpl extends DtmfBuffer {
         codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g729.EncoderFactory());
     }
 
+    private boolean isLazy = false;
     /**
      * Creates new instance of Detector.
      */
@@ -166,6 +166,10 @@ public class DetectorImpl extends DtmfBuffer {
         threshold = Math.pow(Math.pow(10, level), 0.1) * Short.MAX_VALUE;
     }
 
+    public void setLasy(boolean isLazy) {
+        this.isLazy = isLazy;
+    }
+    
     public int getVolume() {
         return level;
     }
@@ -179,6 +183,10 @@ public class DetectorImpl extends DtmfBuffer {
         if (buffer.getHeader() != null) {
             DtmfEvent evt = (DtmfEvent) buffer.getHeader();
             this.push(evtID[evt.getEventID()]);
+            return;
+        }
+        
+        if (isLazy) {
             return;
         }
         

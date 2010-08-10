@@ -25,7 +25,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  *

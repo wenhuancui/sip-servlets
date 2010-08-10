@@ -25,7 +25,8 @@ import org.mobicents.media.Format;
 import org.mobicents.media.Inlet;
 import org.mobicents.media.MediaSink;
 import org.mobicents.media.MediaSource;
-import org.mobicents.media.server.spi.SyncSource;
+import org.mobicents.media.Server;
+import org.mobicents.media.server.impl.clock.LocalTask;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
 /**
@@ -40,10 +41,6 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
 
     //reference to the media sink connected to this component.
     protected transient MediaSink otherParty;
-    
-    //synchronization source of this component. 
-    //it is either timer or other component
-    private SyncSource syncSource;
     
     //state lock for locking state during start and stop
     private ReentrantLock state = new ReentrantLock();
@@ -70,6 +67,7 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
     //duration is assigned
     private long duration = -1;
     
+    private LocalTask worker;
     /**
      * Creates new instance of source with specified name.
      * 
@@ -82,15 +80,6 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
         evtStarted = new NotifyEventImpl(this, NotifyEvent.STARTED,"Started");
         evtCompleted = new NotifyEventImpl(this, NotifyEvent.COMPLETED,"Completed");
         evtStopped = new NotifyEventImpl(this, NotifyEvent.STOPPED,"Stoped");
-    }
-
-    /**
-     * (Non Java-doc).
-     * 
-     * @see org.mobicents.media.MediaSource#getSyncSource()
-     */
-    public SyncSource getSyncSource() {
-        return syncSource;
     }
 
     /**
@@ -130,15 +119,6 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
     }
     
     /**
-     * (Non Java-doc).
-     * 
-     * @see org.mobicents.media.MediaSource#setSyncSource(SyncSource)
-     */
-    public void setSyncSource(SyncSource syncSource) {
-        this.syncSource = syncSource;
-    }
-
-    /**
      * This method is called just before start.
      * 
      * The descendant classes can verride this method and put additional logic
@@ -164,18 +144,13 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
 
             beforeStart();
 
-            // synchronize 
-            if (syncSource == null) {
-                throw new IllegalStateException("No source of synchronization: " + this);
-            }
-
             if (otherParty != null && !otherParty.isStarted()) {
                 otherParty.start();
             }
 
             //obtain current timestamp and schedule periodic execution
             //timestamp = syncSource.getTimestamp();
-            syncSource.sync(this);
+            worker = Server.scheduler.execute(this);
 
             //started!
             started();
@@ -197,7 +172,10 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
         state.lock();
         try {
             started = false;
-            syncSource.unsync(this);
+            if (worker != null) {
+                worker.cancel();
+            }
+            
             if (logger.isDebugEnabled()) {
                 logger.debug(this + " stopped");
             }
@@ -222,6 +200,10 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
         return started;
     }
 
+    protected void setStarted(boolean started) {
+        this.started = started;
+    }
+    
     /**
      * This method is called immediately after processing termination.
      * 
@@ -474,7 +456,7 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
      */
     protected void failed(int eventID, Exception e) {
         FailureEventImpl failed = new FailureEventImpl(this, eventID, e);
-        syncSource.unsync(this);
+        worker.cancel();
         this.stop();
         sendEvent(failed);
     }
@@ -484,7 +466,7 @@ public abstract class AbstractSource extends BaseComponent implements MediaSourc
      * 
      */
     protected void completed() {
-        syncSource.unsync(this);
+        worker.cancel();
         System.out.println("Stopping " + this);
         this.started = false;
         sendEvent(evtCompleted);

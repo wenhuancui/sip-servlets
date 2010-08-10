@@ -19,10 +19,8 @@ package org.mobicents.media.server.impl.resource.phone;
 
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
-import org.mobicents.media.Frame;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSource;
-import org.mobicents.media.server.spi.SyncSource;
 
 /**
  * Generates sine wave signal with specified Amplitude and frequence.
@@ -53,9 +51,8 @@ public class PhoneSignalGenerator extends AbstractSource  {
     
     private int[] T;
     
-    public PhoneSignalGenerator(String name, SyncSource syncSource) {
+    public PhoneSignalGenerator(String name) {
         super(name);
-        setSyncSource(syncSource);
         init();
     }
     

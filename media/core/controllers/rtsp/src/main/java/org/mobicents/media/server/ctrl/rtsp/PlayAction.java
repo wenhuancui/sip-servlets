@@ -93,7 +93,7 @@ public class PlayAction implements Callable<HttpResponse> {
 		}
 
 		Endpoint endpoint = (Endpoint) session.getAttribute("endpoint");
-		Player player = (Player) endpoint.getComponent("player");
+		Player player = null;//(Player) endpoint.getComponent("player");
 		String rtpInfo = "";
 		double npt = 0;
 		if (trackID != null) {

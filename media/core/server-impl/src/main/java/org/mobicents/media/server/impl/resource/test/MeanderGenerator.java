@@ -21,7 +21,6 @@ package org.mobicents.media.server.impl.resource.test;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
 import org.mobicents.media.server.impl.AbstractSource;
-import org.mobicents.media.server.spi.SyncSource;
 import org.mobicents.media.server.spi.dsp.Codec;
 
 /**
@@ -40,10 +39,8 @@ public class MeanderGenerator extends AbstractSource {
     private double T;
     private short A;
     
-    public MeanderGenerator(String name, SyncSource syncSource) {
+    public MeanderGenerator(String name) {
         super(name);
-        setSyncSource(syncSource);
-        
         //number of seconds covered by one sample
         dt = 1/Codec.LINEAR_AUDIO.getSampleRate();
     }

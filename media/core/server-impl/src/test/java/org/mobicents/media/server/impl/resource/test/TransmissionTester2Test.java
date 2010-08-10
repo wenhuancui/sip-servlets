@@ -23,9 +23,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mobicents.media.Server;
 import static org.junit.Assert.*;
-import org.mobicents.media.server.impl.clock.TimerImpl;
-import org.mobicents.media.server.spi.clock.Timer;
 
 /**
  *
@@ -33,7 +32,7 @@ import org.mobicents.media.server.spi.clock.Timer;
  */
 public class TransmissionTester2Test {
 
-    private Timer timer;
+    private Server server;
     private TransmissionTester2 tester;    
     
     public TransmissionTester2Test() {
@@ -48,15 +47,15 @@ public class TransmissionTester2Test {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        timer.start();
-        tester = new TransmissionTester2(timer);
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
+        tester = new TransmissionTester2();
     }
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     /**

@@ -29,9 +29,9 @@ import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSink;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
 import org.mobicents.media.server.spi.dsp.Codec;
 import org.mobicents.media.server.spi.events.NotifyEvent;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 import org.xiph.speex.spi.SpeexEncoding;
 
 /**

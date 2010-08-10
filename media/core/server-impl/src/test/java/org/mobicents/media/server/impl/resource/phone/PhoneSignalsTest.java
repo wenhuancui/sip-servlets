@@ -25,10 +25,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mobicents.media.Server;
 import static org.junit.Assert.*;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.spi.NotificationListener;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
 /**
@@ -37,7 +36,8 @@ import org.mobicents.media.server.spi.events.NotifyEvent;
  */
 public class PhoneSignalsTest implements NotificationListener {
 
-    private Timer timer;
+    private Server server;
+    
     private PhoneSignalGenerator gen;
     private PhoneSignalDetector det;
     
@@ -56,15 +56,15 @@ public class PhoneSignalsTest implements NotificationListener {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        timer.start();
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
         short A = Short.MAX_VALUE /2;
         
         int[] F = new int[]{100, 200};
         int[] T = new int[]{1,1};
         
-        gen = new PhoneSignalGenerator("phone.gen", timer);
+        gen = new PhoneSignalGenerator("phone.gen");
         gen.setAmplitude((short)320);
         gen.setFrequency(F);
         gen.setPeriods(T);
@@ -80,7 +80,7 @@ public class PhoneSignalsTest implements NotificationListener {
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     /**

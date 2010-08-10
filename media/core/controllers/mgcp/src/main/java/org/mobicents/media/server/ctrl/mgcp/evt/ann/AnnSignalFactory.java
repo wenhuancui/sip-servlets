@@ -35,6 +35,7 @@ import org.mobicents.media.server.spi.resource.TTSEngine;
  * 
  * @author kulikov
  * @author baranowb
+ * @author amit bhayani
  */
 public class AnnSignalFactory implements GeneratorFactory {
 
@@ -100,7 +101,15 @@ public class AnnSignalFactory implements GeneratorFactory {
 					int indexofts = params.indexOf("ts(");
 					text = params.substring((indexofts + 3), params.indexOf(
 							')', (indexofts + 3)));
+				} else if (tokens[i].startsWith("vc(")) {
+					int indexofts = params.indexOf("vc(");
+					voice = params.substring((indexofts + 3), params.indexOf(
+							')', (indexofts + 3)));
 				}
+			}
+			
+			if (voice == null){
+				voice = _DEFAULT_VOICE_;
 			}
 		}
 
@@ -136,8 +145,8 @@ public class AnnSignalFactory implements GeneratorFactory {
 		public void start(Request request) {
 
 			if (generator != null) {
-				generator.setText(text);
 				generator.setVoiceName(voice);
+				generator.setText(text);				
 				generator.start();
 			}
 		}

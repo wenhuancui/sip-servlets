@@ -30,9 +30,8 @@ import org.mobicents.media.Inlet;
 import org.mobicents.media.MediaSink;
 import org.mobicents.media.MediaSource;
 import org.mobicents.media.Outlet;
-import org.mobicents.media.server.impl.clock.TimerImpl;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
-import org.mobicents.media.server.spi.clock.Timer;
+import org.mobicents.media.Server;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  *
@@ -40,6 +39,8 @@ import org.mobicents.media.server.spi.clock.Timer;
  */
 public class AbstractComponentTest {
 
+    private Server server;
+    
     private TestSource src = new TestSource("source");
     private TestSource2 src2 = new TestSource2("source2");
     private TestSink sink = new TestSink("sink");
@@ -48,7 +49,6 @@ public class AbstractComponentTest {
     private Inlet inlet = new InletImpl("test-inlet");
     private Outlet outlet = new OutletImpl("test-outlet");
     
-    private Timer timer;
     private Format FORMAT = AVProfile.L16_MONO;
     
     public AbstractComponentTest() {
@@ -63,14 +63,14 @@ public class AbstractComponentTest {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        src.setSyncSource(timer);
-        src2.setSyncSource(timer);
+    public void setUp() throws Exception {
+//        server = new Server();
+//        server.start();
     }
 
     @After
     public void tearDown() {
+//        server.stop();
     }
 
     /**
@@ -303,7 +303,6 @@ public class AbstractComponentTest {
 
             public InnerSource(String name) {
                 super(name);
-                setSyncSource(timer);
             }
 
             public Format[] getFormats() {
@@ -408,7 +407,6 @@ public class AbstractComponentTest {
 
             public InnerSource(String name) {
                 super(name);
-                setSyncSource(timer);
             }
 
             public Format[] getFormats() {

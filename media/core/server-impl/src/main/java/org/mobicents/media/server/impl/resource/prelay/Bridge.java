@@ -24,6 +24,7 @@ import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
 import org.mobicents.media.MediaSink;
 import org.mobicents.media.MediaSource;
+import org.mobicents.media.Server;
 import org.mobicents.media.server.ConnectionImpl;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.AbstractSinkSet;
@@ -54,8 +55,8 @@ public class Bridge extends BaseComponent implements ResourceGroup {
     public Bridge(String name, DspFactory dspFactory, Endpoint endpoint) {
         super(name);
         
-        audioChannels[0] = new AudioChannel(dspFactory, endpoint.getTimer());
-        audioChannels[1] = new AudioChannel(dspFactory, endpoint.getTimer());
+        audioChannels[0] = new AudioChannel(dspFactory);
+        audioChannels[1] = new AudioChannel(dspFactory);
         
         input = new Input("PacketRelay[Input]");
         output = new Output("PacketRelay[Output]");

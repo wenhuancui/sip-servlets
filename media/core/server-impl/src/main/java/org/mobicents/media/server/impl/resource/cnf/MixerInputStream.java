@@ -37,6 +37,7 @@ public class MixerInputStream extends AbstractSink {
     
     /** read and write cursor positions */
     private int r,w;
+    protected Object header;
     
     /** 
      * Creates new input stream.
@@ -59,7 +60,11 @@ public class MixerInputStream extends AbstractSink {
      * 
      * @see org.mobicents.media.server.impl.AbstractSink#onMediaTransfer(org.mobicents.media.Buffer) 
      */
-    public void onMediaTransfer(Buffer buffer) throws IOException { 
+    public void onMediaTransfer(Buffer buffer) throws IOException {
+        //save header first
+        this.header = buffer.getHeader();
+        
+        //process with data
         byte[] data = buffer.getData();
         int remainder = (localBuffer.length - w) - buffer.getLength();        
         //data completely fits to the buffer? just append data
@@ -87,13 +92,6 @@ public class MixerInputStream extends AbstractSink {
         duration += buffer.getDuration();
     }
 
-    private void print(String s, byte[] data) {
-        System.out.println(System.currentTimeMillis() + " " + s);
-        for (int i = 0; i < data.length; i++) {
-            System.out.print(data[i] + " ");
-        }
-        System.out.println();
-    }
     /**
      * Reads media buffer from this stream with specified duration.
      * 

@@ -43,7 +43,7 @@ public abstract class ConnectionImpl implements Connection, Task {
     private static int GEN = 1;
     private String id;
     private int index;
-    private EndpointImpl endpoint;
+    private BaseEndpointImpl endpoint;
     private ConnectionState state = ConnectionState.NULL;
     
     //The default ConnectionMode is INACTIVE where there is no tx or rx
@@ -60,13 +60,11 @@ public abstract class ConnectionImpl implements Connection, Task {
     private int[] lifeTime = new int[]{0, 1000*30, 1000*60*60, 1000*60*60, 0};
     private long startTime;
 
-    public ConnectionImpl(EndpointImpl endpoint) throws ResourceUnavailableException {
-        this.endpoint = (EndpointImpl) endpoint;
+    public ConnectionImpl(Endpoint endpoint, ConnectionFactory factory) throws ResourceUnavailableException {
+        this.endpoint = (BaseEndpointImpl) endpoint;
         this.id = this.genID();
 
         //getting connection factory
-        ConnectionFactory factory = endpoint.getConnectionFactory();
-
         initRx(factory);
         initTx(factory);
     }

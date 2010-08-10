@@ -25,11 +25,10 @@ import org.mobicents.media.Format;
 import org.mobicents.media.server.Utils;
 import org.mobicents.media.server.impl.AbstractSource;
 import org.mobicents.media.server.impl.resource.mediaplayer.Track;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
 import org.mobicents.media.server.spi.ResourceUnavailableException;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 import org.mobicents.media.server.spi.resource.Player;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  * @author baranowb
@@ -51,9 +50,8 @@ public class VideoPlayerImpl extends AbstractSource implements Player {
      * @param timer source of synchronization.
      * @param videoMediaDirectory 
      */
-    public VideoPlayerImpl(String name, Timer timer, String videoMediaDirectory) {
+    public VideoPlayerImpl(String name, String videoMediaDirectory) {
         super(name);
-        setSyncSource(timer);
         this.videoMediaDirectory = videoMediaDirectory;
     }
 

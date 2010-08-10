@@ -27,7 +27,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mobicents.media.server.spi.resource.ss7.Utils;
 import org.tritonus.share.TDebug.AssertException;
 
 /**

@@ -329,9 +329,64 @@
 			dependent services to be undeployed first in order to
 			maintain the integrity of the system.
 		</para>
+		
+		
+			<section id="ittms-Service_Provider_Interface">
+				<title>Service Provider Interface</title>
+				<para>
+					A common theme for Mobicents Media Server is the
+					breaking out of internal fixed subsystems into
+					stand-alone components implemented as POJOs and the
+					introduction of SPIs throughout the server codebase.
+					Those changes should not affect directly the end
+					user but they are an important part of the Mobicents
+					Media Server strategy for making available the
+					various voice/video services as independent
+					components, so that they can be wired-together on
+					demand
+				</para>
+
+				<para>
+					The controllers use this SPI to controll the media
+					server components.
+				</para>
+
+				<mediaobject
+					id="ittms-mms-MMSArchitecture-dia-MSGeneral">
+					<imageobject>
+						<imagedata width="405" align="center"
+							fileref="images/mms-MMSArchitecture-dia-MSGeneral2.jpg"
+							format="JPG"></imagedata>
+					</imageobject>
+				</mediaobject>
+
+
+
+				<para>
+					Mobicents Media server architecture promotes the
+					usage of Service Objects to represent the media flow
+					path. The component architecture divides the process
+					of constructing media services into two major parts:
+					<itemizedlist>
+						<listitem>
+							<para>
+								Implementing components that generate,
+								or consume, media data.
+							</para>
+						</listitem>
+						<listitem>
+							<para>
+								Assembling media component chains to
+								build a media flow path.
+							</para>
+						</listitem>
+					</itemizedlist>
+				</para>
+			</section>		
+		
 
 		<formalpara>
-		<title>Media Source and Media Sink</title>
+		<title>MediaSource and MediaSink</title>
 		<para>
 			To achieve the modularization every media component's in
 			Mobicents Media Server (like AudioPlayer, Recorder, DTMF
@@ -340,7 +395,22 @@
 			capability to generate media (AudioPlayer) while MediaSink
 			(Recorder) is the one that consumes media. 
 		</para>
-		</formalpara>	
+		</formalpara>
+		
+		<formalpara>
+		<title>MultiMediaSource and MultiMediaSink</title>
+		<para>
+			Several MediaSource of different MediaType (MediaType defined are AUDIO and VIDEO) can be grouped together in one MultiMediaSource for example 
+			MediaPlayer groups AudioPlayer and VideoPlayer. Same is true for MultiMediaSink. 
+		</para>
+		</formalpara>
+		
+		<formalpara>
+		<title>ResourceGroup</title>
+		<para>
+			ResourceGroup is collection of MediaSource and MediaSink. These MediaSource and MediaSink can be of different MediaTypes 
+		</para>
+		</formalpara>		
 		
 		<formalpara>
 		<title>Components and Factories</title>
@@ -404,6 +474,7 @@
 		</para>
 		</formalpara>
 		
+		
 		<para>
 			Endpoints may only decalre Channel to receive media
 			(Rx-Channel) or Channel to send media (Tx-Channel) or
@@ -420,7 +491,15 @@
 			(ConferenceBridge)
 		</para>
 		
-		
+		<formalpara>
+		<title>Valve</title>		
+		<para>
+			Each Pipe also has a Valve associated that controls the flow of media through Pipe. Valve can be either in OPEN state or CLOSED state. 
+			As the name suggests when valve is in OPEN state, media flows through Pipe otherwise it doesn't. By default Pipe always has Valve in CLOSED state, 
+			unless otherwise configured. 
+		</para>
+		</formalpara>
+				
 		<table id="tab-captms-mms-Component-Defintion"
 				frame='all'>
 				<title>Component Definition</title>

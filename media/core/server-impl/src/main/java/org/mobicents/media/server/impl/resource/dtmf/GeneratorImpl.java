@@ -22,7 +22,6 @@ import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSource;
-import org.mobicents.media.server.spi.SyncSource;
 import org.mobicents.media.server.spi.dsp.Codec;
 import org.mobicents.media.server.spi.dsp.CodecFactory;
 import org.mobicents.media.server.spi.resource.DtmfGenerator;
@@ -94,9 +93,8 @@ public class GeneratorImpl extends AbstractSource implements DtmfGenerator {
         codecFactories.add(new org.mobicents.media.server.impl.dsp.audio.g729.EncoderFactory());
     }
     
-    public GeneratorImpl(String name, SyncSource syncSource) {
+    public GeneratorImpl(String name) {
         super(name);
-        setSyncSource(syncSource);
         dt = 1 / LINEAR_AUDIO.getSampleRate();
     }
 

@@ -17,26 +17,15 @@
  */
 package org.mobicents.media.server.spi.clock;
 
-import org.mobicents.media.server.spi.*;
-import org.mobicents.media.MediaSource;
-
 /**
  *
  * @author kulikov
  */
-public interface Timer extends SyncSource {
+public interface Timer {
     /**
-     * Gets value of interval between timer ticks.
+     * Gets the current time in milliseconds
      * 
-     * @return the int value in milliseconds.
+     * @return the current time in milliseconds.
      */
-    public int getHeartBeat();
-
-    /**
-     * Modify interval between timer tick
-     * 
-     * @param heartBeat the new value of interval in milliseconds.
-     */
-    public void setHeartBeat(int heartBeat);
-    
+    public long getTimestamp();
 }

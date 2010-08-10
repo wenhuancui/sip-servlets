@@ -31,15 +31,14 @@ import org.mobicents.media.ComponentFactory;
 import org.mobicents.media.Format;
 import org.mobicents.media.MediaSink;
 import org.mobicents.media.MediaSource;
-import org.mobicents.media.server.EndpointImpl;
+import org.mobicents.media.Server;
+import org.mobicents.media.server.VirtualEndpointImpl;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.AbstractSource;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.resource.Proxy;
 import org.mobicents.media.server.spi.Endpoint;
 import org.mobicents.media.server.spi.MediaType;
 import org.mobicents.media.server.spi.Valve;
-import org.mobicents.media.server.spi.clock.Timer;
 
 /**
  *
@@ -47,7 +46,8 @@ import org.mobicents.media.server.spi.clock.Timer;
  */
 public class ChanneWithPipesTest {
 
-    private Timer timer;
+    private Server server;
+    
     public final Format FORMAT = new Format("test");
     private Endpoint endpoint;
     private TestSink sink = new TestSink("test-sink");
@@ -69,16 +69,14 @@ public class ChanneWithPipesTest {
 
     @Before
     public void setUp() throws Exception {
-        timer = new TimerImpl();
-        timer.start();
-        
+        server = new Server();
+        server.start();
         gateway = new TestGatewayFactory("gateway");
-        endpoint = new EndpointImpl();
+        endpoint = new VirtualEndpointImpl("test");
         list.clear();
 
         sink = new TestSink("test-sink");
         source = new TestSource("test-source");
-        source.setSyncSource(timer);
         
         channelFactory = new ChannelFactory();
 
@@ -107,7 +105,7 @@ public class ChanneWithPipesTest {
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
         try {
             Thread.currentThread().sleep(200);
         } catch (Exception e) {
@@ -385,7 +383,6 @@ public class ChanneWithPipesTest {
     
     private class TestSource extends AbstractSource  {
 
-        private Timer timer = new TimerImpl();
         private ScheduledFuture task;
         private int count;
 
@@ -413,7 +410,7 @@ public class ChanneWithPipesTest {
         @Override
         public void evolve(Buffer buffer, long timestamp) {
             buffer.setFormat(FORMAT);
-            buffer.setTimeStamp(count * timer.getHeartBeat());
+            buffer.setTimeStamp(count * 20);
             buffer.setSequenceNumber(count++);
             buffer.setData(new byte[160]);
             buffer.setOffset(0);

@@ -84,6 +84,10 @@ public class Call implements Serializable {
 	public int getCallTableIndex() {
 		return this.callTableIndex;
 	}
+	
+	protected MgcpController getController(){
+		return this.controller;
+	}
 
 	
 }

@@ -29,7 +29,7 @@ import org.mobicents.media.server.spi.ResourceUnavailableException;
  */
 public class AudioMixerFactory implements ComponentFactory {
 
-    private String name;
+    protected String name;
     
     public String getName() {
         return name;
@@ -40,7 +40,7 @@ public class AudioMixerFactory implements ComponentFactory {
     }
     
     public Component newInstance(Endpoint endpoint) throws ResourceUnavailableException {
-        return new AudioMixer(name, endpoint.getTimer());
+        return new AudioMixer(name);
     }
     
 }

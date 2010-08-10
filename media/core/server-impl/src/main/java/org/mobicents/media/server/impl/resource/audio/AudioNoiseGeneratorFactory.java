@@ -40,6 +40,6 @@ public class AudioNoiseGeneratorFactory implements ComponentFactory {
     }
 
     public Component newInstance(Endpoint endpoint)  throws ResourceUnavailableException {
-        return new AudioNoiseGenerator(name, endpoint.getTimer());
+        return new AudioNoiseGenerator(name);
     }
 }

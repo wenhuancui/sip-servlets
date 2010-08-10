@@ -25,11 +25,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mobicents.media.Format;
+import org.mobicents.media.Server;
 import org.mobicents.media.format.AudioFormat;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.resource.Proxy;
 import org.mobicents.media.server.impl.resource.test.TransmissionTester;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.dsp.CodecFactory;
 
 /**
@@ -48,6 +47,7 @@ public class ProcessorTransparencyTest {
             AudioFormat.LINEAR, 8000, 16, 1,
             AudioFormat.LITTLE_ENDIAN, AudioFormat.SIGNED);
     
+    private Server server;
     private Processor dsp1;
     private Processor dsp2;
     
@@ -63,7 +63,6 @@ public class ProcessorTransparencyTest {
     private CodecFactory g729DecoderFactory = new org.mobicents.media.server.impl.dsp.audio.g729.DecoderFactory();
     
     private DspFactory dspFactory = new DspFactory();
-    private Timer timer;
     private TransmissionTester tester;
     private Proxy proxy;
 
@@ -79,10 +78,10 @@ public class ProcessorTransparencyTest {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        timer.start();
-        tester = new TransmissionTester(timer);
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
+        tester = new TransmissionTester();
         
         proxy = new Proxy("test");
         
@@ -122,7 +121,7 @@ public class ProcessorTransparencyTest {
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     @Test

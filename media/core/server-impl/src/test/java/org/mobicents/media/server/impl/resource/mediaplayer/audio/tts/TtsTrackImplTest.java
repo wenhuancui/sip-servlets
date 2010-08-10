@@ -35,7 +35,7 @@ import org.mobicents.media.Format;
 public class TtsTrackImplTest {
 
     private TtsTrackImpl track;
-    
+    private VoicesCache voicesCache = new VoicesCache();
     public TtsTrackImplTest() {
     }
 
@@ -62,8 +62,8 @@ public class TtsTrackImplTest {
     public void testDurationd() throws Exception {
         URL url = TtsTrackImplTest.class.getClassLoader().getResource(
                 "org/mobicents/media/server/impl/tts.txt");
-        track = new TtsTrackImpl(url, "kevin16");
-        assertEquals(2200, track.getDuration());
+        track = new TtsTrackImpl(url, "kevin16", voicesCache);
+        assertEquals(1109, track.getDuration());
     }
 
 }

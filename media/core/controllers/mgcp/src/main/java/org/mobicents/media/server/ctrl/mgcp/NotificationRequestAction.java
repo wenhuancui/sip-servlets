@@ -91,7 +91,7 @@ public class NotificationRequestAction implements Callable<JainMgcpResponseEvent
         // obatin and check endpoint
         Endpoint endpoint = null;
         try {
-            endpoint = controller.getNamingService().lookup(endpointID.getLocalEndpointName(), true);
+            endpoint = controller.getServer().lookup(endpointID.getLocalEndpointName(), true);
         } catch (Exception e) {
         	if(logger.isEnabledFor(Level.ERROR))
         	{

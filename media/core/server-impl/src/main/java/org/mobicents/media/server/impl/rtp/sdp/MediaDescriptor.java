@@ -45,9 +45,15 @@ public class MediaDescriptor {
     
     private Connection connection;
     
+    private int length = 0;
+    private char[] chars = null;
+    
     public MediaDescriptor(String m) {
+    	length = m.length();
+    	chars = m.toCharArray();
+    	
         int pos1 = m.indexOf(61);
-        int pos2 = m.indexOf(32, pos1);
+        int pos2 = getNextSpace(pos1+1);
         
         mediaType = MediaType.getInstance(m.substring(pos1 + 1, pos2));
         
@@ -59,14 +65,14 @@ public class MediaDescriptor {
             throw new IllegalArgumentException("Unknown media type " + mediaType);
         }
         
-        pos1 = m.indexOf(32, pos2 + 1);
+        pos1 = getNextSpace(pos2+1);
         port = Integer.parseInt(m.substring(pos2 + 1, pos1));
         
-        pos2 = m.indexOf(32, pos1 + 1);
+        pos2 = getNextSpace(pos1+1);
         profile = m.substring(pos1 + 1, pos2);
         
         pos1 = pos2;
-        pos2 = m.indexOf(32, pos1 + 1);
+        pos2 = getNextSpace(pos1+1);
         
         Format format = null;
         while (pos2 > 0) {
@@ -79,20 +85,43 @@ public class MediaDescriptor {
             }
             
             pos1 = pos2;
-            pos2 = m.indexOf(32, pos1 + 1);
+            pos2 = getNextSpace(pos1+1);
         }
         
         
-        format = fmtParser.getFormat(fmt[count]);
-        
-        if(format != null){
-        	fmt[count] = Integer.parseInt(m.substring(pos1 + 1, m.length()));
-        	formats[count] = format;
-        	
-            count++;
-        }
+//        format = fmtParser.getFormat(fmt[count]);
+//        
+//        if(format != null){
+//        	fmt[count] = Integer.parseInt(m.substring(pos1 + 1, m.length()));
+//        	formats[count] = format;
+//        	
+//            count++;
+//        }
         
 
+    }
+    
+    private int getNextSpace(int from){
+    	int next = 0;
+    	
+    	//If from is end of line there is no scope to check for space
+    	if(from >= length){
+    		return 0;
+    	}
+    	
+    	for(int i=from; i<length;i++){
+    		if(chars[i] == 32 ){
+    			next = i;
+    			break;
+    		}
+    	}
+    	
+    	//If we reach end of line where there is no space we return length
+    	if(next == 0){
+    		return length;
+    	}
+    	
+    	return next;
     }
     
     public MediaDescriptor(MediaType mediaType, int port) {

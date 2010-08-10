@@ -12,9 +12,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
-import org.mobicents.media.server.impl.clock.TimerImpl;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
-import org.mobicents.media.server.spi.clock.Timer;
+import org.mobicents.media.Server;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  *
@@ -22,7 +21,7 @@ import org.mobicents.media.server.spi.clock.Timer;
  */
 public class AbstractSourceTest {
 
-    private Timer timer = new TimerImpl();
+    private Server server;
     private TestSource source = new TestSource("test-source");
     
     public AbstractSourceTest() {
@@ -37,14 +36,14 @@ public class AbstractSourceTest {
     }
 
     @Before
-    public void setUp() {
-        source.setSyncSource(timer);
-        timer.start();
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
     }
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     /**

@@ -18,10 +18,14 @@
 package org.mobicents.media.server.impl.resource.zap;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 import org.mobicents.protocols.ss7.mtp.Mtp1;
 import org.mobicents.protocols.ss7.mtp.Mtp2;
+import org.mobicents.protocols.stream.api.SelectorKey;
+import org.mobicents.protocols.stream.api.SelectorProvider;
+import org.mobicents.protocols.stream.api.StreamSelector;
 
 public class Channel implements Mtp1 {
 
@@ -51,17 +55,19 @@ public class Channel implements Mtp1 {
     protected int fd;
 
     private Mtp2 link;
-        
+    
+    protected SelectorKey selectorKey;
+    
     public Channel() {
     }
     
-    public void setLink(Mtp2 link) {
-	this.link = link;
-    }
+//    public void setLink(Mtp2 link) {
+//	this.link = link;
+//    }
     
-    public Mtp2 getLink() {
-	return link;
-    }
+//    public Mtp2 getLink() {
+//	return link;
+//    }
     
     public int getSpan() {
 	return span;
@@ -114,7 +120,7 @@ public class Channel implements Mtp1 {
      * @param buffer the byte buffer to read data.
      * @return the number of bytes actualy read.
      */
-    public int read(byte[] buffer) {
+    public int read(byte[] buffer) throws IOException {
 	return readData(fd, buffer);
     }
     
@@ -125,11 +131,26 @@ public class Channel implements Mtp1 {
      * @param buffer the buffer with data to write
      * @param len the length of the buffer.
      */
-    public void write(byte[] buffer, int len) {
-	writeData(fd, buffer, len);
+    public int write(byte[] buffer) throws IOException {
+	writeData(fd, buffer, buffer.length);
+        return 0;
     }
     
     public native void writeData(int fd, byte[] buffer, int len);
+    
+    /**
+     * Registers pipe for polling.
+     *
+     *@param fd the file descriptor.
+     */
+    public native void doRegister(int fd);
+    
+    /**
+     * Unregisters pipe from polling.
+     *
+     * @param fd the file descriptor.
+     */ 
+    public native void doUnregister(int fd);
     
     public void close() {
 	closeChannel(fd);
@@ -140,7 +161,46 @@ public class Channel implements Mtp1 {
      */
     public native void closeChannel(int fd);
     
+    @Override
     public String toString() {
 	return Integer.toString(channelID);
     }
+
+    public void setLink(Mtp2 link) {
+        this.link = link;
+    }
+
+    public Mtp2 getLink() {
+        return this.link;
+    }
+
+    protected void doRegister(StreamSelector selector) {
+        doRegister(fd);
+    }
+
+    protected void doUnregister(StreamSelector selector) {
+        doUnregister(fd);
+    }
+    
+
+    public boolean isReadable() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isWriteable() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public SelectorProvider provider() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public SelectorKey register(StreamSelector selector) throws IOException {
+        return ((Selector)selector).register(this);
+    }
+
+    public void write(byte[] data, int len) throws IOException {
+        this.writeData(fd, data, len);
+    }
+
 }

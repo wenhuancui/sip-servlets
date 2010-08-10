@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.servers.media</groupId>
 	<artifactId>mms-core</artifactId>
-	<version>5.0.0.Beta2-JBCP5</version>
+	<version>5.0.0.CR01-JBCP5</version>
 
 	<name>Mobicents Media Server</name>
 
@@ -22,7 +22,9 @@
 			${release.name.prefix}${parent.version}${release.name.suffix}
 		</release.name>
 
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.tools.mavenplugin.eclipse.version>
+			5.0.0.CR01-JBCP5
+		</mobicents.tools.mavenplugin.eclipse.version>
 
 		<version.jboss.jbossas>5.0.1.GA</version.jboss.jbossas>
 		<version.jboss.microcontainer>
@@ -31,8 +33,11 @@
 		<version.junit>4.4</version.junit>
 		<version.javassist>3.9.0.GA</version.javassist>
 		<version.xerces>2.9.1</version.xerces>
-		<freetts.version>1.2.2</freetts.version>
+		<version.freetts>1.2.2</version.freetts>
+		<log4j.version>1.2.12</log4j.version>
 		<version.concurrent>1.3.4</version.concurrent>
+		<version.mtp>5.0.0.CR01-JBCP5</version.mtp>
+		<version.stream>5.0.0.CR01-JBCP5</version.stream>
 	</properties>
 
 	<modules>
@@ -42,58 +47,58 @@
 		<module>server-standalone</module>
 		<module>zap</module>
 		<module>server-standalone-assembly</module>
-		<!-- >module>docs</module-->
+		<!--module>docs</module-->
 	</modules>
-		<dependencies>
-			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<version>${log4j.version}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>javax.sip</groupId>
-				<artifactId>jain-sip-ri</artifactId>
-				<version>1.2.139</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.microcontainer</groupId>
-				<artifactId>jboss-dependency</artifactId>
-				<version>${version.jboss.microcontainer}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>concurrent</groupId>
-				<artifactId>concurrent</artifactId>
-				<version>${version.concurrent}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.microcontainer</groupId>
-				<artifactId>jboss-kernel</artifactId>
-				<version>${version.jboss.microcontainer}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.jboss.microcontainer</groupId>
-				<artifactId>jboss-aop-mc-int</artifactId>
-				<version>${version.jboss.microcontainer}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>apache-xerces</groupId>
-				<artifactId>xml-apis</artifactId>
-				<version>${version.xerces}</version>
-				<scope>provided</scope>
-			</dependency>
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>${version.junit}</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.sip</groupId>
+			<artifactId>jain-sip-ri</artifactId>
+			<version>1.2.153</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.microcontainer</groupId>
+			<artifactId>jboss-dependency</artifactId>
+			<version>${version.jboss.microcontainer}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>concurrent</groupId>
+			<artifactId>concurrent</artifactId>
+			<version>${version.concurrent}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.microcontainer</groupId>
+			<artifactId>jboss-kernel</artifactId>
+			<version>${version.jboss.microcontainer}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.microcontainer</groupId>
+			<artifactId>jboss-aop-mc-int</artifactId>
+			<version>${version.jboss.microcontainer}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>apache-xerces</groupId>
+			<artifactId>xml-apis</artifactId>
+			<version>${version.xerces}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${version.junit}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 
 
@@ -146,13 +151,13 @@
 
 	<scm>
 		<connection>
-			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.CR2
+			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.CR3
 		</connection>
 		<developerConnection>
-			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.CR2
+			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.CR3
 		</developerConnection>
 		<url>
-			http://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.CR2
+			http://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.CR3
 		</url>
 	</scm>
 
@@ -232,38 +237,38 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-	
-        <repository>
-          <id>jboss-public-repository-group</id>
-          <name>JBoss Public Maven Repository Group</name>
-          <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>true</enabled>
-            <updatePolicy>never</updatePolicy>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>never</updatePolicy>
-          </snapshots>
-        </repository>
-      </repositories>
 
-      <pluginRepositories>
-        <pluginRepository>
-          <id>jboss-public-repository-group</id>
-          <name>JBoss Public Maven Repository Group</name>
-          <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>true</enabled>
-            <updatePolicy>never</updatePolicy>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>never</updatePolicy>
-          </snapshots>
-        </pluginRepository>
-      </pluginRepositories>	
+		<repository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Maven Repository Group</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Maven Repository Group</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 
 </project>

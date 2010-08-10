@@ -3,137 +3,39 @@
 	xsi:schemaLocation="urn:jboss:bean-deployer:2.0 bean-deployer_2_0.xsd"
 	xmlns="urn:jboss:bean-deployer:2.0">
 
-
-
-	<bean name="Utils" class="org.mobicents.media.server.spi.resource.ss7.Utils">
-		<constructor factoryClass="org.mobicents.media.server.spi.resource.ss7.Utils"
-			factoryMethod="getInstance">
-		</constructor>
-		
-		<property name="enabledL2Debug">false</property>
-		<property name="enabledL3Debug">false</property>
-		<property name="enableDataTrace">false</property>
+	<bean name="SChannel1"
+		class="org.mobicents.media.server.impl.resource.zap.Channel">
+		<property name="span">1</property>
+		<property name="channelID">16</property>
+		<property name="code">0</property>
+	</bean>
+	<bean name="SChannel2"
+		class="org.mobicents.media.server.impl.resource.zap.Channel">
+		<property name="span">1</property>
+		<property name="channelID">17</property>
+		<property name="code">1</property>
 	</bean>
 
+	<!-- bean name="M3UserAgent" class="org.mobicents.protocols.ss7.stream.tcp.M3UserAgent">
+		<property name="port">1345</property>
+		<property name="address">127.0.0.1</property>
+		</bean -->
 
 
-
-	<!-- FACTORIES -->
-	
-	<!--
-	<bean name="Factory.Mtp1"
-		class="org.mobicents.media.server.impl.resource.ss7.factories.ZapMtp1FactoryImpl">
-	</bean>
-	-->
-	<bean name="Factory.Mtp1"
-		class="org.mobicents.media.server.impl.resource.ss7.factories.DummyMtp1FactoryImpl">
-	</bean>
-	<bean name="Factory.Mtp2"
-		class="org.mobicents.media.server.impl.resource.ss7.factories.Mtp2FactoryImpl">
-		<property name="mtp1Factory">
-			<inject bean="Factory.Mtp1" />
+	<bean name="MTP"
+		class="org.mobicents.media.server.impl.resource.zap.MTPUser">
+		<property name="name">TEST_1</property>
+		<property name="opc">14133</property>
+		<property name="dpc">14150</property>
+		<property name="localAddress">127.0.0.1</property>
+		<property name="localPort">3434</property>
+		<property name="remoteAddress">127.0.0.1</property>
+		<property name="remotePort">3435</property>
+		<property name="channels">
+			<list>
+				<inject bean="SChannel1" />
+				<!-- inject bean="SChannel2"/ -->
+			</list>
 		</property>
-		<depends>Factory.Mtp1</depends>
 	</bean>
-	<bean name="Factory.Mtp3"
-		class="org.mobicents.media.server.impl.resource.ss7.factories.Mtp3FactoryImpl">
-	</bean>
-	<bean name="Factory.LinkSet"
-		class="org.mobicents.media.server.impl.resource.ss7.factories.LinkSetFactoryImpl">
-	</bean>
-	
-	
-	
-	
-	
-	
-	
-	<bean name="SS7.Mtp2.1" class="org.mobicents.media.server.spi.resource.ss7.Mtp2">
-		<constructor factoryMethod="create">
-			<factory bean="Factory.Mtp2" />
-
-			<parameter name="prefix">/dev/zap</parameter>
-			<parameter name="span">1</parameter>
-			<parameter name="channel">16</parameter>
-			<parameter name="sls">0</parameter>
-			<parameter name="subservice">-1</parameter>
-			<parameter name="enabledDebug">false</parameter>
-			<parameter name="enableSuTrace">false</parameter>
-			<parameter name="enableDataTrace">false</parameter>
-			<parameter name="name">XXX</parameter>
-		</constructor>
-		<depends>Factory.Mtp2</depends>
-	</bean>
-	
-	<bean name="SS7.Mtp2.2" class="org.mobicents.media.server.spi.resource.ss7.Mtp2">
-		<constructor factoryMethod="create">
-			<factory bean="Factory.Mtp2" />
-
-			<parameter name="prefix">/dev/zap</parameter>
-			<parameter name="span">1</parameter>
-			<parameter name="channel">17</parameter>
-			<parameter name="sls">1</parameter>
-			<parameter name="subservice">-1</parameter>
-			<parameter name="enabledDebug">false</parameter>
-			<parameter name="enableSuTrace">false</parameter>
-			<parameter name="enableDataTrace">false</parameter>
-			<parameter name="name">X2X</parameter>
-		</constructor>
-		<depends>Factory.Mtp2</depends>
-	</bean>
-	
-	<bean name="SS7.Linkset.1" class="org.mobicents.media.server.spi.resource.ss7.LinkSet">
-		<constructor factoryMethod="create">
-			<factory bean="Factory.LinkSet" />
-			<parameter name="linksetName">DefaultTestLinkSet</parameter>
-			<parameter name="linkSetID">0</parameter>
-			<parameter name="opc">14133</parameter>
-			<parameter name="dpc">14150</parameter>
-			<parameter name="linksList">
-				<list>
-					<inject bean="SS7.Mtp2.1" />
-			        <inject bean="SS7.Mtp2.2" />
-				</list>
-			</parameter>
-		</constructor>
-		
-		<depends>SS7.Mtp2.1</depends>
-		<depends>SS7.Mtp2.2</depends>
-	</bean>
-
-	<bean name="SS7.Mtp3"
-		class="org.mobicents.media.server.spi.resource.ss7.Mtp3">
-		<constructor factoryMethod="create">
-			<factory bean="Factory.Mtp3" />
-			<parameter name="name">InitiationOfSS7QLStufffFff</parameter>
-			<parameter name="linkSets">
-				<list>
-					<inject bean="SS7.Linkset.1" />
-				</list>
-			</parameter>
-			<!--
-			<parameter name="layer4"><inject bean="Streamer" /></parameter>
-			-->
-			<parameter name="l3Debug">false</parameter>
-		</constructor>
-		
-        
-        <depends>SS7.Linkset.1</depends>
-        <!--
-        <depends>Streamer</depends>
-        -->
-	</bean>
-	<!--
-	<bean name="Streamer"
-		class="org.mobicents.media.server.impl.resource.ss7.stream.SimpleTCPForwarder">
-		<property name="serviceIndicator">3</property>
-		<property name="subServiceIndicator">12</property>
-		<property name="layer3">
-			<inject bean="SS7.Mtp3" />
-		</property>
-
-		<depends>SS7.Mtp3</depends>
-	</bean>
-	-->
-		<!--  -->
 </deployment>

@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import org.apache.log4j.Logger;
 import org.mobicents.media.Format;
+import org.mobicents.media.Server;
 
 /**
  * Implements jitter buffer.
@@ -103,7 +104,7 @@ public class JitterBuffer implements Serializable {
         if (logger.isTraceEnabled()) {
             logger.trace("Receive " + packet);
         }
-        long now = System.currentTimeMillis();
+        long now = Server.scheduler.getTimestamp();
         //calculate time using rtp clock
         long t = clock.getTime(packet.getTimestamp());
         packet.setTime(t);

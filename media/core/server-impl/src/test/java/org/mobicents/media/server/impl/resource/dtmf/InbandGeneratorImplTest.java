@@ -23,13 +23,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mobicents.media.Server;
 import static org.junit.Assert.*;
 import org.mobicents.media.Utils;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.resource.fft.SpectraAnalyzer;
 import org.mobicents.media.server.impl.resource.fft.SpectrumEvent;
 import org.mobicents.media.server.spi.NotificationListener;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
 /**
@@ -38,10 +37,11 @@ import org.mobicents.media.server.spi.events.NotifyEvent;
  */
 public class InbandGeneratorImplTest implements NotificationListener {
 
+    private Server server;
+    
     private final static int FREQ_ERROR = 5;
     private int MAX_ERRORS = 1;
     
-    private Timer timer;
     private GeneratorImpl gen;
     private SpectraAnalyzer det;
     private ArrayList<double[]> s;
@@ -58,10 +58,10 @@ public class InbandGeneratorImplTest implements NotificationListener {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        timer.start();
-        gen = new GeneratorImpl("Gen", timer);
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
+        gen = new GeneratorImpl("Gen");
         gen.setToneDuration(2000);
         gen.setDigit("0");
 
@@ -72,7 +72,7 @@ public class InbandGeneratorImplTest implements NotificationListener {
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     /**

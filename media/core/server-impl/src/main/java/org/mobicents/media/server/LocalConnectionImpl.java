@@ -22,7 +22,7 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import org.mobicents.media.server.resource.Channel;
 import org.mobicents.media.server.spi.Connection;
-import org.mobicents.media.server.spi.ConnectionMode;
+import org.mobicents.media.server.spi.Endpoint;
 import org.mobicents.media.server.spi.MediaType;
 import org.mobicents.media.server.spi.ResourceUnavailableException;
 
@@ -34,8 +34,8 @@ public class LocalConnectionImpl extends ConnectionImpl {
 
     private LocalConnectionImpl otherConnection;
 
-    public LocalConnectionImpl(EndpointImpl endpoint) throws ResourceUnavailableException {
-        super(endpoint);
+    public LocalConnectionImpl(Endpoint endpoint, ConnectionFactory factory) throws ResourceUnavailableException {
+        super(endpoint, factory);
     }
     
     
@@ -53,7 +53,7 @@ public class LocalConnectionImpl extends ConnectionImpl {
     
     //This is just helper method if Controller doesn't care of MediaType.
     protected void bind() throws ResourceUnavailableException {
-        Collection<MediaType> mediaTypes = ((EndpointImpl)getEndpoint()).getMediaTypes();
+        Collection<MediaType> mediaTypes = getEndpoint().getMediaTypes();
         for (MediaType mediaType : mediaTypes) {
            this.bind(mediaType);
         }
@@ -93,7 +93,7 @@ public class LocalConnectionImpl extends ConnectionImpl {
         otherConnection.otherConnection = this;
 
         //join channels
-        Collection<MediaType> types = ((EndpointImpl)getEndpoint()).getMediaTypes();
+        Collection<MediaType> types = getEndpoint().getMediaTypes();
         for (MediaType mediaType : types) {
         	setOtherParty(other, mediaType);
         }
@@ -107,7 +107,7 @@ public class LocalConnectionImpl extends ConnectionImpl {
             return;
         }
         
-        Collection<MediaType> types = ((EndpointImpl)getEndpoint()).getMediaTypes();
+        Collection<MediaType> types = getEndpoint().getMediaTypes();
         for (MediaType media : types) {
             Channel txChannel = txChannels[media.getCode()];
             Channel rxChannel = otherConnection.rxChannels[media.getCode()];

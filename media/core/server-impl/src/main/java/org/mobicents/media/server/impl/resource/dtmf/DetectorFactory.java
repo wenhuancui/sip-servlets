@@ -28,20 +28,56 @@ import org.mobicents.media.server.spi.ResourceUnavailableException;
  *
  */
 public class DetectorFactory implements ComponentFactory {
-	private String name;
 
-	public String getName() {
-		return name;
-	}
+    private String name;
+    private int duration;
+    private boolean isLazy;
+    private int interdigitInterval;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public Component newInstance(Endpoint endpoint)  throws ResourceUnavailableException {
-		DetectorImpl inbandDetector = new DetectorImpl(this.name);
-		inbandDetector.setEndpoint(endpoint);
-		return inbandDetector;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
+    /**
+     * Gets the minum length of detected tone.
+     * 
+     * @return tone duration in milliseconds.
+     */
+    public int getDuration() {
+        return duration;
+    }
+
+    /**
+     * Modify minim duration of detected tone.
+     * 
+     * @param duration the duration of the tone in milliseconds
+     */
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public void setLasy(boolean isLazy) {
+        this.isLazy = isLazy;
+    }
+    
+    public int getInterdigitInterval() {
+        return interdigitInterval;
+    }
+
+    public void setInterdigitInterval(int interdigitInterval) {
+        this.interdigitInterval = interdigitInterval;
+    }
+
+    public Component newInstance(Endpoint endpoint) throws ResourceUnavailableException {
+        DetectorImpl detector = new DetectorImpl(this.name);
+        detector.setEndpoint(endpoint);
+        detector.setDuration(duration);
+        detector.setLasy(isLazy);
+        detector.setInterdigitInterval(interdigitInterval);
+        return detector;
+    }
 }

@@ -26,17 +26,13 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
-import org.mobicents.media.server.impl.clock.TimerImpl;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
-import org.mobicents.media.server.spi.clock.Timer;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  *
  * @author kulikov
  */
 public class ProxyConnectionsTest {
-
-    private Timer timer = new TimerImpl();
     
     private TestSource src = new TestSource("source");
     private TestSink sink = new TestSink("sink");
@@ -56,9 +52,6 @@ public class ProxyConnectionsTest {
 
     @Before
     public void setUp() {
-        timer = new TimerImpl();
-        src.setSyncSource(timer);
-        timer.start();
     }
 
     @After

@@ -37,10 +37,10 @@ import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.Utils;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.NotifyEventImpl;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
 import org.mobicents.media.server.spi.dsp.Codec;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 import org.mobicents.media.server.spi.resource.Recorder;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 import org.xiph.speex.spi.SpeexEncoding;
 
 /**

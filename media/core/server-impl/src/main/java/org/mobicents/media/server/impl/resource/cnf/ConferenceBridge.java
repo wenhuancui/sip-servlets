@@ -26,6 +26,7 @@ import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
 import org.mobicents.media.MediaSink;
 import org.mobicents.media.MediaSource;
+import org.mobicents.media.Server;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.AbstractSinkSet;
 import org.mobicents.media.server.impl.AbstractSource;
@@ -146,7 +147,7 @@ public class ConferenceBridge extends BaseComponent implements ResourceGroup {
         
         @Override
         public AbstractSource createSource(MediaSink otherParty) {
-            AudioMixer mixer = new AudioMixer("AudioMixer[CnfBridge]", otherParty.getEndpoint().getTimer());
+            AudioMixer mixer = new AudioMixer("AudioMixer[CnfBridge]");
             mixers.put(mixer.getOutput().getId(), mixer);
             mixer.setEndpoint(mixer.getEndpoint());
             mixer.setConnection(otherParty.getConnection());

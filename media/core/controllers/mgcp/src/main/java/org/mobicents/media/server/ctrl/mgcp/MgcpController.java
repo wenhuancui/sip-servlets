@@ -24,6 +24,7 @@ import jain.protocol.ip.mgcp.JainMgcpEvent;
 import jain.protocol.ip.mgcp.JainMgcpListener;
 import jain.protocol.ip.mgcp.JainMgcpProvider;
 import jain.protocol.ip.mgcp.JainMgcpResponseEvent;
+import jain.protocol.ip.mgcp.message.AuditConnection;
 import jain.protocol.ip.mgcp.message.Constants;
 import jain.protocol.ip.mgcp.message.CreateConnection;
 import jain.protocol.ip.mgcp.message.DeleteConnection;
@@ -43,7 +44,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.ctrl.mgcp.evt.MgcpPackage;
 import org.mobicents.media.server.spi.Connection;
-import org.mobicents.media.server.spi.NamingService;
+import org.mobicents.media.server.spi.MediaServer;
 import org.mobicents.protocols.mgcp.stack.ExtendedJainMgcpProvider;
 import org.mobicents.protocols.mgcp.stack.JainMgcpStackImpl;
 
@@ -62,7 +63,7 @@ public class MgcpController implements JainMgcpListener {
     private InetAddress inetAddress = null;
     private String bindAddress = null;
     private int port = 2727;
-    private NamingService namingService;
+    private MediaServer server;
     //private ConcurrentHashMap<String, Call> calls = new ConcurrentHashMap<String, Call>();
     private Call[] callTable = null;
     protected HashMap<String, MgcpPackage> packages = new HashMap();
@@ -72,12 +73,12 @@ public class MgcpController implements JainMgcpListener {
     public MgcpController() {
     }
 
-    public NamingService getNamingService() {
-        return namingService;
+    public MediaServer getServer() {
+        return server;
     }
 
-    public void setNamingService(NamingService namingService) {
-        this.namingService = namingService;
+    public void setServer(MediaServer server) {
+        this.server = server;
     }
 
     public NotifiedEntity getNotifiedEntity() {
@@ -113,7 +114,7 @@ public class MgcpController implements JainMgcpListener {
 
     public void create() {
         logger.info("Starting MGCP Controller module for MMS");
-        this.callTable = new Call[this.namingService.getEndpointCount() * _CALL_TABLE_MULTI];
+        this.callTable = new Call[server.getEndpointCount() * _CALL_TABLE_MULTI];
     }
 
     public void addPackage(MgcpPackage pkg) {
@@ -207,6 +208,9 @@ public class MgcpController implements JainMgcpListener {
             case Constants.CMD_NOTIFICATION_REQUEST:
                 action = new NotificationRequestAction(this, (NotificationRequest) evt);
                 break;
+            case Constants.CMD_AUDIT_CONNECTION:
+            	action = new AuditConnectionAction(this, (AuditConnection)evt );
+            	break;
             default:
                 logger.error("Unknown message type: " + eventID);
                 return;
@@ -248,7 +252,7 @@ public class MgcpController implements JainMgcpListener {
 
     protected void addCall(Call call) {
         if (this.callTable == null || this.callTable.length == 0) {
-            this.callTable = new Call[this.namingService.getEndpointCount() * _CALL_TABLE_MULTI];
+            this.callTable = new Call[server.getEndpointCount() * _CALL_TABLE_MULTI];
         }
         //calls.put(call.getID(), call);
         for (int index = 0; index < this.callTable.length; index++) {

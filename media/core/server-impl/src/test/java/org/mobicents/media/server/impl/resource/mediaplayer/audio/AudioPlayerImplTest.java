@@ -28,14 +28,14 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
+import org.mobicents.media.Server;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSink;
-import org.mobicents.media.server.impl.clock.TimerImpl;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
 import org.mobicents.media.server.spi.NotificationListener;
 import org.mobicents.media.server.spi.events.FailureEvent;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 import org.mobicents.media.server.spi.resource.TTSEngine;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  *
@@ -43,7 +43,8 @@ import org.mobicents.media.server.spi.resource.TTSEngine;
  */
 public class AudioPlayerImplTest {
 
-    private TimerImpl timer;
+    private Server server;
+    
     private Semaphore semaphore;
     private volatile boolean started = false;
     private volatile boolean failed = false;
@@ -69,7 +70,9 @@ public class AudioPlayerImplTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
         started = false;
         failed = false;
         end_of_media = false;
@@ -78,21 +81,18 @@ public class AudioPlayerImplTest {
         isCorrectTimestamp = false;
         isSeqCorrect = false;
 
-        timer = new TimerImpl();
-
-        player = new AudioPlayerImpl("test", timer, null);
+        player = new AudioPlayerImpl("test", null, null);
         player.addListener(new PlayerListener());
 
         sink = new TestSink("test-sink");
 
         semaphore = new Semaphore(0);
-        timer.start();
     }
 
     @After
     public void tearDown() {
+        server.stop();
         player.disconnect(sink);
-        timer.stop();
     }
 
     private void testPlayback(String file, Format fmt, int size) throws Exception {

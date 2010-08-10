@@ -23,10 +23,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mobicents.media.Server;
 import static org.junit.Assert.*;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.spi.NotificationListener;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
 /**
@@ -39,15 +38,15 @@ public class MeanderTest implements NotificationListener {
     
     public final static short A = 100;
     public final static double T = 0.1;
-    
-    private Timer timer;
-    
+        
     private MeanderGenerator gen;
     private MeanderDetector det;
     
     private int outOfSeq;
     private int evtCount;
     private boolean fmtMissmatch = false;
+    
+    private Server server;
     
     public MeanderTest() {
     }
@@ -61,10 +60,10 @@ public class MeanderTest implements NotificationListener {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        
-        gen = new MeanderGenerator("test-gen", timer);
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
+        gen = new MeanderGenerator("test-gen");
         gen.setAmplitude(A);
         gen.setPeriod(T);
         
@@ -73,12 +72,11 @@ public class MeanderTest implements NotificationListener {
         det.setPeriod(T);
         det.addListener(this); 
         
-        timer.start();
     }
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     /**

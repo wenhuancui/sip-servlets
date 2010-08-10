@@ -19,6 +19,7 @@ package org.mobicents.media.server.impl.rtp.sdp;
 
 import org.mobicents.media.Format;
 import org.mobicents.media.format.AudioFormat;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  *
@@ -57,29 +58,35 @@ public class AudioFormatParser implements FormatParser {
         int channels = pos1 > 0 ?
             Integer.parseInt(rtpmap.substring(pos1 + 1, rtpmap.length())) : 1;
         
-        if (encoding.equals("pcmu")) {
+        if (encoding.equalsIgnoreCase("pcmu")) {
             formats[index] = new AudioFormat(AudioFormat.ULAW, clockRate, 8, channels);
             payloads[index] = payload;
-        } else if (encoding.equals("pcma")) {
+        } else if (encoding.equalsIgnoreCase("pcma")) {
             formats[index] = new AudioFormat(AudioFormat.ALAW, clockRate, 8, channels);
             payloads[index] = payload;
-        } else if (encoding.equals("speex")) {
+        } else if (encoding.equalsIgnoreCase("speex")) {
             formats[index] = new AudioFormat(AudioFormat.SPEEX, clockRate, AudioFormat.NOT_SPECIFIED, channels);
             payloads[index] = payload;
-        } else if (encoding.equals("telephone-event")) {
+        } else if (encoding.equalsIgnoreCase("telephone-event")) {
             formats[index] = new AudioFormat("telephone-event", clockRate, AudioFormat.NOT_SPECIFIED, AudioFormat.NOT_SPECIFIED);
             payloads[index] = payload;
-        } else if (encoding.equals("g729")) {
+        } else if (encoding.equalsIgnoreCase("g729")) {
             formats[index] = new AudioFormat(AudioFormat.G729, clockRate, AudioFormat.NOT_SPECIFIED, channels);
             payloads[index] = payload;
-        } else if (encoding.equals("gsm")) {
+        } else if (encoding.equalsIgnoreCase("gsm")) {
             formats[index] = new AudioFormat(AudioFormat.GSM, clockRate, AudioFormat.NOT_SPECIFIED, channels);
             payloads[index] = payload;
-        } else if (encoding.equals("l16")){
+        } else if (encoding.equalsIgnoreCase("l16")){
             formats[index] = new AudioFormat(AudioFormat.LINEAR, clockRate, 16, channels, 
                     AudioFormat.LITTLE_ENDIAN, AudioFormat.SIGNED);
             payloads[index] = payload;
-        } 
+        } else if (encoding.equalsIgnoreCase("AMR")){
+            formats[index] = new AudioFormat(AudioFormat.AMR, clockRate, AudioFormat.NOT_SPECIFIED, channels);
+            payloads[index] = payload;
+        } else {
+            formats[index] = new AudioFormat(encoding, clockRate, AudioFormat.NOT_SPECIFIED, channels);
+            payloads[index] = payload;
+        }
         return index == count;
     }
 

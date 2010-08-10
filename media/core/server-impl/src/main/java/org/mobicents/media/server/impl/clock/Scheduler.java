@@ -18,6 +18,7 @@
 package org.mobicents.media.server.impl.clock;
 
 import org.mobicents.media.server.spi.clock.Task;
+import org.mobicents.media.server.spi.clock.Timer;
 
 /**
  *
@@ -32,11 +33,16 @@ public class Scheduler implements Runnable {
     private boolean blocked = false;
     private long second;
     
-//    private DelayedScheduler delayedScheduler = new DelayedScheduler();
+    private Timer timer;
     
     public Scheduler() {
+        timer = new TimerImpl();
     }
 
+    public void setTimer(Timer timer) {
+        this.timer = timer;
+    }
+    
     public void start() {
         this.started = true;
         for (int i = 0; i < 1000; i++) {
@@ -46,12 +52,9 @@ public class Scheduler implements Runnable {
         worker.setPriority(Thread.MAX_PRIORITY);
         worker.start();
         
-//        delayedScheduler.activate();
-//        this.execute(delayedScheduler);
     }
 
     public void stop() {
-//        delayedScheduler.cancel();
         started = false;
         worker.interrupt();
     }
@@ -97,7 +100,7 @@ public class Scheduler implements Runnable {
             Taskset temp = new Taskset();
             
             //fixing current time when we start execution
-            start = System.currentTimeMillis();
+            start = timer.getTimestamp();
 
             
             //running task for selected task set
@@ -175,7 +178,7 @@ public class Scheduler implements Runnable {
             }
 
             //checking time when we are finished.
-            finish = System.currentTimeMillis();
+            finish = timer.getTimestamp();
 
             //calculating time spent for execution all above and 
             //correcting the amaont of time to wait.
@@ -199,4 +202,7 @@ public class Scheduler implements Runnable {
         }
     }
     
+    public long getTimestamp() {
+        return timer.getTimestamp();
+    }
 }

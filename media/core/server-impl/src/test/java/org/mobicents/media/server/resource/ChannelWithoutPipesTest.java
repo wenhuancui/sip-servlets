@@ -26,8 +26,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
-import org.mobicents.media.server.EndpointImpl;
-import org.mobicents.media.server.impl.clock.TimerImpl;
+import org.mobicents.media.Server;
+import org.mobicents.media.server.VirtualEndpointImpl;
 import org.mobicents.media.server.impl.resource.test.TransmissionTester;
 import org.mobicents.media.server.spi.Endpoint;
 import org.mobicents.media.server.spi.MediaType;
@@ -38,15 +38,14 @@ import org.mobicents.media.server.spi.MediaType;
  */
 public class ChannelWithoutPipesTest {
 
+    private Server server;
+    
     public final Format FORMAT = new Format("test");
     private Endpoint endpoint;
     private ChannelFactory channelFactory = new ChannelFactory();
     private ArrayList<Buffer> list = new ArrayList();
     private TransmissionTester tester;
-    private TimerImpl timer = new TimerImpl();
-    
 //    private Semaphore semaphore = new Semaphore(0);
-
     public ChannelWithoutPipesTest() {
     }
 
@@ -60,10 +59,12 @@ public class ChannelWithoutPipesTest {
 
     @Before
     public void setUp() throws Exception {
-        timer = new TimerImpl();
-        timer.start();
+        server = new Server();
+        server.start();
         
-        endpoint = new EndpointImpl();
+        tester = new TransmissionTester();
+        
+        endpoint = new VirtualEndpointImpl("test");
         list.clear();
 
         channelFactory = new ChannelFactory();
@@ -74,13 +75,12 @@ public class ChannelWithoutPipesTest {
 
         channelFactory.setComponents(components);
         channelFactory.setPipes(pipes);
-        
-        tester = new TransmissionTester(timer);
+
     }
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     @Test
@@ -89,8 +89,9 @@ public class ChannelWithoutPipesTest {
 
         channel.connect(tester.getDetector());
         channel.connect(tester.getGenerator());
-        
+
         tester.start();
+        assertTrue(tester.getMessage(), tester.isPassed());        
     }
 
     @Test
@@ -99,10 +100,10 @@ public class ChannelWithoutPipesTest {
 
         channel.connect(tester.getGenerator());
         channel.connect(tester.getDetector());
-        
-        tester.start();
-    }
 
+        tester.start();
+        assertTrue(tester.getMessage(), tester.isPassed());        
+    }
 
     @Test
     public void testInputFormats() throws Exception {
@@ -110,17 +111,17 @@ public class ChannelWithoutPipesTest {
 
         Format[] f = channel.getInputFormats();
         assertEquals(1, f.length);
-                
+
         channel.connect(tester.getDetector());
-        
+
         f = channel.getInputFormats();
         assertEquals(1, f.length);
         assertEquals(true, f[0].matches(tester.getDetector().getFormats()[0]));
-        
+
         channel.disconnect(tester.getDetector());
 
         assertEquals(false, tester.getDetector().isConnected());
-        
+
         f = channel.getInputFormats();
         assertEquals(1, f.length);
     }
@@ -131,19 +132,30 @@ public class ChannelWithoutPipesTest {
 
         Format[] f = channel.getOutputFormats();
         assertEquals(1, f.length);
-                
+
         channel.connect(tester.getGenerator());
-        
+
         f = channel.getOutputFormats();
         assertEquals(1, f.length);
         assertEquals(true, f[0].matches(tester.getGenerator().getFormats()[0]));
-        
+
         channel.disconnect(tester.getGenerator());
 
         assertEquals(false, tester.getGenerator().isConnected());
-        
+
         f = channel.getOutputFormats();
         assertEquals(1, f.length);
+    }
+
+//    @Test
+    public void testTransmissin() throws Exception {
+        Channel channel = channelFactory.newInstance(endpoint, MediaType.AUDIO);
+
+        channel.connect(tester.getGenerator());
+        channel.connect(tester.getDetector());
+        
+        tester.start();
+        assertTrue(tester.getMessage(), tester.isPassed());        
     }
     
     @Test
@@ -157,6 +169,7 @@ public class ChannelWithoutPipesTest {
         channel1.connect(channel2);
 
         tester.start();
+        assertTrue(tester.getMessage(), tester.isPassed());
     }
 
     @Test
@@ -165,13 +178,11 @@ public class ChannelWithoutPipesTest {
         Channel channel2 = channelFactory.newInstance(endpoint, MediaType.AUDIO);
 
         channel1.connect(channel2);
-        
+
         channel1.connect(tester.getGenerator());
         channel2.connect(tester.getDetector());
 
         tester.start();
+        assertTrue(tester.getMessage(), tester.isPassed());
     }
-
-    
-
 }

@@ -28,9 +28,6 @@ import org.mobicents.media.MediaSource;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.AbstractSource;
 import org.mobicents.media.server.impl.BaseComponent;
-import org.mobicents.media.server.spi.SyncSource;
-import org.mobicents.media.server.spi.clock.Task;
-import org.mobicents.media.server.spi.clock.TimerTask;
 import org.mobicents.media.server.spi.dsp.Codec;
 import org.mobicents.media.server.spi.dsp.SignalingProcessor;
 
@@ -57,7 +54,6 @@ public class Processor extends BaseComponent implements SignalingProcessor {
         super(name);
         input = new Input(name);
         output = new Output(name);
-        output.setSyncSource(input);
     }
 
     protected void add(Codec codec) {
@@ -136,10 +132,8 @@ public class Processor extends BaseComponent implements SignalingProcessor {
     /**
      * Implements input of the processor.
      */
-    private class Input extends AbstractSink implements SyncSource {
+    private class Input extends AbstractSink {
 
-        private Format fmt;
-        private boolean isAcceptable;
         private volatile boolean started = false;
 
         public Input(String name) {
@@ -179,7 +173,6 @@ public class Processor extends BaseComponent implements SignalingProcessor {
                     for (Format f: set) {
                         if (c.getSupportedInputFormat().matches(f)) {
                             codec = c;
-                            System.out.println("Assigned codec=" + codec);
                             return f;
                         }
                     }
@@ -200,7 +193,9 @@ public class Processor extends BaseComponent implements SignalingProcessor {
             if (!output.isStarted()) {
                 output.start();
             }
-            super.start();
+            if (otherParty != null && !otherParty.isStarted()) {
+                otherParty.start();
+            }
         }
 
         @Override
@@ -209,7 +204,9 @@ public class Processor extends BaseComponent implements SignalingProcessor {
             if (output.isStarted()) {
                 output.stop();
             }
-            super.stop();
+            if (otherParty != null && otherParty.isStarted()) {
+                otherParty.stop();
+            }
         }
 
         /**
@@ -286,19 +283,10 @@ public class Processor extends BaseComponent implements SignalingProcessor {
             return "Processor.Input[" + getName() + "]";
         }
 
-        public void sync(MediaSource mediaSource) {
-        }
-
-        public void unsync(MediaSource mediaSource) {
-        }
-
         public long getTimestamp() {
             return timestamp;
         }
 
-        public TimerTask sync(Task task) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
     }
 
     /**
@@ -336,7 +324,9 @@ public class Processor extends BaseComponent implements SignalingProcessor {
             if (!input.isStarted()) {
                 input.start();
             }
-            super.start();
+            if (otherParty != null && !otherParty.isStarted()) {
+                otherParty.start();
+            }
         }
 
         @Override
@@ -345,7 +335,9 @@ public class Processor extends BaseComponent implements SignalingProcessor {
             if (input.isStarted()) {
                 input.stop();
             }
-            super.stop();
+            if (otherParty != null && otherParty.isStarted()) {
+                otherParty.stop();
+            }
         }
 
         /**

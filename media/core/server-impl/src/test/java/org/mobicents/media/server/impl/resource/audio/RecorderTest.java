@@ -30,7 +30,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mobicents.media.server.impl.clock.TimerImpl;
+import org.mobicents.media.Server;
 import org.mobicents.media.server.spi.NotificationListener;
 import org.mobicents.media.server.spi.events.FailureEvent;
 import org.mobicents.media.server.spi.events.NotifyEvent;
@@ -42,7 +42,8 @@ import org.mobicents.media.server.spi.events.NotifyEvent;
  */
 public class RecorderTest {
 
-    private TimerImpl timer;
+    private Server server;
+    
     private Semaphore semaphore;
     private AudioPlayerImpl player;
     private RecorderImpl recorder;
@@ -59,12 +60,13 @@ public class RecorderTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
+        
         failed = false;
         stopped = false;
-        timer = new TimerImpl();
-        timer.start();
-        player = new AudioPlayerImpl("test", timer, null);
+        player = new AudioPlayerImpl("test", null, null);
         player.addListener(new PlayerListener());
         
         recorder = new RecorderImpl("test");
@@ -75,7 +77,7 @@ public class RecorderTest {
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
     
     private void testRecording(String src, String dst) throws Exception {

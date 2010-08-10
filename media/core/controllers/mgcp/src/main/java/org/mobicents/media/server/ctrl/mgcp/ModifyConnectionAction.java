@@ -71,7 +71,7 @@ public class ModifyConnectionAction implements Callable {
 
         Endpoint endpoint = null;
         try {
-            endpoint = controller.getNamingService().lookup(localEndpoint, true);
+            endpoint = controller.getServer().lookup(localEndpoint, true);
         } catch (Exception e) {
             if (logger.isEnabledFor(Level.ERROR)) {
                 logger.error("Failed on endpoint lookup: " + localEndpoint, e);

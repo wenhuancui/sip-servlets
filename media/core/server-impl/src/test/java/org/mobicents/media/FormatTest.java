@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mobicents.media.format.AudioFormat;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  * 

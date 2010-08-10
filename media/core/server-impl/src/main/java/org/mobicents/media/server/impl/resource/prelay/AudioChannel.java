@@ -22,7 +22,6 @@ import org.mobicents.media.MediaSource;
 import org.mobicents.media.server.impl.dsp.DspFactory;
 import org.mobicents.media.server.impl.dsp.Processor;
 import org.mobicents.media.server.impl.resource.cnf.AudioMixer;
-import org.mobicents.media.server.spi.clock.Timer;
 
 /**
  *
@@ -33,10 +32,10 @@ public class AudioChannel {
     private Processor p2;
     private AudioMixer mixer;
     
-    public AudioChannel(DspFactory dspFactory, Timer timer) {
+    public AudioChannel(DspFactory dspFactory) {
         p1 = (Processor) dspFactory.newInstance(null);
         p2 = (Processor) dspFactory.newInstance(null);
-        mixer = new AudioMixer("PacketRelay", timer);
+        mixer = new AudioMixer("PacketRelay");
         
         p1.getOutput().connect(mixer);
         p2.getInput().connect(mixer.getOutput());

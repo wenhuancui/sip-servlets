@@ -28,7 +28,7 @@ import org.mobicents.media.Buffer;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.format.UnsupportedFormatException;
 import org.mobicents.media.server.impl.resource.mediaplayer.Track;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  *

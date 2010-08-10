@@ -94,7 +94,7 @@ public class CreateConnectionAction implements Callable {
 		// lookup endpoint
 		Endpoint endpoint = null;
 		try {
-			endpoint = controller.getNamingService().lookup(localName);
+			endpoint = controller.getServer().lookup(localName, false);
 			if (logger.isDebugEnabled()) {
 				logger.debug("TX=" + txID + ", Allocated endpoint: " + endpoint.getLocalName());
 			}
@@ -209,7 +209,7 @@ public class CreateConnectionAction implements Callable {
 		// lookup endpoint
 		Endpoint endpoint = null;
 		try {
-			endpoint = controller.getNamingService().lookup(localName, true);
+			endpoint = controller.getServer().lookup(localName, true);
 		} catch (ResourceUnavailableException e) {
 			if(logger.isEnabledFor(Level.ERROR))
 			{
@@ -261,7 +261,7 @@ public class CreateConnectionAction implements Callable {
 		// lookup endpoint 2
 		Endpoint endpoint2 = null;
 		try {
-			endpoint2 = controller.getNamingService().lookup(localName2, true);
+			endpoint2 = controller.getServer().lookup(localName2, true);
 		} catch (ResourceUnavailableException e) {
 			if(logger.isEnabledFor(Level.ERROR))
 			{
@@ -295,6 +295,7 @@ public class CreateConnectionAction implements Callable {
 
 		try {
 			connection.setOtherParty(connection2);
+                        connection2.setOtherParty(connection);
 		} catch (IOException e) {
 			try{
 				if(logger.isEnabledFor(Level.ERROR))

@@ -21,7 +21,6 @@ package org.mobicents.media.server.impl.resource.test;
 import org.mobicents.media.MediaSink;
 import org.mobicents.media.MediaSource;
 import org.mobicents.media.server.spi.NotificationListener;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
 /**
@@ -48,8 +47,8 @@ public class TransmissionTester implements NotificationListener {
     private boolean isPassed = false;
     private String msg = "Not started yet";
     
-    public TransmissionTester(Timer timer) {
-        gen = new MeanderGenerator("Tester[generator]", timer);
+    public TransmissionTester() {
+        gen = new MeanderGenerator("Tester[generator]");
         gen.setAmplitude(A);
         gen.setPeriod(T);
         

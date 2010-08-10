@@ -7,8 +7,10 @@
 	<classpathentry kind="src" path="server-standalone/src/main/resources"/>
 	<classpathentry kind="src" path="server-standalone/src/main/java"/>
 	<classpathentry kind="src" path="server-spi/src/main/java"/>
+	<classpathentry kind="src" path="zap/native/src/test/java"/>
 	<classpathentry kind="src" path="controllers/mgcp/src/test/java"/>
 	<classpathentry kind="src" path="controllers/mgcp/src/main/java"/>
+	<classpathentry kind="src" path="controllers/rtsp/src/test/java"/>
 	<classpathentry kind="src" path="controllers/rtsp/src/main/java"/>
 	<classpathentry kind="var" path="M2_REPO/apache-xerces/xercesImpl/2.9.1/xercesImpl-2.9.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/apache-xerces/xml-apis/2.9.1/xml-apis-2.9.1.jar"/>
@@ -49,13 +51,14 @@
 	<classpathentry kind="var" path="M2_REPO/org/mobicents/external/jspeex/jspeex/0.9.7/jspeex-0.9.7.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/mobicents/external/tritonus/tritonus_gsm/0.3.6/tritonus_gsm-0.3.6.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/mobicents/external/tritonus/tritonus_share/0.3.6/tritonus_share-0.3.6.jar"/>
-	<classpathentry kind="var" path="M2_REPO/org/mobicents/protocols/mgcp/mgcp-impl/2.0.0.RC7/mgcp-impl-2.0.0.RC7.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/mobicents/protocols/mgcp/mgcp-impl/2.0.0.GA/mgcp-impl-2.0.0.GA.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/mobicents/protocols/ss7/mtp/MTP/1.0.0.BETA3-SNAPSHOT/MTP-1.0.0.BETA3-SNAPSHOT.jar"/>
 	<classpathentry kind="var" path="M2_REPO/qdox/qdox/1.6.1/qdox-1.6.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/sun-jaxb/jaxb-api/2.1.9/jaxb-api-2.1.9.jar"/>
 	<classpathentry kind="var" path="M2_REPO/trove/trove/2.1.1/trove-2.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/urbanophile/java-getopt/1.0.9/java-getopt-1.0.9.jar"/>
 	<classpathentry kind="var" path="M2_REPO/wutka-dtdparser/dtdparser121/1.2.1/dtdparser121-1.2.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="M2_REPO/org/mobicents/protocols/ss7/mtp/MTP/1.0.0.BETA1-SNAPSHOT/MTP-1.0.0.BETA1-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/mobicents/protocols/stream/stream/1.0.0.BETA1-SNAPSHOT/stream-1.0.0.BETA1-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

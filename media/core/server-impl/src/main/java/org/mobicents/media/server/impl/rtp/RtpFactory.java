@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.channels.ClosedChannelException;
-import java.nio.channels.Selector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -37,44 +36,73 @@ import net.java.stun4j.client.StunDiscoveryReport;
 import org.apache.log4j.Logger;
 import org.mobicents.media.server.impl.rtp.clock.AudioClock;
 import org.mobicents.media.server.impl.rtp.clock.VideoClock;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
 import org.mobicents.media.server.spi.MediaType;
 import org.mobicents.media.server.spi.ResourceUnavailableException;
-import org.mobicents.media.server.spi.clock.Timer;
+import org.mobicents.media.server.spi.rtp.RtpManager;
 import org.mobicents.media.server.spi.dsp.Codec;
 import org.mobicents.media.server.spi.dsp.CodecFactory;
+import org.mobicents.media.server.spi.rtp.AVProfile;
+import org.mobicents.media.server.spi.rtp.RtpListener;
+import org.mobicents.media.server.spi.rtp.RtpSocket;
 
 /**
  * 
  * @author Oleg Kulikov
  * @author amit bhayani
  */
-public class RtpFactory {
+public class RtpFactory implements RtpManager {
 
-    //private HashMap<String, Transceiver> transceivers = new HashMap();
+    /** UDP Receiver */
     private Receiver receiver;
+    
+    /** Jitter value*/
     private Integer jitter = 60;
+    
+    /** Bind address */
     private InetAddress bindAddress;
     protected InetSocketAddress publicAddress;
     private String stunHost;
     private int stunPort = 3478;
-    private Timer timer;
-    private AVProfile avProfile = new AVProfile();
-    private Hashtable<MediaType, List<CodecFactory>> codecFactories;
-    private int period;
-    //private HashMap<MediaType, ArrayList<RtpSocket>> socketsPool = new HashMap();
-    protected BufferConcurrentLinkedQueue<RtpSocket> registerQueue = new BufferConcurrentLinkedQueue();
-    private transient Logger logger = Logger.getLogger(RtpFactory.class);
     
+    /** Default audio/video profile */
+    private AVProfile avProfile = new AVProfile();
+    
+    /** List of codecs */
+    private Hashtable<MediaType, List<CodecFactory>> codecFactories;
+    
+    /** Queue for socket registration */
+    protected BufferConcurrentLinkedQueue<RtpSocketImpl> registerQueue = new BufferConcurrentLinkedQueue();
+
     private int portIndex;
     
+    /** Available port range */
     private int lowPort = 1024;
     private int highPort = 65535;
     
+    /** RTP event listener */
+    protected RtpListener listener;
+    
+    /** Logger instance */
+    private transient Logger logger = Logger.getLogger(RtpFactory.class);
+
     /**
      * Creates RTP Factory instance
      */
     public RtpFactory() {
+    }
+
+    public void setListener(RtpListener listener) {
+        this.listener = listener;
+    }
+
+    public RtpListener getListener() {
+        return listener;
+    }
+    
+    protected void notify(Exception e) {
+        if (listener != null) {
+            listener.notify(e);
+        }
     }
 
     /**
@@ -100,31 +128,17 @@ public class RtpFactory {
         }
     }
 
-    public void start() throws SocketException, IOException, StunException {
-    	
-    	this.portIndex = this.lowPort;
-    	
+    public void start(long now) throws SocketException, IOException {
+        this.portIndex = this.lowPort;
+
         receiver = new Receiver(this);
         receiver.start();
-
-        //prepare sockets
-/*        ArrayList<RtpSocket> list = new ArrayList();
-        for (int i = 0; i < 200; i++) {
-            try {
-                list.add(getRTPSocket("audio"));
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new SocketException(e.getMessage());
-            }
-        }
-
-        for (RtpSocket socket : list) {
-            this.releaseRTPSocket(socket);
-        }
-*/        
-//        receiver.start();
     }
-    
+
+    public boolean isActive() {
+        return receiver.isActive();
+    }
+
     /**
      * Get the next port to be used by the RtpSocket to bind Socket
      * to passed port.
@@ -135,43 +149,16 @@ public class RtpFactory {
      * The Port is incremented by 2 as every alternate port is for RTCP.
      * @return
      */
-    protected int getNextPort(){
-    	this.portIndex+=2;
-    	if(this.portIndex > this.highPort){
-    		this.portIndex = this.lowPort;
-    	}
-    	return this.portIndex;
+    protected int getNextPort() {
+        this.portIndex += 2;
+        if (this.portIndex > this.highPort) {
+            this.portIndex = this.lowPort;
+        }
+        return this.portIndex;
     }
 
     public void stop() {
         receiver.stop();
-    }
-
-    public int getPeriod() {
-        return period;
-    }
-
-    public void setPeriod(int period) {
-        this.period = period;
-    }
-
-    /**
-     * Gets media processing timer used by RTP socket.
-     * 
-     * @return timer object.
-     */
-    public Timer getTimer() {
-        return timer;
-    }
-
-    /**
-     * Assigns media processing timer.
-     * 
-     * @param timer
-     *            tmer object.
-     */
-    public void setTimer(Timer timer) {
-        this.timer = timer;
     }
 
     /**
@@ -193,23 +180,43 @@ public class RtpFactory {
         this.bindAddress = InetAddress.getByName(bindAddress);
     }
 
+    /**
+     * Gets the minimum available port number.
+     * 
+     * @return port number
+     */
     public int getLowPort() {
-    	return lowPort;
+        return lowPort;
     }
-    
-    public void setLowPort(int lowPort) {
-		this.lowPort = lowPort;
-	}
 
-	public int getHighPort() {
+    /**
+     * Modifies minimum available port
+     * 
+     * @param lowPort the port number.
+     */
+    public void setLowPort(int lowPort) {
+        this.lowPort = lowPort;
+    }
+
+    /**
+     * Gets the maximum available port number.
+     * 
+     * @return port number
+     */
+    public int getHighPort() {
         return highPort;
     }
-    
-    public void setHighPort(int highPort) {
-		this.highPort = highPort;
-	}
 
-	/**
+    /**
+     * Modifies maximum available port
+     * 
+     * @param port the port number.
+     */
+    public void setHighPort(int port) {
+        this.highPort = port;
+    }
+
+    /**
      * Gets the size of the jitter buffer in milliseconds.
      * 
      * Jitter buffer is used at the receiving ends of a VoIP connection. A jitter buffer stores received, time-jittered
@@ -242,14 +249,30 @@ public class RtpFactory {
         this.jitter = jitter;
     }
 
+    /**
+     * Gets currently used Audio/Video profile.
+     * 
+     * @return audio/video profile.
+     */
     public AVProfile getAVProfile() {
         return avProfile;
     }
 
+    /**
+     * Modify audio/video profile.
+     * 
+     * @param avProfile the new value of the audio/video profile.
+     */
     public void setAVProfile(AVProfile avProfile) {
         this.avProfile = avProfile;
     }
 
+    /**
+     * Gets RTP clocks for specified media type.
+     * 
+     * @param media the media type
+     * @return the clock instance
+     */
     public RtpClock getClock(MediaType media) {
         if (media == MediaType.AUDIO) {
             return new AudioClock();
@@ -259,34 +282,49 @@ public class RtpFactory {
         return null;
     }
 
+    /**
+     * Gets list of assigned codecs.
+     * 
+     * @return the map between media type and list of codec factories.
+     */
     public Hashtable<MediaType, List<CodecFactory>> getCodecs() {
         return codecFactories;
     }
 
+    /**
+     * Modify list of codecs.
+     * 
+     * @param codecFactories the map between media type and list of codec's factories.
+     */
     public void setCodecs(Hashtable<MediaType, List<CodecFactory>> codecFactories) {
-    	this.codecFactories = codecFactories;
+        this.codecFactories = codecFactories;
     }
 
-    protected Selector getSelector() {
-        return receiver.getSelector();
-    }
-        
+    /**
+     * Registers sockets in the receiver.
+     * 
+     * This method is called from Receiver. 
+     * New socket is always placed into the registration queue and later receiver 
+     * will call this method in the IO cycle. It will allow to prevent usage of expensive locks during IO.
+     * 
+     */
     protected void register() {
+        //registering all sockets in the queue
         while (!registerQueue.isEmpty()) {
-            RtpSocket socket = registerQueue.poll();
+            //extract socket from queue
+            RtpSocketImpl socket = registerQueue.poll();
             try {
-                if (socket.isConnected()) {
-                    socket.register(receiver.getSelector());
-                } else {
-                    registerQueue.offer(socket);
-                }
+                //registering
+                socket.register(receiver.getSelector());
             } catch (ClosedChannelException e) {
-                socket.release();
+                //unable to register, notify socket
+                socket.notify(e);
             }
         }
     }
+
     /**
-     * Constructs new RTP socket.
+     * Constructs new RTP socket for the specified media type.
      * 
      * @return the RTPSocketInstance.
      * @throws StunException
@@ -296,6 +334,22 @@ public class RtpFactory {
      * @throws IOException
      */
     public RtpSocket getRTPSocket(MediaType media) throws IOException, ResourceUnavailableException {
+        //check receiver state first
+        if (!this.isActive()) {
+            throw new ResourceUnavailableException("Receiver is not running");
+        }
+        
+        RtpSocketImpl rtpSocket = new RtpSocketImpl(this, getCodecs(media), media);
+        return rtpSocket;
+    }
+
+    /**
+     * Creates list of codec for the specified media type.
+     * 
+     * @param media the media type
+     * @return list of codecs.
+     */
+    private ArrayList<Codec> getCodecs(MediaType media) {
         ArrayList<Codec> codecs = new ArrayList();
         if (codecFactories != null) {
             Collection<CodecFactory> factories = codecFactories.get(media);
@@ -305,16 +359,9 @@ public class RtpFactory {
                 }
             }
         }
-        // create and return new rtp socket
-        RtpSocket rtpSocket = new RtpSocket(this, codecs, media);
-        rtpSocket.setPeriod(period);
-        return rtpSocket;
+        return codecs;
     }
-
-//    public void releaseRTPSocket(RtpSocket rtpSocket) {
-//        socketsPool.get(rtpSocket.media).add(rtpSocket);
-//    }
-
+    
     private InetSocketAddress getPublicAddress(InetSocketAddress localAddress) throws StunException {
         StunAddress local = new StunAddress(localAddress.getAddress(), localAddress.getPort());
         StunAddress stun = new StunAddress(stunHost, stunPort);

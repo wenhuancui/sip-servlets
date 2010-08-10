@@ -17,13 +17,11 @@
  */
 package org.mobicents.media.server.spi;
 
-import org.mobicents.media.server.spi.clock.Timer;
 import java.io.Serializable;
 
-import org.mobicents.media.Component;
+import java.util.Collection;
 import org.mobicents.media.MediaSink;
 import org.mobicents.media.MediaSource;
-import org.mobicents.media.format.AudioFormat;
 
 /**
  * The basic implementation of the endpoint.
@@ -40,15 +38,6 @@ import org.mobicents.media.format.AudioFormat;
  * @author amit.bhayani
  */
 public interface Endpoint extends Serializable {
-
-    public final static AudioFormat LINEAR_AUDIO = 
-            new AudioFormat(AudioFormat.LINEAR, 8000, 16, 1,AudioFormat.LITTLE_ENDIAN, AudioFormat.SIGNED);
-    public final static AudioFormat PCMA = new AudioFormat(AudioFormat.ALAW, 8000, 8, 1);
-    public final static AudioFormat PCMU = new AudioFormat(AudioFormat.ULAW, 8000, 8, 1);
-    public final static AudioFormat SPEEX = new AudioFormat(AudioFormat.SPEEX, 8000, 8, 1);
-    public final static AudioFormat G729 = new AudioFormat(AudioFormat.G729, 8000, 8, 1);
-    public final static AudioFormat GSM = new AudioFormat(AudioFormat.GSM, 8000, 8, 1);
-    public final static AudioFormat DTMF = new AudioFormat("telephone-event/8000");
     
     /**
      * Gets the local name attribute.
@@ -57,24 +46,19 @@ public interface Endpoint extends Serializable {
      */
     public String getLocalName();
 
-    public Timer getTimer();
-    public void setTimer(Timer timer);
+    /**
+     * Gets the current state of the endpoint
+     * 
+     * @return the state of the endpoint.
+     */
+    public EndpointState getState();
     
     /**
-     * Gets local IP Address to which specified media channel is attached
+     * Gets the list of supported media types.
      * 
-     * @param media the media type
-     * @return IP adress in text form.
+     * @return collection of media types.
      */
-    public String getLocalAddress(String media);
-    
-    /**
-     * Gets the port number to which specified media channel is attached
-     * 
-     * @param media the media type
-     * @return port number
-     */
-    public int getLocalPort(String media);
+    public Collection<MediaType> getMediaTypes();
     
     /**
      * Starts endpoint.
@@ -115,30 +99,6 @@ public interface Endpoint extends Serializable {
     public void deleteAllConnections();
 
     /**
-     * Indicates does this endpoint has connections.
-     *
-     * @return true if endpoint has connections.
-     */
-    public boolean hasConnections();
-    
-    public Connection getConnection(String connectionID);
-    public Component getComponent(String resourceName);
-    
-    /**
-     * Shows is this endpoint in use
-     * 
-     * @return true if this endpoint is in use.
-     */
-    public boolean isInUse();
-    
-    /**
-     * Marks this endpoint as used/unsed.
-     * 
-     * @param inUse true if endpoint is in use.
-     */
-    public void setInUse(boolean inUse);
-    
-    /**
      * Register NotificationListener to listen for <code>MsNotifyEvent</code>
      * which are fired due to events detected by Endpoints like DTMF. Use above
      * execute methods to register for event passing appropriate
@@ -155,30 +115,18 @@ public interface Endpoint extends Serializable {
      */
     public void removeNotificationListener(NotificationListener listener);
 
-    /**
-     * Register <code>ConnectionListener</code> to listen for changes in MsConnection state
-     * handled by this Endpoint
-     * 
-     * @param listener
-     */
-    public void addConnectionListener(ConnectionListener listener);
-    /**
-     * Removes the ConnectionListener
-     * 
-     * @param listener
-     */
-    public void removeConnectionListener(ConnectionListener listener);
     
-    public int getConnectionIndex();
-    
-    public Endpoint clone();
-    
-    public void setLocalName(String localName);
-
     public MediaSink getSink(MediaType media) ;
 
     public MediaSource getSource(MediaType media);
     
+    /**
+     * Generates media description for the specified media type.
+     * 
+     * @param mediaType the media type for which descriptor is requested.
+     * @return SDP media descriptor 
+     * @throws org.mobicents.media.server.spi.ResourceUnavailableException
+     */
     public String describe(MediaType mediaType) throws ResourceUnavailableException;
     
 }

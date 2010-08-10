@@ -27,9 +27,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mobicents.media.server.impl.clock.TimerImpl;
+import org.mobicents.media.Server;
 import org.mobicents.media.server.spi.NotificationListener;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
 /**
@@ -40,10 +39,11 @@ import org.mobicents.media.server.spi.events.NotifyEvent;
  */
 public class InbandDetectorTest {
 
+    private Server server;
+    
     private volatile boolean receivedEvent = false;
     private volatile int count;
     
-    Timer timer = null;
     private Semaphore semaphore;
     private GeneratorImpl generator = null;
     private DetectorImpl detector = null;
@@ -57,21 +57,20 @@ public class InbandDetectorTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
         receivedEvent = false;
         count = 0;
         
         semaphore = new Semaphore(0);
-        timer = new TimerImpl();
-        timer.start();
-        
-        generator = new GeneratorImpl("InbandDetectorTest", timer);
+        generator = new GeneratorImpl("InbandDetectorTest");
         detector = new DetectorImpl("InbandDetectorTest");
     }
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     /**

@@ -56,6 +56,7 @@ public class AudioFormat extends Format {
     public static final String MSRT24 = "msrt24";
     public static final String MPEG = "mpegaudio";
     public static final String DOLBYAC3 = "dolbyac3"; // TODO: these are not
+    public static final String AMR = "AMR";
     boolean init = false;
 
     private int hash;

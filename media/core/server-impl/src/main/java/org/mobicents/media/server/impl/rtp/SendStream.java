@@ -25,8 +25,8 @@ import org.mobicents.media.Format;
 import org.mobicents.media.MediaSource;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.resource.dtmf.DtmfEvent;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
 import org.mobicents.media.server.spi.dsp.Codec;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  * 
@@ -38,7 +38,7 @@ public class SendStream extends AbstractSink {
     private int seq = 0;
     // source synchronization
     private final long ssrc = System.currentTimeMillis();
-    private RtpSocket rtpSocket;
+    private RtpSocketImpl rtpSocket;
     protected RtpClock clock;
     private ArrayList<Format> formats = new ArrayList();
     protected byte mainstream;
@@ -51,7 +51,7 @@ public class SendStream extends AbstractSink {
 
     protected long byteCount;
     
-    public SendStream(RtpSocket rtpSocket, AVProfile avProfile) {
+    public SendStream(RtpSocketImpl rtpSocket, AVProfile avProfile) {
         super("SendStream");
         this.rtpSocket = rtpSocket;
         this.formatConfig = avProfile;

@@ -27,16 +27,15 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
+import org.mobicents.media.Server;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.AbstractSource;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.resource.Proxy;
 import org.mobicents.media.server.impl.resource.test.TransmissionTester2;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.dsp.Codec;
 import org.mobicents.media.server.spi.dsp.CodecFactory;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  * Test for transcoding with different codecs.
@@ -55,6 +54,8 @@ public class ProcessorTest {
             AudioFormat.LITTLE_ENDIAN, AudioFormat.SIGNED);
     private final static AudioFormat GSM = new AudioFormat(AudioFormat.GSM, 8000, 8, 1);
     
+    private Server server;
+    
     private Processor dsp1;
     private Processor dsp2;
     
@@ -70,7 +71,6 @@ public class ProcessorTest {
     private CodecFactory g729DecoderFactory = new org.mobicents.media.server.impl.dsp.audio.g729.DecoderFactory();
     
     private DspFactory dspFactory = new DspFactory();
-    private Timer timer;
     private TransmissionTester2 tester;
     private Proxy proxy;
 
@@ -86,11 +86,10 @@ public class ProcessorTest {
     }
 
     @Before
-    public void setUp() {
-        timer = new TimerImpl();
-        timer.start();
-        
-        tester = new TransmissionTester2(timer);
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
+        tester = new TransmissionTester2();
         
         proxy = new Proxy("test");
         
@@ -125,7 +124,7 @@ public class ProcessorTest {
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
     @Test    

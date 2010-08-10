@@ -33,12 +33,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
+import org.mobicents.media.Server;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSink;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.resource.test.SineGenerator;
 import org.mobicents.media.server.spi.NotificationListener;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.events.FailureEvent;
 import org.mobicents.media.server.spi.events.NotifyEvent;
 
@@ -49,129 +48,122 @@ import org.mobicents.media.server.spi.events.NotifyEvent;
  */
 public class AttenuatorTest implements NotificationListener {
 
-	private final static AudioFormat LINEAR_AUDIO = new AudioFormat(
-			AudioFormat.LINEAR, 8000, 16, 1, AudioFormat.LITTLE_ENDIAN,
-			AudioFormat.SIGNED);
+    private final static AudioFormat LINEAR_AUDIO = new AudioFormat(
+            AudioFormat.LINEAR, 8000, 16, 1, AudioFormat.LITTLE_ENDIAN,
+            AudioFormat.SIGNED);
+    private final static short A = Short.MAX_VALUE;
+    private final static int f = 50;
+    private Server server;
+    private SineGenerator sineGen;
+    private Sink det;
+    private AttenuatorImpl attenuator;
+    private short[] data = new short[8000 * 15];
+    private int len;
+    private Semaphore semaphore = new Semaphore(0);
+    private volatile boolean failed;
+    private String message;
 
-	private final static short A = Short.MAX_VALUE;
-	private final static int f = 50;
+    public AttenuatorTest() {
+    }
 
-	private SineGenerator sineGen;
-	private Sink det;
-	
-	private AttenuatorImpl attenuator;
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
 
-	private Timer timer; // 15 second audio buffer
-	private short[] data = new short[8000 * 15];
-	private int len;
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
 
-	private Semaphore semaphore = new Semaphore(0);
-	private volatile boolean failed;
-	private String message;
+    @Before
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
+        sineGen = new SineGenerator("test.sine");
+        sineGen.setAmplitude(A);
+        sineGen.setFrequency(f);
 
-	public AttenuatorTest() {
-	}
+        attenuator = new AttenuatorImpl("test.attenuator");
+        //-3 decible is half the signal strength
+        attenuator.setVolume(-3);
 
-	@BeforeClass
-	public static void setUpClass() throws Exception {
-	}
+        det = new Sink();
 
-	@AfterClass
-	public static void tearDownClass() throws Exception {
-	}
+        sineGen.addListener(this);
+        det.addListener(this);
+    }
 
-	@Before
-	public void setUp() {
-		timer = new TimerImpl();
-		timer.start();
+    @After
+    public void tearDown() {
+        server.stop();
+    }
 
-		sineGen = new SineGenerator("test.sine", timer);
-		sineGen.setAmplitude(A);
-		sineGen.setFrequency(f);
-		
-		attenuator = new AttenuatorImpl("test.attenuator");
-		//-3 decible is half the signal strength
-		attenuator.setVolume(-3);
+    @Test
+    @SuppressWarnings("static-access")
+    public void testGenerator() throws InterruptedException {
+        sineGen.connect(attenuator.getInput());
 
-		det = new Sink();
+        det.connect(attenuator.getOutput());
 
-		sineGen.addListener(this);
-		det.addListener(this);
-	}
+        det.start();
+        sineGen.start();
+        attenuator.start();
 
-	@After
-	public void tearDown() {
-		timer.stop();
-	}
+        semaphore.tryAcquire(10, TimeUnit.SECONDS);
+        assertFalse(message, failed);
 
-	@Test
-	@SuppressWarnings("static-access")
-	public void testGenerator() throws InterruptedException {
-		sineGen.connect(attenuator.getInput());
-		
-		det.connect(attenuator.getOutput());
-		
-		det.start();
-		sineGen.start();
-		attenuator.start();
+        sineGen.stop();
+        det.stop();
 
-		semaphore.tryAcquire(10, TimeUnit.SECONDS);
-		assertFalse(message, failed);
+        //this.print();
 
-		sineGen.stop();
-		det.stop();
-		
-		//this.print();
+        assertTrue("Sine not recognized", check());
+    }
 
-		assertTrue("Sine not recognized", check());
-	}
+    private boolean check() {
+        boolean res = true;
+        double dt = 1 / LINEAR_AUDIO.getSampleRate();
+        short E = (short) (Short.MAX_VALUE / 100);
+        for (int i = 0; i < len; i++) {
+            short s = (short) (A * Math.sin(2 * Math.PI * f * i * dt));
+            if (Math.abs((s * 0.5) - data[i]) > E) {
+                return false;
+            }
+        }
+        return res;
+    }
 
-	private boolean check() {
-		boolean res = true;
-		double dt = 1 / LINEAR_AUDIO.getSampleRate();
-		short E = (short) (Short.MAX_VALUE / 100);
-		for (int i = 0; i < len; i++) {
-			short s = (short) (A * Math.sin(2 * Math.PI * f * i * dt));
-			if (Math.abs((s * 0.5) - data[i]) > E) {
-				return false;
-			}
-		}
-		return res;
-	}
+    private class Sink extends AbstractSink {
 
-	private class Sink extends AbstractSink {
+        public Sink() {
+            super("test.sink");
+        }
 
-		public Sink() {
-			super("test.sink");
-		}
+        @Override
+        public void onMediaTransfer(Buffer buffer) {
+            byte[] buff = buffer.getData();
+            for (int i = 0; i < buff.length - 1; i += 2) {
+                short s = (short) ((buff[i] & 0xff) | (buff[i + 1] << 8));
+                data[len++] = s;
+            }
+        }
 
-		@Override
-		public void onMediaTransfer(Buffer buffer) {
-			byte[] buff = buffer.getData();
-			for (int i = 0; i < buff.length - 1; i += 2) {
-				short s = (short) ((buff[i] & 0xff) | (buff[i + 1] << 8));
-				data[len++] = s;
-			}
-		}
+        public Format[] getFormats() {
+            return new Format[]{LINEAR_AUDIO};
+        }
 
-		public Format[] getFormats() {
-			return new Format[] { LINEAR_AUDIO };
-		}
+        public boolean isAcceptable(Format format) {
+            return true;
+        }
+    }
 
-		public boolean isAcceptable(Format format) {
-			return true;
-		}
-	}
-
-	public void update(NotifyEvent event) {
-		switch (event.getEventID()) {
-		case NotifyEvent.START_FAILED:
-		case NotifyEvent.TX_FAILED:
-			failed = true;
-			message = ((FailureEvent) event).getException().getMessage();
-			semaphore.release();
-			break;
-		}
-	}
-
+    public void update(NotifyEvent event) {
+        switch (event.getEventID()) {
+            case NotifyEvent.START_FAILED:
+            case NotifyEvent.TX_FAILED:
+                failed = true;
+                message = ((FailureEvent) event).getException().getMessage();
+                semaphore.release();
+                break;
+        }
+    }
 }

@@ -5,10 +5,10 @@
 
     <bean name="MgcpController"
 		class="org.mobicents.media.server.ctrl.mgcp.MgcpController">
-        <property name="namingService">
+        <property name="server">
             <inject bean="MediaServer" />
         </property>
-        <property name="defaultNotifiedEntity">client@localhost</property>
+        <property name="defaultNotifiedEntity">client@localhost:2727</property>
         <property name="bindAddress">${mms.bind.address}</property>
         <property name="port">2427</property>
         <incallback method="addPackage" />

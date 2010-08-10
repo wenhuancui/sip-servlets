@@ -44,7 +44,7 @@ import org.mobicents.protocols.mgcp.stack.ExtendedJainMgcpProvider;
  */
 public class Request implements Runnable, ConnectionListener {
 
-	private static int txID = 1;
+	protected static int txID = 1;
 
 	private RequestIdentifier reqID;
 	private MgcpController controller;
@@ -283,6 +283,10 @@ public class Request implements Runnable, ConnectionListener {
 	}
 
 	public void onModeChange(Connection connection, ConnectionMode oldMode) {
+	}
+	
+	public void onError(Connection connection, Exception e){
+		
 	}
 
 	public int getTxID() {

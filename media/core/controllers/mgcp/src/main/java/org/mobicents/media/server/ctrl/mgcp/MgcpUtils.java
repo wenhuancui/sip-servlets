@@ -19,26 +19,41 @@ package org.mobicents.media.server.ctrl.mgcp;
 
 import jain.protocol.ip.mgcp.message.parms.ConnectionMode;
 
-
 /**
  * Used as Util to convert some MGCP values to Media Server SPI.
  * 
  * @author kulikov
+ * @author amit bhayani
  */
 public class MgcpUtils {
-    
-    public org.mobicents.media.server.spi.ConnectionMode getMode(ConnectionMode mode) {
-        switch (mode.getConnectionModeValue()) {
-            case ConnectionMode.RECVONLY :
-                return org.mobicents.media.server.spi.ConnectionMode.RECV_ONLY;
-            case ConnectionMode.SENDONLY :
-                return org.mobicents.media.server.spi.ConnectionMode.SEND_ONLY;
-            case ConnectionMode.SENDRECV :
-                return org.mobicents.media.server.spi.ConnectionMode.SEND_RECV;
-            case ConnectionMode.INACTIVE :                
-            	return org.mobicents.media.server.spi.ConnectionMode.INACTIVE;
-            default :
-                return null;
-        }
-    }
+
+	public org.mobicents.media.server.spi.ConnectionMode getMode(ConnectionMode mode) {
+		switch (mode.getConnectionModeValue()) {
+		case ConnectionMode.RECVONLY:
+			return org.mobicents.media.server.spi.ConnectionMode.RECV_ONLY;
+		case ConnectionMode.SENDONLY:
+			return org.mobicents.media.server.spi.ConnectionMode.SEND_ONLY;
+		case ConnectionMode.SENDRECV:
+			return org.mobicents.media.server.spi.ConnectionMode.SEND_RECV;
+		case ConnectionMode.INACTIVE:
+			return org.mobicents.media.server.spi.ConnectionMode.INACTIVE;
+		default:
+			return null;
+		}
+	}
+
+	public ConnectionMode getMode(org.mobicents.media.server.spi.ConnectionMode mode) {
+		switch (mode) {
+		case INACTIVE:
+			return ConnectionMode.Inactive;
+		case SEND_ONLY:
+			return ConnectionMode.SendOnly;
+		case RECV_ONLY:
+			return ConnectionMode.RecvOnly;
+		case SEND_RECV:
+			return ConnectionMode.SendRecv;
+		default:
+			return null;
+		}
+	}
 }

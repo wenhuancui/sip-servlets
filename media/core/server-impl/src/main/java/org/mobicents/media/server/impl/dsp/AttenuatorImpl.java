@@ -27,9 +27,6 @@ import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.AbstractSource;
 import org.mobicents.media.server.impl.BaseComponent;
-import org.mobicents.media.server.spi.SyncSource;
-import org.mobicents.media.server.spi.clock.Task;
-import org.mobicents.media.server.spi.clock.TimerTask;
 import org.mobicents.media.server.spi.dsp.Attenuator;
 import org.mobicents.media.server.spi.dsp.SignalingProcessor;
 
@@ -62,7 +59,6 @@ public class AttenuatorImpl extends BaseComponent implements
 		super(name);
 		input = new Input(name);
 		output = new Output(name);
-		output.setSyncSource(input);
 	}
 
 	public void setVolume(int volume) {
@@ -118,7 +114,7 @@ public class AttenuatorImpl extends BaseComponent implements
 		}
 	}
 
-	private class Input extends AbstractSink implements SyncSource {
+	private class Input extends AbstractSink {
 		private volatile boolean started = false;
 
 		public Input(String name) {
@@ -136,7 +132,6 @@ public class AttenuatorImpl extends BaseComponent implements
 			if (!output.isStarted()) {
 				output.start();
 			}
-			super.start();
 		}
 
 		@Override
@@ -145,7 +140,6 @@ public class AttenuatorImpl extends BaseComponent implements
 			if (output.isStarted()) {
 				output.stop();
 			}
-			super.stop();
 		}
 
 		@Override
@@ -157,20 +151,6 @@ public class AttenuatorImpl extends BaseComponent implements
 
 		public long getTimestamp() {
 			return timestamp;
-		}
-
-		public void sync(MediaSource mediaSource) {
-			// TODO Auto-generated method stub
-
-		}
-
-		public TimerTask sync(Task task) {
-			throw new UnsupportedOperationException("Not supported yet.");
-		}
-
-		public void unsync(MediaSource mediaSource) {
-			// TODO Auto-generated method stub
-
 		}
 
 		public Format[] getFormats() {

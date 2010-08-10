@@ -18,10 +18,10 @@
 
 package org.mobicents.media.server.impl.resource.mediaplayer;
 
-import java.net.URL;
-
 import org.mobicents.media.Component;
 import org.mobicents.media.ComponentFactory;
+import org.mobicents.media.server.impl.resource.mediaplayer.audio.AudioPlayerFactory;
+import org.mobicents.media.server.impl.resource.mediaplayer.video.VideoPlayerFactory;
 import org.mobicents.media.server.spi.Endpoint;
 import org.mobicents.media.server.spi.ResourceUnavailableException;
 
@@ -32,37 +32,24 @@ import org.mobicents.media.server.spi.ResourceUnavailableException;
 public class MediaPlayerFactory implements ComponentFactory {
 
 	private String name;
-	private String audioMediaDirectory;
-	private String videoMediaDirectory;
 
-	/**
-	 * @return the audioMediaDirectory
-	 */
-	public String getAudioMediaDirectory() {
-		return audioMediaDirectory;
+	private AudioPlayerFactory audioPlayerFactory;
+	private VideoPlayerFactory videoPlayerFactory;
+
+	public AudioPlayerFactory getAudioPlayerFactory() {
+		return audioPlayerFactory;
 	}
 
-	/**
-	 * @param audioMediaDirectory
-	 *            the audioMediaDirectory to set
-	 */
-	public void setAudioMediaDirectory(String audioMediaDirectory) {
-		this.audioMediaDirectory = audioMediaDirectory;
+	public void setAudioPlayerFactory(AudioPlayerFactory audioPlayerFactory) {
+		this.audioPlayerFactory = audioPlayerFactory;
 	}
 
-	/**
-	 * @return the videoMediaDirectory
-	 */
-	public String getVideoMediaDirectory() {
-		return videoMediaDirectory;
+	public VideoPlayerFactory getVideoPlayerFactory() {
+		return videoPlayerFactory;
 	}
 
-	/**
-	 * @param videoMediaDirectory
-	 *            the videoMediaDirectory to set
-	 */
-	public void setVideoMediaDirectory(String videoMediaDirectory) {
-		this.videoMediaDirectory = videoMediaDirectory;
+	public void setVideoPlayerFactory(VideoPlayerFactory videoPlayerFactory) {
+		this.videoPlayerFactory = videoPlayerFactory;
 	}
 
 	public String getName() {
@@ -75,18 +62,18 @@ public class MediaPlayerFactory implements ComponentFactory {
 
 	public Component newInstance(Endpoint endpoint)
 			throws ResourceUnavailableException {
-		return new MediaPlayerImpl(name, endpoint.getTimer(),
-				audioMediaDirectory, videoMediaDirectory);
+		return new MediaPlayerImpl(name, this.audioPlayerFactory,
+				this.videoPlayerFactory);
 
 	}
 
 	public void start() throws IllegalStateException {
-		if (audioMediaDirectory == null) {
-			throw new IllegalStateException("Audio media directory is not set!");
+		if (audioPlayerFactory == null) {
+			throw new IllegalStateException("Audio media factory is not set!");
 		}
 
-		if (videoMediaDirectory == null) {
-			throw new IllegalStateException("Video media directory is not set!");
+		if (videoPlayerFactory == null) {
+			throw new IllegalStateException("Video media factory is not set!");
 		}
 	}
 

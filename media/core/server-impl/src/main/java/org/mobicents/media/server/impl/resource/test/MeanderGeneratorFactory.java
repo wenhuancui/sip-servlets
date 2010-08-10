@@ -19,6 +19,7 @@ package org.mobicents.media.server.impl.resource.test;
 
 import org.mobicents.media.Component;
 import org.mobicents.media.ComponentFactory;
+import org.mobicents.media.Server;
 import org.mobicents.media.server.spi.Endpoint;
 import org.mobicents.media.server.spi.ResourceUnavailableException;
 
@@ -58,7 +59,7 @@ public class MeanderGeneratorFactory implements ComponentFactory {
 
         
     public Component newInstance(Endpoint endpoint) throws ResourceUnavailableException {
-        MeanderGenerator gen = new MeanderGenerator(name, endpoint.getTimer());
+        MeanderGenerator gen = new MeanderGenerator(name);
         gen.setAmplitude(A);
         gen.setPeriod(T);
         return gen;

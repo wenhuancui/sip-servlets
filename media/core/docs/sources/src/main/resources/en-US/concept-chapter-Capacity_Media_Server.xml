@@ -53,6 +53,9 @@
 						<listitem>
 							<para>MP3</para>
 						</listitem>
+						<listitem>
+							<para>ISO base media file format</para>
+						</listitem>						
 					</itemizedlist>
 				</para>
 			</listitem>
@@ -74,7 +77,7 @@
 					Audio processing :
 					<itemizedlist>
 						<listitem>
-							<para>Audio transcoding, bridging and conference</para>
+							<para>Audio transcoding, bridging, attenuator and conference</para>
 						</listitem>
 						<listitem>
 							<para>DTMF detection and generation.Both Inband as well as RFC2833</para>

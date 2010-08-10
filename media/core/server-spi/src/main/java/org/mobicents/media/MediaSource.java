@@ -17,7 +17,6 @@
  */
 package org.mobicents.media;
 
-import org.mobicents.media.server.spi.SyncSource;
 import org.mobicents.media.server.spi.clock.Task;
 
 /**
@@ -69,20 +68,6 @@ public interface MediaSource extends Component, Task {
      * @param duration the positive value in milliseconds.
      */
     public void setDuration(long duration);
-    
-    /**
-     * Gets the source used for synchronization of processing
-     * 
-     * @return timer instance.
-     */
-    public SyncSource getSyncSource();
-
-    /**
-     * Assign the source for synchronization of the processing.
-     * 
-     * @param syncSource the source of synchronization.
-     */
-    public void setSyncSource(SyncSource syncSource);
     
     /**
      * Joins this source with media sink.

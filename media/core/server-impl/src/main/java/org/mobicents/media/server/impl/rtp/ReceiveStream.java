@@ -23,8 +23,8 @@ import org.mobicents.media.Format;
 import org.mobicents.media.MediaSink;
 import org.mobicents.media.server.impl.AbstractSource;
 import org.mobicents.media.server.impl.rtp.rfc2833.DtmfConverter;
-import org.mobicents.media.server.impl.rtp.sdp.AVProfile;
 import org.mobicents.media.server.spi.dsp.Codec;
+import org.mobicents.media.server.spi.rtp.AVProfile;
 
 /**
  * 
@@ -32,9 +32,12 @@ import org.mobicents.media.server.spi.dsp.Codec;
  */
 public class ReceiveStream extends AbstractSource {
 
-    private RtpSocket rtpSocket;
+    private final static int DEFAULT_POLL_PERIOD = 20;
+    
+    private RtpSocketImpl rtpSocket;
     private JitterBuffer jitterBuffer;
     protected int mainstream;
+    private Format rtpFormat;
     private int dtmf;
     private ArrayList<Format> formats = new ArrayList();
     private AVProfile avProfile;
@@ -46,15 +49,12 @@ public class ReceiveStream extends AbstractSource {
     protected long byteCount;
     
     /** Creates a new instance of ReceiveStream */
-    public ReceiveStream(RtpSocket rtpSocket, int jitter, AVProfile formatConfig) {
+    public ReceiveStream(RtpSocketImpl rtpSocket, int jitter, AVProfile formatConfig) {
         super("ReceiveStream");
         this.jitter = jitter;
         this.avProfile = formatConfig;
         this.rtpSocket = rtpSocket;
         
-        //synchronize stream from socket's timer
-        setSyncSource(rtpSocket.timer);
-
         //construct jitter buffer
         jitterBuffer = new JitterBuffer(jitter);
         jitterBuffer.setClock(rtpSocket.getClock());
@@ -104,7 +104,10 @@ public class ReceiveStream extends AbstractSource {
      * @param format the format used by rtp socket.
      */
     protected void setFormat(int payloadID, Format format) {
+        //set format of the mail stream
         this.mainstream = payloadID;
+        this.rtpFormat = format;
+        
         jitterBuffer.setFormat(format);
 
         //supported formats are combination of
@@ -160,7 +163,7 @@ public class ReceiveStream extends AbstractSource {
         //NOTE! at least one suitable codec exist because components  
         //has just comleted analysis of supported formats!
         for (Codec c : rtpSocket.codecs) {
-            if (c.getSupportedOutputFormat().matches(format)) {
+            if (c.getSupportedOutputFormat().matches(format) && c.getSupportedInputFormat().matches(this.rtpFormat)) {
                 codec = c;
                 return;
             }
@@ -190,7 +193,7 @@ public class ReceiveStream extends AbstractSource {
         RtpPacket packet = jitterBuffer.read(timestamp);
         if (packet == null) {
             buffer.setFlags(Buffer.FLAG_DISCARD);
-            buffer.setDuration(rtpSocket.getPeriod());
+            buffer.setDuration(DEFAULT_POLL_PERIOD);
         } else if (packet.getPayloadType() == mainstream) {
             buffer.setData(packet.getPayload());
             buffer.setOffset(0);
@@ -200,7 +203,7 @@ public class ReceiveStream extends AbstractSource {
             if (packet.getDuration() >= 0) {
                 buffer.setDuration(packet.getDuration());
             } else {
-                buffer.setDuration(rtpSocket.getPeriod());
+                buffer.setDuration(DEFAULT_POLL_PERIOD);
             }
             buffer.setFormat(format);
             if (packet.getMarker()) {
@@ -213,9 +216,8 @@ public class ReceiveStream extends AbstractSource {
             dtmfConverter.process(packet, buffer);
             buffer.setTimeStamp(timestamp);
         } else {
-            System.out.println("Unexpected packet ");
             buffer.setFlags(Buffer.FLAG_DISCARD);
-            buffer.setDuration(rtpSocket.getPeriod());
+            buffer.setDuration(DEFAULT_POLL_PERIOD);
         }
         
         if (logger.isTraceEnabled()) {

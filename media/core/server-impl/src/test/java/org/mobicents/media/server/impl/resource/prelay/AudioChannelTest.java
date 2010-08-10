@@ -12,18 +12,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
-import org.mobicents.media.MediaSink;
-import org.mobicents.media.MediaSource;
+import org.mobicents.media.Server;
 import org.mobicents.media.server.impl.AbstractSink;
 import org.mobicents.media.server.impl.AbstractSource;
-import org.mobicents.media.server.impl.clock.TimerImpl;
 import org.mobicents.media.server.impl.dsp.DspFactory;
 import org.mobicents.media.server.impl.dsp.audio.g711.alaw.DecoderFactory;
 import org.mobicents.media.server.impl.dsp.audio.g711.alaw.EncoderFactory;
-import org.mobicents.media.server.spi.clock.Timer;
 import org.mobicents.media.server.spi.dsp.Codec;
 import org.mobicents.media.server.spi.dsp.CodecFactory;
 
@@ -33,7 +29,7 @@ import org.mobicents.media.server.spi.dsp.CodecFactory;
  */
 public class AudioChannelTest {
 
-    private Timer timer = new TimerImpl();
+    private Server server;
     private AudioChannel channel;
     
     public AudioChannelTest() {
@@ -48,8 +44,9 @@ public class AudioChannelTest {
     }
 
     @Before
-    public void setUp() {
-        timer.start();
+    public void setUp() throws Exception {
+        server = new Server();
+        server.start();
         // preparing g711: ALaw encoder, decoder
         EncoderFactory encoderFactory = new EncoderFactory();
         DecoderFactory decoderFactory = new DecoderFactory();
@@ -64,12 +61,12 @@ public class AudioChannelTest {
         
         dspFactory.setCodecFactories(codecs);
         
-        channel = new AudioChannel(dspFactory, timer);
+        channel = new AudioChannel(dspFactory);
     }
 
     @After
     public void tearDown() {
-        timer.stop();
+        server.stop();
     }
 
 
@@ -79,7 +76,6 @@ public class AudioChannelTest {
     @Test
     public void testStop() throws Exception {
         TestSource source = new TestSource("source");
-        source.setSyncSource(timer);
         
         TestSink sink = new TestSink("sink");
         
