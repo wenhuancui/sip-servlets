@@ -1,0 +1,106 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [<!ENTITY % BOOK_ENTITIES SYSTEM "SS7_Stack_User_Guide.ent">%BOOK_ENTITIES;]>
+
+<chapter id="design_overview">
+
+	<title>Design Overview</title>
+	<important>
+		<para>Be
+			aware, &THIS.PLATFORM; &THIS.APPLICATION;
+			is subject to changes as it is under active development!
+		</para>
+	</important>
+	<para>&THIS.PLATFORM; &THIS.APPLICATION;
+		builds layer of abstraction with
+		<acronym>API</acronym>
+		similar to
+		<acronym>NIO</acronym>
+		. Abstraction is built with three main components:
+	</para>
+	<itemizedlist>
+		<listitem>
+			<para>Selector - performs stream queries and presents user with
+				streams ready for I/O operations.</para>
+		</listitem>
+		<listitem>
+			<para>SelectorKey - represents stream in selectors space</para>
+		</listitem>
+		<listitem>
+			<para>Stream - straight as it is, a stream of data</para>
+		</listitem>
+	</itemizedlist>
+	<mediaobject id="stream-design-overview1">
+		<imageobject>
+			<imagedata width="300px" align="center"
+				fileref="images/stream-design-overview1.png" format="PNG" />
+		</imageobject>
+		<caption>
+			<para>
+				IO overview
+			</para>
+		</caption>
+	</mediaobject>
+	<section>
+		<title>Stream protocol - Datalink</title>
+		<para>
+			Beside simplified stream
+			<acronym>API</acronym>
+			, there is also need for
+			<acronym>SCTP</acronym>(SCTP
+			is not available in JDK6) like streaming. 
+		&THIS.PLATFORM; &THIS.APPLICATION;
+			provides such feature over defined stream
+			<acronym>API</acronym>
+			.
+		</para>
+		<para>
+			<literal>Datalink</literal>
+			is a proprietary protocol designed to provide following:
+		</para>
+		<itemizedlist>
+			<listitem>
+				<para>peer to peer transport</para>
+			</listitem>
+			<listitem>
+				<para>reliable delivery - retransmissions</para>
+			</listitem>
+			<listitem>
+				<para>stream status metadata - provide user with stream status
+					info(active,inactive, down...). Metadata is information which
+					ifnroms peers about readiness to receive data for instance.</para>
+			</listitem>
+			<listitem>
+				<para>async I/O </para>
+			</listitem>
+		</itemizedlist>
+		<para>
+			Generaly
+			<literal>Datalink</literal>
+			can be imagined as follows:
+		</para>
+		<mediaobject id="stream-link-design-overview1">
+			<imageobject>
+				<imagedata width="300px" align="center"
+					fileref="images/stream-link-design-overview1.png" format="PNG" />
+			</imageobject>
+			<caption>
+				<para>
+					Datalink overview
+			</para>
+			</caption>
+		</mediaobject>
+		<para>Datalink follows state machine which reassembles one depicted on diagram below:</para>
+		<mediaobject id="stream-link-design-overview2">
+			<imageobject>
+				<imagedata width="300px" align="center"
+					fileref="images/stream-link-design-overview2.png" format="PNG" />
+			</imageobject>
+			<caption>
+				<para>
+					Datalink FSM
+			</para>
+			</caption>
+		</mediaobject>
+	</section>
+</chapter>
+

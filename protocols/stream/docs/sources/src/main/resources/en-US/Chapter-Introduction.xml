@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [<!ENTITY % BOOK_ENTITIES SYSTEM "SS7_Stack_User_Guide.ent">%BOOK_ENTITIES;]>
+
+<chapter id="introduction">
+
+	<title>Introduction
+		to &THIS.PLATFORM;  &THIS.APPLICATION;
+	</title>
+	<para>
+		In many places there is need for asynchronous I/O operations, be it
+		file, socket or any other. There are asynchronous I/O libraries.
+		However
+		implementations are thread safe and restricted to some specific assumptions. 
+	</para>
+	<para>
+	 &THIS.PLATFORM;  &THIS.APPLICATION;
+		fills this gap. It aims to provide simple
+		<acronym>API</acronym>
+		which enables user to abstract I/O operation in any way he desires.
+	</para>
+
+</chapter>
