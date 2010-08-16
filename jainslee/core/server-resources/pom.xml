@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.jainslee.core</groupId>
 		<artifactId>mobicents-slee-core</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 
 	<artifactId>server-resources</artifactId>
@@ -27,7 +27,8 @@
 							<tasks>							
 								<copy todir="${jboss.home}/docs/licenses/mobicents">
 									<fileset file="LICENSES/*" />
-								</copy>								
+								</copy>
+								<copy overwrite="true" file="resources/jboss-cache-manager-jboss-beans.xml" todir="${jboss.home}/server/all/deploy/cluster/jboss-cache-manager.sar/META-INF" />																
 							</tasks>
 						</configuration>
 					</execution>

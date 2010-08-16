@@ -188,6 +188,8 @@ public class EventRoutingTaskImpl implements EventRoutingTask {
 			boolean rollbackTx;
 			boolean rollbackOnlySet;
 			
+			boolean sbbHandledEvent = false;
+			
 			do {
 				
 				// For each SBB that is attached to this activity context and active service to process event as initial
@@ -238,7 +240,18 @@ public class EventRoutingTaskImpl implements EventRoutingTask {
 
 						// load ac
 						ac = container.getActivityContextFactory().getActivityContext(eventContext.getActivityContextHandle());
-
+						if (ac == null) {
+							logger.error("Unable to route event "+eventContext+". The activity context is gone");
+							try {
+								eventContext.eventProcessingFailed(FailureReason.OTHER_REASON);
+								txMgr.commit();
+							}
+							catch (Throwable e) {
+								logger.error(e.getMessage(),e);
+							}
+							return;
+						}
+						
 						if (routingPhase == RoutingPhase.DELIVERING) {
 							
 							// calculate highest priority attached sbb entity that needs to handle the event
@@ -325,8 +338,6 @@ public class EventRoutingTaskImpl implements EventRoutingTask {
 									keepSbbEntityIfTxRollbacks = true;
 								}
 
-								sbbObject.sbbLoad();
-
 								// GET AND CHECK EVENT MASK FOR THIS SBB ENTITY
 								Set<EventTypeID> eventMask = sbbEntity.getMaskedEventTypes(eventContext.getActivityContextHandle());
 								if (eventMask == null || !eventMask.contains(eventContext.getEventTypeId())) {
@@ -341,6 +352,8 @@ public class EventRoutingTaskImpl implements EventRoutingTask {
 
 									sbbEntity.invokeEventHandler(eventContext,ac,activityCurrentEventContext);
 
+									sbbHandledEvent = true;
+									
 									if (debugLogging) {
 										logger
 										.debug("<--- Invoked event handler: ac="+eventContext.getActivityContextHandle()+" , sbbEntity="+sbbEntity.getSbbEntityId()+" , sbbObject="+sbbObject);
@@ -637,7 +650,7 @@ public class EventRoutingTaskImpl implements EventRoutingTask {
 			 * 
 			 */		
 
-			eventContext.eventProcessingSucceed();
+			eventContext.eventProcessingSucceed(sbbHandledEvent);
 			
 			// we got to the end of the event routing, remove from local ac
 			lac.setCurrentEventRoutingTask(null);

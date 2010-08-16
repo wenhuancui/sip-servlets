@@ -215,7 +215,10 @@ public class SbbLocalObjectImpl implements SbbLocalObject,
     	        
        validateInvocation();
         
-        sbbEntity.checkReEntrant();              
+       if (!sbbEntity.isReentrant()
+				&& sleeContainer.getTransactionManager().getTransactionContext().getEventRoutingTransactionData()
+						.getInvokedNonReentrantSbbEntities().contains(sbbEntity.getSbbEntityId()))
+			throw new SLEEException(" re-entrancy not allowed ");             
         
 		if (logger.isDebugEnabled()) {
             logger.debug("nonSleeInitiatedCascadingRemoval : " + sbbEntity.getSbbId()
@@ -355,4 +358,8 @@ public class SbbLocalObjectImpl implements SbbLocalObject,
         }
     }
 
+    @Override
+    public String toString() {
+    	return new StringBuilder("SbbLocalObjectImpl[").append(sbbEntity != null ? sbbEntity.getSbbEntityId() : "null").append("]").toString();
+    }
 }
