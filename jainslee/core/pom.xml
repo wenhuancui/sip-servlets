@@ -4,21 +4,21 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 	
 	<groupId>org.mobicents.servers.jainslee.core</groupId>
 	<artifactId>mobicents-slee-core</artifactId>
-	<version>5.0.0.Beta2-JBCP5</version>
+	<version>5.0.0.CR01-JBCP5</version>
 	
 	<packaging>pom</packaging>
 	
 	<name>Mobicents :: JAIN SLEE :: Core</name>
 	
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/core/2.1.1.FINAL</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/core/2.1.1.FINAL</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/core/2.1.1.FINAL</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/core/2.1.2.FINAL</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/core/2.1.2.FINAL</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/core/2.1.2.FINAL</url>
 	</scm>
 
 	<modules>
@@ -51,7 +51,7 @@
 		<slee.vendor>JBoss, a Red Hat division</slee.vendor>
 		<slee.version>${pom.version}</slee.version>
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
-		<mobicents.cluster.version>5.0.0.Beta2-JBCP5</mobicents.cluster.version>
+		<mobicents.cluster.version>5.0.0.CR01-JBCP5</mobicents.cluster.version>
 	</properties>
 	
 	<dependencyManagement>
@@ -87,7 +87,7 @@
 					<artifactId>maven-release-plugin</artifactId>
 					<configuration>
 						<autoVersionSubmodules>true</autoVersionSubmodules>
-						<tagBase>https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/2.1.1/core</tagBase>
+						<tagBase>https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/core/2.1.2.FINAL/</tagBase>
 						<preparationGoals>clean install</preparationGoals>
 					</configuration>
 					</plugin>
