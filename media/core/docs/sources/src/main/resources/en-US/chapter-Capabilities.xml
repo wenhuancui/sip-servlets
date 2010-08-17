@@ -1,0 +1,2312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "User_Guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="chapter-Capabilities_Media_Server">
+	<title>
+		Capabilities of
+		&THIS.PLATFORM;
+		Media Server
+	</title>
+
+	<para>
+		Each endpoint supports specific MGCP Packages and some or all of
+		the Events/Signals defined in that package. Bellow table shows
+		the capabilities of each endpoints defined in MMS
+	</para>
+
+	<section id="capability_announcement_endpoint">
+		<title>Announcement Endpoint</title>
+		<para>
+			The Announcement Endpoint is identified by localname
+			<literal>/mobicents/media/aap/[1..10]</literal>
+			where number in square brackets indicates the range of
+			endpoints configured and started by media server.
+		</para>
+		<para>
+			The MGCP Packages and corresponding Signals/Events supported
+			by Announcement Endpoint is specified in bellow table. Line in <emphasis>italics</emphasis> is MGCP Signal Request/Signal Event Example
+		</para>
+		<table frame="all"
+			id="capabilities-Announcement_Endpoint_Table">
+			<caption>
+				Packages and corresponding Signals/Events supported by
+				Announcement Endpoint
+			</caption>
+			<tbody>
+				<tr>
+					<th colspan="3">Supported Package</th>
+				</tr>
+				<tr>
+					<td rowspan="5">Announcement (A)</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+
+
+				<tr>
+					<td>OperationComplete (oc)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/oc@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+
+					<td>OperationFailure (of)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/of@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+				<tr>
+
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+
+					<td>Play Announcement (ann)</td>
+					<td>
+						<para>
+							The PlayAnnouncement Signal must be
+							qualified by a String of Parameter(s). If
+							Play Announcemnet is not provided with a
+							parameter specifying some form of playable
+							audio or Text-to-Speech text an error is
+							returned to application.
+						</para>
+						<para>
+							The Play Announcement takes the URL of the
+							media file to be played as parameter. The
+							examples are
+						</para>
+						<itemizedlist>
+							<listitem>
+								<para>
+									On remote server
+									<literal>
+										http://127.0.0.1:8080/mgcpdemo/audio/RQNT-ULAW.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@1(http://127.0.0.1:8080/mgcpdemo/audio/RQNT-ULAW.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									On local server where media server
+									is hosted
+									<literal>
+										file:/home/mobicents/RQNT-ULAW.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@1(file:/home/mobicents/RQNT-ULAW.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									In addition URL of txt file can also
+									be passed and media server would
+									play that text file as TTS with
+									default voice. For ex
+									<literal>
+										http://ann.example.net/hello.txt
+									</literal>
+									or
+									<literal>
+										file:/home/mobicents/hello.txt
+									</literal>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									Segment descriptor can also be used
+									with the
+									<literal>ann</literal>
+									signal to make up an announcement.
+									The only supported Segment
+									descriptor is '<literal>ts</literal>'. '<literal>ts</literal>' Specifies a text string to be
+									converted to speech. Optionally
+									voice name '<literal>vc</literal>' can also be passed to direct media
+									server to play this speech in given
+									voice. For example
+									<literal>
+										ts("Your text here")
+										vc("mbrola_us1")
+									</literal>
+								</para>
+								<para>
+									For supported voices look at <xref linkend="tab-mms-Standalone_Directory-Structure" />
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@6(ts(You have pressed One) vc(Mbrola_US1))
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									The relative path of audio/txt file
+									can also be passed for example
+									<literal>RQNT-ULAW.wav</literal>
+								</para>
+								<para>
+									In this case MMS will try to serach
+									the corresponding file in
+									<literal>${mms.media.dir}</literal>
+									folder.
+								</para>
+							</listitem>
+						</itemizedlist>
+
+
+					</td>
+				</tr>
+
+
+				<tr>
+					<td rowspan="6">Advance Announcement (AU)</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+
+
+				<tr>
+					<td>OperationComplete (oc)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/oc@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+
+					<td>OperationFailure (of)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/of@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+				<tr>
+
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>Play Announcement (ann)</td>
+					<td>
+						<para>
+							Same as Announcement Package's Play
+							Announcement Signal
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>Record (aupr)</td>
+					<td>
+						<para>
+							The Record Signal must be qualified by a
+							String of Parameter. If Record is not
+							provided with a parameter specifying path
+							(absolute or relative) and name of audio
+							file, error is returned to application.
+						</para>
+						<para>
+							The URL can be absolute URL or relative in
+							which case recorded file will be placed at
+							<literal>${mms.media.dir}</literal>
+							folder. The examples are
+						</para>
+						<itemizedlist>
+							<listitem>
+								<para>
+									On remote server
+									<literal>
+										http://127.0.0.1:8080/mgcpdemo/audio/recorded.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:AU/aupr@1(http://127.0.0.1:8080/mgcpdemo/audio/recorded.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									On local server where media server
+									is hosted
+									<literal>
+										file:/home/mobicents/recorded.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:AU/aupr@1(file:/home/mobicents/recorded.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									The relative path of file can also
+									be passed for example
+									<literal>recorded.wav</literal>
+								</para>
+								<para>
+									In this case MMS will create
+									recorded.wav in
+									<literal>${mms.media.dir}</literal>
+									folder.
+								</para>
+							</listitem>
+						</itemizedlist>
+					</td>
+				</tr>
+
+				<tr>
+					<td rowspan="34">DTMF (D) :</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>dtmf0</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf0@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf1</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf1@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf2</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf2@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf3</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf3@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf4</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf4@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf5</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf5@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf6</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf6@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf7</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf7@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf8</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf8@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf9</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf9@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfA</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfA@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfB</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfB@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfC</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfC@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfD</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfD@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfHash</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfHash@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfStar</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfStar@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+
+				<tr>
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>dtmf0</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf0@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf1</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf1@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf2</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf2@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf3</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf3@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf4</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf4@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf5</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf5@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf6</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf6@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf7</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf7@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf8</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf8@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf9</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf9@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfA</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfA@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfB</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfB@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfC</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfC@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfD</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfD@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfHash</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfHash@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfStar</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfStar@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+
+			</tbody>
+		</table>
+	</section>
+
+	<section id="capability_IVR_endpoint">
+		<title>IVR Endpoint</title>
+		<para>
+			The IVR Endpoint is identified by localname
+			<literal>/mobicents/media/IVR/[1..10]</literal>
+			where number in square brackets indicates the range of
+			endpoints configured and started by media server.
+		</para>
+		<para>
+			The MGCP Packages and corresponding Signals/Events supported
+			by IVR Endpoint is specified in bellow table. Line in <emphasis>italics</emphasis> is MGCP Signal Request/Signal Event Example
+		</para>
+		<table frame="all"
+			id="capabilities-IVR_Endpoint_Table">
+			<caption>
+				Packages and corresponding Signals/Events supported by
+				IVR Endpoint
+			</caption>
+			<tbody>
+				<tr>
+					<th colspan="3">Supported Package</th>
+				</tr>
+				<tr>
+					<td rowspan="5">Announcement (A)</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+
+
+				<tr>
+					<td>OperationComplete (oc)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/oc@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+
+					<td>OperationFailure (of)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/of@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+				<tr>
+
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+
+					<td>Play Announcement (ann)</td>
+					<td>
+						<para>
+							The PlayAnnouncement Signal must be
+							qualified by a String of Parameter(s). If
+							Play Announcemnet is not provided with a
+							parameter specifying some form of playable
+							audio or Text-to-Speech text an error is
+							returned to application.
+						</para>
+						<para>
+							The Play Announcement takes the URL of the
+							media file to be played as parameter. The
+							examples are
+						</para>
+						<itemizedlist>
+							<listitem>
+								<para>
+									On remote server
+									<literal>
+										http://127.0.0.1:8080/mgcpdemo/audio/RQNT-ULAW.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@1(http://127.0.0.1:8080/mgcpdemo/audio/RQNT-ULAW.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									On local server where media server
+									is hosted
+									<literal>
+										file:/home/mobicents/RQNT-ULAW.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@1(file:/home/mobicents/RQNT-ULAW.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									In addition URL of txt file can also
+									be passed and media server would
+									play that text file as TTS with
+									default voice. For ex
+									<literal>
+										http://ann.example.net/hello.txt
+									</literal>
+									or
+									<literal>
+										file:/home/mobicents/hello.txt
+									</literal>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									Segment descriptor can also be used
+									with the
+									<literal>ann</literal>
+									signal to make up an announcement.
+									The only supported Segment
+									descriptor is '<literal>ts</literal>'. '<literal>ts</literal>' Specifies a text string to be
+									converted to speech. Optionally
+									voice name '<literal>vc</literal>' can also be passed to direct media
+									server to play this speech in given
+									voice. For example
+									<literal>
+										ts("Your text here")
+										vc("mbrola_us1")
+									</literal>
+								</para>
+								<para>
+									For supported voices look at <xref linkend="tab-mms-Standalone_Directory-Structure" />
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@6(ts(You have pressed One) vc(Mbrola_US1))
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									The relative path of audio/txt file
+									can also be passed for example
+									<literal>RQNT-ULAW.wav</literal>
+								</para>
+								<para>
+									In this case MMS will try to serach
+									the corresponding file in
+									<literal>${mms.media.dir}</literal>
+									folder.
+								</para>
+							</listitem>
+						</itemizedlist>
+
+
+					</td>
+				</tr>
+
+
+				<tr>
+					<td rowspan="6">Advance Announcement (AU)</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+
+
+				<tr>
+					<td>OperationComplete (oc)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/oc@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+
+					<td>OperationFailure (of)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/of@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+				<tr>
+
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>Play Announcement (ann)</td>
+					<td>
+						<para>
+							Same as Announcement Package's Play
+							Announcement Signal
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>Record (aupr)</td>
+					<td>
+						<para>
+							The Record Signal must be qualified by a
+							String of Parameter. If Record is not
+							provided with a parameter specifying path
+							(absolute or relative) and name of audio
+							file, error is returned to application.
+						</para>
+						<para>
+							The URL can be absolute URL or relative in
+							which case recorded file will be placed at
+							<literal>${mms.media.dir}</literal>
+							folder. The examples are
+						</para>
+						<itemizedlist>
+							<listitem>
+								<para>
+									On remote server
+									<literal>
+										http://127.0.0.1:8080/mgcpdemo/audio/recorded.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:AU/aupr@1(http://127.0.0.1:8080/mgcpdemo/audio/recorded.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									On local server where media server
+									is hosted
+									<literal>
+										file:/home/mobicents/recorded.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:AU/aupr@1(file:/home/mobicents/recorded.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									The relative path of file can also
+									be passed for example
+									<literal>recorded.wav</literal>
+								</para>
+								<para>
+									In this case MMS will create
+									recorded.wav in
+									<literal>${mms.media.dir}</literal>
+									folder.
+								</para>
+							</listitem>
+						</itemizedlist>
+					</td>
+				</tr>
+
+				<tr>
+					<td rowspan="34">DTMF (D) :</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>dtmf0</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf0@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf1</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf1@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf2</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf2@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf3</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf3@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf4</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf4@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf5</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf5@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf6</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf6@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf7</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf7@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf8</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf8@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf9</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf9@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfA</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfA@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfB</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfB@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfC</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfC@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfD</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfD@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfHash</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfHash@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfStar</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfStar@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+
+				<tr>
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>dtmf0</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf0@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf1</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf1@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf2</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf2@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf3</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf3@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf4</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf4@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf5</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf5@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf6</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf6@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf7</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf7@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf8</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf8@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf9</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf9@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfA</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfA@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfB</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfB@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfC</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfC@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfD</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfD@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfHash</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfHash@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfStar</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfStar@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+
+			</tbody>
+		</table>
+	</section>
+
+	<section id="capability_conference_endpoint">
+		<title>Conference Endpoint</title>
+		<para>
+			The Conference Endpoint is identified by localname
+			<literal>/mobicents/media/cnf/[1..60]</literal>
+			where number in square brackets indicates the range of
+			endpoints configured and started by media server.
+		</para>
+		<para>
+			The MGCP Packages and corresponding Signals/Events supported
+			by Conference Endpoint is specified in bellow table. Line in <emphasis>italics</emphasis> is MGCP Signal Request/Signal Event Example
+		</para>
+		<table frame="all"
+			id="capabilities-Conference_Endpoint_Table">
+			<caption>
+				Packages and corresponding Signals/Events supported by
+				Conference Endpoint
+			</caption>
+			<tbody>
+				<tr>
+					<th colspan="3">Supported Package</th>
+				</tr>
+				<tr>
+					<td rowspan="5">Announcement (A)</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+
+
+				<tr>
+					<td>OperationComplete (oc)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/oc@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+
+					<td>OperationFailure (of)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/of@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+				<tr>
+
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+
+					<td>Play Announcement (ann)</td>
+					<td>
+						<para>
+							The PlayAnnouncement Signal must be
+							qualified by a String of Parameter(s). If
+							Play Announcemnet is not provided with a
+							parameter specifying some form of playable
+							audio or Text-to-Speech text an error is
+							returned to application.
+						</para>
+						<para>
+							The Play Announcement takes the URL of the
+							media file to be played as parameter. The
+							examples are
+						</para>
+						<itemizedlist>
+							<listitem>
+								<para>
+									On remote server
+									<literal>
+										http://127.0.0.1:8080/mgcpdemo/audio/RQNT-ULAW.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@1(http://127.0.0.1:8080/mgcpdemo/audio/RQNT-ULAW.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									On local server where media server
+									is hosted
+									<literal>
+										file:/home/mobicents/RQNT-ULAW.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@1(file:/home/mobicents/RQNT-ULAW.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									In addition URL of txt file can also
+									be passed and media server would
+									play that text file as TTS with
+									default voice. For ex
+									<literal>
+										http://ann.example.net/hello.txt
+									</literal>
+									or
+									<literal>
+										file:/home/mobicents/hello.txt
+									</literal>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									Segment descriptor can also be used
+									with the
+									<literal>ann</literal>
+									signal to make up an announcement.
+									The only supported Segment
+									descriptor is '<literal>ts</literal>'. '<literal>ts</literal>' Specifies a text string to be
+									converted to speech. Optionally
+									voice name '<literal>vc</literal>' can also be passed to direct media
+									server to play this speech in given
+									voice. For example
+									<literal>
+										ts("Your text here")
+										vc("mbrola_us1")
+									</literal>
+								</para>
+								<para>
+									For supported voices look at <xref linkend="tab-mms-Standalone_Directory-Structure" />
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@6(ts(You have pressed One) vc(Mbrola_US1))
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									The relative path of audio/txt file
+									can also be passed for example
+									<literal>RQNT-ULAW.wav</literal>
+								</para>
+								<para>
+									In this case MMS will try to serach
+									the corresponding file in
+									<literal>${mms.media.dir}</literal>
+									folder.
+								</para>
+							</listitem>
+						</itemizedlist>
+
+
+					</td>
+				</tr>
+
+
+				<tr>
+					<td rowspan="6">Advance Announcement (AU)</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+
+
+				<tr>
+					<td>OperationComplete (oc)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/oc@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+
+					<td>OperationFailure (of)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/of@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+				<tr>
+
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>Play Announcement (ann)</td>
+					<td>
+						<para>
+							Same as Announcement Package's Play
+							Announcement Signal
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>Record (aupr)</td>
+					<td>
+						<para>
+							The Record Signal must be qualified by a
+							String of Parameter. If Record is not
+							provided with a parameter specifying path
+							(absolute or relative) and name of audio
+							file, error is returned to application.
+						</para>
+						<para>
+							The URL can be absolute URL or relative in
+							which case recorded file will be placed at
+							<literal>${mms.media.dir}</literal>
+							folder. The examples are
+						</para>
+						<itemizedlist>
+							<listitem>
+								<para>
+									On remote server
+									<literal>
+										http://127.0.0.1:8080/mgcpdemo/audio/recorded.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:AU/aupr@1(http://127.0.0.1:8080/mgcpdemo/audio/recorded.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									On local server where media server
+									is hosted
+									<literal>
+										file:/home/mobicents/recorded.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:AU/aupr@1(file:/home/mobicents/recorded.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									The relative path of file can also
+									be passed for example
+									<literal>recorded.wav</literal>
+								</para>
+								<para>
+									In this case MMS will create
+									recorded.wav in
+									<literal>${mms.media.dir}</literal>
+									folder.
+								</para>
+							</listitem>
+						</itemizedlist>
+					</td>
+				</tr>
+
+				<tr>
+					<td rowspan="34">DTMF (D) :</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>dtmf0</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf0@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf1</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf1@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf2</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf2@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf3</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf3@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf4</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf4@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf5</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf5@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf6</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf6@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf7</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf7@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf8</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf8@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf9</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf9@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfA</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfA@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfB</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfB@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfC</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfC@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfD</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfD@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfHash</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfHash@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfStar</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfStar@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+
+				<tr>
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>dtmf0</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf0@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf1</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf1@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf2</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf2@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf3</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf3@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf4</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf4@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf5</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf5@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf6</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf6@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf7</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf7@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf8</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf8@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf9</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf9@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfA</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfA@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfB</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfB@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfC</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfC@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfD</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfD@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfHash</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfHash@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfStar</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfStar@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+
+			</tbody>
+		</table>
+	</section>
+
+	<section id="capability_pr_endpoint">
+		<title>PacketRelay Endpoint</title>
+		<para>
+			The PacketRelay Endpoint is identified by localname
+			<literal>/mobicents/media/packetrelay/[1..10]</literal>
+			where number in square brackets indicates the range of
+			endpoints configured and started by media server.
+		</para>
+		<para>
+			The MGCP Packages and corresponding Signals/Events supported
+			by PacketRelay Endpoint is specified in bellow table. Line in <emphasis>italics</emphasis> is MGCP Signal Request/Signal Event Example
+		</para>
+		<table frame="all"
+			id="capabilities-PR_Endpoint_Table">
+			<caption>
+				Packages and corresponding Signals/Events supported by
+				PacketRelay Endpoint
+			</caption>
+			<tbody>
+				<tr>
+					<th colspan="3">Supported Package</th>
+				</tr>
+				<tr>
+					<td rowspan="5">Announcement (A)</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+
+
+				<tr>
+					<td>OperationComplete (oc)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/oc@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+
+					<td>OperationFailure (of)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/of@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+				<tr>
+
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+
+					<td>Play Announcement (ann)</td>
+					<td>
+						<para>
+							The PlayAnnouncement Signal must be
+							qualified by a String of Parameter(s). If
+							Play Announcemnet is not provided with a
+							parameter specifying some form of playable
+							audio or Text-to-Speech text an error is
+							returned to application.
+						</para>
+						<para>
+							The Play Announcement takes the URL of the
+							media file to be played as parameter. The
+							examples are
+						</para>
+						<itemizedlist>
+							<listitem>
+								<para>
+									On remote server
+									<literal>
+										http://127.0.0.1:8080/mgcpdemo/audio/RQNT-ULAW.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@1(http://127.0.0.1:8080/mgcpdemo/audio/RQNT-ULAW.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									On local server where media server
+									is hosted
+									<literal>
+										file:/home/mobicents/RQNT-ULAW.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@1(file:/home/mobicents/RQNT-ULAW.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									In addition URL of txt file can also
+									be passed and media server would
+									play that text file as TTS with
+									default voice. For ex
+									<literal>
+										http://ann.example.net/hello.txt
+									</literal>
+									or
+									<literal>
+										file:/home/mobicents/hello.txt
+									</literal>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									Segment descriptor can also be used
+									with the
+									<literal>ann</literal>
+									signal to make up an announcement.
+									The only supported Segment
+									descriptor is '<literal>ts</literal>'. '<literal>ts</literal>' Specifies a text string to be
+									converted to speech. Optionally
+									voice name '<literal>vc</literal>' can also be passed to direct media
+									server to play this speech in given
+									voice. For example
+									<literal>
+										ts("Your text here")
+										vc("mbrola_us1")
+									</literal>
+								</para>
+								<para>
+									For supported voices look at <xref linkend="tab-mms-Standalone_Directory-Structure" />
+								</para>
+								<para>
+									<emphasis>
+										S:A/ann@6(ts(You have pressed One) vc(Mbrola_US1))
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									The relative path of audio/txt file
+									can also be passed for example
+									<literal>RQNT-ULAW.wav</literal>
+								</para>
+								<para>
+									In this case MMS will try to serach
+									the corresponding file in
+									<literal>${mms.media.dir}</literal>
+									folder.
+								</para>
+							</listitem>
+						</itemizedlist>
+
+
+					</td>
+				</tr>
+
+
+				<tr>
+					<td rowspan="6">Advance Announcement (AU)</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+
+
+				<tr>
+					<td>OperationComplete (oc)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/oc@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+
+					<td>OperationFailure (of)</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: A/of@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+				<tr>
+
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>Play Announcement (ann)</td>
+					<td>
+						<para>
+							Same as Announcement Package's Play
+							Announcement Signal
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>Record (aupr)</td>
+					<td>
+						<para>
+							The Record Signal must be qualified by a
+							String of Parameter. If Record is not
+							provided with a parameter specifying path
+							(absolute or relative) and name of audio
+							file, error is returned to application.
+						</para>
+						<para>
+							The URL can be absolute URL or relative in
+							which case recorded file will be placed at
+							<literal>${mms.media.dir}</literal>
+							folder. The examples are
+						</para>
+						<itemizedlist>
+							<listitem>
+								<para>
+									On remote server
+									<literal>
+										http://127.0.0.1:8080/mgcpdemo/audio/recorded.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:AU/aupr@1(http://127.0.0.1:8080/mgcpdemo/audio/recorded.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									On local server where media server
+									is hosted
+									<literal>
+										file:/home/mobicents/recorded.wav
+									</literal>
+								</para>
+								<para>
+									<emphasis>
+										S:AU/aupr@1(file:/home/mobicents/recorded.wav)
+									</emphasis>
+								</para>
+							</listitem>
+
+							<listitem>
+								<para>
+									The relative path of file can also
+									be passed for example
+									<literal>recorded.wav</literal>
+								</para>
+								<para>
+									In this case MMS will create
+									recorded.wav in
+									<literal>${mms.media.dir}</literal>
+									folder.
+								</para>
+							</listitem>
+						</itemizedlist>
+					</td>
+				</tr>
+
+				<tr>
+					<td rowspan="34">DTMF (D) :</td>
+					<th>Supported Events</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>dtmf0</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf0@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf1</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf1@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf2</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf2@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf3</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf3@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf4</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf4@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf5</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf5@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf6</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf6@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf7</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf7@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf8</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf8@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf9</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmf9@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfA</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfA@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfB</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfB@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfC</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfC@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfD</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfD@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfHash</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfHash@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfStar</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>O: D/dtmfStar@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+
+				<tr>
+					<th>Supported Signals</th>
+					<th>Parameters</th>
+				</tr>
+				<tr>
+					<td>dtmf0</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf0@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf1</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf1@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf2</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf2@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf3</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf3@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf4</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf4@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf5</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf5@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf6</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf6@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf7</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf7@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf8</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf8@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmf9</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmf9@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfA</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfA@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfB</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfB@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfC</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfC@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfD</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfD@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfHash</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfHash@1</emphasis>
+						</para>
+					</td>
+				</tr>
+				<tr>
+					<td>dtmfStar</td>
+					<td>
+						<para>NA</para>
+						<para>
+							<emphasis>S:D/dtmfStar@1</emphasis>
+						</para>
+					</td>
+				</tr>
+
+
+			</tbody>
+		</table>
+	</section>
+
+</chapter>

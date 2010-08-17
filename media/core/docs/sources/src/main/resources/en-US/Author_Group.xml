@@ -28,15 +28,23 @@
 		<email>&AUTHOR_EMAIL_BARTOSZ;</email>
 	</author>	
 	<author>
+		<firstname>Tom</firstname>
+		<surname>Wells</surname>
+		<email></email>
+	</author>	
+	<author>
 		<firstname>Jared</firstname>
 		<surname>Morgan</surname>		
-		<email>jmorgan@redhat.com</email>
+		<email>&AUTHOR_EMAIL_JARED;</email>
 	</author>
 	<author>
 		<firstname>Douglas</firstname>
 		<surname>Silas</surname>
-		<email>dhensley@redhat.com</email>
+		<email>&AUTHOR_EMAIL_SILAS;</email>
 	</author>
+	<!-- Why all Oleg? -->
+	<!-- 
+	
 	<author>
 		<firstname>Ivelin</firstname>
 		<surname>Ivanov</surname>
@@ -74,4 +82,5 @@
 		<surname>Šlégr</surname>
 		<email>&AUTHOR_EMAIL_PAVEL;</email>
 	</author>
+	 -->
 </authorgroup>

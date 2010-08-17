@@ -21,5 +21,9 @@ If this final separator is missing, then the documentation will be wrong. -->
 <!ENTITY RELEASE.STANDALONE.FILESIZE "5 Mb">
 <!ENTITY RELEASE.STANDALONE.FILENAME "mms-standalone-${version}.zip">
 
-<!ENTITY AUTHOR_EMAIL_ALEX "${author.email.alex}">
-<!ENTITY AUTHOR_EMAIL_IVELIN "${author.email.ivelin}">
+<!ENTITY AUTHOR.EMAIL.OLEG "${author.email.oleg}">
+<!ENTITY AUTHOR.EMAIL.AMIT "${author.email.amit}">
+<!ENTITY AUTHOR.EMAIL.BARTOSZ "${author.email.bartosz}">
+<!ENTITY AUTHOR_EMAIL_TOM "${author.email.tom}">
+<!ENTITY AUTHOR_EMAIL_JARED "${author.email.jared}">
+<!ENTITY AUTHOR_EMAIL_SILAS "${author.email.silas}">

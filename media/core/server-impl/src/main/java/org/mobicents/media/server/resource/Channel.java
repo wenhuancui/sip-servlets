@@ -57,11 +57,6 @@ public class Channel {
     private Proxy input = new Proxy("input.channel");
     private Proxy output = new Proxy("output.channel");
     
-    //The external sink to which this channel is attached
-//    private MediaSink sink;
-    //The external source to which this channel is attached
-//    private MediaSource source;
-    
     //The component connected to extenal source.
     private MediaSink intake;
     

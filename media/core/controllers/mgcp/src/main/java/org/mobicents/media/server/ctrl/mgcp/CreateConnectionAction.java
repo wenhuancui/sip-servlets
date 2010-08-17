@@ -42,7 +42,6 @@ import org.mobicents.media.server.spi.ResourceUnavailableException;
 public class CreateConnectionAction implements Callable {
 
 	private static final ConnectionIdentifier ERROR_CONNID = new ConnectionIdentifier("0");
-
 	private CreateConnection crcx;
 	private MgcpController controller;
 	private MgcpUtils utils = new MgcpUtils();
@@ -71,10 +70,8 @@ public class CreateConnectionAction implements Callable {
 		// reading connection mode
 		ConnectionMode mode = utils.getMode(crcx.getMode());
 		if (mode == null) {
-			if(logger.isEnabledFor(Level.WARN))
-			{
-				logger.warn("TX = " + txID + ", Mode " + crcx.getMode() + " is not supported, Response code: "
-					+ ReturnCode.UNSUPPORTED_OR_INVALID_MODE);
+            if (logger.isEnabledFor(Level.WARN)) {
+                logger.warn("TX = " + txID + ", Mode " + crcx.getMode() + " is not supported, Response code: " + ReturnCode.UNSUPPORTED_OR_INVALID_MODE);
 			}
 			return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Unsupported_Or_Invalid_Mode, ERROR_CONNID);
 		}
@@ -82,11 +79,8 @@ public class CreateConnectionAction implements Callable {
 		// reading endpoint identiier
 		String localName = crcx.getEndpointIdentifier().getLocalEndpointName();
 		if (localName.contains("*")) {
-			if(logger.isEnabledFor(Level.WARN))
-			{
-				logger.warn("TX = " + txID
-					+ ", The endpoint name is underspecified with 'all off' wildcard, Response code: "
-					+ ReturnCode.ENDPOINT_UNKNOWN);
+            if (logger.isEnabledFor(Level.WARN)) {
+                logger.warn("TX = " + txID + ", The endpoint name is underspecified with 'all off' wildcard, Response code: " + ReturnCode.ENDPOINT_UNKNOWN);
 			}
 			return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Unknown, ERROR_CONNID);
 		}
@@ -99,10 +93,8 @@ public class CreateConnectionAction implements Callable {
 				logger.debug("TX=" + txID + ", Allocated endpoint: " + endpoint.getLocalName());
 			}
 		} catch (ResourceUnavailableException e) {
-			if(logger.isEnabledFor(Level.ERROR))
-			{
-				logger.error("TX = " + txID + ", There is no free endpoint: " + localName + ", ResponseCode: "
-					+ ReturnCode.ENDPOINT_UNKNOWN);
+            if (logger.isEnabledFor(Level.ERROR)) {
+                logger.error("TX = " + txID + ", There is no free endpoint: " + localName + ", ResponseCode: " + ReturnCode.ENDPOINT_UNKNOWN);
 			}
 			return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Unknown, ERROR_CONNID);
 		}
@@ -115,9 +107,8 @@ public class CreateConnectionAction implements Callable {
 				logger.debug("TX=" + txID + ", Endpoint: " + endpoint.getLocalName() + ", Created connection ");
 			}
 		} catch (Exception e) {
-			if(logger.isEnabledFor(Level.ERROR))
-			{
-				logger.error("",e);
+            if (logger.isEnabledFor(Level.ERROR)) {
+                logger.error("", e);
 			}
 			return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Insufficient_Resources,
 					ERROR_CONNID);
@@ -129,9 +120,10 @@ public class CreateConnectionAction implements Callable {
 			try {
 				connection.setRemoteDescriptor(remoteSdp.toString());
 			} catch (Exception e) {
-				if(logger.isEnabledFor(Level.ERROR))
-				{
-					logger.error("",e);
+                //delete current connection
+                endpoint.deleteConnection(connection.getId());
+                if (logger.isEnabledFor(Level.ERROR)) {
+                    logger.error("Could not apply remote descriptor", e);
 				}
 				return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Missing_RemoteConnectionDescriptor,
 						ERROR_CONNID);
@@ -150,12 +142,25 @@ public class CreateConnectionAction implements Callable {
 		} else if (logger.isDebugEnabled()) {
 			logger.debug("TX = " + txID + ", Using existing call instance, ID = " + call.getID());
 		}
-
-		ConnectionActivity connectionActivity = call.addConnection(connection);
-		if (logger.isDebugEnabled()) {
-			logger.debug("Created connection activity=" + connectionActivity.getID() + ", origin connection ID ="
-					+ connection.getId());
-		}
+		ConnectionActivity connectionActivity = null;
+		try{
+			connectionActivity = call.addConnection(connection);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Created connection activity=" + connectionActivity.getID() + ", origin connection ID ="
+						+ connection.getId());
+			}
+		}catch(IllegalStateException e){
+			try{
+				if(logger.isEnabledFor(Level.ERROR))
+				{
+					logger.error("TX=" + txID + " Failed to create ConnectionActivity for connection: "+connection.getId()+", from endpoint: "+endpoint.getLocalName(),e);
+				}
+				endpoint.deleteConnection(connection.getId());
+			}finally{
+				return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Insufficient_Resources,
+					ERROR_CONNID);
+			}
+		}		
 
 		ConnectionDescriptor localSDP = new ConnectionDescriptor(connection.getLocalDescriptor());
 		ConnectionIdentifier connectionID = new ConnectionIdentifier(connectionActivity.getID());
@@ -163,18 +168,30 @@ public class CreateConnectionAction implements Callable {
 		// Prepearing response
 		CreateConnectionResponse response = new CreateConnectionResponse(crcx.getSource(),
 				ReturnCode.Transaction_Executed_Normally, connectionID);
-		response.setSpecificEndpointIdentifier(new EndpointIdentifier(endpoint.getLocalName(), crcx
-				.getEndpointIdentifier().getDomainName()));
+        response.setSpecificEndpointIdentifier(new EndpointIdentifier(endpoint.getLocalName(), crcx.getEndpointIdentifier().getDomainName()));
 		response.setConnectionIdentifier(connectionID);
 		response.setLocalConnectionDescriptor(localSDP);
 		response.setTransactionHandle(crcx.getTransactionHandle());
 
 		// Save ref to a new call
 		if (isNewCall) {
-			controller.addCall(call);
-			if (logger.isDebugEnabled()) {
-				logger.debug("Save reference to the callID=" + call.getID());
-			}
+			try{
+				controller.addCall(call);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Save reference to the callID=" + call.getID());
+				}
+			}catch(IllegalStateException e){
+				try{
+					if(logger.isEnabledFor(Level.ERROR))
+					{
+						logger.error("TX=" + txID + " Failed to add Call : "+call.getID()+", from endpoint: "+endpoint.getLocalName(),e);
+					}
+					endpoint.deleteConnection(connection.getId());
+				}finally{
+					return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Insufficient_Resources,
+						ERROR_CONNID);
+				}
+			}				
 		}
 
 		return response;
@@ -186,10 +203,8 @@ public class CreateConnectionAction implements Callable {
 		// reading connection mode
 		ConnectionMode mode = utils.getMode(crcx.getMode());
 		if (mode == null) {
-			if(logger.isEnabledFor(Level.WARN))
-			{
-				logger.warn("TX = " + txID + ", Mode " + crcx.getMode() + " is not supported, Response code: "
-					+ ReturnCode.UNSUPPORTED_OR_INVALID_MODE);
+            if (logger.isEnabledFor(Level.WARN)) {
+                logger.warn("TX = " + txID + ", Mode " + crcx.getMode() + " is not supported, Response code: " + ReturnCode.UNSUPPORTED_OR_INVALID_MODE);
 			}
 			return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Unsupported_Or_Invalid_Mode, ERROR_CONNID);
 		}
@@ -197,11 +212,8 @@ public class CreateConnectionAction implements Callable {
 		// reading endpoint identiier
 		String localName = crcx.getEndpointIdentifier().getLocalEndpointName();
 		if (localName.contains("*")) {
-			if(logger.isEnabledFor(Level.WARN))
-			{
-				logger.warn("TX = " + txID
-					+ ", The endpoint name is underspecified with 'all off' wildcard, Response code: "
-					+ ReturnCode.ENDPOINT_UNKNOWN);
+            if (logger.isEnabledFor(Level.WARN)) {
+                logger.warn("TX = " + txID + ", The endpoint name is underspecified with 'all off' wildcard, Response code: " + ReturnCode.ENDPOINT_UNKNOWN);
 			}
 			return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Unknown, ERROR_CONNID);
 		}
@@ -211,10 +223,8 @@ public class CreateConnectionAction implements Callable {
 		try {
 			endpoint = controller.getServer().lookup(localName, true);
 		} catch (ResourceUnavailableException e) {
-			if(logger.isEnabledFor(Level.ERROR))
-			{
-				logger.error("TX = " + txID + ", There is no free endpoint: " + localName + ", ResponseCode: "
-					+ ReturnCode.ENDPOINT_UNKNOWN);
+            if (logger.isEnabledFor(Level.ERROR)) {
+                logger.error("TX = " + txID + ", There is no free endpoint: " + localName + ", ResponseCode: " + ReturnCode.ENDPOINT_UNKNOWN);
 			}
 			return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Unknown, ERROR_CONNID);
 		}
@@ -249,11 +259,8 @@ public class CreateConnectionAction implements Callable {
 		if (localName2.contains("*")) {
 			// deleting first connection also
 			endpoint.deleteConnection(connection.getId());
-			if(logger.isEnabledFor(Level.WARN))
-			{
-				logger.warn("TX = " + txID
-					+ ", The endpoint name is underspecified with 'all off' wildcard, Response code: "
-					+ ReturnCode.ENDPOINT_UNKNOWN);
+            if (logger.isEnabledFor(Level.WARN)) {
+                logger.warn("TX = " + txID + ", The endpoint name is underspecified with 'all off' wildcard, Response code: " + ReturnCode.ENDPOINT_UNKNOWN);
 			}
 			return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Unknown, ERROR_CONNID);
 		}
@@ -263,10 +270,8 @@ public class CreateConnectionAction implements Callable {
 		try {
 			endpoint2 = controller.getServer().lookup(localName2, true);
 		} catch (ResourceUnavailableException e) {
-			if(logger.isEnabledFor(Level.ERROR))
-			{
-				logger.error("TX = " + txID + ", There is no free endpoint: " + localName2 + ", ResponseCode: "
-					+ ReturnCode.ENDPOINT_UNKNOWN);
+            if (logger.isEnabledFor(Level.ERROR)) {
+                logger.error("TX = " + txID + ", There is no free endpoint: " + localName2 + ", ResponseCode: " + ReturnCode.ENDPOINT_UNKNOWN);
 			}
 			return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Unknown, ERROR_CONNID);
 		}
@@ -281,13 +286,12 @@ public class CreateConnectionAction implements Callable {
 				logger.debug("TX=" + txID + ", Endpoint: " + endpoint2.getLocalName() + ", Created connection ");
 			}
 		} catch (Exception e) {
-			try{
-				if(logger.isEnabledFor(Level.ERROR))
-				{
-					logger.error("TX=" + txID + ", Endpoint: " + endpoint2.getLocalName() + ", Created connection , failed to create connection. ",e);
+            try {
+                if (logger.isEnabledFor(Level.ERROR)) {
+                    logger.error("TX=" + txID + ", Endpoint: " + endpoint2.getLocalName() + ", Created connection , failed to create connection. ", e);
 				}
 				endpoint.deleteConnection(connection.getId());
-			}finally{
+            } finally {
 				return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Insufficient_Resources,
 					ERROR_CONNID);
 			}
@@ -297,11 +301,31 @@ public class CreateConnectionAction implements Callable {
 			connection.setOtherParty(connection2);
                         connection2.setOtherParty(connection);
 		} catch (IOException e) {
+            try {
+                if (logger.isEnabledFor(Level.ERROR)) {
+                    logger.error("TX=" + txID + " Failed to link connection: " + connection.getId() + ", from endpoint: " + endpoint.getLocalName() + ", with connection: " +
+                            connection2.getId() + ", from endpoint:  " + endpoint2.getLocalName(), e);
+				}
+				endpoint.deleteConnection(connection.getId());
+				endpoint2.deleteConnection(connection2.getId());
+            } finally {
+				return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Insufficient_Resources,
+					ERROR_CONNID);
+			}
+		}
+
+		ConnectionActivity connectionActivity = null;
+		try{
+			connectionActivity = call.addConnection(connection);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Created connection activity=" + connectionActivity.getID() + ", origin connection ID ="
+						+ connection.getId());
+			}
+		}catch(IllegalStateException e){
 			try{
 				if(logger.isEnabledFor(Level.ERROR))
 				{
-					logger.error("TX=" + txID + " Failed to link connection: "+connection.getId()+", from endpoint: "+endpoint.getLocalName()+", with connection: "+
-							connection2.getId()+", from endpoint:  "+endpoint2.getLocalName(),e);
+					logger.error("TX=" + txID + " Failed to create ConnectionActivity for connection: "+connection.getId()+", from endpoint: "+endpoint.getLocalName(),e);
 				}
 				endpoint.deleteConnection(connection.getId());
 				endpoint2.deleteConnection(connection2.getId());
@@ -311,17 +335,26 @@ public class CreateConnectionAction implements Callable {
 			}
 		}
 
-		ConnectionActivity connectionActivity = call.addConnection(connection);
-		if (logger.isDebugEnabled()) {
-			logger.debug("Created connection activity=" + connectionActivity.getID() + ", origin connection ID ="
-					+ connection.getId());
-		}
-
-		ConnectionActivity connectionActivity2 = call.addConnection(connection2);
-		if (logger.isDebugEnabled()) {
-			logger.debug("Created connection activity=" + connectionActivity2.getID() + ", origin connection ID ="
-					+ connection2.getId());
-		}
+		ConnectionActivity connectionActivity2 = null;
+		try{		
+			connectionActivity2 = call.addConnection(connection2);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Created connection activity=" + connectionActivity2.getID() + ", origin connection ID ="
+						+ connection2.getId());
+			}
+		}catch(IllegalStateException e){
+			try{
+				if(logger.isEnabledFor(Level.ERROR))
+				{
+					logger.error("TX=" + txID + " Failed to create ConnectionActivity for connection: "+connection2.getId()+", from endpoint:  "+endpoint2.getLocalName(),e);
+				}
+				endpoint.deleteConnection(connection.getId());
+				endpoint2.deleteConnection(connection2.getId());
+			}finally{
+				return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Insufficient_Resources,
+					ERROR_CONNID);
+			}
+		}		
 
 		ConnectionIdentifier connectionID = new ConnectionIdentifier(connectionActivity.getID());
 		ConnectionIdentifier connectionID2 = new ConnectionIdentifier(connectionActivity2.getID());
@@ -338,21 +371,40 @@ public class CreateConnectionAction implements Callable {
 		
 		// Save ref to a new call
 		if (isNewCall) {
-			controller.addCall(call);
-			if (logger.isDebugEnabled()) {
-				logger.debug("Save reference to the callID=" + call.getID());
-			}
+			try{
+				controller.addCall(call);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Save reference to the callID=" + call.getID());
+				}
+			}catch(IllegalStateException e){
+				try{
+					if(logger.isEnabledFor(Level.ERROR))
+					{
+						logger.error("TX=" + txID + " Failed to add Call : "+call.getID()+", from endpoint: "+endpoint.getLocalName(),e);
+					}
+					endpoint.deleteConnection(connection.getId());
+					endpoint2.deleteConnection(connection2.getId());
+				}finally{
+					return new CreateConnectionResponse(crcx.getSource(), ReturnCode.Endpoint_Insufficient_Resources,
+						ERROR_CONNID);
+				}
+			}		
 		}
+
+        // Save ref to a new call
+        if (isNewCall) {
+            controller.addCall(call);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Save reference to the callID=" + call.getID());
+            }
+        }
 
 		return response;
 	}
 
 	public JainMgcpResponseEvent call() throws Exception {
 		if (logger.isDebugEnabled()) {
-			logger.debug("Request TX= " + crcx.getTransactionHandle() + ", CallID = " + crcx.getCallIdentifier()
-					+ ", Mode=" + crcx.getMode() + ", Endpoint = " + crcx.getEndpointIdentifier() + ", Endpoint2 = "
-					+ crcx.getSecondEndpointIdentifier() + ", SDP present = "
-					+ (crcx.getRemoteConnectionDescriptor() != null));
+            logger.debug("Request TX= " + crcx.getTransactionHandle() + ", CallID = " + crcx.getCallIdentifier() + ", Mode=" + crcx.getMode() + ", Endpoint = " + crcx.getEndpointIdentifier() + ", Endpoint2 = " + crcx.getSecondEndpointIdentifier() + ", SDP " + (crcx.getRemoteConnectionDescriptor()));
 		}
 
 		// CreateConnection may be used to create either an RTP connection or

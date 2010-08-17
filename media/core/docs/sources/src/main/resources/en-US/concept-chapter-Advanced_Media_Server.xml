@@ -1,0 +1,299 @@
+<?xml version='1.0'?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "User_Guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="ittms-Advanced_the_Media_Server"> 
+<title>Advanced custom configuration and extension</title>
+
+
+<para>
+A common theme for &THIS.PLATFORM; Media Server is the
+breaking out of internal fixed subsystems into
+stand-alone components.&THIS.PLATFORM; Media Server strategy for making available the
+various voice/video services as independent components, so that they can be wired-together on
+demand
+</para>
+
+<para>
+&THIS.PLATFORM; Media server architecture promotes the
+usage of Service Objects to represent the media flow
+path. The component architecture divides the process
+of constructing media services into two major parts:
+<itemizedlist>
+	<listitem>
+	<para>
+		Implementing components that generate,
+		or consume, media data.
+	</para>
+	</listitem>
+	<listitem>
+	<para>
+		Assembling media component chains to
+		build a media flow path.
+	</para>
+	</listitem>
+</itemizedlist>
+</para>
+
+<section id="ittms-Channel">
+<title>Channel</title>		
+	<para>		
+		The role of channel is to construct media flow path by
+		joining components using pipes. Channel can be connected to 
+		any source/sink or to other channel. The following diagram 
+		explains channel structure.
+	</para>
+	<mediaobject id="captms-mms-MMSControlAPI-dia-Session">
+		<imageobject>
+			<imagedata width="419" align="center" fileref="images/mms-ApplicationWiring-dia-Media_Flow_Path.png" format="PNG" />
+		</imageobject>
+	</mediaobject>
+	<para>
+		Respective channel declaration:
+	</para>
+<example id="ctms-channel">	
+<title>Channel definition</title>	
+<programlisting linenumbering="unnumbered" role="XML">
+&lt;bean name="tx-channel" class="org.mobicents.media.server.resource.ChannelFactory"&gt;
+        &lt;property name="components"&gt;
+            &lt;list&gt;
+                &lt;inject bean="audio.mixer" /&gt;
+                &lt;inject bean="media.player" /&gt;
+                &lt;inject bean="dtmf.generator" /&gt;
+            &lt;/list&gt;
+        &lt;/property&gt;
+        
+        &lt;property name="pipes"&gt;
+            &lt;list&gt;
+                &lt;inject bean="tx-pipe-1" /&gt;
+                &lt;inject bean="tx-pipe-2" /&gt;
+                &lt;inject bean="tx-pipe-3" /&gt;
+                &lt;inject bean="tx-pipe-4" /&gt;
+            &lt;/list&gt;
+        &lt;/property&gt;
+    &lt;/bean&gt;
+</programlisting>
+</example>
+<para>
+	Configurable aspects of the channel are:
+</para>
+		<variablelist>
+			<varlistentry>
+				<term>components</term>
+				<listitem>
+					<para>The list of components used by the channel</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>pipes</term>
+				<listitem>
+					<para>The list of pipes wich defines the actual media flow path
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+<section id="ittms-Pipe">
+	<title>Pipe</title>				
+		<para>
+			Pipe is used to join two components inside channel. 
+			Each Pipe has either inlet or outlet or both defined. A Pipe
+			with only inlet defined acts as exhaust for a channel while
+			Pipe with only outlet acts as intake for a Channel. If a
+			Pipe has both inlet and outlet defined, it means its an
+			internal pipe joining two components.
+		</para>
+		<para>
+			The definition of the Pipe:
+		</para>
+<example id="ctms-Pipe">
+<programlisting linenumbering="unnumbered" role="XML">
+&lt;bean name="tx-pipe-1"
+		class="org.mobicents.media.server.resource.PipeFactory"&gt;
+        &lt;property name="outlet"&gt;media.player&lt;/property&gt;
+        &lt;property name="outlet"&gt;audio.mixer&lt;/property&gt;
+        &lt;property name="valve">&lt;inject bean="Valve.open">&lt;/inject>&lt;/property&gt;
+    &lt;/bean&gt;
+</programlisting>
+</example>
+<para>
+	Configurable aspects of the pipe are:
+</para>
+		<variablelist>
+			<varlistentry>
+				<term>inlet</term>
+				<listitem>
+					<para>
+						Identifies the component connected to 
+						the input of the pipe
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>oulet</term>
+				<listitem>
+					<para>
+						Identifies the component connected to 
+						the output of the pipe
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>valve</term>
+				<listitem>
+					<para>
+						Valve shows the default state of the pipe.
+						By default pipe is always closed.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+
+</section>
+
+<section id="ittms-Valve">
+	<title>Valve</title>
+	<para>
+		The valve defines the initial state of the pipe and is defined as
+	</para>				
+<example id="ctms-Valve">
+<programlisting linenumbering="unnumbered" role="XML">
+&lt;bean name="Valve.open" class="org.mobicents.media.server.spi.Valve"&gt;
+	&lt;constructor factoryClass="org.mobicents.media.server.spi.Valve" factoryMethod="getInstance"&gt;
+		&lt;parameter&lt;open&lt;/parameter&gt;
+	&lt;/constructor&gt;
+    &lt;/bean>
+
+    &lt;bean name="Valve.close" class="org.mobicents.media.server.spi.Valve"&gt;
+	&lt;constructor factoryClass="org.mobicents.media.server.spi.Valve" factoryMethod="getInstance"&gt;
+		&lt;parameter&lt;close&lt;/parameter&gt;
+	&lt;/constructor&gt;
+    &lt;/bean&gt;
+</programlisting>
+</example>
+</section>
+
+<section id="ittms-Components">
+	<title>Components</title>				
+	<para>
+		To achieve the modularization every media component's in
+		&THIS.PLATFORM; Media Server are identified as either MediaSource or
+		MediaSink. As name suggests MediaSource is the one that has
+		capability to generate media while MediaSink is the one that consumes media. 	
+	</para>
+
+	<para>
+		Several MediaSource of different MediaType can be grouped together in one MultiMediaSource. For example media player is source of the audio and video content
+	</para>
+
+	<para>
+		ResourceGroup is collection of MediaSource and MediaSink. 
+		These MediaSource and MediaSink can be of different MediaTypes 
+	</para>
+
+	<para>
+		Some of the components are not itself media sink or source
+		but they provide access to the actual media source or sink. 
+		Such components are called Inlet and Outlet respectively.
+	</para>
+</section>
+
+</section>
+
+<section id="ittms-Factories">
+	<title>Factories</title>
+	<para>
+			For creating any component Media Server uses suitable
+			Factory. Each component has its unique identifier and name
+			defined by its factory. Component identifier is unique
+			within the entire server implementation. The name of
+			component in opposite way is shared across component
+			produced by same factory.
+	</para>				
+</section>
+
+<section id="ittms-Endpoint-Composition">
+	<title>Virtual Endpoint Composition</title>
+	<para>
+		If the endpoint is implemented by software components only (virtual endpoint)
+		then in this case endpoint can be constucted dynamic
+	</para>
+<example id="ctms-Endpoint">
+<programlisting linenumbering="unnumbered" role="XML">
+&lt;bean name="PacketRelayEndpoint" class="org.mobicents.media.server.EndpointFactoryImpl"&gt;
+		&lt;property name="localName">/mobicents/media/packetrelay/[1..10]	&lt;/property&gt;
+		&lt;property name="connectionFactory"&gt;
+			&lt;inject bean="default-connection" /&gt;
+		&lt;/property&gt;
+		&lt;property name="groupFactory"&gt;
+			&lt;inject bean="PacketRelayBridgeFactory" /&gt;
+		&lt;/property&gt;
+	&lt;/bean&gt;
+</programlisting>
+</example>
+<para>
+	Configurable aspects of the virtual endpoint are:
+</para>
+		<variablelist>
+			<varlistentry>
+				<term>connectionFactory</term>
+				<listitem>
+					<para>
+						Specifies factory used to construct connection.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>groupFactory</term>
+				<listitem>
+					<para>
+						Specified resource group.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>mediaSource</term>
+				<listitem>
+					<para>
+						Specifies media source component
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term>mediaSink</term>
+				<listitem>
+					<para>
+						Specifies media sink component
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+
+</section>
+
+<section id="ittms-Connection-Composition">
+	<title>Connection Composition</title>
+	<para>
+		Connection consits from collection of channels specific for direction and media type:
+	</para>
+<example id="ctms-Connection definition">
+<programlisting linenumbering="unnumbered" role="XML">
+    &lt;bean name="default-connection" class="org.mobicents.media.server.ConnectionFactory">
+            &lt;property name="txChannelFactory">\&gt;
+                &lt;map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="org.mobicents.media.server.resource.ChannelFactory"&gt;
+                    &lt;entry>&lt;key&gt;audio&lt;/key&gt;&lt;value&gt;&lt;inject bean="tx-channel"/&gt;&lt;/value&gt;&lt;/entry&gt;
+                &lt;/map&gt;
+            &lt;/property&gt;
+            &lt;property name="rxChannelFactory"&gt;
+                &lt;map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="org.mobicents.media.server.resource.ChannelFactory"&gt;
+                    &lt;entry&gt;&lt;key&gt;audio&lt;/key&gt;&lt;value&gt;&lt;inject bean="rx-channel"/&gt;&lt;/value&gt;&lt;/entry&gt;
+                &lt;/map&gt;
+            &lt;/property&gt;
+	    &lt;property name="connectionStateManager"&gt;&lt;inject bean="ConnectionStateManager"/&gt;&lt;/property&gt;	
+    &lt;/bean&gt;    
+
+</programlisting>
+</example>
+</section>
+
+</chapter>

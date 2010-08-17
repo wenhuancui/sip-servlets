@@ -14,184 +14,30 @@
 		</title>
 
 		<para>
-			In the world of telephony, a media server is the name given to the computing component that processes the audio and/or video streams associated with telephone calls or connections. Conference services are a particular example of how media servers can be used, as a special 'engine' is needed to mix audio streams together so that conference participants can hear all of the other participants. Conferencing servers may also need other specialized functions like "loudest talker" detection, or transcoding of audio streams, and also interpreting DTMF tones used to navigate menus also known as Interactive Voice Response (IVR). For video processing, it may be needed to change video streams, for example transcode from one video codec to another or rescale (transrate) a picture from one size to another. This media processing functions are the core responsibility of a media server. Few of the real Media Server Use Cases are defined here.
+			In the modern VoIP world providers are offering highly customized services that combines media such as audio/video or IM. These services require dedicated and customized media processing capabilities. To achieve this the VoIP network separates the media processing functions into dedicated node which is responsible for media processing only, while all the intelligence is executed by the separate call controller.  The node processing media streams is called as Media Server.
 		</para>
 		<para>
-			Media Server can be Hardware Media Server or Software Based. The Hardware Media Server uses the hardware components for processing the audio/video. Depending on which hardware media server, there would be individual hardware dedicated to do specific job for example reduction of echo etc.  In case of Software Media Server all the audio/video processing is done by a software, no specifc hardware is used. 
-		</para>		
+At the same time there are lots of media streams flows in legacy systems. It means that media handling node must be able to bridge the gap between traditional legacy systems and modern VoIP networks. This node typically called as Media gateway but normally media gateway acts as media server too.
+		</para>
 	</section>
 
-	<section id="ittms-Reasoning_and_Need_for_Media_Server">
-		<title>The Justification for S/w Media Server</title>
-
-<para>Today, all communications can be routed through computers. Widespread access to broadband Internet and the ubiquity of Internet Protocol (<acronym>IP</acronym>) enable the convergence of voice, data and video. Media Servers provide the ability to switch voice media between a network and its access point. Using Digital  Subscriber Line (<acronym>DSL</acronym>) and fast-Internet cable technology, a software media server converts, compresses and packetizes voice data for transmission back-and-forth across the Internet backbone for landline and wireless phones. Media gateways sit at the intersection of Public Switched Telephone Networks (				<acronym>PSTN</acronym>s) and wireless or IP-based networks. </para>
-
-
-			<para>
-				Multiple market demands are pushing companies to
-				converge all of their media services using media
-				gateways with Voice-over-IP (
-				<acronym>VoIP</acronym>
-				) capabilities. Companies have expectations for such
-				architectures, which include:
-			</para>
-		
-		<variablelist>
-			<varlistentry>
-				<term>Lowering initial costs</term>
-				<listitem>
-					<para>
-						Capital investment is decreased because low-cost
-						commodity hardware can be used for multiple
-						functions.
-					</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>Lowering development costs</term>
-				<listitem>
-					<para>
-						Open system hardware and software standards with
-						well-defined applications reduce costs, and
-						Application Programming Interfaces (
-						<acronym>API</acronym>
-						s) accelerate development.
-					</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>Handling multiple media types</term>
-				<listitem>
-					<para>
-						Companies want
-						<acronym>VoIP</acronym>
-						solutions today, but also need to choose
-						extensible solutions that will handle video in
-						the near future.
-					</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>
-					Lowering the costs of deployment and maintenance
-				</term>
-				<listitem>
-					<para>
-						Standardized, modular systems reduce training
-						costs and maintenance while simultaneously
-						improving uptime.
-					</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>Enabling rapid time-to-market</term>
-				<listitem>
-					<para>
-						Early market entry hits the window of
-						opportunity and maximizes revenue.
-					</para>
-				</listitem>
-			</varlistentry>
-		</variablelist>
-
-		
-
-	</section>
-	<section id="ittms-What_is_Mobicents_Media_Server">
+<section id="ittms-What_is_Mobicents_Media_Server">
 		<title>What is &THIS.PLATFORM; Media Server</title>
 		<para>
-		      With telephony networks moving more towards VoIP technology, and using Session Initiation Protocol (SIP), the idea of media servers has started to gain some traction. Typically, an application (the 'application server') has the controlling logic, and controls a remote media server (or multiple servers) over an IP connection using various industry recognized standard protocols like MGCP, MEGACO (H.248), MSML, VoiceXML etc. The &THIS.PLATFORM; Media Server is first and only open source media server available as of today that has support for MGCP. The Mobicents also has JSR-309 Standard Api implementation to control media servers irrespective of underlying protocol used. Hence Application's developed on any platform can control &THIS.PLATFORM; Media Server using JSR-309 API.
+The &THIS.PLATFORM; Media Server is open source implementation of the VoIP network element responsible for media handling. The &THIS.PLATFORM; media server supports IP and TDM interfaces and thus can act as media server and as media gateway. &THIS.PLATFORM; Media server provides support for both distributed and centralized services including circuit switch voice/video, announcements, tones, etc.
 		</para>
 		<para>
-		The Mobicents Media Server core is based on software components only. This property allows to easy scale from development environment on a single server to production deployment in a distributed network environment. Mobicents Media Server binary is distributed in two forms: standalone server which is recommended for production deployments and integrated with JBoss 5 Application server which is more preferred for development purposes.
+		The &THIS.PLATFORM; Media Server is provided with telco standard MGCP interface. The &THIS.PLATFORM; Media server can operate in pair with &THIS.PLATFORM; Jain SLEE application server. However the fully standard MGCP interface allows to use &THIS.PLATFORM; Media Server in pair with another call controller if so desired. &THIS.PLATFORM; Media server is equipped with implementation of the media control API compliant to JSR-309 which allows to use Media server with &THIS.PLATFORM; SIP Servlet Container.
 		</para>
 		<para>
-			Because Mobicents Media Server is Java based, it is cross
-			platform, easy to install and run on any operating system
-			that supports Java. The available source code is a powerful
-			tool to debug the server and understand processing logic. It
-			also gives you the flexibility to create customized
-			components and configurations for your personal or business
-			use.
+The &THIS.PLATFORM; Media Server includes embedded signaling gateway function which supports complete set of TDM and IP signaling protocols. Media server supports TDM access variants like ETSI ISUP, PRI. Media server supports signaling backhaul over IP with M3UA and SUA options.
+		</para>
+
+		<para>
+The &THIS.PLATFORM; Media Server is implemented using JBoss Microcontainer kernel which allows to archive maximum flexibility. It gives the ability to adopt media server for task specific and/or extend the functions of the media server by installing additional media processing components.
 		</para>
 	
 	</section>	
-	<section id="ittms-Media_Server_Use Case">
-		<title>Media Server Use Case</title>
-		<para>
-			Media Server's are heavily used in conventional applications across various market segments for example the Mobile / PSTN service provider have media server's to play announcements like "The user is busy, please call after some time" or to record the voice message when the called party is busy and to re-play the same message when asked for.
-		</para>
-		<para>
-			The IVR Applications used by various segments of industry, for example IVR system used in banks to let their customers know their balance by calling a Toll-Free-Number or do other banking transactions.
-		</para>
-		<para>
-		     Developing a converged application has now become very easy with availability of Open Source &THIS.PLATFORM; Media Server. Appart from conventional Applications like IVR, Conferencing, various Tone (like busy, congestion etc) generation/detection below are few Use Cases that can be developed using Mobicents Media Server and Mobicents Platform.
-		</para>
-		
-		<variablelist>
-			<varlistentry>
-				<term>Developing Converged Applications</term>
-				<listitem>
-					<para>
-						A Converged Application delivers data, voice, video to end user on any device like Public Switch Telephone Network (land line/mobile) or VoIP Phones or any other device on any network like SS7, IP etc. There is no limitation on what kind of Converged Application can be developed by using the Mobicents Media Server. 
-						
-						  <itemizedlist>
-						  <listitem>
-						      <para>
-						
-						Imagine a 'Click-to-Call' application on your business portal where customer can reach your Customer Executive by clicking a link on your site. 
-						      </para>
-						    </listitem>	
-						  
-						  
-						    <listitem>
-						      <para>						  
-						A virtual class room where every student is logged to a session using their personal SIP/Mobile phones and tutor is taking class using his/her own phone. 
-						      </para>
-						    </listitem>	
-						   <listitem>
-						      <para>
-						Imagine a call routing to your mobile phone as soon as you swipe the Credit Card and IVR system asking for your password (DTMF) to authorize the transaction. Now somebody who wants to make illicit use of your Credit Card needs to have not only your mobile but your password too. 
-						      </para>
-						    </listitem>	
-						   <listitem>
-						      <para>
-						 A online Furniture (or any goods that has high cost of delivering to door step) Shopping Portal makes a call to customer a day before delivery intimating delivery date and time and gives an option to Customer to change it either via Sopping Portal or directly through IVR (DTMF) such that there is almost zero probability to find the door locked once your truck reaches Customer door step. 
-						      </para>
-						    </listitem>						    
-						  
-						  </itemizedlist>						
-					</para>				
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>Innovation in Traditional Telco Value Added Service</term>
-				<listitem>
-					<para>
-						As explained in above paragraphs, traditional telco value added service's like Ring Back Tone (RBT), Voice Message, Call Forwarding, Call Blocking are quite common terms now. But to subscribe/unsbscribe for each of these service, to manage these service is hassle as each of them are different service in it-self. How about a Portal where customer can log in and manage all its service that he/she is subscribed to? The Portal also gives an Rule based call routing option to let user decide where the call gets routed (his/her mobile,land phone,business phone,home phone etc) depending on which time of day the call arrives. How about letting the user record the converstaion by press of a button and latter through Portal user can listen, download, forward mail as attachment. Let user upload his/her favorite mp3 songs on portal which then can be used as personalized RBT for individual callers calling the user. Let user record the message like "This Phone is out of service for next 6 months. Please call after 6 months" and play it when any unwanted caller calls ;). Basically its a call-blocking service but with much more flexibility!  Even Presence service can be leveraged to develop more interesting apps.
-					</para>
-				</listitem>
-			</varlistentry>
-			<varlistentry>
-				<term>Capitalize on next Generation Netwrok - IMS</term>
-				<listitem>
-					<para>
-						In order to create innovative, cost effective and felxible applications and to reduce time to market and meet customer demands, the transition should happen from legacy SS7 network to IP based Multimedia Subsystem (IMS). Mobicents Media Server can act as IMS - Media Resource Function (MRF) that caters to media needs within IP based home netwroks.		
-					</para>
-					<para>
-					      Mobicents Media Server can also be deployed as PSTN gateway that converst the SIP signalling to SS7 signals (ISUP etc). On one side the Media Server is able to send and receive IMS media over the Real-Time Protocol (RTP). On the other side the Media Server uses one or more PCM (Pulse Code Modulation) time slots to connect to the SS7 network
-					</para>
-							<mediaobject id="ittms-sas-MMSArchitecture-MSDeployment">
-			<imageobject>
-				<imagedata align="center" width="550"
-					fileref="images/sas-MMSArchitecture-MSDeployment.gif" format="PNG"></imagedata>
-			</imageobject>
-		</mediaobject>
-				</listitem>
-			</varlistentry>			
-		</variablelist>		
-		
-	</section>
 	
 
 </chapter>

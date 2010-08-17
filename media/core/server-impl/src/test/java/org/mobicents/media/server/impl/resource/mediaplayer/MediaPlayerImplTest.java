@@ -25,7 +25,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mobicents.media.Server;
 import static org.junit.Assert.*;
+
+import org.mobicents.media.server.impl.resource.mediaplayer.audio.AudioPlayerFactory;
 import org.mobicents.media.server.impl.resource.mediaplayer.audio.AudioPlayerImpl;
+import org.mobicents.media.server.impl.resource.mediaplayer.video.VideoPlayerFactory;
 import org.mobicents.media.server.impl.resource.mediaplayer.video.VideoPlayerImpl;
 import org.mobicents.media.server.spi.MediaType;
 import org.mobicents.media.server.spi.resource.Player;
@@ -37,6 +40,9 @@ import org.mobicents.media.server.spi.resource.Player;
 public class MediaPlayerImplTest {
 
     private Server server;
+    //
+    private AudioPlayerFactory audioPlayerFactory;
+    private VideoPlayerFactory videoPlayerFactory;
     
     private MediaPlayerImpl mediaPlayer;
     
@@ -53,14 +59,23 @@ public class MediaPlayerImplTest {
 
     @Before
     public void setUp() throws Exception {
+    	
+    	audioPlayerFactory = new AudioPlayerFactory();
+    	videoPlayerFactory = new VideoPlayerFactory();
+    	
         server = new Server();
         server.start();
-        mediaPlayer = new MediaPlayerImpl("test", null, null);
+        mediaPlayer = new MediaPlayerImpl("test", audioPlayerFactory, videoPlayerFactory);
     }
 
     @After
     public void tearDown() {
+    	
         server.stop();
+        audioPlayerFactory = null;
+    	videoPlayerFactory = null;
+    	mediaPlayer = null;
+    	
     }
 
     /**

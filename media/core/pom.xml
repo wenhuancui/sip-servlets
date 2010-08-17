@@ -47,7 +47,7 @@
 		<module>server-standalone</module>
 		<module>zap</module>
 		<module>server-standalone-assembly</module>
-		<!--module>docs</module-->
+		<!-- module>docs</module -->
 	</modules>
 	<dependencies>
 		<dependency>
@@ -151,13 +151,13 @@
 
 	<scm>
 		<connection>
-			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.CR3
+			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.GA
 		</connection>
 		<developerConnection>
-			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.CR3
+			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.GA
 		</developerConnection>
 		<url>
-			http://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.CR3
+			http://mobicents.googlecode.com/svn/tags/servers/media/2.x.y/core/mms-core-2.0.0.GA
 		</url>
 	</scm>
 

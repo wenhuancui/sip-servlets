@@ -93,11 +93,11 @@ public class MeanderTest implements NotificationListener {
         assertEquals(0, outOfSeq); 
         
         int count = (int)(TEST_DURATION /T/2);
-        int limit = (int)(1/T/2) + 1;
+        int limit = (int)(1/T/2) + 1 + 2 ;
         
         int diff = Math.abs(count - evtCount);
         
-        assertTrue("Signal not detected", diff <= limit);
+        assertTrue("Signal not detected, diff="+diff+", limit="+limit, diff <= limit);
         assertFalse("Format missmatch detected", this.fmtMissmatch);
     }
 

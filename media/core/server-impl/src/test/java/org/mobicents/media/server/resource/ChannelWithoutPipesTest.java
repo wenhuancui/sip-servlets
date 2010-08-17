@@ -17,13 +17,16 @@
  */
 package org.mobicents.media.server.resource;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.mobicents.media.Buffer;
 import org.mobicents.media.Format;
 import org.mobicents.media.Server;
@@ -45,7 +48,7 @@ public class ChannelWithoutPipesTest {
     private ChannelFactory channelFactory = new ChannelFactory();
     private ArrayList<Buffer> list = new ArrayList();
     private TransmissionTester tester;
-//    private Semaphore semaphore = new Semaphore(0);
+
     public ChannelWithoutPipesTest() {
     }
 
@@ -97,9 +100,11 @@ public class ChannelWithoutPipesTest {
     @Test
     public void testConnect2() throws Exception {
         Channel channel = channelFactory.newInstance(endpoint, MediaType.AUDIO);
-
+    
         channel.connect(tester.getGenerator());
         channel.connect(tester.getDetector());
+        
+       
 
         tester.start();
         assertTrue(tester.getMessage(), tester.isPassed());        
@@ -147,8 +152,8 @@ public class ChannelWithoutPipesTest {
         assertEquals(1, f.length);
     }
 
-//    @Test
-    public void testTransmissin() throws Exception {
+   @Test
+    public void testTransmission() throws Exception {
         Channel channel = channelFactory.newInstance(endpoint, MediaType.AUDIO);
 
         channel.connect(tester.getGenerator());
@@ -185,4 +190,5 @@ public class ChannelWithoutPipesTest {
         tester.start();
         assertTrue(tester.getMessage(), tester.isPassed());
     }
+  
 }

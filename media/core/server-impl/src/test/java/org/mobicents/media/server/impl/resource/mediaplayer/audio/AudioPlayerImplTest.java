@@ -31,6 +31,7 @@ import org.mobicents.media.Format;
 import org.mobicents.media.Server;
 import org.mobicents.media.format.AudioFormat;
 import org.mobicents.media.server.impl.AbstractSink;
+import org.mobicents.media.server.impl.resource.mediaplayer.audio.tts.VoicesCache;
 import org.mobicents.media.server.spi.NotificationListener;
 import org.mobicents.media.server.spi.events.FailureEvent;
 import org.mobicents.media.server.spi.events.NotifyEvent;
@@ -81,7 +82,7 @@ public class AudioPlayerImplTest {
         isCorrectTimestamp = false;
         isSeqCorrect = false;
 
-        player = new AudioPlayerImpl("test", null, null);
+        player = new AudioPlayerImpl("test", null, new VoicesCache());
         player.addListener(new PlayerListener());
 
         sink = new TestSink("test-sink");

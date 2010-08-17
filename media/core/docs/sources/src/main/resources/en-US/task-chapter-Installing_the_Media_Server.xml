@@ -35,7 +35,7 @@
 			Configuring and Running
 		</title>
 		<para>
-			This section details how to install the Mobicents Media Server.
+			This section details how to install the &THIS.PLATFORM; Media Server.
 		</para>
 
 		<section
@@ -94,7 +94,7 @@
 				The latest version of the Media Server is
 				available from
 				<ulink
-					url="http://www.mobicents.org/mms-downloads.html" />
+					url="http://www.mobicents.org/mms/mms-downloads.html" />
 				. The top row of the table holds the latest version.
 				Click the
 				<literal>Download</literal>
@@ -358,6 +358,25 @@
 				</step>
 			</procedure>
 		</section>
+		<section id="itms-binary-Standalone_Media_Server-Running-alter">
+			<title>Start the Server With Alternate Configuration</title>
+			<para>
+				Using <literal>run.sh</literal> without any arguments binds the server at <literal>127.0.0.1</literal>. To bind server to different ip, pass the ip address as value to <literal>-b</literal> command line option. For example to bind the server to <literal>115.252.103.220</literal>
+			</para>
+			<screen>ms-&lt;version&gt;]$ ./bin/run.sh -b 115.252.103.220</screen>
+		</section>	
+		
+		<section id="itms-binary-Standalone_Media_Server-using-run">
+			<title>Using run.sh</title>
+			<para>
+				The <literal>run</literal> script supports the following options: 				
+			</para>
+			<programlisting>
+usage: run.sh [options]
+-h, --help                          Show help message
+-b, --host=&lt;host or ip&gt;       Bind address for media server. 
+			</programlisting>
+		</section>
 		<section id="itms-binary-Standalone_Media_Server-Stopping">
 			<title>Stopping</title>
 			<para>
@@ -401,7 +420,7 @@
 					<screen>mms-standalone-&lt;version&gt;]$./bin/shutdown.sh -S</screen>
 				</step>
 			</procedure>
-			<note>
+			<!--  note>
 				<para>
 					The
 					<filename>shutdown.jar</filename>
@@ -410,7 +429,7 @@
 					option can also be used to shut down the server:
 				</para>
 				<screen>mms-standalone-&lt;version&gt;]$ java -jar	bin/shutdown.jar -S</screen>
-			</note>
+			</note -->
 			<procedure>
 				<title>
 					Stopping Standalone Media Server on Windows
@@ -524,7 +543,7 @@
 								log4j.xml configuration file. This file
 								is located in the
 								<filename>/conf</filename>
-								directory.
+								directory. <filename>log</filename> directory is created automatically when the server is started.
 							</entry>
 						</row>
 						<row>
@@ -534,159 +553,206 @@
 								<itemizedlist
 									id="mbrola_tts_voices">
 									<title>
-										The available voices are
+										The available MBROLA voices are
 									</title>
 									<listitem>
 										<para>
-											us1: American English Female
+											us1: American English Female. Voice Name : mbrola_us1
 										</para>
 									</listitem>
 									<listitem>
 										<para>
-											us2: American English Male
+											us2: American English Male. Voice Name : mbrola_us2
 										</para>
 									</listitem>
 									<listitem>
 										<para>
-											us3: American English Male
+											us3: American English Male. Voice Name : mbrola_us3
 										</para>
 									</listitem>
 								</itemizedlist>								
-								
-								Please note that MBROLA is not LGPL model. To understand license please look at <ulink url="http://tcts.fpms.ac.be/synthesis/mbrola/mbrlicen.html">http://tcts.fpms.ac.be/synthesis/mbrola/mbrlicen.html</ulink> 
+								<para>								
+								Please note that MBROLA is not LGPL model. To understand license please look at <ulink url="http://tcts.fpms.ac.be/synthesis/mbrola/mbrlicen.html">http://tcts.fpms.ac.be/synthesis/mbrola/mbrlicen.html</ulink>
+								</para>
+								<para>
+								In addition to MBROLA, the free voices available are
+								<itemizedlist
+									id="freetts_tts_voices">
+									<title>
+										Free Voice
+									</title>
+									<listitem>
+										<para>
+											kevin: A low quality, unlimited domain, 8kHz diphone male voice. Voice Name : kevin
+										</para>
+									</listitem>
+									<listitem>
+										<para>
+											kevin16: A medium quality, unlimited domain, 16kHz diphone male voice. Voice Name : mbrola_us2
+										</para>
+									</listitem>
+									<listitem>
+										<para>
+											alan: A high quality, limited domain, 16kHz cluster unit male voice. Voice Name : alan
+										</para>
+									</listitem>
+								</itemizedlist>									
+								</para> 
 								
 							</entry>
 						</row>	
 						<row>
 							<entry>media</entry>
 							<entry>
-								The media directory used by Components like <emphasis>MediaPlayer (AudioPlayer, VideoPlayer)</emphasis> and <emphasis>Recorder</emphasis>. 
-								This is configurable property. These components tries to locate media file in <emphasis>media</emphasis> directory before failing. 
-								<emphasis>Recoder</emphasis> by default will write the recorded file to this folder.
+								The default directory for media files. The MediaPlayer, Recorder etc components uses media directory as default directory to read from/write and play/record media files.
 							</entry>
 						</row>
 						<row>
 							<entry>temp</entry>
 							<entry>
-								<emphasis>temp</emphasis> is created automatically when the server is started. 
+								<filename>temp</filename> is created automatically when the server is started. 
 								The <emphasis>MainDeployer</emphasis> creates a <emphasis>temp/deployment-beans.xml</emphasis> which contains all 
 								the beans defined in *-beans.xml file's from <emphasis>/deploy</emphasis> directory.
 							</entry>
-						</row>						
+						</row>	
+						<row>
+							<entry>native</entry>
+							<entry>
+								Contains the native library to read/write from <emphasis>dahdi</emphasis> channels. As of now the native library is only for <literal>linux OS</literal>.
+							</entry>
+						</row>	
+						<row>
+							<entry>ss7</entry>
+							<entry>
+								The <filename>ss7</filename> directory contains the configuration file <emphasis>ss7-beans.xml</emphasis> for configuring the channels. One needs to configure the Channel and MTP beans and copy this file to <filename>/deploy</filename> to enable the <emphasis>SS7</emphasis>.  
+							</entry>
+						</row>
 					</tbody>
 				</tgroup>
 			</table>
 			<para>
-				The Standalone Media Server uses a number of XML configuration
+				The  Media Server uses a number of XML configuration
 				files that control various aspects of the server.
-				<xref
-					linkend="tab-mms-Standalone_Core_Configuration_File_Set" />
-				describes the location of the key configuration files,
-				and provides a description of the
-			</para>
-			<table id="tab-mms-Standalone_Core_Configuration_File_Set"
-				frame='all'>
-				<title>Core Configuration File Set</title>
-				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-					<colspec colname='c1' />
-					<colspec colname='c2' />
-					<thead>
-						<row>
-							<entry align="center">
-								File Name and Location
-							</entry>
-							<entry align="center">Description</entry>
-						</row>
-					</thead>
-					<tbody>
-						<row>
-							<entry>conf/bootstrap-beans.xml</entry>
-							<entry>
-								Specifies which additional
-								microcontainer deployments are loaded as
-								part of the bootstrap phase.
-								bootstrap-beans.xml references other
-								configuration files contained in the
-								<filename>/conf/bootstrap/</filename>
-								directory. For a standard configuration,
-								the bootstrap configuration files
-								require no alteration.
-							</entry>
-						</row>
-						<row>
-							<entry>conf/log4j.xml</entry>
-							<entry>
-								Specifies the Apache
-								<literal>log4j</literal>
-								framework category priorities and
-								appenders used by the Media Server.
-							</entry>
-						</row>
-						<row>
-							<entry>deploy/endpoint/ann-beans.xml</entry>
-							<entry>
-								Specifies the configuration for
-								announcement access points.
-							</entry>
-						</row>
-						<row>
-							<entry>deploy/endpoint/ivr-beans.xml</entry>
-							<entry>
-								Specifies the configuration for
-								Interactive Voice Response (IVR)
-								endpoints.
-							</entry>
-						</row>
-						<row>
-							<entry>deploy/endpoint/packetrelay-beans.xml</entry>
-							<entry>
-								Specifies the configuration for Packet
-								Relay endpoints.
-							</entry>
-						</row>
-						<row>
-							<entry>deploy/cnf-beans.xml</entry>
-							<entry>
-								Specifies the configuration for
-								Conference endpoints.
-							</entry>
-						</row>
-						<row>
-							<entry>deploy/echo-beans.xml</entry>
-							<entry>
-								Specifies the endpoint for test
-								capabilities.
-							</entry>
-						</row>
-						<row>
-							<entry>deploy/controllers/mgcp/mgcp-conf.xml</entry>
-							<entry>
-								Specifies the configuration for the MGCP
-								controller.
-							</entry>
-						</row>
-						<row>
-							<entry>deploy/controllers/mgcp/packages/au/signals.xml</entry>
-							<entry>
-								Specifies MGCP Signals for Advanced Audio (AU) Package
-							</entry>
-						</row>		
-						<row>
-							<entry>deploy/controllers/mgcp/packages/au/events.xml</entry>
-							<entry>
-								Specifies MGCP Events for Advanced Audio (AU) Package
-							</entry>
-						</row>
-						<row>
-							<entry>deploy/controllers/mgcp/packages/au/package/package.xml</entry>
-							<entry>
-								Specifies AU Package
-							</entry>
-						</row>						
-					</tbody>
-				</tgroup>
-			</table>
+							</para>
 		</section>
+
+
+		<section id="itms-Standalone_Server_file-set">
+			<title>Server File Set</title>
+			<para>
+				The following example illustrates a truncated directory structure of the <literal>mms-standalone-&lt;version&gt;</literal> server files:
+			</para>
+			<screen>
+[user@localhost &lt;MMS_HOME&gt;]$ tree
+|-- bin
+|   |-- init_redhat.sh
+|   |-- run.bat
+|   |-- run.jar
+|   `-- run.sh
+|-- conf
+|   |-- bootstrap-beans.xml
+|   `-- log4j.xml
+|-- deploy
+|   |-- avprofile-beans.xml
+|   |-- comp-beans.xml
+|   |-- connection-beans.xml
+|   |-- connection-states-beans.xml
+|   |-- controllers
+|   |   `-- mgcp
+|   |       |-- mgcp-conf.xml
+|   |       `-- packages
+|   |           |-- au
+|   |           |   |-- events.xml
+|   |           |   |-- package
+|   |           |   |   `-- package.xml
+|   |           |   `-- signals.xml
+|   |           `-- dtmf
+|   |               |-- events.xml
+|   |               |-- package
+|   |               |   `-- package.xml
+|   |               `-- signals.xml
+|   |-- endpoint
+|   |   |-- ann-beans.xml
+|   |   |-- cnf-beans.xml
+|   |   |-- ivr-beans.xml
+|   |   |-- mgw-beans.xml
+|   |   `-- packetrelay-beans.xml
+|   |-- rtp-beans.xml
+|   `-- server-beans.xml
+|-- lib
+|   |-- activation-1.1.jar
+|   |-- cmu_time_awb-1.2.2.jar
+|   |-- cmu_us_kal-1.2.2.jar
+|   |-- cmudict04-1.2.2.jar
+|   |-- cmulex-1.2.2.jar
+|   |-- cmutimelex-1.2.2.jar
+|   |-- dtdparser121-1.2.1.jar
+|   |-- en_us-1.2.2.jar
+|   |-- freetts-1.2.2.jar
+|   |-- jain-mgcp-ri-1.0.jar
+|   |-- jain-sip-ri-1.2.X-20100813.024234-297.jar
+|   |-- java-getopt-1.0.9.jar
+|   |-- jaxb-api-2.1.9-brew.jar
+|   |-- jboss-common-core-2.2.14.GA.jar
+|   |-- jboss-dependency-2.0.6.GA.jar
+|   |-- jboss-kernel-2.0.6.GA.jar
+|   |-- jboss-logging-spi-2.1.0.GA.jar
+|   |-- jboss-mdr-2.0.1.GA.jar
+|   |-- jboss-reflect-2.0.2.GA.jar
+|   |-- jbossxb-2.0.1.GA.jar
+|   |-- jspeex-0.9.7.jar
+|   |-- log4j-1.2.14.jar
+|   |-- mbrola-1.2.2.jar
+|   |-- mgcp-impl-2.0.0.GA.jar
+|   |-- mms-controllers-mgcp-2.1.0.BETA1-SNAPSHOT.jar
+|   |-- mms-controllers-rtsp-2.1.0.BETA1-SNAPSHOT.jar
+|   |-- mms-impl-2.1.0.BETA1-SNAPSHOT.jar
+|   |-- mms-spi-2.1.0.BETA1-SNAPSHOT.jar
+|   |-- mms-standalone-2.1.0.BETA1-SNAPSHOT.jar
+|   |-- mtp-1.0.0.BETA3.jar
+|   |-- netty-3.2.0.BETA1.jar
+|   |-- stream-1.0.0.BETA1.jar
+|   |-- stun4j-1.0.MOBICENTS.jar
+|   |-- tritonus_gsm-0.3.6.jar
+|   |-- tritonus_share-0.3.6.jar
+|   `-- xml-apis-2.9.1.jar
+|-- log
+|   `-- server.log
+|-- mbrola
+|   |-- mbrola
+|   |-- mbrola.exe
+|   |-- readme.txt
+|   |-- us1
+|   |   |-- license.txt
+|   |   |-- us1
+|   |   |-- us1.txt
+|   |   `-- us1mrpa
+|   |-- us2
+|   |   |-- license.txt
+|   |   |-- us2
+|   |   `-- us2.txt
+|   `-- us3
+|       |-- license.txt
+|       |-- us3
+|       `-- us3.txt
+|-- media
+|   |-- 8kalaw.wav
+|   |-- 8kulaw.wav
+|   |-- gwn44m.wav
+|   |-- gwn44s.wav
+|   |-- sample_100kbit.mov
+|   |-- sample_100kbit.mp4
+|   `-- sample_50kbit.3gp
+|-- native
+|   `-- zap-native-linux.so
+|-- ss7
+|   `-- ss7-beans.xml
+`-- temp
+    `-- deployment-beans.xml
+			
+			</screen>
+		</section>
+
 
 		<section id="itms-binary-Standalone_Media_Server-Uninstalling">
 			<title>Uninstalling</title>

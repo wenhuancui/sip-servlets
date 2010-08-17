@@ -56,57 +56,49 @@ public class TtsTrackImpl implements Track {
     private VoicesCache voiceCache;
     public TtsTrackImpl(URL url, String voiceName,VoicesCache vc) throws IOException {
     	this.voiceCache = vc;
-    	System.err.println("X1: "+System.currentTimeMillis());
+
         isReady = false;
         URLConnection connection = url.openConnection();
 
         frameSize = (int) (period * format.getChannels() * format.getSampleSizeInBits() * format.getSampleRate() / 8000);
 
-        System.err.println("X2: "+System.currentTimeMillis());
         // creating voice
         //VoiceManager voiceManager = VoiceManager.getInstance();
       //voice = voiceManager.getVoice(voiceName);
         voice = voiceCache.allocateVoice(voiceName);
         //this.voice.allocate();
-        System.err.println("X3: "+System.currentTimeMillis());
+
 
         // creating speech buffer for writting
         TTSAudioBuffer audioBuffer = new TTSAudioBuffer();
 
         // assign buffer to speech engine and start generation
         // produced media data will be stored in the audio buffer
-        System.err.println("X4: "+System.currentTimeMillis());
+
         this.voice.setAudioPlayer(audioBuffer);
-        System.err.println("X5: "+System.currentTimeMillis());
         this.voice.speak(connection.getInputStream());
-        System.err.println("X6: "+System.currentTimeMillis());
         audioBuffer.flip();
-        System.err.println("X7: "+System.currentTimeMillis());
+
 
     }
 
     public TtsTrackImpl(String text, String voiceName,VoicesCache vc) {
     	this.voiceCache = vc;
         isReady = false;
-        System.err.println("S1: "+System.currentTimeMillis());
         // creating voice
         //VoiceManager voiceManager = VoiceManager.getInstance();
-        System.err.println("S1.1: "+System.currentTimeMillis());
         //voice = voiceManager.getVoice(voiceName);
         voice = voiceCache.allocateVoice(voiceName);
 
         //voice.allocate();
-        System.err.println("S2: "+System.currentTimeMillis());
         // creating speech buffer for writting
         TTSAudioBuffer audioBuffer = new TTSAudioBuffer();
 
         // assign buffer to speech engine and start generation
         // produced media data will be stored in the audio buffer
-        System.err.println("S3: "+System.currentTimeMillis());
         voice.setAudioPlayer(audioBuffer);
-        System.err.println("S4: "+System.currentTimeMillis());
         voice.speak(text);
-        System.err.println("S5: "+System.currentTimeMillis());
+
 
         audioBuffer.flip();
         frameSize = (int) (period * format.getChannels() * format.getSampleSizeInBits() * format.getSampleRate() / 8000);
@@ -282,15 +274,15 @@ public class TtsTrackImpl implements Track {
         }
 
         public void cancel() {
-            System.out.println("cancel() called");
+            //System.out.println("cancel() called");
         }
 
         public void close() {
-            System.out.println("Close() called");
+            //System.out.println("Close() called");
         }
 
         public void flip() {
-            System.out.println("flip() called");
+            //System.out.println("flip() called");
 
             byte[] rawData = null;
 
@@ -305,19 +297,19 @@ public class TtsTrackImpl implements Track {
                 }
             }
 
-            System.out.println("Format = " + fmt);
+            //System.out.println("Format = " + fmt);
 
             // If its BigEndian lets convert it to little-endian first
             if (fmt.isBigEndian()) {
                 switchEndian(rawData, 0, rawData.length);
                 fmt = new javax.sound.sampled.AudioFormat(fmt.getEncoding(),
                         fmt.getSampleRate(), fmt.getSampleSizeInBits(), fmt.getChannels(), fmt.getFrameSize(), fmt.getFrameRate(), false);
-                System.out.println("Converted Format to little-endian = " + fmt);
+                //System.out.println("Converted Format to little-endian = " + fmt);
             }
 
             // duration = (long)(totalBytes/320 * 20);
             duration = (long) (totalBytes * 1000 / (fmt.getSampleSizeInBits() / 8 * fmt.getSampleRate()));
-            System.err.println("---------------------------- "+fmt.getSampleRate());
+            
 
             if (fmt.getSampleRate() != 8000) {
                 double originalFrequency = fmt.getSampleRate();
@@ -373,7 +365,7 @@ public class TtsTrackImpl implements Track {
                 javax.sound.sampled.AudioFormat targetFormat = new javax.sound.sampled.AudioFormat(
                         fmt.getEncoding(), 8000, fmt.getSampleSizeInBits(), fmt.getChannels(), fmt.getFrameSize(), 8000, fmt.isBigEndian());
 
-                System.out.println("Traget Format = " + targetFormat);
+               // System.out.println("Traget Format = " + targetFormat);
             }
 
             InputStream is = new ByteArrayInputStream(rawData);

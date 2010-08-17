@@ -111,12 +111,12 @@ public class TransmissionTester implements NotificationListener {
         }
         
         int count = (int)(TEST_DURATION /T/2);
-        int limit = (int)(1/T/2) + 1;
+        int limit = (int)(1/T/2) + 1 + 2; //7, its constant error
         int diff = Math.abs(count - evtCount);
         
         if (diff > limit) {
             isPassed = false;
-            msg = "Signal not detected or damaged, errors=" + diff;
+            msg = "Signal not detected or damaged, errors=" + diff+", limit="+limit+", count="+count;
             return;
         }
         

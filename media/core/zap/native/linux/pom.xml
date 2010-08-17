@@ -135,7 +135,7 @@
 						<configuration>
 							<tasks>
 								<copy file="target/${project.build.finalName}.so" todir="../../../server-standalone/target/mms-standalone-pojo/native" />
-								<copy file="../../../server-standalone/src/main/config/ss7-beans.xml" todir="../../../server-standalone/target/mms-standalone-pojo/deploy/ss7" />
+								<copy file="../../../server-standalone/src/main/config/ss7-beans.xml" todir="../../../server-standalone/target/mms-standalone-pojo/ss7" />
 							</tasks>
 						</configuration>
 					</execution>
