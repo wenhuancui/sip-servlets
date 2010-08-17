@@ -1,6 +1,5 @@
 package org.mobicents.slee.sipevent.server.subscription.sip;
 
-import javax.persistence.EntityManager;
 import javax.sip.Dialog;
 import javax.sip.ResponseEvent;
 import javax.sip.header.EventHeader;
@@ -11,8 +10,10 @@ import net.java.slee.resource.sip.DialogActivity;
 import org.apache.log4j.Logger;
 import org.mobicents.slee.sipevent.server.subscription.ImplementedSubscriptionControlSbbLocalObject;
 import org.mobicents.slee.sipevent.server.subscription.SubscriptionControlSbb;
-import org.mobicents.slee.sipevent.server.subscription.pojo.Subscription;
-import org.mobicents.slee.sipevent.server.subscription.pojo.Subscription.Status;
+import org.mobicents.slee.sipevent.server.subscription.data.Subscription;
+import org.mobicents.slee.sipevent.server.subscription.data.SubscriptionControlDataSource;
+import org.mobicents.slee.sipevent.server.subscription.data.SubscriptionKey;
+import org.mobicents.slee.sipevent.server.subscription.data.Subscription.Status;
 
 /**
  * Handles the removal of a SIP subscription
@@ -44,14 +45,15 @@ public class RemoveSipSubscriptionHandler {
 	 * @param childSbb
 	 */
 	public void removeSipSubscription(ActivityContextInterface aci,
-			Subscription subscription, EntityManager entityManager,
+			Subscription subscription,
+			SubscriptionControlDataSource dataSource,
 			ImplementedSubscriptionControlSbbLocalObject childSbb) {
 
 		// cancel timer
 		sipSubscriptionHandler.sbb.getTimerFacility().cancelTimer(
 				subscription.getTimerID());
 
-		if (!subscription.getStatus().equals(Status.terminated) && !subscription.getStatus().equals(Status.waiting)) {
+		if (subscription.getStatus() != Status.terminated && subscription.getStatus() != Status.waiting) {
 			// change subscription state
 			subscription.setStatus(Subscription.Status.terminated);
 			subscription.setLastEvent(null);
@@ -60,28 +62,29 @@ public class RemoveSipSubscriptionHandler {
 		// get dialog from aci
 		DialogActivity dialog = (DialogActivity) aci.getActivity();
 
+		// notify winfo subscription(s)
+		sipSubscriptionHandler.sbb
+		.getWInfoSubscriptionHandler()
+		.notifyWinfoSubscriptions(dataSource, subscription, childSbb);
+		
 		// notify subscriber
 		try {
 			sipSubscriptionHandler.getSipSubscriberNotificationHandler()
-			.createAndSendNotify(entityManager, subscription, dialog,
+			.createAndSendNotify(dataSource, subscription, dialog,
 					childSbb);
 		} catch (Exception e) {
 			logger.error("failed to notify subscriber", e);
 		}
-		// notify winfo subscription(s)
-		sipSubscriptionHandler.sbb
-		.getWInfoSubscriptionHandler()
-		.notifyWinfoSubscriptions(entityManager, subscription, childSbb);
-
+		
 		// check resulting subscription state
-		if (subscription.getStatus().equals(Subscription.Status.terminated)) {
+		if (subscription.getStatus() == Subscription.Status.terminated) {
 			if (logger.isInfoEnabled()) {
 				logger.info("Status changed for " + subscription);
 			}
 			// remove subscription data
-			sipSubscriptionHandler.sbb.removeSubscriptionData(entityManager,
+			sipSubscriptionHandler.sbb.removeSubscriptionData(dataSource,
 					subscription, dialog, aci, childSbb);
-		} else if (subscription.getStatus().equals(Subscription.Status.waiting)) {
+		} else if (subscription.getStatus() == Subscription.Status.waiting) {
 			if (logger.isInfoEnabled()) {
 				logger.info("Status changed for " + subscription);
 			}
@@ -93,8 +96,7 @@ public class RemoveSipSubscriptionHandler {
 			subscription.refresh(defaultWaitingExpires);
 			// set waiting timer
 			sipSubscriptionHandler.sbb
-			.setSubscriptionTimerAndPersistSubscription(entityManager,
-					subscription, defaultWaitingExpires + 1, aci);
+			.setSubscriptionTimerAndPersistSubscription(subscription, defaultWaitingExpires + 1, aci);
 		}
 		
 	}
@@ -104,36 +106,30 @@ public class RemoveSipSubscriptionHandler {
 	 * 
 	 * @param event
 	 */
-	public void removeSipSubscriptionOnNotifyError(ResponseEvent event) {
-		EntityManager entityManager = sipSubscriptionHandler.sbb
-				.getEntityManager();
+	public void removeSipSubscriptionOnNotifyError(SubscriptionControlDataSource dataSource,ResponseEvent event) {
 		EventHeader eventHeader = (EventHeader) event.getResponse().getHeader(
 				EventHeader.NAME);
 		Dialog dialog = event.getDialog();
 		if (eventHeader != null && dialog != null) {
-			Subscription subscription = Subscription.getSubscription(
-					entityManager, dialog.getCallId().getCallId(), dialog
-							.getRemoteTag(), eventHeader.getEventType(),
-					eventHeader.getEventId());
+			Subscription subscription = dataSource.get(new SubscriptionKey(dialog.getDialogId(), eventHeader.getEventType(),
+					eventHeader.getEventId()));
 			if (subscription != null) {
 				if (logger.isInfoEnabled()) {
 					logger.info("Removing " + subscription.getKey()
 							+ " data due to error on notify response.");
 				}
 				if (!subscription.getResourceList()) {
-					sipSubscriptionHandler.sbb.getEventListControlChildSbb().removeSubscription(subscription);
+					sipSubscriptionHandler.sbb.getEventListSubscriptionHandler().removeSubscription(subscription);
 				}
 				sipSubscriptionHandler.sbb.removeSubscriptionData(
-						entityManager, subscription, dialog,
+						dataSource, subscription, dialog,
 						sipSubscriptionHandler.sbb
 						.getActivityContextNamingfacility().lookup(
 								subscription.getKey().toString()),
 								sipSubscriptionHandler.sbb
 								.getImplementedControlChildSbb());
-
-				entityManager.flush();
+				
 			}
 		}
-		entityManager.close();
 	}
 }

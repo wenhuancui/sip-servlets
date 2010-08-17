@@ -1,13 +1,11 @@
 package org.mobicents.slee.sipevent.server.subscription;
 
 import java.text.ParseException;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.sip.Dialog;
 import javax.sip.RequestEvent;
 import javax.sip.ResponseEvent;
@@ -18,7 +16,6 @@ import javax.sip.header.HeaderFactory;
 import javax.sip.message.MessageFactory;
 import javax.sip.message.Response;
 import javax.slee.ActivityContextInterface;
-import javax.slee.ActivityEndEvent;
 import javax.slee.Address;
 import javax.slee.ChildRelation;
 import javax.slee.CreateException;
@@ -34,24 +31,25 @@ import javax.slee.facilities.TimerPreserveMissed;
 import javax.slee.nullactivity.NullActivity;
 import javax.slee.nullactivity.NullActivityContextInterfaceFactory;
 import javax.slee.nullactivity.NullActivityFactory;
-import javax.slee.serviceactivity.ServiceActivity;
-import javax.slee.serviceactivity.ServiceStartedEvent;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import net.java.slee.resource.sip.DialogActivity;
 import net.java.slee.resource.sip.SipActivityContextInterfaceFactory;
 import net.java.slee.resource.sip.SleeSipProvider;
 
 import org.apache.log4j.Logger;
-import org.mobicents.slee.sipevent.server.internal.InternalNotifyEvent;
 import org.mobicents.slee.sipevent.server.internal.InternalSubscriptionHandler;
+import org.mobicents.slee.sipevent.server.rlscache.RLSServicesCacheActivityContextInterfaceFactory;
+import org.mobicents.slee.sipevent.server.rlscache.RLSServicesCacheSbbInterface;
+import org.mobicents.slee.sipevent.server.rlscache.events.RLSServicesAddedEvent;
+import org.mobicents.slee.sipevent.server.subscription.data.Notifier;
+import org.mobicents.slee.sipevent.server.subscription.data.Subscription;
+import org.mobicents.slee.sipevent.server.subscription.data.SubscriptionControlDataSource;
+import org.mobicents.slee.sipevent.server.subscription.data.SubscriptionKey;
+import org.mobicents.slee.sipevent.server.subscription.data.Subscription.Event;
+import org.mobicents.slee.sipevent.server.subscription.data.Subscription.Status;
+import org.mobicents.slee.sipevent.server.subscription.eventlist.EventListSubscriptionHandler;
 import org.mobicents.slee.sipevent.server.subscription.eventlist.MultiPart;
 import org.mobicents.slee.sipevent.server.subscription.jmx.SubscriptionControlManagement;
-import org.mobicents.slee.sipevent.server.subscription.jmx.SubscriptionControlManagementMBean;
-import org.mobicents.slee.sipevent.server.subscription.pojo.Subscription;
-import org.mobicents.slee.sipevent.server.subscription.pojo.SubscriptionKey;
-import org.mobicents.slee.sipevent.server.subscription.pojo.Subscription.Event;
 import org.mobicents.slee.sipevent.server.subscription.sip.SipSubscriptionHandler;
 import org.mobicents.slee.sipevent.server.subscription.winfo.WInfoSubscriptionHandler;
 
@@ -67,6 +65,14 @@ public abstract class SubscriptionControlSbb implements Sbb,
 	private static final Logger logger = Logger
 			.getLogger(SubscriptionControlSbb.class);
 
+	private final InternalSubscriptionHandler internalSubscriptionHandler = new InternalSubscriptionHandler(this);
+	private final SipSubscriptionHandler sipSubscriptionHandler = new SipSubscriptionHandler(this);
+	private final WInfoSubscriptionHandler wInfoSubscriptionHandler = new WInfoSubscriptionHandler(this);
+	private final EventListSubscriptionHandler eventListSubscriptionHandler = new EventListSubscriptionHandler(this);
+	
+	private RLSServicesCacheSbbInterface rlsServicesCacheRASbbInterface; 
+	private RLSServicesCacheActivityContextInterfaceFactory rlsServicesCacheACIF;
+	
 	/**
 	 * JAIN-SIP provider & factories
 	 * 
@@ -93,16 +99,20 @@ public abstract class SubscriptionControlSbb implements Sbb,
 
 	// GETTERS
 
+	public EventListSubscriptionHandler getEventListSubscriptionHandler() {
+		return eventListSubscriptionHandler;
+	}
+	
 	public SipSubscriptionHandler getSipSubscribeHandler() {
-		return new SipSubscriptionHandler(this);
+		return sipSubscriptionHandler;
 	}
 
 	public WInfoSubscriptionHandler getWInfoSubscriptionHandler() {
-		return new WInfoSubscriptionHandler(this);
+		return wInfoSubscriptionHandler;
 	}
 
 	public InternalSubscriptionHandler getInternalSubscriptionHandler() {
-		return new InternalSubscriptionHandler(this);
+		return internalSubscriptionHandler;
 	}
 
 	public ActivityContextNamingFacility getActivityContextNamingfacility() {
@@ -145,75 +155,23 @@ public abstract class SubscriptionControlSbb implements Sbb,
 		return timerFacility;
 	}
 
+	public RLSServicesCacheSbbInterface getRlsServicesCacheRASbbInterface() {
+		return rlsServicesCacheRASbbInterface;
+	}
+	
+	public RLSServicesCacheActivityContextInterfaceFactory getRlsServicesCacheACIF() {
+		return rlsServicesCacheACIF;
+	}
+	
 	/**
 	 * Retrieves the current configuration for this component from an MBean
 	 * 
 	 * @return
 	 */
-	public SubscriptionControlManagementMBean getConfiguration() {
+	public SubscriptionControlManagement getConfiguration() {
 		return SubscriptionControlManagement.getInstance();
-	}
-
-	// --- JPA STUFF
-
-	private static EntityManagerFactory initEntityManagerFactory() {
-		try {
-			TransactionManager txMgr = (TransactionManager) new InitialContext()
-					.lookup("java:/TransactionManager");
-
-			Transaction tx = null;
-			try {
-				if (txMgr.getTransaction() != null) {
-					tx = txMgr.suspend();
-				}
-			} catch (Exception e) {
-				// TODO: handle exception
-			}
-			try {
-				return Persistence
-						.createEntityManagerFactory("sipevent-subscription-pu");
-			} finally {
-				if (tx != null) {
-					txMgr.resume(tx);
-				}
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return null;
-		}
-	}
-	
-	private static void stopEntityManagerFactory() {
-		try {
-			TransactionManager txMgr = (TransactionManager) new InitialContext()
-					.lookup("java:/TransactionManager");
-
-			Transaction tx = null;
-			try {
-				if (txMgr.getTransaction() != null) {
-					tx = txMgr.suspend();
-				}
-			} catch (Exception e) {
-				// TODO: handle exception
-			}
-			try {
-				entityManagerFactory.close();
-			} finally {
-				if (tx != null) {
-					txMgr.resume(tx);
-				}
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-		}
-	}
-	
-	private static EntityManagerFactory entityManagerFactory = initEntityManagerFactory();
-
-	public EntityManager getEntityManager() {
-		return entityManagerFactory.createEntityManager();
-	}
-
+	}	
+		
 	// -- STORAGE OF PARENT SBB (USED BY INTERNAL CLIENTS)
 
 	public void setParentSbb(
@@ -253,64 +211,98 @@ public abstract class SubscriptionControlSbb implements Sbb,
 		return childSbb;
 	}
 	
-	// --- EVENT LIST PROCESSING CHILD SBB
+	// --- EVENT LIST SUBSCRIBER SBB
 
-	public abstract ChildRelation getEventListControlChildRelation();
+	public abstract ChildRelation getEventListSubscriberChildRelation();
 
-	public abstract EventListSubscriptionControlSbbLocalObject getEventListControlChildSbbCMP();
-
-	public abstract void setEventListControlChildSbbCMP(
-			EventListSubscriptionControlSbbLocalObject value);
-
-	public EventListSubscriptionControlSbbLocalObject getEventListControlChildSbb() {
-		EventListSubscriptionControlSbbLocalObject childSbb = getEventListControlChildSbbCMP();
-		if (childSbb == null) {
-			try {
-				childSbb = (EventListSubscriptionControlSbbLocalObject) getEventListControlChildRelation()
-						.create();
-			} catch (Exception e) {
-				logger.error("Failed to create child sbb",e);
-				return null;
+	public EventListSubscriberSbbLocalObject getEventListSubscriberSbb(
+			SubscriptionKey subscriptionKey) {
+		ChildRelation childRelation = getEventListSubscriberChildRelation();
+		EventListSubscriberSbbLocalObject subscriptionChildSbb = null;
+		// let's see if child is already created
+		for (Iterator<?> it = childRelation.iterator(); it.hasNext();) {
+			EventListSubscriberSbbLocalObject childSbb = (EventListSubscriberSbbLocalObject) it
+					.next();
+			SubscriptionKey childSbbSubscriptionKey = childSbb
+					.getSubscriptionKey();
+			if (childSbbSubscriptionKey != null
+					&& childSbbSubscriptionKey.equals(subscriptionKey)) {
+				subscriptionChildSbb = childSbb;
+				break;
 			}
-			setEventListControlChildSbbCMP(childSbb);
-			childSbb
-					.setParentSbb((EventListSubscriptionControlParentSbbLocalObject) this.sbbContext
-							.getSbbLocalObject());
 		}
-		return childSbb;
+		return subscriptionChildSbb;
 	}
 
 	// ----------- EVENT HANDLERS
 
 	/**
-	 * if event is for this service starts mbean
-	 */
-	public void onServiceStartedEvent(ServiceStartedEvent event,
-			ActivityContextInterface aci) {
-		if (getConfiguration().getEventListSupportOn() && getImplementedControlChildSbb().acceptsEventList()) {
-			// init RLS cache
-			getEventListControlChildSbb().initRLSCache();
-		}			
-	}
-
-	/**
-	 * If it's a service activity must be the one for this service. It then
-	 * closes the jpa EM factory and tops the MBean
+	 * event handler for event that notifies a new rls service available
 	 * 
 	 * @param event
 	 * @param aci
 	 */
-	public void onActivityEndEvent(ActivityEndEvent event,
-			ActivityContextInterface aci) {
-		// close entity manager factory on service deactivation
-		if (aci.getActivity() instanceof ServiceActivity) {			
-			if (getConfiguration().getEventListSupportOn() && getImplementedControlChildSbb().acceptsEventList()) {
-				getEventListControlChildSbb().shutdownRLSCache();
-			}			
-			stopEntityManagerFactory();
+	public void onRLSServicesAddedEvent(RLSServicesAddedEvent event, ActivityContextInterface aci) {		
+		
+		aci.detach(sbbContext.getSbbLocalObject());
+		
+		final String notifier = event.getUri();
+		
+		if (getConfiguration().getEventListSupportOn() && getImplementedControlChildSbb().acceptsEventList()) {
+						
+			if (logger.isDebugEnabled()) {
+				logger.debug("terminating rls service "+notifier+" subscriptions defined as single entities");
+			}
+			
+			SubscriptionControlDataSource dataSource = getConfiguration().getDataSource();
+
+			int index = notifier.indexOf(';');
+			String notifierWithoutParams = null;
+			if (index > 0) {
+				notifierWithoutParams = notifier.substring(0,index);
+			}
+			else {
+				notifierWithoutParams = notifier;
+			}
+			
+			// terminate subscriptions which are not rls services
+			for (Subscription subscription : dataSource.getSubscriptionsByNotifier(notifierWithoutParams)) {				
+				if (!subscription.getResourceList()) {
+					// remove subscription in those cases
+					ActivityContextInterface subscriptionAci = getActivityContextNamingfacility().lookup(
+							subscription.getKey().toString());
+					if (subscriptionAci != null) {
+						fireTerminateSubscriptionEvent(new TerminateSubscriptionEvent(subscription.getKey()), subscriptionAci, null);
+					}
+				}
+			}
 		}
 	}
+	
+	public void onTerminateSubscriptionEvent(TerminateSubscriptionEvent event, ActivityContextInterface aci) {
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug("terminating invalid rls service subscription "+event.getSubscriptionKey());
+		}
+		
+		SubscriptionControlDataSource dataSource = getConfiguration().getDataSource();
 
+		Subscription subscription = dataSource.get(event.getSubscriptionKey());
+		if (subscription != null && subscription.getStatus() == Status.active) {
+			subscription.changeStatus(Event.deactivated);
+			try {
+				if (subscription.getKey().isInternalSubscription()) {							
+					internalSubscriptionHandler.getRemoveInternalSubscriptionHandler().removeInternalSubscription(aci, subscription, dataSource, getImplementedControlChildSbb());
+				}
+				else {
+					sipSubscriptionHandler.getRemoveSipSubscriptionHandler().removeSipSubscription(aci, subscription, dataSource, getImplementedControlChildSbb());
+				}
+			} catch (Exception e) {
+				logger.error("failed to notify internal subscriber", e);
+			}
+		}
+	}
+	
 	/**
 	 * event handler for initial subscribe, which is out of dialog
 	 * 
@@ -319,7 +311,7 @@ public abstract class SubscriptionControlSbb implements Sbb,
 	 */
 	public void onSubscribeOutOfDialog(RequestEvent event,
 			ActivityContextInterface aci) {
-		new SipSubscriptionHandler(this).processRequest(event, aci);
+		sipSubscriptionHandler.processRequest(event, aci);
 	}
 
 	/**
@@ -332,7 +324,7 @@ public abstract class SubscriptionControlSbb implements Sbb,
 			ActivityContextInterface aci) {
 		// store server transaction id, we need it get it from the dialog
 		// activity		
-		new SipSubscriptionHandler(this).processRequest(event, aci);
+		sipSubscriptionHandler.processRequest(event, aci);
 	}
 
 	/**
@@ -344,8 +336,8 @@ public abstract class SubscriptionControlSbb implements Sbb,
 	public void onResponseClientErrorEvent(ResponseEvent event,
 			ActivityContextInterface aci) {
 		// we got a error response from a notify,
-		new SipSubscriptionHandler(this).getRemoveSipSubscriptionHandler()
-				.removeSipSubscriptionOnNotifyError(event);
+		sipSubscriptionHandler.getRemoveSipSubscriptionHandler()
+				.removeSipSubscriptionOnNotifyError(getConfiguration().getDataSource(),event);
 	}
 
 	/**
@@ -357,8 +349,8 @@ public abstract class SubscriptionControlSbb implements Sbb,
 	public void onResponseServerErrorEvent(ResponseEvent event,
 			ActivityContextInterface aci) {
 		// we got a error response from a notify,
-		new SipSubscriptionHandler(this).getRemoveSipSubscriptionHandler()
-				.removeSipSubscriptionOnNotifyError(event);
+		sipSubscriptionHandler.getRemoveSipSubscriptionHandler()
+				.removeSipSubscriptionOnNotifyError(getConfiguration().getDataSource(),event);
 	}
 
 	/**
@@ -375,85 +367,136 @@ public abstract class SubscriptionControlSbb implements Sbb,
 			dialog = (Dialog) activity;
 		}
 
-		// create jpa entity manager
-		EntityManager entityManager = getEntityManager();
-
-		// get subscription
-		for (Object object : entityManager.createNamedQuery(
-				Subscription.JPA_NAMED_QUERY_SELECT_SUBSCRIPTION_FROM_TIMERID).setParameter("timerID",
-				event.getTimerID()).getResultList()) {
-
-			Subscription subscription = (Subscription) object;
-
+		
+		Subscription subscription = getConfiguration().getDataSource().getFromTimerID(event.getTimerID());
+		if (subscription == null) {
 			if (logger.isInfoEnabled()) {
-				logger.info("Timer expired for " + subscription);
+				logger.info("Subscription for timer "+event.getTimerID()+" not found, ignoring event.");
 			}
-
-			ImplementedSubscriptionControlSbbLocalObject childSbb = getImplementedControlChildSbb();
-			
-			// check subscription status
-			if (subscription.getStatus().equals(Subscription.Status.waiting)) {
-				// change subscription status
-				subscription.changeStatus(Subscription.Event.giveup);
-				if (logger.isInfoEnabled()) {
-					logger.info("Status changed for " + subscription);
-				}
-				// notify winfo subscription(s)
-				getWInfoSubscriptionHandler().notifyWinfoSubscriptions(
-						entityManager, subscription, childSbb);
-				// remove subscription data
-				removeSubscriptionData(entityManager, subscription, dialog,
-						aci, childSbb);
-			} else {
-				subscription.changeStatus(Event.timeout);
-				// remove subscription
-				if (subscription.getResourceList()) {
-					getEventListControlChildSbb().removeSubscription(subscription);
-				}
-				if (dialog != null) {
-					// sip subscription
-					new SipSubscriptionHandler(this)
-					.getRemoveSipSubscriptionHandler()
-					.removeSipSubscription(aci, subscription,
-							entityManager, childSbb);
-				} else {
-					// internal subscription
-					new InternalSubscriptionHandler(this)
-					.getRemoveInternalSubscriptionHandler()
-					.removeInternalSubscription(aci, subscription,
-							entityManager, childSbb);
-				}
-			}
-			entityManager.flush();
+			return;
 		}
-		// close entity manager
-		entityManager.close();
+		
+		if (logger.isInfoEnabled()) {
+			logger.info("Timer expired for " + subscription);
+		}
+
+		ImplementedSubscriptionControlSbbLocalObject childSbb = getImplementedControlChildSbb();
+		final SubscriptionControlDataSource dataSource = getConfiguration().getDataSource();
+		
+		// check subscription status
+		if (subscription.getStatus().equals(Subscription.Status.waiting)) {
+			// change subscription status
+			subscription.changeStatus(Subscription.Event.giveup);
+			if (logger.isInfoEnabled()) {
+				logger.info("Status changed for " + subscription);
+			}
+			// notify winfo subscription(s)
+			getWInfoSubscriptionHandler().notifyWinfoSubscriptions(dataSource,subscription, childSbb);
+			// remove subscription data
+			removeSubscriptionData(dataSource,subscription, dialog,
+					aci, childSbb);
+		} else {
+			subscription.changeStatus(Event.timeout);
+			// remove subscription
+			if (subscription.getResourceList()) {
+				eventListSubscriptionHandler.removeSubscription(subscription);
+			}
+			if (dialog != null) {
+				// sip subscription
+				sipSubscriptionHandler
+				.getRemoveSipSubscriptionHandler()
+				.removeSipSubscription(aci, subscription,dataSource,childSbb);
+			} else {
+				// internal subscription
+				internalSubscriptionHandler
+				.getRemoveInternalSubscriptionHandler()
+				.removeInternalSubscription(aci, subscription, dataSource,childSbb);
+			}
+		}
 	}
 
-	public void onInternalNotifyEvent(InternalNotifyEvent event,
+	public void onNotifyEvent(NotifyEvent event,
 			ActivityContextInterface aci) {
 		
-		// notify the parent
-		getParentSbbCMP().notifyEvent(event.getSubscriber(),
-				event.getNotifier(), event.getEventPackage(),
-				event.getSubscriptionId(), event.getTerminationReason(),
-				event.getSubscriptionStatus(), event.getContent(),
-				event.getContentType(), event.getContentSubtype());
-		// if subscription terminated then we remove the null aci
-		if (event.getSubscriptionStatus()
-				.equals(Subscription.Status.terminated)) {
-			((NullActivity) aci.getActivity()).endActivity();
-			aci.detach(getSbbContext().getSbbLocalObject());
+		final SubscriptionControlDataSource dataSource = getConfiguration().getDataSource();
+		
+		final Subscription subscription = dataSource.get(event.getSubscriptionKey());
+		if (subscription == null) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Unable to notify state change for "+event.getSubscriptionKey()+", subscription not found");
+			}
+			return;
 		}
+		if (subscription.getStatus() != Status.active) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Unable to notify state change for "+event.getSubscriptionKey()+", subscription not active");
+			}
+			return;
+		}
+		
+		notifySubscriber(subscription, event.getContent(), event.getContentTypeHeader(), aci);
 	}
-
+	
+	private void notifySubscriber(Subscription subscription, Object content, ContentTypeHeader contentTypeHeader, ActivityContextInterface aci) {
+		
+		if (subscription.getKey().isInternalSubscription()) {
+			// internal subscription
+			internalSubscriptionHandler
+					.getInternalSubscriberNotificationHandler()
+					.notifyInternalSubscriber(subscription, content, contentTypeHeader, aci,
+							getImplementedControlChildSbb());
+		} else {
+			// sip subscription
+			sipSubscriptionHandler
+					.getSipSubscriberNotificationHandler()
+					.notifySipSubscriber(content, contentTypeHeader,
+							subscription, aci, getImplementedControlChildSbb());
+		}	
+	}
+	
+	public void onWInfoNotifyEvent(WInfoNotifyEvent event,
+			ActivityContextInterface aci) {
+		
+		final SubscriptionControlDataSource dataSource = getConfiguration().getDataSource();
+		
+		final Subscription subscription = dataSource.get(event.getSubscriptionKey());
+		if (subscription == null) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Unable to notify state change for "+event.getSubscriptionKey()+", subscription not found");
+			}
+			return;
+		}
+		if (subscription.getStatus() != Status.active) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Unable to notify state change for "+event.getSubscriptionKey()+", subscription not active");
+			}
+			return;
+		}
+		
+		// increment subscription version
+		subscription.incrementVersion();
+		// create notify content
+		String content = wInfoSubscriptionHandler.getPartialWatcherInfoContent(subscription, event.getWatcherSubscriptionKey(), event.getWatcher());
+		ContentTypeHeader contentTypeHeader = wInfoSubscriptionHandler.getWatcherInfoContentHeader();
+		// store subscription
+		subscription.store();
+		
+		// notify
+		notifySubscriber(subscription, content, contentTypeHeader, aci);
+	}
+	
 	// ----------- SBB LOCAL OBJECT
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.slee.sipevent.server.subscription.ImplementedSubscriptionControlParent#newSubscriptionAuthorization(java.lang.String, java.lang.String, java.lang.String, org.mobicents.slee.sipevent.server.subscription.data.SubscriptionKey, int, int, boolean, javax.sip.ServerTransaction)
+	 */
 	public void newSubscriptionAuthorization(String subscriber,
-			String subscriberDisplayName, String notifier, SubscriptionKey key,
+			String subscriberDisplayName, Notifier notifier, SubscriptionKey key,
 			int expires, int responseCode, boolean eventList, ServerTransaction serverTransaction) {
 
-		EntityManager entityManager = getEntityManager();
+		final SubscriptionControlDataSource dataSource = getConfiguration().getDataSource();
+		
 		try {
 
 			if (!key.isInternalSubscription()) {
@@ -468,28 +511,27 @@ public abstract class SubscriptionControlSbb implements Sbb,
 						break;
 					}
 				}
-				new SipSubscriptionHandler(this).getNewSipSubscriptionHandler()
+				sipSubscriptionHandler.getNewSipSubscriptionHandler()
 						.newSipSubscriptionAuthorization(serverTransaction,
 								serverTransactionACI, subscriber,
 								subscriberDisplayName, notifier, key, expires,
-								responseCode, eventList, entityManager,
+								responseCode, eventList, dataSource,
 								getImplementedControlChildSbb());
 			} else {
-				new InternalSubscriptionHandler(this)
-						.getNewInternalSubscriptionHandler()
+				internalSubscriptionHandler.getNewInternalSubscriptionHandler()
 						.newInternalSubscriptionAuthorization(subscriber,
 								subscriberDisplayName, notifier, key, expires,
-								responseCode, eventList, entityManager,
+								responseCode, eventList, dataSource,
 								getImplementedControlChildSbb());
 			}
-			entityManager.flush();
+
 		} catch (Exception e) {
 			logger.error("Error processing new subscription authorization", e);
 			// cleanup
 			if (!key.isInternalSubscription()) {
 				if (serverTransaction != null) {
 					try {
-						Response response = new SipSubscriptionHandler(this)
+						Response response = sipSubscriptionHandler
 								.addContactHeader(messageFactory
 										.createResponse(
 												Response.SERVER_INTERNAL_ERROR,
@@ -504,87 +546,55 @@ public abstract class SubscriptionControlSbb implements Sbb,
 					}
 				}
 			} else {
-				getParentSbbCMP().subscribeError(subscriber, notifier,
-						key.getEventPackage(), key.getRealEventId(),
+				getParentSbbCMP().subscribeError(subscriber, notifier.getUriWithParam(),
+						key.getEventPackage(), key.getEventId(),
 						Response.SERVER_INTERNAL_ERROR);
 			}
 			return;
 		}
-		entityManager.close();
 	}
 
 	public void notifySubscribers(String notifier, String eventPackage,
 			Object content, ContentTypeHeader contentTypeHeader) {
-
-		ImplementedSubscriptionControlSbbLocalObject childSbb = getImplementedControlChildSbb();
 		
-		// create jpa entity manager
-		EntityManager entityManager = getEntityManager();
+		final SubscriptionControlDataSource dataSource = getConfiguration().getDataSource();
 
 		// process subscriptions
-		for (Object object : entityManager.createNamedQuery(
-				Subscription.JPA_NAMED_QUERY_SELECT_SUBSCRIPTIONS_FROM_NOTIFIER_AND_EVENTPACKAGE).setParameter(
-				"notifier", notifier)
-				.setParameter("eventPackage", eventPackage).getResultList()) {
-			Subscription subscription = (Subscription) object;
+		ActivityContextInterface aci = null;
+		for (Subscription subscription : dataSource.getSubscriptionsByNotifierAndEventPackage(notifier, eventPackage)) {
 			if (subscription.getStatus().equals(Subscription.Status.active)) {
-				if (subscription.getKey().isInternalSubscription()) {
-					// internal subscription
-					new InternalSubscriptionHandler(this)
-							.getInternalSubscriberNotificationHandler()
-							.notifyInternalSubscriber(entityManager,
-									subscription, content, contentTypeHeader,
-									childSbb);
-				} else {
-					// sip subscription
-					new SipSubscriptionHandler(this)
-							.getSipSubscriberNotificationHandler()
-							.notifySipSubscriber(content, contentTypeHeader,
-									subscription, entityManager, childSbb);
+				aci = activityContextNamingfacility.lookup(subscription.getKey().toString());
+				if (aci != null) {
+					fireNotifyEvent(new NotifyEvent(subscription.getKey(), content, contentTypeHeader), aci, null);
+				}
+				else {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Subscription aci not found, unable to fire notify event for "+subscription);
+					}
 				}
 			}
 		}
-
-		// close entity manager
-		entityManager.close();
+		
 	}
 
 	public void notifySubscriber(SubscriptionKey key, Object content,
 			ContentTypeHeader contentTypeHeader) {
-
-		ImplementedSubscriptionControlSbbLocalObject childSbb = getImplementedControlChildSbb();
-		
-		// create jpa entity manager
-		EntityManager entityManager = getEntityManager();
-
-		// get subscription
-		Subscription subscription = entityManager.find(Subscription.class, key);
-
-		if (subscription != null
-				&& subscription.getStatus().equals(Subscription.Status.active)) {
-			if (subscription.getKey().isInternalSubscription()) {
-				// internal subscription
-				new InternalSubscriptionHandler(this)
-						.getInternalSubscriberNotificationHandler()
-						.notifyInternalSubscriber(entityManager, subscription,
-								content, contentTypeHeader, childSbb);
-			} else {
-				// sip subscription
-				new SipSubscriptionHandler(this)
-						.getSipSubscriberNotificationHandler()
-						.notifySipSubscriber(content, contentTypeHeader,
-								subscription, entityManager, childSbb);
+		ActivityContextInterface aci = activityContextNamingfacility.lookup(key.toString());
+		if (aci != null) {
+			fireNotifyEvent(new NotifyEvent(key, content, contentTypeHeader), aci, null);
+		}
+		else {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Unable to notify subscriber, the aci was not found for "+key);
 			}
 		}
-
-		// close entity manager
-		entityManager.close();
 	}
 
-	public void authorizationChanged(String subscriber, String notifier,
+	public void authorizationChanged(String subscriber, Notifier notifier,
 			String eventPackage, String eventId, int authorizationCode) {
-		// get entity manager
-		EntityManager entityManager = getEntityManager();
+		
+		final SubscriptionControlDataSource dataSource = getConfiguration().getDataSource();
+		
 		// get this entity dialog (if it's not a internal subscription) and the
 		// subscription aci
 		DialogActivity dialog = null;
@@ -602,15 +612,10 @@ public abstract class SubscriptionControlSbb implements Sbb,
 		}
 
 		// let's find the subscription that matches the parameters
-		String callId = SubscriptionKey.NO_CALL_ID;
-		String remoteTag = SubscriptionKey.NO_REMOTE_TAG;
-		if (dialog != null) {
-			callId = dialog.getCallId().getCallId();
-			remoteTag = dialog.getRemoteTag();
-		}
+		String dialogId = dialog == null ? SubscriptionKey.NO_DIALOG_ID : dialog.getDialogId();
 
-		Subscription subscription = entityManager.find(Subscription.class,
-				new SubscriptionKey(callId, remoteTag, eventPackage, eventId));
+		Subscription subscription = dataSource.get(
+				new SubscriptionKey(dialogId, eventPackage, eventId));
 
 		if (subscription != null) {
 			// we have a subscription match
@@ -681,18 +686,18 @@ public abstract class SubscriptionControlSbb implements Sbb,
 				if (subscription.getStatus().equals(
 						Subscription.Status.terminated)) {
 					if (subscription.getResourceList()) {
-						getEventListControlChildSbb().removeSubscription(subscription);
+						eventListSubscriptionHandler.removeSubscription(subscription);
 					}
 					if (dialog == null) {
 						// internal subscription
-						new InternalSubscriptionHandler(this)
+						internalSubscriptionHandler
 						.getRemoveInternalSubscriptionHandler()
-						.removeInternalSubscription(subscriptionAci, subscription, entityManager, childSbb);
+						.removeInternalSubscription(subscriptionAci, subscription, dataSource, childSbb);
 					} else {
 						// sip subscription
-						new SipSubscriptionHandler(this)
+						sipSubscriptionHandler
 						.getRemoveSipSubscriptionHandler()
-						.removeSipSubscription(subscriptionAci, subscription, entityManager, childSbb);
+						.removeSipSubscription(subscriptionAci, subscription, dataSource, childSbb);
 					}
 				}
 				else {
@@ -702,17 +707,17 @@ public abstract class SubscriptionControlSbb implements Sbb,
 								Subscription.Status.active)) {
 							notifySubscriber = false;
 							// resource list and subscription now active, create rls subscription
-							if (!getEventListControlChildSbb().createSubscription(subscription)) {
+							if (!eventListSubscriptionHandler.createSubscription(subscription)) {
 								if (dialog == null) {
 									// internal subscription
-									new InternalSubscriptionHandler(this)
+									internalSubscriptionHandler
 									.getRemoveInternalSubscriptionHandler()
-									.removeInternalSubscription(subscriptionAci, subscription, entityManager, childSbb);
+									.removeInternalSubscription(subscriptionAci, subscription, dataSource, childSbb);
 								} else {
 									// sip subscription
-									new SipSubscriptionHandler(this)
+									sipSubscriptionHandler
 									.getRemoveSipSubscriptionHandler()
-									.removeSipSubscription(subscriptionAci, subscription, entityManager, childSbb);
+									.removeSipSubscription(subscriptionAci, subscription, dataSource, childSbb);
 								}
 							}
 						}
@@ -724,26 +729,26 @@ public abstract class SubscriptionControlSbb implements Sbb,
 						// irrelevant to be resource list), notify subscriber
 						if (dialog == null) {
 							// internal subscription
-							new InternalSubscriptionHandler(this)
+							internalSubscriptionHandler
 							.getInternalSubscriberNotificationHandler()
-							.notifyInternalSubscriber(entityManager,
-									subscription, subscriptionAci, childSbb);
+							.notifyInternalSubscriber(subscription, subscriptionAci, childSbb);
 						} else {
 							// sip subscription
 							try {
-								new SipSubscriptionHandler(this)
+								sipSubscriptionHandler
 								.getSipSubscriberNotificationHandler()
-								.createAndSendNotify(entityManager,
+								.createAndSendNotify(dataSource,
 										subscription, dialog, childSbb);
 							} catch (Exception e) {
 								logger.error("failed to notify subscriber", e);
 							}
-						}						
+						}	
+						subscription.store();
 					}
 					
 					// notify winfo subscription(s)
-					new WInfoSubscriptionHandler(this).notifyWinfoSubscriptions(
-							entityManager, subscription, childSbb);
+					wInfoSubscriptionHandler.notifyWinfoSubscriptions(
+							dataSource, subscription, childSbb);
 
 					if (subscription.getStatus().equals(
 							Subscription.Status.waiting)) {
@@ -755,16 +760,12 @@ public abstract class SubscriptionControlSbb implements Sbb,
 						// refresh subscription
 						subscription.refresh(defaultWaitingExpires);
 						// set waiting timer
-						setSubscriptionTimerAndPersistSubscription(entityManager,
-								subscription, defaultWaitingExpires + 1,
+						setSubscriptionTimerAndPersistSubscription(subscription, defaultWaitingExpires + 1,
 								subscriptionAci);
 					}	
 				}
 			}  
 		}
-
-		entityManager.flush();
-		entityManager.close();
 	}
 
 	// --- EVENT LIST CALLBACKS
@@ -782,122 +783,36 @@ public abstract class SubscriptionControlSbb implements Sbb,
 	}
 	
 	public Subscription getSubscription(SubscriptionKey key) {
-		EntityManager entityManager = getEntityManager();
-		Subscription subscription = entityManager.find(Subscription.class, key);
-		if (subscription != null) {
-			subscription.setEntityManager(entityManager);
-		}
-		return subscription;
-	}
-	
-	/*
-	 * perhaps there are subscriptions for this uri that are
-	 * not set for a rls service, this can happen when a new list is
-	 * created and a subscription arrives before the rls knows about the new service
-	 * 	
-	 * (non-Javadoc)
-	 * @see org.mobicents.slee.sipevent.server.subscription.EventListSubscriptionControlParentSbbLocalObject#rlsServiceUpdated(java.lang.String)
-	 */
-	public void rlsServiceUpdated(String uri) {		 
-		terminateRlsServiceSubscriptions(uri, Subscription.Event.deactivated);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.mobicents.slee.sipevent.server.subscription.EventListSubscriptionControlParentSbbLocalObject#rlsServiceRemoved(java.lang.String)
-	 */
-	public void rlsServiceRemoved(String uri) {
-		terminateRlsServiceSubscriptions(uri, Subscription.Event.noresource);
-	}
-	
-	/*
-	 * Terminates all subscriptions where the notifier is the specified RLS
-	 * service uri, with the provided event.
-	 * 
-	 * @param notifier
-	 * 
-	 * @param event
-	 */
-	private void terminateRlsServiceSubscriptions(String notifier, Subscription.Event event) {
-			
-		if (getConfiguration().getEventListSupportOn() && getImplementedControlChildSbb().acceptsEventList()) {
-			// create jpa entity manager
-			EntityManager entityManager = getEntityManager();
-
-			int index = notifier.indexOf(';');
-			String notifierWithoutParams = null;
-			String notifierParams = null;
-			if (index > 0) {
-				notifierWithoutParams = notifier.substring(0,index);
-				notifierParams = notifier.substring(index);			
-			}
-			else {
-				notifierWithoutParams = notifier;
-				notifierParams = null;
-			}
-			
-			// process subscriptions
-			for (Object object : entityManager.createNamedQuery(
-			Subscription.JPA_NAMED_QUERY_SELECT_SUBSCRIPTIONS_FROM_NOTIFIER_WITH_PARAMS).setParameter(
-					"notifier", notifierWithoutParams).setParameter("notifierParams", notifierParams).getResultList()) {				
-				Subscription subscription = (Subscription) object;
-				if (!subscription.getResourceList() || event == Subscription.Event.noresource) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("terminating rls service "+notifier+" subscription "+subscription+" with event "+event);
-					}
-					
-					// remove subscription in those cases
-					subscription.changeStatus(event);
-					try {
-						// get subscription aci
-						ActivityContextInterface aci = getActivityContextNamingfacility().lookup(
-								subscription.getKey().toString());
-						if (aci != null) {
-							if (subscription.getKey().isInternalSubscription()) {							
-								new InternalSubscriptionHandler(this).getRemoveInternalSubscriptionHandler().removeInternalSubscription(aci, subscription, entityManager, getImplementedControlChildSbb());
-							}
-							else {
-								new SipSubscriptionHandler(this).getRemoveSipSubscriptionHandler().removeSipSubscription(aci, subscription, entityManager, getImplementedControlChildSbb());
-							}
-						}
-					} catch (Exception e) {
-						logger.error("failed to notify internal subscriber", e);
-					}
-				}
-
-			}
-
-			// close entity manager
-			entityManager.close();
-		}
+		return getConfiguration().getDataSource().get(key);
 	}
 	
 	// --- INTERNAL SUBSCRIPTIONS
 
 	private void subscribe(String subscriber, String subscriberDisplayName,
-			String notifier, String eventPackage, String subscriptionId,
+			Notifier notifier, String eventPackage, String subscriptionId,
 			int expires, String content, String contentType,
 			String contentSubtype, boolean eventList) {
 
-		EntityManager entityManager = getEntityManager();
-
-		getInternalSubscriptionHandler().getNewInternalSubscriptionHandler()
+				getInternalSubscriptionHandler().getNewInternalSubscriptionHandler()
 				.newInternalSubscription(subscriber, subscriberDisplayName,
 						notifier, eventPackage, subscriptionId, expires,
-						content, contentType, contentSubtype, eventList, entityManager,
+						content, contentType, contentSubtype, eventList, getConfiguration().getDataSource(),
 						getImplementedControlChildSbb());
-
-		entityManager.flush();
-		entityManager.close();
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.slee.sipevent.server.subscription.SubscriptionClientControl#subscribe(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, int, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	public void subscribe(String subscriber, String subscriberDisplayName,
-			String notifier, String eventPackage, String subscriptionId,
+			String notifierString, String eventPackage, String subscriptionId,
 			int expires, String content, String contentType,
 			String contentSubtype) {
 
+		Notifier notifier = new Notifier(notifierString);
+		
 		if (getConfiguration().getEventListSupportOn() && getImplementedControlChildSbb().acceptsEventList()) {
-			int rlsResponse = getEventListControlChildSbb().validateSubscribeRequest(subscriber, notifier, eventPackage, null);
+			int rlsResponse = eventListSubscriptionHandler.validateSubscribeRequest(subscriber, notifier, eventPackage, null);
 
 			switch (rlsResponse) {
 			case Response.NOT_FOUND:
@@ -908,7 +823,7 @@ public abstract class SubscriptionControlSbb implements Sbb,
 				break;
 			default:
 				// rls provided an error while validating event list possible subscribe
-				getParentSbbCMP().subscribeError(subscriber, notifier, eventPackage, subscriptionId, rlsResponse);
+				getParentSbbCMP().subscribeError(subscriber, notifierString, eventPackage, subscriptionId, rlsResponse);
 			break;
 			}
 		}
@@ -917,39 +832,37 @@ public abstract class SubscriptionControlSbb implements Sbb,
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.slee.sipevent.server.subscription.SubscriptionClientControl#resubscribe(java.lang.String, java.lang.String, java.lang.String, java.lang.String, int)
+	 */
 	public void resubscribe(String subscriber, String notifier,
 			String eventPackage, String subscriptionId, int expires) {
 
-		EntityManager entityManager = getEntityManager();
-
+		final SubscriptionControlDataSource dataSource = getConfiguration().getDataSource();
 		getInternalSubscriptionHandler()
 				.getRefreshInternalSubscriptionHandler()
 				.refreshInternalSubscription(subscriber, notifier,
-						eventPackage, subscriptionId, expires, entityManager,
+						eventPackage, subscriptionId, expires, dataSource,
 						getImplementedControlChildSbb());
-
-		entityManager.flush();
-		entityManager.close();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.slee.sipevent.server.subscription.SubscriptionClientControl#unsubscribe(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
 	public void unsubscribe(String subscriber, String notifier,
 			String eventPackage, String subscriptionId) {
 
-		EntityManager entityManager = getEntityManager();
-
 		getInternalSubscriptionHandler().getRemoveInternalSubscriptionHandler()
 				.removeInternalSubscription(subscriber, notifier, eventPackage,
-						subscriptionId, entityManager, getImplementedControlChildSbb());
-
-		entityManager.flush();
-		entityManager.close();
+						subscriptionId, getConfiguration().getDataSource(), getImplementedControlChildSbb());
 
 	}
 
 	// ----------- AUX METHODS
 
-	public void setSubscriptionTimerAndPersistSubscription(
-			EntityManager entityManager, Subscription subscription, long delay,
+	public void setSubscriptionTimerAndPersistSubscription(Subscription subscription, long delay,
 			ActivityContextInterface aci) {
 		TimerOptions options = new TimerOptions();
 		options.setPreserveMissed(TimerPreserveMissed.ALL);
@@ -958,8 +871,8 @@ public abstract class SubscriptionControlSbb implements Sbb,
 				.currentTimeMillis()
 				+ (delay * 1000), 1, 1, options);
 		subscription.setTimerID(timerId);
-		// update subscription
-		entityManager.persist(subscription);
+		subscription.store();
+		
 	}
 
 	/**
@@ -971,7 +884,7 @@ public abstract class SubscriptionControlSbb implements Sbb,
 	 * @param aci
 	 * @param childSbb
 	 */
-	public void removeSubscriptionData(EntityManager entityManager,
+	public void removeSubscriptionData(SubscriptionControlDataSource dataSource,
 			Subscription subscription, Dialog dialog,
 			ActivityContextInterface aci,
 			ImplementedSubscriptionControlSbbLocalObject childSbb) {
@@ -979,7 +892,7 @@ public abstract class SubscriptionControlSbb implements Sbb,
 		// to clean up resources
 		childSbb.removingSubscription(subscription);
 		// remove subscription
-		entityManager.remove(subscription);
+		subscription.remove();
 		// remove aci name binding
 		try {
 			getActivityContextNamingfacility().unbind(
@@ -991,23 +904,19 @@ public abstract class SubscriptionControlSbb implements Sbb,
 		// if dialog is not needed anymore (and remove if that's the case)
 		if (dialog != null) {
 			// get subscriptions of dialog from persistence
-			List<?> subscriptionsInDialog = Subscription.getDialogSubscriptions(
-					entityManager, dialog.getCallId().getCallId(), dialog
-							.getRemoteTag());
+			List<Subscription> subscriptionsInDialog = dataSource.getSubscriptionsByDialog(dialog.getDialogId());
 			if (subscriptionsInDialog.size() == 0) {
 				if (logger.isInfoEnabled()) {
 					logger.info("No more subscriptions on dialog, deleting...");
 				}
 				// no more subscriptions in dialog, detach and delete the dialog
-				aci.detach(getSbbContext().getSbbLocalObject());
+				aci.detach(sbbContext.getSbbLocalObject());
 				dialog.delete();
 			}
 		}
 
 		// note: we don't remove null acis here, otherwise the final notify
 		// couldn't be handled
-
-		entityManager.flush();
 
 		if (logger.isInfoEnabled()) {
 			logger.info("Removed data for " + subscription);
@@ -1040,6 +949,10 @@ public abstract class SubscriptionControlSbb implements Sbb,
 			messageFactory = sipProvider.getMessageFactory();
 			activityContextNamingfacility = (ActivityContextNamingFacility) context
 					.lookup("slee/facilities/activitycontextnaming");
+			rlsServicesCacheRASbbInterface = (RLSServicesCacheSbbInterface) context
+			.lookup("slee/resources/sipevent/rlscache/1.0/sbbinterface");
+			rlsServicesCacheACIF = (RLSServicesCacheActivityContextInterfaceFactory) context
+			.lookup("slee/resources/sipevent/rlscache/1.0/acif");
 		} catch (Exception e) {
 			logger.error(
 					"Unable to retrieve factories, facilities & providers", e);
@@ -1085,6 +998,24 @@ public abstract class SubscriptionControlSbb implements Sbb,
 	 * @param aci
 	 * @param address
 	 */
-	public abstract void fireInternalNotifyEvent(InternalNotifyEvent event,
+	public abstract void fireNotifyEvent(NotifyEvent event,
 			ActivityContextInterface aci, Address address);
+	
+	/**
+	 * Used to fire events to notify the right sbb entity of a winfo state change
+	 * 
+	 * @param event
+	 * @param aci
+	 * @param address
+	 */
+	public abstract void fireWInfoNotifyEvent(WInfoNotifyEvent event,
+			ActivityContextInterface aci, Address address);
+	
+	/**
+	 * Used to terminate a subscription.
+	 * @param event
+	 * @param aci
+	 * @param address
+	 */
+	public abstract void fireTerminateSubscriptionEvent(TerminateSubscriptionEvent event, ActivityContextInterface aci, Address address);
 }

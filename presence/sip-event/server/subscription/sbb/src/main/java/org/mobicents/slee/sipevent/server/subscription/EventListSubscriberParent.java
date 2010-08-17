@@ -3,10 +3,9 @@
  */
 package org.mobicents.slee.sipevent.server.subscription;
 
-import org.mobicents.slee.sipevent.server.subscription.eventlist.FlatList;
+import org.mobicents.slee.sipevent.server.subscription.data.Subscription;
+import org.mobicents.slee.sipevent.server.subscription.data.SubscriptionKey;
 import org.mobicents.slee.sipevent.server.subscription.eventlist.MultiPart;
-import org.mobicents.slee.sipevent.server.subscription.pojo.Subscription;
-import org.mobicents.slee.sipevent.server.subscription.pojo.SubscriptionKey;
 
 /**
  * @author martins
@@ -28,10 +27,4 @@ public interface EventListSubscriberParent {
 	 */
 	public Subscription getSubscription(SubscriptionKey key);
 
-	/**
-	 * Requests the flat list with the specified service uri
-	 * @param serviceUri
-	 * @return
-	 */
-	public FlatList getFlatList(String serviceUri);
 }

@@ -4,9 +4,17 @@
 	<parent>
 		<groupId>org.mobicents.servers.sipevent</groupId>
 		<artifactId>sip-event-subscription-control-configuration</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 		
 	<artifactId>sip-event-subscription-control-configuration-jar</artifactId>
+	
+	<dependencies>
+		<dependency>
+			<artifactId>sip-event-subscription-control-data</artifactId>
+			<groupId>${pom.groupId}</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+	</dependencies>
 	
 </project>

@@ -1,14 +1,15 @@
 package org.mobicents.slee.sipevent.server.internal;
 
-import javax.persistence.EntityManager;
 import javax.sip.message.Response;
 import javax.slee.ActivityContextInterface;
 
 import org.apache.log4j.Logger;
 import org.mobicents.slee.sipevent.server.subscription.ImplementedSubscriptionControlSbbLocalObject;
 import org.mobicents.slee.sipevent.server.subscription.SubscriptionControlSbb;
-import org.mobicents.slee.sipevent.server.subscription.pojo.Subscription;
-import org.mobicents.slee.sipevent.server.subscription.pojo.SubscriptionKey;
+import org.mobicents.slee.sipevent.server.subscription.data.Notifier;
+import org.mobicents.slee.sipevent.server.subscription.data.Subscription;
+import org.mobicents.slee.sipevent.server.subscription.data.SubscriptionControlDataSource;
+import org.mobicents.slee.sipevent.server.subscription.data.SubscriptionKey;
 
 /**
  * Handles the refresh of an internal subscription
@@ -41,18 +42,17 @@ public class RefreshInternalSubscriptionHandler {
 	 */
 	public void refreshInternalSubscription(String subscriber, String notifier,
 			String eventPackage, String subscriptionId, int expires,
-			EntityManager entityManager,
+			SubscriptionControlDataSource dataSource,
 			ImplementedSubscriptionControlSbbLocalObject childSbb) {
 
 		SubscriptionControlSbb sbb = internalSubscriptionHandler.sbb;
 
 		// create subscription key
 		SubscriptionKey subscriptionKey = new SubscriptionKey(
-				SubscriptionKey.NO_CALL_ID, SubscriptionKey.NO_REMOTE_TAG,
+				SubscriptionKey.NO_DIALOG_ID,
 				eventPackage, subscriptionId);
 		// find subscription
-		Subscription subscription = entityManager.find(Subscription.class,
-				subscriptionKey);
+		Subscription subscription = dataSource.get(subscriptionKey);
 
 		if (subscription == null) {
 			// subscription does not exists
@@ -102,14 +102,13 @@ public class RefreshInternalSubscriptionHandler {
 		if (!subscription.getResourceList()) {
 			// notify subscriber
 			internalSubscriptionHandler.getInternalSubscriberNotificationHandler()
-			.notifyInternalSubscriber(entityManager, subscription, aci,
+			.notifyInternalSubscriber(subscription, aci,
 					childSbb);
 		}
 
 		// set new timer
 		internalSubscriptionHandler.sbb
-				.setSubscriptionTimerAndPersistSubscription(entityManager,
-						subscription, expires + 1, aci);
+				.setSubscriptionTimerAndPersistSubscription(subscription, expires + 1, aci);
 
 		if (logger.isInfoEnabled()) {
 			logger.info("Refreshed " + subscription + " for " + expires
@@ -118,7 +117,7 @@ public class RefreshInternalSubscriptionHandler {
 		
 		if (subscription.getResourceList()) {
 			// it's a resource list subscription thus pas control to rls
-			internalSubscriptionHandler.sbb.getEventListControlChildSbb().refreshSubscription(subscription);
+			internalSubscriptionHandler.sbb.getEventListSubscriptionHandler().refreshSubscription(subscription);
 		}
 	}
 }
