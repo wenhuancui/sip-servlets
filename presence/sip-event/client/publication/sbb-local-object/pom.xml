@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.sipevent</groupId>
 		<artifactId>sip-event-client-publication</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 	
 	<artifactId>sip-event-client-publication-sbb-local-object</artifactId>
