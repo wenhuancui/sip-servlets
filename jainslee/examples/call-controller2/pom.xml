@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 
 	<artifactId>call-controller2-example-parent</artifactId>
 	<groupId>org.mobicents.examples</groupId>
-	<version>5.0.0.Beta2-JBCP5</version>
+	<version>5.0.0.CR01-JBCP5</version>
 	<name>Mobicents Examples :: ${pom.artifactId}</name>
 
 	<modules>
@@ -56,7 +56,7 @@
 			<artifactId>common</artifactId>
 			<groupId>org.mobicents.servers.jainslee.core</groupId>
 			<version>${mobicents.servers.jainslee.version}</version>
-		</dependency>
+		</dependency>		
 		</dependencies>
 	</dependencyManagement>
 
@@ -83,9 +83,9 @@
 	<profiles>
 		<profile>
 			<id>maven-release</id>
-			<modules>
+			<!-- modules>
 				<module>docs</module>
-			</modules>
+			</modules-->
 			<build>
 				<plugins>
 					<plugin>
@@ -94,6 +94,7 @@
 						<configuration>
 							<autoVersionSubmodules>true</autoVersionSubmodules>
 							<tagBase>https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/call-controller2</tagBase>
+							<branchBase>https://mobicents.googlecode.com/svn/branches/servers/jain-slee/2.x.y/examples/call-controller2</branchBase>
 							<preparationGoals>clean install</preparationGoals>
 						</configuration>
 					</plugin>
@@ -143,9 +144,27 @@
 		</profile>
 	</profiles>
 
-  <scm>
-    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/call-controller2/2.0.0.GA</connection>
-    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/call-controller2/2.0.0.GA</developerConnection>
-    <url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/call-controller2/2.0.0.GA</url>
-  </scm>
+  	<scm>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/call-controller2/2.1.2.FINAL</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/call-controller2/2.1.2.FINAL</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/call-controller2/2.1.2.FINAL</url>
+	</scm>
+	
+	<repositories>
+		<repository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Maven Repository Group</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+	
 </project>

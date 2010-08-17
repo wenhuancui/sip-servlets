@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 
 	<artifactId>converged-demo-parent</artifactId>
 	<groupId>org.mobicents.examples.converged</groupId>
-	<version>5.0.0.Beta2-JBCP5</version>
+	<version>5.0.0.CR01-JBCP5</version>
 
 
 	<packaging>pom</packaging>
@@ -55,11 +55,11 @@
 	</modules>
 
 	<properties>
-		<mobicents.resources.sip11.version>5.0.0.Beta2-JBCP5</mobicents.resources.sip11.version>
-		<mobicents.resources.mgcp.version>5.0.0.Beta2-JBCP5</mobicents.resources.mgcp.version>
-		<mobicents.core.version>5.0.0.Beta2-JBCP5</mobicents.core.version>
-		<mobicents.tools.mavenplugin.du.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.du.version>
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.resources.sip11.version>5.0.0.CR01-JBCP5</mobicents.resources.sip11.version>
+		<mobicents.resources.mgcp.version>5.0.0.CR01-JBCP5</mobicents.resources.mgcp.version>
+		<mobicents.core.version>5.0.0.CR01-JBCP5</mobicents.core.version>
+		<mobicents.tools.mavenplugin.du.version>5.0.0.CR01-JBCP5</mobicents.tools.mavenplugin.du.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.CR01-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 
 	<build>
@@ -171,9 +171,9 @@
 	</profiles>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/converged-demo/2.1.0.GA</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/converged-demo/2.1.0.GA</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/converged-demo/2.1.0.GA</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/converged-demo/2.1.2.FINAL</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/converged-demo/2.1.2.FINAL</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/converged-demo/2.1.2.FINAL</url>
 	</scm>
 	
 	<repositories>
@@ -184,9 +184,6 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
 		</repository>
 		<repository>
 			<id>jboss-public-repository-group</id>

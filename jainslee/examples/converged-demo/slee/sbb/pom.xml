@@ -5,12 +5,14 @@
 	<parent>
 		<artifactId>converged-demo-slee-parent</artifactId>
 		<groupId>org.mobicents.examples.converged</groupId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 
 	<artifactId>converged-demo-sbb</artifactId>
-	<name>Mobicents Servers Examples :: Converged :: ${pom.artifactId}</name>
-	
+	<name>
+		Mobicents Servers Examples :: Converged :: ${pom.artifactId}
+	</name>
+
 	<dependencies>
 		<dependency>
 			<artifactId>converged-demo-pojo-pu</artifactId>
@@ -41,6 +43,16 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>**/*.xml</exclude>
+				</excludes>
 			</resource>
 		</resources>
 	</build>
