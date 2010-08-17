@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>example-internal-publisher-parent</artifactId>
 		<groupId>org.mobicents.servers.sippresence</groupId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 		
 	<artifactId>example-internal-publisher-du</artifactId>
@@ -62,25 +62,6 @@
 					</execution>
 				</executions>
 			</plugin>
-		<plugin>
-			<artifactId>maven-assembly-plugin</artifactId>
-			<configuration>
-				<descriptors>
-					<descriptor>src/main/assemble/descriptor.xml</descriptor>
-				</descriptors>
-			</configuration>
-			<executions>
-				<execution>
-					<id>make-assembly</id>
-					<phase>package</phase>
-					<goals>
-						<goal>single</goal>
-						<goal>directory-single</goal>							
-					</goals>
-				</execution>
-			</executions>
-		</plugin>
-			
 		</plugins>
 	</build>
 	
