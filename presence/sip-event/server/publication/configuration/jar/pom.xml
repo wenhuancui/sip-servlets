@@ -4,9 +4,16 @@
 	<parent>
 		<groupId>org.mobicents.servers.sipevent</groupId>
 		<artifactId>sip-event-publication-control-configuration</artifactId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 	
 	<artifactId>sip-event-publication-control-configuration-jar</artifactId>
 	
+	<dependencies>
+		<dependency>
+			<groupId>${pom.groupId}</groupId>
+			<artifactId>sip-event-publication-control-data</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+	</dependencies>
 </project>
