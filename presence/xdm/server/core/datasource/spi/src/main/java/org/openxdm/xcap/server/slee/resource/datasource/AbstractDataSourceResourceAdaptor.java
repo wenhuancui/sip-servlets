@@ -307,7 +307,7 @@ public abstract class AbstractDataSourceResourceAdaptor implements DataSourceRes
 		final ActivityHandle activityHandle = new ActivityHandle(auid);
 		AppUsageActivity activity = (AppUsageActivity) activities.get(activityHandle);
 		if (activity == null) {
-			activity = new AppUsageActivity(auid,this);
+			activity = new AppUsageActivity(auid);
 			final AppUsageActivity anotherActivity = (AppUsageActivity) activities.putIfAbsent(activityHandle, activity);
 			if (anotherActivity != null) {
 				activity = anotherActivity;
@@ -315,7 +315,7 @@ public abstract class AbstractDataSourceResourceAdaptor implements DataSourceRes
 			else {
 				// created, add to slee
 				try {
-					sleeEndpoint.startActivity(activityHandle, activity,ACTIVITY_FLAGS);
+					sleeEndpoint.startActivityTransacted(activityHandle, activity,ACTIVITY_FLAGS);
 				} catch (Throwable e) {
 					getLogger().severe("failed to start activity for auid "+auid,e);
 				}
@@ -333,7 +333,7 @@ public abstract class AbstractDataSourceResourceAdaptor implements DataSourceRes
 		ActivityHandle activityHandle = new ActivityHandle(documentSelector.toString());
 		DocumentActivity activity = (DocumentActivity) activities.get(activityHandle);
 		if (activity == null) {
-			activity = new DocumentActivity(documentSelector,this);
+			activity = new DocumentActivity(documentSelector);
 			DocumentActivity anotherActivity = (DocumentActivity) activities.putIfAbsent(activityHandle, activity);
 			if (anotherActivity != null) {
 				activity = anotherActivity;
@@ -341,7 +341,7 @@ public abstract class AbstractDataSourceResourceAdaptor implements DataSourceRes
 			else {
 				// created, add to slee
 				try {
-					sleeEndpoint.startActivity(activityHandle, activity,ACTIVITY_FLAGS);
+					sleeEndpoint.startActivityTransacted(activityHandle, activity,ACTIVITY_FLAGS);
 				} catch (Throwable e) {
 					getLogger().severe("failed to start activity for document selector "+documentSelector,e);
 				}

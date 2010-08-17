@@ -6,12 +6,13 @@
 	<property name="release.dir" location="${ant.file.mobicents.release}/../target" />
 	<property name="release.type" value="mobicents" /> <!-- mobicents or jbcp -->
     <property name="docs.dir" location="${ant.file.mobicents.release}/../../docs"/>
-	<property name="mobicents.jainslee.version" value="2.0.0.CR1" />
+	<property name="mobicents.jainslee.version" value="2.1.2.FINAL" />
 	<property name="jboss.version" value="5.1.0.GA" />
 	<property name="release.version" value="1.0.0.CR1-SNAPSHOT" />
 	<property name="mobicents.distro.zip.path" value="mobicents-jainslee-${mobicents.jainslee.version}.zip" />
 	<property name="jboss.home" location="${release.dir}/jboss-${jboss.version}/" />
 	<property name="jboss.config" value="default" />
+	
 	
 	<property name="mobicents.jainslee.download.url" value="http://downloads.sourceforge.net/project/mobicents/Mobicents%20JAIN%20SLEE%20Server/${mobicents.jainslee.version}/mobicents-jainslee-${mobicents.jainslee.version}-jboss-${jboss.version}.zip" />
 	<!--
@@ -45,48 +46,9 @@
 		</exec>
 	</target>
 -->
-	<target name="build-core-configuration" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/server/core/configuration">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	<target name="build-sip-event-publication" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../sip-event/server/publication">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	<target name="build-sip-event-subscription-pojo" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../sip-event/server/subscription/pojo">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	<target name="build-sip-event-subscription" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../sip-event/server/subscription">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	<target name="build-sip-event-client-subscription" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../sip-event/client/subscription">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	<target name="build-sip-event-client-publication" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../sip-event/client/publication">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	<target name="build-xdms-commons" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/commons">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	<target name="build-xdm-client" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/client">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
+	<target name="build-core" description="">
+		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../..">
+			<arg line="clean install -P maven-release,set-svn-revision" />
 		</exec>
 	</target>
 	
@@ -95,72 +57,9 @@
 			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
 		</exec>
 	</target>
-	<target name="build-xdms-core-internal-client" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/server/core/internal-client">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	<target name="build-xdms-core-subscription-control" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/server/core/subscription-control">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
 
-	<target name="build-xdms-server-appusage" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/server/appusages">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	<target name="build-user-profile" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../user-profile">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	<target name="build-xdms-core-datasource" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/server/core/datasource">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	<target name="build-xdms-core-appusage-cache" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/server/core/appusage-cache">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	<target name="build-xdms-core-xcap-library" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/server/core/xcap-control/library">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	<target name="build-xdms-core-xcap-sbb" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/server/core/xcap-control/sbb">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	<target name="build-xdms-core-xcap" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../xdm/server/core/xcap-control">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	
-	<target name="build-presence-server" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../presence/server">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
-	<target name="build-presence-client" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../presence/client">
-			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
-		</exec>
-	</target>
-	
 	<target name="build-integrated" description="">
-		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../integrated/server">
+		<exec executable="${mvn.executable}" dir="${ant.file.mobicents.release}/../../integrated/server/installer">
 			<arg line="clean install -P set-svn-revision -Djboss.home=${jboss.home}" />
 		</exec>
 	</target>
@@ -176,6 +75,7 @@
 
 	<target name="release-xdms">
 		<antcall target="build-mobicents-jain-slee" />
+		<antcall target="build-core" />
 		<antcall target="build-xdms" inheritall="false">
 			<param name="mvn.executable" value="${mvn.executable}" />
 			<param name="jboss.home" value="${jboss.home}" />
@@ -194,6 +94,7 @@
 
 	<target name="release-integrated">
 		<antcall target="build-mobicents-jain-slee" />
+		<antcall target="build-core" />
 		<antcall target="build-integrated" inheritall="false">
 			<param name="mvn.executable" value="${mvn.executable}" />
 			<param name="jboss.home" value="${jboss.home}" />
@@ -274,87 +175,10 @@
 
 	<target name="release-standalone" description="Makes the release.">
 		<property name="release.build.jboss.home" value="${sys.JBOSS_HOME}" />
-		<antcall target="build-core-configuration" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-sip-event-client-publication" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdms-commons" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdm-client" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-sip-event-subscription-pojo" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-sip-event-client-subscription" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-sip-event-subscription" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-sip-event-publication" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-user-profile" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdms-core-datasource" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdms-core-appusage-cache" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdms-core-xcap-library" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdms-core-xcap-sbb" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdms-server-appusage" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdms-core-xcap" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdms-core-internal-client" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-xdms-core-subscription-control" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
 		<antcall target="build-xdms" inheritall="false">
 			<param name="mvn.executable" value="${mvn.executable}" />
 			<param name="jboss.home" value="${release.dir}/sip-presence" />
 		</antcall>
-		<antcall target="build-presence-client" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		<antcall target="build-presence-server" inheritall="false">
-			<param name="mvn.executable" value="${mvn.executable}" />
-			<param name="jboss.home" value="${release.dir}/sip-presence" />
-		</antcall>
-		
 		<antcall target="build-integrated" inheritall="false">
 			<param name="mvn.executable" value="${mvn.executable}" />
 			<param name="jboss.home" value="${release.dir}/sip-presence" />
