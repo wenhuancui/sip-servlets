@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>sip-presence-parent</artifactId>
 		<groupId>org.mobicents.servers.sippresence</groupId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 		
 	<artifactId>sip-presence-server-internal-client-sbb</artifactId>
@@ -32,7 +32,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servers.sipevent</groupId>
-			<artifactId>sip-event-subscription-control-pojo</artifactId>	
+			<artifactId>sip-event-subscription-control-data</artifactId>	
 			<version>${pom.version}</version>
 		</dependency>
 		<dependency>
