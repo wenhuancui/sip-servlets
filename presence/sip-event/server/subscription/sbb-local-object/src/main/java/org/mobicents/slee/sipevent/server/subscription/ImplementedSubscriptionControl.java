@@ -6,8 +6,9 @@ package org.mobicents.slee.sipevent.server.subscription;
 import javax.sip.ServerTransaction;
 import javax.xml.bind.Marshaller;
 
-import org.mobicents.slee.sipevent.server.subscription.pojo.Subscription;
-import org.mobicents.slee.sipevent.server.subscription.pojo.SubscriptionKey;
+import org.mobicents.slee.sipevent.server.subscription.data.Notifier;
+import org.mobicents.slee.sipevent.server.subscription.data.Subscription;
+import org.mobicents.slee.sipevent.server.subscription.data.SubscriptionKey;
 
 /**
  * @author martins
@@ -49,7 +50,7 @@ public interface ImplementedSubscriptionControl {
 	 * @return
 	 */
 	public void isSubscriberAuthorized(String subscriber,
-			String subscriberDisplayName, String notifier, SubscriptionKey key,
+			String subscriberDisplayName, Notifier notifier, SubscriptionKey key,
 			int expires, String content, String contentType,
 			String contentSubtype, boolean eventList, ServerTransaction serverTransaction);
 
@@ -68,7 +69,7 @@ public interface ImplementedSubscriptionControl {
 	 * @return content filtered
 	 */
 	public Object filterContentPerSubscriber(String subscriber,
-			String notifier, String eventPackage, Object unmarshalledContent);
+			Notifier notifier, String eventPackage, Object unmarshalledContent);
 
 	/**
 	 * Retrieves a JAXB Marshaller to convert a JAXBElement to a String.
