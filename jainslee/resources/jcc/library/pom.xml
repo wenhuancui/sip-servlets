@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>mobicents-slee-ra-jcc</artifactId>
 		<groupId>org.mobicents.resources.jcc</groupId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 
 	<artifactId>jcc-library</artifactId>
@@ -44,6 +44,10 @@
 
 				<!-- PROTOCOLS -->
 				<dependency>
+					<artifactId>stream</artifactId>
+					<groupId>org.mobicents.protocols.stream</groupId>
+				</dependency>
+				<dependency>
 					<artifactId>sccp-api</artifactId>
 					<groupId>org.mobicents.protocols.ss7.sccp</groupId>
 				</dependency>
@@ -60,7 +64,7 @@
 					<groupId>org.mobicents.protocols.ss7.tcap</groupId>
 				</dependency>
 				<dependency>
-					<artifactId>MTP</artifactId>
+					<artifactId>mtp</artifactId>
 					<groupId>org.mobicents.protocols.ss7.mtp</groupId>
 				</dependency>
 				<dependency>

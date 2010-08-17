@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>mobicents-slee-ra-sip11</artifactId>
 		<groupId>org.mobicents.resources</groupId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 	
 	<artifactId>sip11-library</artifactId>

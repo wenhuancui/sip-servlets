@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>http-client-parent</artifactId>
 		<groupId>org.mobicents.resources</groupId>
-		<version>2.0.0.GA</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 	
 	<artifactId>http-client-library</artifactId>

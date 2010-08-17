@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>mobicents-slee-ra-map</artifactId>
 		<groupId>org.mobicents.resources</groupId>
-		<version>5.0.0.Beta2-JBCP5</version>
+		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
 
 	<artifactId>mobicents-slee-ra-map-library</artifactId>
@@ -16,11 +16,11 @@
 
 	<dependencies>
 		<dependency>
-			<artifactId>MTP</artifactId>
+			<artifactId>mtp</artifactId>
 			<groupId>org.mobicents.protocols.ss7.mtp</groupId>
 			<version>${mtp.version}</version>
 		</dependency>
-			
+
 		<dependency>
 			<artifactId>map-api</artifactId>
 			<groupId>org.mobicents.protocols.ss7.map</groupId>
@@ -53,12 +53,18 @@
 			<groupId>org.mobicents.protocols.ss7.sccp</groupId>
 			<version>${sccp.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<artifactId>asn</artifactId>
 			<groupId>org.mobicents.protocols.asn</groupId>
 			<version>${asn.version}</version>
-		</dependency>		
+		</dependency>
+
+		<dependency>
+			<artifactId>stream</artifactId>
+			<groupId>org.mobicents.protocols.stream</groupId>
+			<version>${stream.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

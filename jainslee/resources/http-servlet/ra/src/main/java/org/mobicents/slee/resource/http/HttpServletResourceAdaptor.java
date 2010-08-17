@@ -3,7 +3,6 @@ package org.mobicents.slee.resource.http;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.slee.Address;
-import javax.slee.AddressPlan;
 import javax.slee.facilities.EventLookupFacility;
 import javax.slee.facilities.Tracer;
 import javax.slee.resource.ActivityAlreadyExistsException;
@@ -436,7 +435,10 @@ public class HttpServletResourceAdaptor implements ResourceAdaptor,
 		final boolean infoTrace = logger.isInfoEnabled();
 
 		AbstractHttpServletActivity activity = null;
-		final HttpSessionWrapper session = (HttpSessionWrapper) request
+		
+		final HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(
+				request);
+		final HttpSessionWrapper session = (HttpSessionWrapper) wrapper
 				.getSession(false);
 
 		final HttpServletRequestEvent event = new HttpServletRequestEventImpl(
@@ -480,27 +482,21 @@ public class HttpServletResourceAdaptor implements ResourceAdaptor,
 				return;
 			}
 		}
-		// PathInfo can be empty string and creation of Address will throw
-		// exception
-		// for empty String hence hardcoding prefix /pathInfo
-		final String pathInfo = "/pathInfo" + request.getPathInfo();
-		final Address address = new Address(AddressPlan.URI, pathInfo);
-
-		if (infoTrace) {
-			logger.fine("Firing event " + event + " in activity " + activity
-					+ " and address " + address);
+		
+		if (logger.isFineEnabled()) {
+			logger.fine("Firing event " + event + " in activity " + activity);
 		}
 
 		final Object lock = requestLock.getLock(event);
 		synchronized (lock) {
 			try {
-				sleeEndpoint.fireEvent(activity, eventType, event, address,
+				sleeEndpoint.fireEvent(activity, eventType, event, null,
 						null, EventFlags.REQUEST_EVENT_UNREFERENCED_CALLBACK);
 				// block thread until event has been processed
 				// otherwise jboss web replies to the request
 				lock.wait(15000);
-				// the event was unreferenced, if the activity is the request
-				// then end it
+				// the event was unreferenced or 15s timeout, if the activity is
+				// the request then end it
 				if (session == null) {
 					endActivity(activity, infoTrace);
 				}
