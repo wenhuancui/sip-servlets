@@ -42,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servers.sipevent</groupId>
-			<artifactId>sip-event-subscription-control-rls-cache</artifactId>
+			<artifactId>sip-event-subscription-control-rls-cache-spi</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
 	</dependencies>
