@@ -3,10 +3,9 @@
 	<modelVersion>4.0.0</modelVersion>
 		
 	<parent>
-		<artifactId>sip-presence-parent</artifactId>
-		<groupId>org.mobicents.servers.sippresence</groupId>
+		<groupId>org.mobicents.servers.sipevent</groupId>
+		<artifactId>sip-event-subscription-control</artifactId>
 		<version>5.0.0.CR01-JBCP5</version>
-		<relativePath>../../../..</relativePath>
 	</parent>
 	
 	<groupId>org.mobicents.servers.sipevent</groupId>
