@@ -14,8 +14,10 @@
 	<artifactId>sip-event-subscription-control</artifactId>
 			
 	<modules>
+		<module>data</module>
 		<module>configuration</module>
 		<module>rls-cache</module>
+		<module>jaxb-pojos</module>
 		<module>event</module>
 		<module>sbb-local-object</module>
 		<module>library</module>
