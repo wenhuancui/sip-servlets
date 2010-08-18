@@ -13,12 +13,11 @@
 	<groupId>org.mobicents.servers.sipevent</groupId>
 	<artifactId>sip-event-publication-control</artifactId>
 			
-	<modules>
-		<!-- module>data</module-->
+	<!-- modules>
 		<module>configuration</module>
 		<module>sbb-local-object</module>
 		<module>sbb</module>
 		<module>library</module>
-	</modules>
+	</modules-->
 	
 </project>
