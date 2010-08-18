@@ -14,14 +14,14 @@
 	<artifactId>sip-event-subscription-control</artifactId>
 			
 	<modules>
+		<module>data</module>
 		<module>configuration</module>
-		<!-- module>pojo</module-->
 		<module>pojo</module>
 		<module>sbb-local-object</module>
 		<module>sbb</module>
 		<module>event</module>
 		<module>library</module>
-		<!-- module>rls-test</module-->
+		<module>rls-cache</module>
 	</modules>
 	
 </project>
