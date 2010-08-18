@@ -12,7 +12,7 @@
 	<artifactId>xdms-core-xcap-control-library</artifactId>
 	<version>5.0.0.CR01-JBCP5</version>		
 	<packaging>jar</packaging>
-	
+		
 	<dependencies>
 		<dependency>
 			<groupId>commons-httpclient</groupId>

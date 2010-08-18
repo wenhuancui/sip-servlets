@@ -8,8 +8,6 @@
 			<relativePath>../..</relativePath>
 	</parent>
 	
-	<packaging>jar</packaging>
-	
 	<artifactId>commons</artifactId>
 	<groupId>org.mobicents.servers.xdm</groupId>
 	

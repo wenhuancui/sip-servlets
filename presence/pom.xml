@@ -46,7 +46,7 @@
 		<module>sip-event/server/subscription/library</module>
 		<module>sip-event/server/subscription/sbb</module>
 		
-		<module>xdm/server/core/appusage-cache</module>
+		<module>xdm/server/core/appusage-management</module>
 		<module>xdm/server/core/datasource</module>
 		<module>xdm/server/core/xcap-control/sbb</module>
 		<module>xdm/server/appusages</module>
