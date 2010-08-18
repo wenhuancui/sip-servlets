@@ -26,11 +26,11 @@
 			<groupId>sun-jaxb</groupId>
 			<artifactId>jaxb-impl</artifactId>
 		</dependency>	
-		<dependency>
+		<!-- dependency>
 			<groupId>${pom.groupId}</groupId>
 			<artifactId>sip-event-subscription-control-rls-cache-ratype</artifactId>
 			<version>${pom.version}</version>
-		</dependency>
+		</dependency-->
 		
 	</dependencies>
 	
