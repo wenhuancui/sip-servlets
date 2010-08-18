@@ -13,14 +13,14 @@
 	<packaging>pom</packaging>			
 
 	<modules>
-	  <module>spi</module>
-	  <module>library</module>
-	  <module>events</module>
 	  <module>ratype</module>
 	  <module>ra</module>
 	  <module>ra-du</module>
 	  <module>sbb</module>
 	  <module>service-du</module>
+	  <module>events</module>
+	  <module>spi</module>
+	  <module>library</module>
 	</modules>
 	
 </project>

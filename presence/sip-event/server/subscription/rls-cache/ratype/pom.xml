@@ -6,6 +6,8 @@
 		<artifactId>sip-event-subscription-control-rls-cache</artifactId>
 		<version>5.0.0.CR01-JBCP5</version>
 	</parent>
+	
+	<packaging>jar</packaging>
 		
 	<artifactId>sip-event-subscription-control-rls-cache-ratype</artifactId>
 	
