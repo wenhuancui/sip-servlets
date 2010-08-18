@@ -13,12 +13,13 @@
 	<groupId>org.mobicents.servers.sipevent</groupId>
 	<artifactId>sip-event-subscription-control</artifactId>
 			
-	<!-- modules>
+	<modules>
 		<module>configuration</module>
-		<module>sbb-local-object</module>
-		<module>sbb</module>
+		<module>rls-cache</module>
 		<module>event</module>
+		<module>sbb-local-object</module>
 		<module>library</module>
-	</modules-->
+		<module>sbb</module>
+	</modules>
 	
 </project>
