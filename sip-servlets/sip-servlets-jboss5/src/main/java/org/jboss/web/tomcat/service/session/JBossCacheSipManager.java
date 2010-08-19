@@ -305,9 +305,11 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
       return (DistributedCacheConvergedSipManager) getDistributedCacheManager();
    }
    
+   @Override
    protected OutdatedSessionChecker initOutdatedSessionChecker()
    {
-      return new AskSessionOutdatedSessionChecker();      
+      outdatedSessionChecker= super.initOutdatedSessionChecker();
+      return outdatedSessionChecker;
    }
    
    // Satisfy the Manager interface.  Internally we use
@@ -4706,26 +4708,26 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 		return mobicentsCluster;
 	}
 
-	public class AlwaysTrueOutdatedSessionChecker implements
-			OutdatedSessionChecker {
-		public boolean isSessionOutdated(
-				ClusteredSession<? extends OutgoingDistributableSessionData> session) {
-			return true;
-		}
-
-	}
-
-	public class AskSessionOutdatedSessionChecker implements
-			OutdatedSessionChecker {
-		public boolean isSessionOutdated(
-				ClusteredSession<? extends OutgoingDistributableSessionData> session) {
-			return session.isOutdated();
-		}
-
-	}
-
-	public interface OutdatedSessionChecker {
-		boolean isSessionOutdated(
-				ClusteredSession<? extends OutgoingDistributableSessionData> session);
-	}
+//	public class AlwaysTrueOutdatedSessionChecker implements
+//			OutdatedSessionChecker {
+//		public boolean isSessionOutdated(
+//				ClusteredSession<? extends OutgoingDistributableSessionData> session) {
+//			return true;
+//		}
+//
+//	}
+//
+//	public class AskSessionOutdatedSessionChecker implements
+//			OutdatedSessionChecker {
+//		public boolean isSessionOutdated(
+//				ClusteredSession<? extends OutgoingDistributableSessionData> session) {
+//			return session.isOutdated();
+//		}
+//
+//	}
+//
+//	public interface OutdatedSessionChecker {
+//		boolean isSessionOutdated(
+//				ClusteredSession<? extends OutgoingDistributableSessionData> session);
+//	}
 }
