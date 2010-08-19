@@ -20,6 +20,7 @@
 		<module>internal-client-sbb</module>
 		<module>publication-sbb</module>
 		<module>subscription-sbb</module>
+		<module>pres-rules-cache</module>
 	</modules>
 	
 </project>
