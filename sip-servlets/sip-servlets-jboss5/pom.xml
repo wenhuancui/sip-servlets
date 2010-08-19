@@ -86,7 +86,7 @@
 			<artifactId>jboss-web-service</artifactId>
 			<version>${jboss.version}</version>
 			<scope>system</scope>
-			<systemPath>${basedir}/lib/jboss-web-service-${jboss.version}.jar</systemPath>
+			<systemPath>${basedir}/lib/jboss-web-service-${jboss.ws.version}.jar</systemPath>
 			<optional>true</optional>
 		</dependency>
 		
@@ -95,7 +95,7 @@
 			<artifactId>jboss-web-deployer</artifactId>
 			<version>${jboss.version}</version>
 			<scope>system</scope>
-			<systemPath>${basedir}/lib/jboss-web-deployer-${jboss.version}.jar</systemPath>
+			<systemPath>${basedir}/lib/jboss-web-deployer-${jboss.ws.version}.jar</systemPath>
 			<optional>true</optional>
 		</dependency>					
 				
