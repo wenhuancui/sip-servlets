@@ -1,6 +1,7 @@
 <assembly>
 
 	<id>beans</id>
+	 <baseDirectory>/</baseDirectory>
 	
 	<formats>
 		<format>zip</format>
@@ -9,13 +10,19 @@
 	<fileSets>
 		<fileSet>
 			<directory>src/main/resources</directory>
-			<outputDirectory>/</outputDirectory>
+			<outputDirectory>mobicents-slee</outputDirectory>
 		</fileSet>
 	</fileSets>
+	<files>
+	    <file>
+	      <source>../server-resources/resources/jboss-cache-manager-jboss-beans.xml</source>
+	      <outputDirectory>/</outputDirectory>
+	    </file>
+	  </files>
 
 	<dependencySets>
 		<dependencySet>
-			<outputDirectory>/lib</outputDirectory>
+			<outputDirectory>mobicents-slee/lib</outputDirectory>
 			<useTransitiveDependencies>false</useTransitiveDependencies>
 			<useProjectArtifact>false</useProjectArtifact>
 			<scope>compile</scope>
