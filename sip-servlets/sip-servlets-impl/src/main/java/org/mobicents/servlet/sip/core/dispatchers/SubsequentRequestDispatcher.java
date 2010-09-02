@@ -227,27 +227,39 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 		}			
 		
 		final MobicentsSipSession sipSession = tmpSipSession;
-		sipServletRequest.setSipSession(sipSession);
+		sipServletRequest.setSipSession(sipSession);						
+		
+		final SubsequentDispatchTask dispatchTask = new SubsequentDispatchTask(sipServletRequest, sipProvider);
+		// we enter the sip app here, thus acuiring the semaphore on the session (if concurrency control is set) before the jain sip tx semaphore is released and ensuring that
+		// the tx serialization is preserved		
+		sipContext.enterSipApp(sipApplicationSession, sipSession);
+		
+		// Issue 1714 : do the validation after lock acquisition to avoid conccurency on CSeq validation 
+		// if a concurrency control mode is used
 		
 		// BEGIN validation delegated to the applicationas per JSIP patch for http://code.google.com/p/mobicents/issues/detail?id=766
 		if(sipSession.getProxy() == null) {
 			boolean isValid = sipSession.validateCSeq(sipServletRequest);
 			if(!isValid) {
+				// Issue 1714 release the lock if we don't call the app
+				sipContext.exitSipApp(sipApplicationSession, sipSession);
 				return;
 			}
 		}
 		// END of validation for http://code.google.com/p/mobicents/issues/detail?id=766
 		
 		
-		final SubsequentDispatchTask dispatchTask = new SubsequentDispatchTask(sipServletRequest, sipProvider);
-		// we enter the sip app here, thus acuiring the semaphore on the session (if concurrency control is set) before the jain sip tx semaphore is released and ensuring that
-		// the tx serialization is preserved		
-		sipContext.enterSipApp(sipApplicationSession, sipSession);
 		// if the flag is set we bypass the executor. This flag should be made deprecated 
 		if(sipApplicationDispatcher.isBypassRequestExecutor() || ConcurrencyControlMode.Transaction.equals((sipContext.getConcurrencyControlMode()))) {
 			dispatchTask.dispatchAndHandleExceptions();
 		} else {
+			if(logger.isDebugEnabled()) {
+				logger.debug("We are just before executor with sipAppSession=" + sipApplicationSession + " and sipSession=" + sipSession + " for " + sipServletMessage);
+			}
 			getConcurrencyModelExecutorService(sipContext, sipServletMessage).execute(dispatchTask);
+			if(logger.isDebugEnabled()) {
+				logger.debug("We are just after executor with sipAppSession=" + sipApplicationSession + " and sipSession=" + sipSession + " for " + sipServletMessage);
+			}
 		}
 	}	
 
