@@ -1,5 +1,5 @@
 /*
- * This is free software; you can redistribute it and/or modify it
+r * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
  * the License, or (at your option) any later version.
@@ -25,6 +25,8 @@ import gov.nist.javax.sip.stack.SIPTransaction;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.Enumeration;
@@ -158,6 +160,9 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	
 	// This field is only used in CANCEL requests where we need the INVITe transaction
 	private transient Transaction inviteTransactionToCancel;
+	
+	// needed for externalizable
+	public SipServletRequestImpl () {}
 	
 	public SipServletRequestImpl(Request request, SipFactoryImpl sipFactoryImpl,
 			MobicentsSipSession sipSession, Transaction transaction, Dialog dialog,
@@ -1521,15 +1526,17 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
+	/*
+	 * (non-Javadoc)
+	 * @see javax.servlet.sip.SipServletRequest#getInitialPoppedRoute()
 	 */
 	public Address getInitialPoppedRoute() {
 		return transactionApplicationData.getInitialPoppedRoute();
 	}
 
-	/**
-	 * {@inheritDoc}
+	/*
+	 * (non-Javadoc)
+	 * @see javax.servlet.sip.SipServletRequest#getRegion()
 	 */
 	public SipApplicationRoutingRegion getRegion() {
 		return routingRegion;
@@ -1791,5 +1798,74 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	public void cleanUpLastResponses() {
 		lastFinalResponse = null;
 		lastInformationalResponse = null;
-	}		
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
+	 */
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException {
+		super.readExternal(in);
+		String messageString = in.readUTF();
+		try {
+			message = SipFactories.messageFactory.createRequest(messageString);
+		} catch (ParseException e) {
+			throw new IllegalArgumentException("Message " + messageString + " previously serialized could not be reparsed", e);
+		}
+		boolean isLinkedRequestSerialized = in.readBoolean();
+		if (isLinkedRequestSerialized) {
+			linkedRequest = (SipServletRequestImpl) in.readObject();
+		}
+		createDialog = in.readBoolean();
+		String routingDirectiveString = in.readUTF();
+		if(!routingDirectiveString.equals("")) {
+			routingDirective = SipApplicationRoutingDirective.valueOf(routingDirectiveString);
+		}
+		String routingStateString = in.readUTF();
+		if(!routingStateString.equals("")) {
+			routingState = RoutingState.valueOf(routingStateString);
+		}
+		boolean isRoutingRegionSet = in.readBoolean();
+		if(isRoutingRegionSet) {
+			routingRegion = (SipApplicationRoutingRegion) in.readObject();
+		}
+		isInitial = in.readBoolean();
+		isFinalResponseGenerated = in.readBoolean();
+		is1xxResponseGenerated = in.readBoolean();		
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
+	 */
+	public void writeExternal(ObjectOutput out) throws IOException {
+		super.writeExternal(out);
+		if(linkedRequest == null) {
+			out.writeBoolean(false);
+		} else {
+			out.writeBoolean(true);
+			out.writeObject(linkedRequest);
+		}
+		out.writeBoolean(createDialog);
+		if(routingDirective != null) {
+			out.writeUTF(routingDirective.toString());
+		} else {
+			out.writeUTF("");
+		}
+		if(routingState != null) {
+			out.writeUTF(routingState.toString());
+		} else {
+			out.writeUTF("");
+		}
+		if(routingRegion != null) {
+			out.writeBoolean(true);
+			out.writeObject(routingRegion);
+		} else {
+			out.writeBoolean(false);
+		}
+		out.writeBoolean(isInitial);
+		out.writeBoolean(isFinalResponseGenerated);
+		out.writeBoolean(is1xxResponseGenerated);	
+	}
 }
