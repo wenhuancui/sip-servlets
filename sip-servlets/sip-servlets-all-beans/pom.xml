@@ -11,7 +11,7 @@
 	<artifactId>sip-servlets-all-beans</artifactId>
 	<version>5.0.0.CR01-JBCP5</version>
 	<packaging>pom</packaging>	
-	<name>Mobicents Sip Servlets assembly default beans</name>
+	<name>Mobicents Sip Servlets assembly all beans</name>
 	
 	<dependencies>
 		<dependency>
