@@ -5,14 +5,14 @@
 		</groupId>
 		<artifactId>sip-servlets-examples-parent
 		</artifactId>
-		<version>5.0.0.CR01-JBCP5</version>
+		<version>5.0.0.GA-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.mobicents.servlet.sip.example
 	</groupId>
 	<artifactId>pure-jruby-telco</artifactId>
 	<packaging>jar</packaging>
-	<version>5.0.0.CR01-JBCP5</version>
+	<version>5.0.0.GA-JBCP5</version>
 	<name>JRuby Sip Servlet Demo Application</name>
 	<url>http://www.mobicents.org/mss-pure-jruby-telco.html
 	</url>

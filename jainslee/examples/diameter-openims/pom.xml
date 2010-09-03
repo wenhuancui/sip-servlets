@@ -6,13 +6,13 @@
   <parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.CR01-JBCP5</version>
+		<version>5.0.0.GA-JBCP5</version>
 		<relativePath>../../../../parent/pom.xml</relativePath>
 	</parent>
 
   <groupId>org.mobicents.servers.diameter.examples</groupId>
 	<artifactId>openims-parent</artifactId>
-	<version>5.0.0.CR01-JBCP5</version>
+	<version>5.0.0.GA-JBCP5</version>
 
 	<name>Mobicents :: Diameter Examples :: ${pom.artifactId}</name>
 				

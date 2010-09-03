@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>converged-demo-slee-parent</artifactId>
 		<groupId>org.mobicents.examples.converged</groupId>
-		<version>5.0.0.CR01-JBCP5</version>
+		<version>5.0.0.GA-JBCP5</version>
 	</parent>
 	
 	<artifactId>converged-demo-custom-events</artifactId>

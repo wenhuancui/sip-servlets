@@ -3,13 +3,13 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip.example</groupId>
 		<artifactId>sip-servlets-examples-parent</artifactId>
-		<version>5.0.0.CR01-JBCP5</version>
+		<version>5.0.0.GA-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.mobicents.servlet.sip.example</groupId>
 	<artifactId>speed-dial</artifactId>
 	<packaging>war</packaging>
-	<version>5.0.0.CR01-JBCP5</version>
+	<version>5.0.0.GA-JBCP5</version>
 	<name>Speed Dial Sip Servlet Example</name>
 	<url>http://www.mobicents.org/speed_dial.html</url>
 	

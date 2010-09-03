@@ -3,10 +3,10 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip</groupId>
 		<artifactId>sip-servlets-test-suite-parent</artifactId>
-		<version>5.0.0.CR01-JBCP5</version>
+		<version>5.0.0.GA-JBCP5</version>
 	</parent>
 	<artifactId>sip-servlets-test-suite-applications</artifactId>
-  <version>5.0.0.CR01-JBCP5</version>
+  <version>5.0.0.GA-JBCP5</version>
 	<packaging>pom</packaging>
 	<name>Sip Servlets Test Suite Applications Parent Pom</name>
 	<modules>
@@ -99,14 +99,14 @@
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-annotations</artifactId>
-			<version>5.0.0.CR01-JBCP5</version>
+			<version>5.0.0.GA-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-client</artifactId>
-			<version>5.0.0.CR01-JBCP5</version>			
+			<version>5.0.0.GA-JBCP5</version>			
 		</dependency>
 		
 		<dependency>

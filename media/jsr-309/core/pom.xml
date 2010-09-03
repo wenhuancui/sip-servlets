@@ -3,12 +3,12 @@
 	<parent>
         <groupId>org.mobicents</groupId>
         <artifactId>mobicents-parent</artifactId>
-        <version>5.0.0.CR01-JBCP5</version>
+        <version>5.0.0.GA-JBCP5</version>
     </parent>
 
 	<groupId>org.mobicents.jsr309</groupId>
 	<artifactId>mobicents-jsr309-impl</artifactId>
-	<version>5.0.0.CR01-JBCP5</version>
+	<version>5.0.0.GA-JBCP5</version>
 	<name>Mobicents JSR-309 Impl</name>
 	<url>http://www.mobicents.org/products_media_server.html</url>
 

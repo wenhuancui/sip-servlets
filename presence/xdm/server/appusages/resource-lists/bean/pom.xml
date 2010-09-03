@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.xdm</groupId>
 		<artifactId>xdms-appusages-resource-lists</artifactId>
-		<version>5.0.0.CR01-JBCP5</version>
+		<version>5.0.0.GA-JBCP5</version>
 	</parent>
 			
 	<artifactId>xdms-appusages-resource-lists-bean</artifactId>	

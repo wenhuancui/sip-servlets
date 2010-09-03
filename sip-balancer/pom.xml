@@ -5,14 +5,14 @@
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
-		<version>5.0.0.CR01-JBCP5</version>		
+		<version>5.0.0.GA-JBCP5</version>		
 	</parent>
 	
 	<packaging>pom</packaging>
 	
 	<groupId>org.mobicents.tools</groupId>
 	<artifactId>sip-balancer</artifactId>
-	<version>5.0.0.CR01-JBCP5</version>
+	<version>5.0.0.GA-JBCP5</version>
 
 	<url>http://mobicents.org/</url>
 	
