@@ -131,6 +131,11 @@ public abstract class ClusteredSipStackImpl extends gov.nist.javax.sip.SipStackI
 		}
 		super.start();		
 	}
+		
+	public void closeAllTcpSockets() {
+		
+		ioHandler.closeAll();
+	}
 	
 	/*
 	 * (non-Javadoc)
