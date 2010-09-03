@@ -356,7 +356,7 @@ public class ConvergedSipResourceHandler<X extends RemoteEnvironment> extends We
           {
              if(resTypeName != null)
              {
-                Class<?> resType = Class.forName(resTypeName);
+            	Class<?> resType = Class.forName(resTypeName, false, container.getClassloader());
                 if(TimerService.class.isAssignableFrom(resType))
                 {
                    log.warn("Ignoring invalid TimerService resource-env-ref");
@@ -474,7 +474,7 @@ public class ConvergedSipResourceHandler<X extends RemoteEnvironment> extends We
           }
           catch(ClassNotFoundException e)
           {
-             throw new EJBException(e);
+        	  throw new EJBException(e);
           }
           
           String encName = "env/" + envRef.getResourceEnvRefName();
