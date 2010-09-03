@@ -23,8 +23,8 @@
 		</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 	<modules>
-		<module>jar</module>	
-		<module>assemble</module>
+		<module>jar</module>
+		<module>assemble</module>		
 	</modules>
 	
 	<profiles>
@@ -46,6 +46,7 @@
 					</tagBase>
 					<preparationGoals>clean install</preparationGoals>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<arguments>-Dmaven.test.skip</arguments>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -118,8 +119,8 @@
 	</repositories>
 
   <scm>
-    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.0.1</connection>
-    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.0.1</developerConnection>
-    <url>http://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.0.1</url>
+    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.0.2</connection>
+    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.0.2</developerConnection>
+    <url>http://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.0.2</url>
   </scm>
 </project>
