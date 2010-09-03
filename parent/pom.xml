@@ -20,6 +20,7 @@
       <url>https://repository.jboss.org/nexus/content/repositories/snapshots/</url>
     </snapshotRepository>
   </distributionManagement>
+  
 	
 	<properties>		
 		<!-- dependency versions -->
@@ -46,7 +47,7 @@
 		
 		
 		<jain-sip-api.version>1.2</jain-sip-api.version>
-		<jain-sip-ri.version>${jain-sip-api.version}.153</jain-sip-ri.version>
+		<jain-sip-ri.version>${jain-sip-api.version}.154</jain-sip-ri.version>
 		
 		<jain-mgcp.version>1.0</jain-mgcp.version>
 		<jcc.version>1.1</jcc.version>				
@@ -797,6 +798,20 @@
            			<tagBase>https://mobicents.googlecode.com/svn/tags/parent</tagBase>
 		        </configuration>
         	</plugin>
+			<plugin>
+	            <groupId>org.apache.maven.plugins</groupId>
+	            <artifactId>maven-source-plugin</artifactId>
+				<version>2.1.2</version>
+	            <executions>
+	              <execution>
+	                <id>attach-sources</id>
+					<phase>verify</phase>
+	                <goals>
+	                  <goal>jar-no-fork</goal>
+	                </goals>
+	              </execution>
+	            </executions>
+          </plugin>
 		</plugins>		
 	</build>
 	
