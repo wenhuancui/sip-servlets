@@ -18,7 +18,7 @@
 	</modules>
 	
 	<properties>
-		<mobicents.slee.version>5.0.0.Beta2-JBCP5</mobicents.slee.version>
+		<mobicents.slee.version>5.0.0.GA-JBCP5</mobicents.slee.version>
 	</properties>
 	
 	<scm>

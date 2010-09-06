@@ -20,9 +20,9 @@
 	</scm>
 
 	<properties>
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.CR01-JBCP5
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
-		<mobicents.cluster.version>5.0.0.CR01-JBCP5</mobicents.cluster.version>
+		<mobicents.cluster.version>5.0.0.GA-JBCP5</mobicents.cluster.version>
 	</properties>
 
 	<dependencyManagement>

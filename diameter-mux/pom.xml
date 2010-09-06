@@ -18,7 +18,7 @@
 		<mobicents.diameter.jdiameter.version>1.5.3.1-build353-JBCP5</mobicents.diameter.jdiameter.version>
 
 		<!-- Other Mobicents Components Versions -->
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.CR01-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 
 	<packaging>pom</packaging>

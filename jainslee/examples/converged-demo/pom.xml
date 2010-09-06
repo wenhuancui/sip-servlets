@@ -55,11 +55,11 @@
 	</modules>
 
 	<properties>
-		<mobicents.resources.sip11.version>5.0.0.CR01-JBCP5</mobicents.resources.sip11.version>
-		<mobicents.resources.mgcp.version>5.0.0.CR01-JBCP5</mobicents.resources.mgcp.version>
-		<mobicents.core.version>5.0.0.CR01-JBCP5</mobicents.core.version>
-		<mobicents.tools.mavenplugin.du.version>5.0.0.CR01-JBCP5</mobicents.tools.mavenplugin.du.version>
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.CR01-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.resources.sip11.version>5.0.0.GA-JBCP5</mobicents.resources.sip11.version>
+		<mobicents.resources.mgcp.version>5.0.0.GA-JBCP5</mobicents.resources.mgcp.version>
+		<mobicents.core.version>5.0.0.GA-JBCP5</mobicents.core.version>
+		<mobicents.tools.mavenplugin.du.version>5.0.0.GA-JBCP5</mobicents.tools.mavenplugin.du.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 
 	<build>

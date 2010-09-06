@@ -25,7 +25,7 @@
 
   <properties>
     <!-- Mobicents Diameter Components Versions -->
-    <mobicents.diameter.resources.base-common.version>5.0.0.Beta2-JBCP5</mobicents.diameter.resources.base-common.version>
+    <mobicents.diameter.resources.base-common.version>5.0.0.GA-JBCP5</mobicents.diameter.resources.base-common.version>
 	<!-- Documentation Related Properties -->
     <docs.profile>mobicents</docs.profile>
     <docs.ra.name>Diameter Rf</docs.ra.name>

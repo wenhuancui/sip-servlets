@@ -23,10 +23,10 @@
 	</modules>
 
 	<properties>
-		<mgcp-stack.version>5.0.0.Beta2-JBCP5</mgcp-stack.version>
-		<mms.version>5.0.0.Beta2-JBCP5</mms.version>
+		<mgcp-stack.version>5.0.0.GA-JBCP5</mgcp-stack.version>
+		<mms.version>5.0.0.GA-JBCP5</mms.version>
 		<jfree-chart.version>1.0.0</jfree-chart.version>
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.Beta2-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 
 	<dependencyManagement>

@@ -20,10 +20,10 @@
 
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
 		<mobicents.tools.mavenplugin.eclipse.version>
-			5.0.0.Beta2-JBCP5
+			5.0.0.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 		<mobicents.mgcp.impl.version>
-			5.0.0.Beta2-JBCP5
+			5.0.0.GA-JBCP5
 		</mobicents.mgcp.impl.version>
 	</properties>
 

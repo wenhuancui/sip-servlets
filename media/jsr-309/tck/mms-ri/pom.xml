@@ -20,7 +20,7 @@
 		</release.name>
 
 		<mobicents.tools.mavenplugin.eclipse.version>
-			5.0.0.Beta2-JBCP5
+			5.0.0.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 
 		<version.jboss.jbossas>5.0.1.GA</version.jboss.jbossas>

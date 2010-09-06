@@ -23,7 +23,7 @@
 
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
 		<mobicents.tools.mavenplugin.eclipse.version>
-			5.0.0.CR01-JBCP5
+			5.0.0.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 	
