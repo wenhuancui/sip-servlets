@@ -3,8 +3,8 @@
 	<modelVersion>4.0.0</modelVersion>
 		
 	<parent>
-		<artifactId>xdms-core-xcap-control</artifactId>
-		<groupId>org.mobicents.servers.xdm</groupId>
+		<artifactId>sip-presence-parent</artifactId>
+		<groupId>org.mobicents.servers.sippresence</groupId>
 		<version>5.0.0.GA-JBCP5</version>
 	</parent>
 	
