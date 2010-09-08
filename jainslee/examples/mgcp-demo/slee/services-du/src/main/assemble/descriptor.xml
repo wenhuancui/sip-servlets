@@ -16,7 +16,7 @@
 	      <outputDirectory>/</outputDirectory>
 	    </fileSet>
 	    <fileSet>
-	      <directory>${basedir}/../../web/target</directory>
+	      <directory>${basedir}/web/target</directory>
 	      <includes>
 	        <include>*.war</include>
 	      </includes>
