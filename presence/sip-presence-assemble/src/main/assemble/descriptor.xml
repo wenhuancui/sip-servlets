@@ -29,7 +29,12 @@
 	      <useDefaultExcludes>true</useDefaultExcludes>
 	      <outputDirectory>/server/default/deploy/mobicents-sip-presence/3-beans/appusages/xsd</outputDirectory>
 	    </fileSet>
-	  </fileSets>
+	    <fileSet>
+	      <directory>${basedir}/../xdm/server/appusages/xsd</directory>
+	      <useDefaultExcludes>true</useDefaultExcludes>
+	      <outputDirectory>/server/default/deploy/mobicents-xdms/3-beans/appusages/xsd</outputDirectory>
+	    </fileSet>
+    </fileSets>
 
 	  <!-- Config files -->
 	    <!-- file>
@@ -183,7 +188,7 @@
 		  </includes>
 		</dependencySet>
 		<dependencySet>
-	      <outputDirectory>/server/default/deploy/mobicents-sip-presence/3-beans/appusages</outputDirectory>
+	      <outputDirectory>/server/default/deploy/mobicents-xdms/3-beans/appusages</outputDirectory>
 		  <scope>compile</scope>
 		  <useTransitiveDependencies>false</useTransitiveDependencies>
 		  <useProjectArtifact>false</useProjectArtifact>
