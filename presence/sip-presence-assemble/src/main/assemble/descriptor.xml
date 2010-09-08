@@ -23,17 +23,13 @@
 	      <outputDirectory>/</outputDirectory>
 	    </file>
   	</files>
-	<!-- fileSets>
+	<fileSets>
 	    <fileSet>
-	      <directory>target</directory>
-	      <includes>
-	        <include>client-appusages-*.jar</include>
-	        <include>commons-*.jar</include>
-	      </includes>
+	      <directory>${basedir}/../xdm/server/appusages/xsd</directory>
 	      <useDefaultExcludes>true</useDefaultExcludes>
-	      <outputDirectory>/server/default/deploy/mobicents-sip-presence/1-libs</outputDirectory>
+	      <outputDirectory>/server/default/deploy/mobicents-sip-presence/3-beans/appusages/xsd</outputDirectory>
 	    </fileSet>
-	  </fileSets-->
+	  </fileSets>
 
 	  <!-- Config files -->
 	    <!-- file>
@@ -96,6 +92,16 @@
 		  </includes>
 		</dependencySet>
 		<dependencySet>
+	      <outputDirectory>/server/default/deploy/mobicents-sip-presence/3-beans/appusages</outputDirectory>
+		  <scope>compile</scope>
+		  <useTransitiveDependencies>false</useTransitiveDependencies>
+		  <useProjectArtifact>false</useProjectArtifact>
+		  <includes>
+		  	<include>org.mobicents.servers.xdm:xdms-appusages-*-bean:jar</include>
+		  	<include>org.mobicents.servers.xdm:xdms-core-appusage-management:jar</include>
+		  </includes>
+		</dependencySet>
+		<dependencySet>
 	      <outputDirectory>/server/default/deploy/mobicents-sip-presence/3-beans/configuration/sip-event/publication</outputDirectory>
 		  <scope>compile</scope>
 		  <useTransitiveDependencies>false</useTransitiveDependencies>
@@ -140,6 +146,8 @@
 		  	<include>org.mobicents.servers.xdm:xdms-*-DU:jar</include>
 		  	<include>org.mobicents.slee.enabler.userprofile:user-profile-DU:jar</include>
 		  	<include>org.mobicents.servers.sippresence:integrated-server-subscription-DU:jar</include>
+		  	<include>org.mobicents.servers.sippresence:sip-presence-server-pres-rules-*-DU:jar</include>
+		  	<include>org.mobicents.servers.sipevent:sip-event-subscription-control-rls-*-DU:jar</include>
 		  </includes>
 		</dependencySet>
 		
@@ -172,6 +180,16 @@
 		  <useProjectArtifact>false</useProjectArtifact>
 		  <includes>
 		  	<include>org.mobicents.slee.enabler.userprofile:user-profile-jmx:jar</include>
+		  </includes>
+		</dependencySet>
+		<dependencySet>
+	      <outputDirectory>/server/default/deploy/mobicents-sip-presence/3-beans/appusages</outputDirectory>
+		  <scope>compile</scope>
+		  <useTransitiveDependencies>false</useTransitiveDependencies>
+		  <useProjectArtifact>false</useProjectArtifact>
+		  <includes>
+		  	<include>org.mobicents.servers.xdm:xdms-appusages-*-bean:jar</include>
+		  	<include>org.mobicents.servers.xdm:xdms-core-appusage-management:jar</include>
 		  </includes>
 		</dependencySet>
 		<dependencySet>
@@ -209,6 +227,7 @@
 		  <includes>
 		  	<include>org.mobicents.servers.xdm:xdms-*-DU:jar</include>
 		  	<include>org.mobicents.slee.enabler.userprofile:user-profile-DU:jar</include>
+		  	<include>org.mobicents.servers.sipevent:sip-event-subscription-control-rls-*-DU:jar</include>
 		  </includes>
 		</dependencySet>
 		

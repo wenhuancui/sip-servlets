@@ -77,6 +77,34 @@
 			<artifactId>sip-presence-server-configuration-jar</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
+		<!-- beans -->
+			<!-- appusages -->
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-core-appusage-management</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-appusages-pres-rules-bean</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-appusages-oma-pres-rules-bean</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-appusages-resource-lists-bean</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.xdm</groupId>
+			<artifactId>xdms-appusages-rls-services-bean</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
 			
 		<!-- libs -->
 		<dependency>
@@ -115,7 +143,7 @@
 			<version>${pom.version}</version>
 		</dependency>
 		
-		<!-- jpa -->
+		<!-- data -->
 		<dependency>
 			<groupId>org.mobicents.servers.xdm</groupId>
 			<artifactId>xdms-core-datasource-pu</artifactId>
@@ -150,14 +178,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servers.xdm</groupId>
-			<artifactId>xdms-core-appusagecache-DU</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mobicents.servers.xdm</groupId>
 			<artifactId>xdms-core-xcap-control-DU</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.mobicents.slee.enabler.userprofile</groupId>
 			<artifactId>user-profile-DU</artifactId>
@@ -168,29 +192,27 @@
 			<artifactId>integrated-server-subscription-DU</artifactId>
 			<version>${pom.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.mobicents.servers.xdm</groupId>
-			<artifactId>xdms-appusages-pres-rules-DU</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mobicents.servers.xdm</groupId>
-			<artifactId>xdms-appusages-oma-pres-rules-DU</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mobicents.servers.xdm</groupId>
-			<artifactId>xdms-appusages-resource-lists-DU</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mobicents.servers.xdm</groupId>
-			<artifactId>xdms-appusages-rls-services-DU</artifactId>
-			<version>${pom.version}</version>
-		</dependency>
 		
-		
-		
+		<dependency>
+			<groupId>org.mobicents.servers.sippresence</groupId>
+			<artifactId>sip-presence-server-pres-rules-cache-ra-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sippresence</groupId>
+			<artifactId>sip-presence-server-pres-rules-cache-service-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sipevent</groupId>
+			<artifactId>sip-event-subscription-control-rls-cache-ra-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.sipevent</groupId>
+			<artifactId>sip-event-subscription-control-rls-cache-service-DU</artifactId>
+			<version>${pom.version}</version>
+		</dependency> 
 	</dependencies>	
 
 	<build>
