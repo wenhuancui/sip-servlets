@@ -15,14 +15,14 @@
 	      <useDefaultExcludes>true</useDefaultExcludes>
 	      <outputDirectory>/</outputDirectory>
 	    </fileSet>
-	    <fileSet>
+	    <!-- fileSet>
 	      <directory>${basedir}/web/target</directory>
 	      <includes>
 	        <include>*.war</include>
 	      </includes>
 	      <useDefaultExcludes>true</useDefaultExcludes>
 	      <outputDirectory>/</outputDirectory>
-	    </fileSet>
+	    </fileSet-->
 	  </fileSets>
 	<files>
 	    <file>
