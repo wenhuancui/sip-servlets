@@ -76,12 +76,12 @@
 		  </includes>
 		</dependencySet>
 		<dependencySet>
-	      <outputDirectory>/server/default/deploy/mobicents-sip-presence/2-jpa</outputDirectory>
+	      <outputDirectory>/server/default/deploy/mobicents-sip-presence/2-data</outputDirectory>
 		  <scope>compile</scope>
 		  <useTransitiveDependencies>false</useTransitiveDependencies>
 		  <useProjectArtifact>false</useProjectArtifact>
 		  <includes>
-		  	<include>org.mobicents.servers.sipevent:sip-event-*-control-pojo:jar</include>
+		  	<include>org.mobicents.servers.sipevent:sip-event-*-control-data:jar</include>
 		  	<include>org.mobicents.slee.enabler.userprofile:user-profile-pu:jar</include>
 		  	<include>org.mobicents.servers.xdm:xdms-core-datasource-pu:jar</include>
 		  </includes>
@@ -155,12 +155,12 @@
 		  </includes>
 		</dependencySet>
 		<dependencySet>
-	      <outputDirectory>/server/default/deploy/mobicents-xdms/2-jpa</outputDirectory>
+	      <outputDirectory>/server/default/deploy/mobicents-xdms/2-data</outputDirectory>
 		  <scope>compile</scope>
 		  <useTransitiveDependencies>false</useTransitiveDependencies>
 		  <useProjectArtifact>false</useProjectArtifact>
 		  <includes>
-		  	<include>org.mobicents.servers.sipevent:sip-event-*-control-pojo:jar</include>
+		  	<include>org.mobicents.servers.sipevent:sip-event-*-control-data:jar</include>
 		  	<include>org.mobicents.slee.enabler.userprofile:user-profile-pu:jar</include>
 		  	<include>org.mobicents.servers.xdm:xdms-core-datasource-pu:jar</include>
 		  </includes>
