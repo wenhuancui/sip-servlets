@@ -27,6 +27,10 @@
 	      <outputDirectory>/</outputDirectory>
 	    </file>
 	    <file>
+	      <source>../profile-spec/src/main/resources/credential.properties</source>
+	      <outputDirectory>/</outputDirectory>
+	    </file>
+	    <file>
 	      <source>${basedir}/../README.txt</source>
 	      <outputDirectory>/</outputDirectory>
 	    </file>
