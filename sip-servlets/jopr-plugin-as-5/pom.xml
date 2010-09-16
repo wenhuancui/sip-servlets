@@ -50,12 +50,43 @@
   </distributionManagement>	
 
 	<properties>
-		<jopr-version>2.2.0.GA</jopr-version>
-		<rhq-version>1.2.0.GA</rhq-version>
-        <jboss-man.version>2.1.0.SP1</jboss-man.version>        
+		<jopr-version>2.3.0.EmbJopr.1.3.0-4</jopr-version>
+		<rhq-version>1.3.0.EmbJopr.1.3.0-4</rhq-version>        
+        <jbossas.version>5.1.0.GA</jbossas.version>                
 	</properties>
 	
+	<dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.jboss.jbossas</groupId>
+          <artifactId>jboss-as-parent</artifactId>
+          <version>${jbossas.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+          <dependency>
+            <groupId>org.jboss.jbossas</groupId>
+          <artifactId>jboss-as-component-matrix</artifactId>
+          <version>${jbossas.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
+        </dependencies>
+    </dependencyManagement>
+	
 	<dependencies>
+		<dependency>
+           <groupId>org.jboss.on</groupId>
+           <artifactId>jopr-jboss-as-common</artifactId>
+           <version>${jopr-version}</version>
+        </dependency>
+        
+         <dependency>
+          <groupId>gnu-getopt</groupId>
+          <artifactId>getopt</artifactId>
+          <!-- NOTE: The version is defined in the root POM's dependencyManagement section. -->
+        </dependency>
+	
 		<dependency>
             <groupId>org.rhq</groupId>
             <artifactId>rhq-core-parent</artifactId>
@@ -69,6 +100,36 @@
 			<version>1.2.14</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<dependency>
+          <groupId>org.jboss.integration</groupId>
+          <artifactId>jboss-profileservice-spi</artifactId>          
+          <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>org.jboss.man</groupId>
+          <artifactId>jboss-managed</artifactId>          
+          <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>org.jboss.man</groupId>
+          <artifactId>jboss-metatype</artifactId>          
+          <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>org.jboss</groupId>
+          <artifactId>jboss-common-core</artifactId>          
+          <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+          <groupId>org.jboss.remoting</groupId>
+          <artifactId>jboss-remoting</artifactId>
+          <scope>provided</scope>
+        </dependency>
 
 		<!-- logging dependency -->
 		<dependency>
@@ -79,30 +140,23 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>1.4</version>
-			<scope>provided</scope>
-		</dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-io</artifactId>
+          <version>1.3.2</version>
+        </dependency>
+
+        <dependency>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+          <version>2.4</version>
+        </dependency>
 
 		<dependency>
 			<groupId>mc4j</groupId>
 			<artifactId>org-mc4j-ems</artifactId>
-			<version>1.2.5</version>
-		</dependency>
+			<version>1.2.15</version>
+		</dependency>		
 
-		<!--dependency>
-			<groupId>org.jboss.on</groupId>
-		   	<artifactId>jopr-jboss-as-5-plugin</artifactId>
-		   	<version>${jopr-version}</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.jboss.on</groupId>
-		   	<artifactId>jopr-tomcat-plugin</artifactId>
-		   	<version>${jopr-version}</version>
-		</dependency-->
-		
 		<dependency>
 			<groupId>org.jetbrains</groupId>
 		   	<artifactId>annotations</artifactId>
@@ -172,28 +226,7 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-commons-annotations</artifactId>
 			<version>3.3.0.ga</version>
-		</dependency>
-		
-		 <dependency>
-          <groupId>org.jboss.integration</groupId>
-          <artifactId>jboss-profileservice-spi</artifactId>          
-          <version>5.1.0.GA</version>
-          <scope>provided</scope>
-        </dependency>
-		
-		<dependency>
-          <groupId>org.jboss.man</groupId>
-          <artifactId>jboss-managed</artifactId>
-          <version>${jboss-man.version}</version>	
-          <scope>provided</scope>
-        </dependency>
-        
-        <dependency>
-          <groupId>org.jboss.man</groupId>
-          <artifactId>jboss-metatype</artifactId>
-          <version>${jboss-man.version}</version>
-          <scope>provided</scope>
-        </dependency>
+		</dependency>		
 	</dependencies>
 
 	<build>
