@@ -728,6 +728,17 @@
            measurementType="trendsup" displayType="summary"/>
 '>
 
+<!ENTITY convergedSipWebApplicationMetrics '
+    <metric property="contextRoot"
+            dataType="trait" displayType="summary"
+            description="this context root of this WAR (e.g. jmx-console) - used as a unique path prefix for URLs
+                         corresponding to this WAR"/>
+
+    <metric property="virtualHosts"
+            dataType="trait" displayType="summary"
+            description="the virtual host(s) to which this WAR is deployed"/>
+'>
+
 <!ENTITY convergedSipWebApplicationContextMetrics '
     <metric property="virtualHost"
             dataType="trait" displayType="summary"
@@ -1365,9 +1376,11 @@
         </service>
 	
 	<service name="Mobicents Sip Servlets"
+		 subCategory="Resources"
          discovery="org.rhq.plugins.jmx.MBeanResourceDiscoveryComponent"
          class="SipApplicationDispatcherComponent"
          description="Statistics for SipApplicationDispatcher"
+         singleton="true"
          >
 								
         <plugin-configuration>
@@ -1493,6 +1506,9 @@
         	<c:simple-property name="gatherStatistics" type="boolean" description="Whether to collect statistics or not." defaultValue="true"/>
         </resource-configuration>
     </service>
+
+
+        <!-- =================================== ManagedComponent Resource types =================================== -->
 
         <service name="No Tx Datasource"
                  class="ManagedComponentComponent"
@@ -2635,7 +2651,7 @@
                     dataType="trait" displayType="summary"
                     description="whether this converged WAR is deployed exploded (i.e. as a directory)"/>
 
-			&webApplicationMetrics;
+			&convergedSipWebApplicationMetrics;
 
             <content name="file" displayName="Converged WAR File" category="deployable" isCreationType="true">
                 &deploymentContentConfigProps;
@@ -2769,7 +2785,7 @@
                     dataType="trait" displayType="summary"
                     description="the name of this WAR's parent deployment"/>
 
-            &webApplicationMetrics;
+            &convergedSipWebApplicationMetrics;
 
             <service name="Embedded Converged SIP/Web Application Context"
                      class="ConvergedSipWebApplicationContextComponent"
