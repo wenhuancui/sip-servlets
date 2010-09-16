@@ -865,7 +865,7 @@
     		displayName="Sip Application Session Average alive time"
             units="seconds" description="Average alive time of a SIP Application Sessions for this converged WAR" />
 
-    <metric property="SipSession.sipApplicationSessionMaxAliveTime" 
+    <metric property="sipApplicationSessionMaxAliveTime" 
     		displayName="Max Sip Application Session alive time"
             units="seconds" description="Maximum alive time of a SIP Application Sessions for this converged WAR" />
 '>
