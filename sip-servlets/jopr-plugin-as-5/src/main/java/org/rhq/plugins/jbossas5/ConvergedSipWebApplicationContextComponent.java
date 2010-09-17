@@ -169,6 +169,7 @@ public class ConvergedSipWebApplicationContextComponent extends ManagedComponent
     private Double getServletMetric(ManagementView managementView, String metricName) throws Exception
     {
         ComponentType servletComponentType = MoreKnownComponentTypes.MBean.Servlet.getType();
+        ComponentType sipServletComponentType = MoreKnownComponentTypes.MBean.SipServlet.getType();
         //Set<ManagedComponent> servletComponents = managementView.getMatchingComponents(this.servletComponentNamesRegex,
         //        servletComponentType, new RegularExpressionNameMatcher());
         Set<ManagedComponent> servletComponents = null;
@@ -177,7 +178,7 @@ public class ConvergedSipWebApplicationContextComponent extends ManagedComponent
                 servletComponentType, this.servletComponentNamesRegex, new RegularExpressionNameMatcher());
         } else {
         	servletComponents = ManagedComponentUtils.getManagedComponents(managementView,
-                    servletComponentType, this.sipServletComponentNamesRegex, new RegularExpressionNameMatcher());
+                    sipServletComponentType, this.sipServletComponentNamesRegex, new RegularExpressionNameMatcher());
         }
 
         long min = Long.MAX_VALUE;

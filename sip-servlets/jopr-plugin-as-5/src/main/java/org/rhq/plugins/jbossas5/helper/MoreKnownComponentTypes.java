@@ -37,6 +37,7 @@ public interface MoreKnownComponentTypes
     {
         Platform,
         Servlet,
+        SipServlet,
         Web,
         WebApplication,
         WebApplicationManager,
