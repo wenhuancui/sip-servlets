@@ -27,17 +27,16 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.deployers.spi.management.KnownDeploymentTypes;
+import org.jboss.deployers.spi.management.ManagementView;
+import org.jboss.managed.api.ManagedDeployment;
+import org.jboss.profileservice.spi.NoSuchDeploymentException;
 import org.rhq.core.domain.configuration.PropertySimple;
 import org.rhq.core.domain.resource.ResourceType;
 import org.rhq.core.pluginapi.inventory.DiscoveredResourceDetails;
 import org.rhq.core.pluginapi.inventory.ResourceDiscoveryComponent;
 import org.rhq.core.pluginapi.inventory.ResourceDiscoveryContext;
 import org.rhq.plugins.jbossas5.util.ConversionUtils;
-
-import org.jboss.deployers.spi.management.KnownDeploymentTypes;
-import org.jboss.deployers.spi.management.ManagementView;
-import org.jboss.managed.api.ManagedDeployment;
-import org.jboss.profileservice.spi.NoSuchDeploymentException;
 
 /**
  * Discovery class for discovering deployable resources like ear/war/jar/sar

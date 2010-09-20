@@ -41,6 +41,7 @@ public interface MoreKnownComponentTypes
         Web,
         WebApplication,
         WebApplicationManager,
+        ConvergedSipWebApplicationManager,
         WebHost,
         WebRequestProcessor,
         WebThreadPool;

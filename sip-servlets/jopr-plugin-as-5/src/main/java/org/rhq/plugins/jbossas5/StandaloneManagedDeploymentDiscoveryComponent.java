@@ -28,7 +28,8 @@ import org.jboss.managed.api.ManagedDeployment;
  * @author Ian Springer
  */
 public class StandaloneManagedDeploymentDiscoveryComponent extends AbstractManagedDeploymentDiscoveryComponent {
-    protected boolean accept(ManagedDeployment managedDeployment) {
+	
+    protected boolean accept(ManagedDeployment managedDeployment) {    	
         return (managedDeployment.getParent() == null);
     }
 }

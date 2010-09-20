@@ -23,6 +23,7 @@
 package org.rhq.plugins.jbossas5;
 
 import org.jboss.managed.api.ManagedDeployment;
+import org.rhq.core.pluginapi.inventory.ResourceDiscoveryContext;
 
 /**
  * @author Ian Springer
