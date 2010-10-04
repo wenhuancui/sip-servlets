@@ -87,6 +87,7 @@
 		<mobicents.cluster.version>5.0.0.GA-JBCP5</mobicents.cluster.version>
 		<mobicents.balancer.version>5.0.0.GA-JBCP5</mobicents.balancer.version>
 		<mobicents.jain.sip.ha.version>5.0.0.GA-JBCP5</mobicents.jain.sip.ha.version>
+		<mobicents.jain.sip.ext.version>5.0.0.GA-JBCP5</mobicents.jain.sip.ext.version>
 		<tomcat.version>6.0.20</tomcat.version>	
 	</properties>
 	
