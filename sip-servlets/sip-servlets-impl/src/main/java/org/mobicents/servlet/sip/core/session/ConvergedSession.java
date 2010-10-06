@@ -29,5 +29,5 @@ public interface ConvergedSession
 	
 	public MobicentsSipApplicationSession getApplicationSession(boolean create);
 	
-	boolean isValid();
+	boolean isValidIntern();
 }

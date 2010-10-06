@@ -101,7 +101,7 @@ public class ConvergedStandardSession
 		return convergedSessionDelegate.getApplicationSession(create);
 	}
 	
-	public boolean isValid() {
+	public boolean isValidIntern() {
 		return isValidInternal();
 	}
 	
