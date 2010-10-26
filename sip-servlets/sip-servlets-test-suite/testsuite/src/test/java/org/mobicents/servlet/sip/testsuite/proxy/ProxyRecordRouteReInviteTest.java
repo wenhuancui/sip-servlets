@@ -121,7 +121,7 @@ public class ProxyRecordRouteReInviteTest extends SipServletTestCase {
 	 * Non regression test for Issue 1792
 	 */
 	public void testProxyCancelTCP() throws Exception {
-		tomcat.addSipConnector(serverName, sipIpAddress, 5070, ListeningPoint.TCP);
+		tomcat.addSipConnector(serverName, sipIpAddress, 5070, ListeningPoint.TCP, null);
 		setupPhones(ListeningPoint.TCP);
 		String fromName = "unique-location";
 		String fromSipAddress = "sip-servlets.com";
