@@ -225,8 +225,8 @@ public class SipSessionImpl implements MobicentsSipSession {
 	 */
 	protected transient SipServletRequestImpl sessionCreatingTransactionRequest;
 	protected transient boolean isSessionCreatingTransactionServer;
-	// =============================================================
 		
+	// TODO : Can be optimized into separate server tx and client tx to speed up some parts of the cod
 	protected transient Set<Transaction> ongoingTransactions;
 	
 	volatile protected transient ConcurrentHashMap<String, MobicentsSipSession> derivedSipSessions;
