@@ -254,6 +254,8 @@ public class TestSipListener implements SipListener {
 	private boolean prackSent;
 	
 	private boolean prackReceived;
+	
+	private Request prackRequestReceived;
 
 	private boolean okToPrackReceived;
 	
@@ -387,6 +389,7 @@ public class TestSipListener implements SipListener {
 				
 		try {
 			prackReceived = true;
+			prackRequestReceived = request;
 			ServerTransaction st = serverTransactionId;			
 			if (st == null) {
 				st = sipProvider.getNewServerTransaction(request);
@@ -2684,4 +2687,17 @@ public class TestSipListener implements SipListener {
 		return nbRetrans;
 	}
 
+	/**
+	 * @param prackRequestReceived the prackRequestReceived to set
+	 */
+	public void setPrackRequestReceived(Request prackRequestReceived) {
+		this.prackRequestReceived = prackRequestReceived;
+	}
+
+	/**
+	 * @return the prackRequestReceived
+	 */
+	public Request getPrackRequestReceived() {
+		return prackRequestReceived;
+	}
 }

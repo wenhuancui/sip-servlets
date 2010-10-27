@@ -16,8 +16,12 @@
  */
 package org.mobicents.servlet.sip.testsuite.b2bua.prack;
 
+import gov.nist.javax.sip.message.RequestExt;
+
 import javax.sip.SipProvider;
 import javax.sip.address.SipURI;
+import javax.sip.header.ViaHeader;
+import javax.sip.message.Request;
 
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.SipServletTestCase;
@@ -30,7 +34,7 @@ public class CallForwardingB2BUAPrackTest extends SipServletTestCase {
 
 	private static final String TRANSPORT = "udp";
 	private static final boolean AUTODIALOG = true;
-	private static final int TIMEOUT = 10000;	
+	private static final int TIMEOUT = 20000;	
 //	private static final int TIMEOUT = 100000000;
 	
 	TestSipListener sender;
@@ -40,6 +44,8 @@ public class CallForwardingB2BUAPrackTest extends SipServletTestCase {
 
 	public CallForwardingB2BUAPrackTest(String name) {
 		super(name);
+		startTomcatOnStartup = false;
+		autoDeployOnStartup = false;
 	}
 
 	@Override
@@ -70,6 +76,9 @@ public class CallForwardingB2BUAPrackTest extends SipServletTestCase {
 	}
 	
 	public void testCallForwardingCallerSendBye() throws Exception {
+		tomcat.startTomcat();
+		deployApplication();
+		
 		sender = new TestSipListener(5080, 5070, senderProtocolObjects, true);
 		SipProvider senderProvider = sender.createProvider();
 
@@ -102,10 +111,58 @@ public class CallForwardingB2BUAPrackTest extends SipServletTestCase {
 	}
 
 	public void testCallForwardingCalleeSendBye() throws Exception {
+		tomcat.startTomcat();
+		deployApplication();
+		
 		sender = new TestSipListener(5080, 5070, senderProtocolObjects, false);
 		SipProvider senderProvider = sender.createProvider();
 
 		receiver = new TestSipListener(5090, 5070, receiverProtocolObjects, true);
+		receiver.setTimeToWaitBetweenProvisionnalResponse(1000);
+		SipProvider receiverProvider = receiver.createProvider();
+
+		receiverProvider.addSipListener(receiver);
+		senderProvider.addSipListener(sender);
+
+		senderProtocolObjects.start();
+		receiverProtocolObjects.start();
+
+		String fromName = "forward-sender";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+		
+		String toSipAddress = "sip-servlets.com";
+		String toUser = "receiver";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		String[] headerNames = new String[]{"require"};
+		String[] headerValues = new String[]{"100rel"};
+		
+		for (int i = 0; i < 3; i++) {
+			sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerValues, true);
+		}			
+		Thread.sleep(TIMEOUT * 3);
+		assertTrue(receiver.getOkToByeReceived());
+		assertTrue(sender.getByeReceived());	
+
+		if(sender.getAllMessagesContent() != null) {
+			assertFalse(sender.getAllMessagesContent().contains("KO"));
+		}
+	}	
+
+	public void testCallForwardingCallerSendByeAnyLocalAddress() throws Exception {
+		tomcat.removeConnector(sipConnector);
+		sipIpAddress = "0.0.0.0";
+		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport, null);
+		tomcat.startTomcat();
+		deployApplication();
+		
+		sender = new TestSipListener(5080, 5070, senderProtocolObjects, true);
+		SipProvider senderProvider = sender.createProvider();
+
+		receiver = new TestSipListener(5090, 5070, receiverProtocolObjects, false);
 		SipProvider receiverProvider = receiver.createProvider();
 
 		receiverProvider.addSipListener(receiver);
@@ -129,9 +186,15 @@ public class CallForwardingB2BUAPrackTest extends SipServletTestCase {
 		
 		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerValues, true);		
 		Thread.sleep(TIMEOUT);
-		assertTrue(receiver.getOkToByeReceived());
-		assertTrue(sender.getByeReceived());		
-	}	
+		assertTrue(receiver.isPrackReceived());
+		Request prackReceived = receiver.getPrackRequestReceived();
+		assertNotNull(prackReceived);
+		ViaHeader via= ((RequestExt)prackReceived).getTopmostViaHeader();
+		assertNotNull(via);
+		assertFalse(via.getHost().equals("0.0.0.0"));
+		assertTrue(sender.getOkToByeReceived());
+		assertTrue(receiver.getByeReceived());
+	}
 	
 	@Override
 	protected void tearDown() throws Exception {	

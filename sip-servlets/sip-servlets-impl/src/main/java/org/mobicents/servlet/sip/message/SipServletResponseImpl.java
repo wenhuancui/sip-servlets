@@ -238,6 +238,9 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 			if(logger.isInfoEnabled()) {
 				logger.info("prackRequest just created " + prackRequest);
 			}
+			// Fix for Issue 1808 : The Via header of PRACK request that sent by Mobicents contains "0.0.0.0".
+			// we remove the via header that was given by the dialog and let MSS set it later on
+			prackRequest.removeHeader(ViaHeader.NAME);
 			//Application Routing to avoid going through the same app that created the ack
 			ListIterator<RouteHeader> routeHeaders = prackRequest.getHeaders(RouteHeader.NAME);
 			prackRequest.removeHeader(RouteHeader.NAME);
