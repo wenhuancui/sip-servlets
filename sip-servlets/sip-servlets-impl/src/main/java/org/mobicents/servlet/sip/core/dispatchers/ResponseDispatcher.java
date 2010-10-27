@@ -109,7 +109,7 @@ public class ResponseDispatcher extends MessageDispatcher {
 						tmpOriginalRequest = (SipServletRequestImpl)applicationData.getSipServletMessage();
 					}
 					final ProxyBranchImpl proxyBranch = applicationData.getProxyBranch();
-					if(proxyBranch == null) {
+					if(proxyBranch == null && sipServletResponse.isRetransmission()) {
 						if(logger.isDebugEnabled()) {
 							logger.debug("retransmission received for a non proxy application, dropping the response " + response);
 						}
@@ -297,6 +297,15 @@ public class ResponseDispatcher extends MessageDispatcher {
 								//we don't forward the response here since this has been done by the proxy
 							}
 							else {
+								// Fix for Issue 1689 : Send 100/INVITE immediately or not
+								// This issue showed that retransmissions of 180 Ringing were passed
+								// to the application so we make sure to drop them in case of UAC/UAS
+								if(sipServletResponse.isRetransmission()) {
+									if(logger.isDebugEnabled()) {
+										logger.debug("the following response is dropped since this is a retransmission " + response);	
+									}
+									return;
+								}
 								//if this is a trying response, the response is dropped
 								if(Response.TRYING == status) {
 									// We will transition from INITIAL to EARLY here (not clear from the spec)
