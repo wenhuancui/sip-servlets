@@ -151,12 +151,8 @@ public interface MobicentsSipSession extends SipSession, SipSessionExt {
 	void setNextSipApplicationRouterInfo(SipApplicationRouterInfo routerInfo);
 	SipApplicationRouterInfo getNextSipApplicationRouterInfo();
 
-	public boolean isAckReceived();
-
 	public boolean isValidInternal();
 	
-	public void setAckReceived(boolean ackReceived);
-
 	public long getCseq();
 
 	public void setCseq(long cseq);
@@ -166,4 +162,6 @@ public interface MobicentsSipSession extends SipSession, SipSessionExt {
 	String getTransport();
 	
 	void setTransport(String transport);
+	
+	void setAckReceived(long cSeq, boolean ackReceived);
 }

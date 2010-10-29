@@ -91,7 +91,7 @@ public class DeploymentTest extends SipServletTestCase {
 		tomcat.startTomcat();
 		deployShootmeApplication(null);
 		senderProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 		
 		sender = new TestSipListener(5080, 5070, senderProtocolObjects, true);
 		SipProvider senderProvider = sender.createProvider();			
@@ -127,7 +127,7 @@ public class DeploymentTest extends SipServletTestCase {
 		tomcat.startTomcat();
 		deployShootmeApplication(null);
 		senderProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 		
 		sender = new TestSipListener(5080, 5070, senderProtocolObjects, false);
 		SipProvider senderProvider = sender.createProvider();			

@@ -129,7 +129,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootist() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -146,7 +146,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistCancel() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		receiver.setWaitForCancel(true);
@@ -168,7 +168,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistSetContact() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -191,7 +191,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistSetToTag() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -212,7 +212,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistSetToParam() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -233,7 +233,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistSetToWithParam() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -260,7 +260,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistSetEscapedParam() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -286,7 +286,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testJainSipAckCreationViaParams() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		receiver.setTestAckViaParam(true);
@@ -306,7 +306,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistSipServletListener() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -333,7 +333,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	 */
 	public void testShootistContentLength() throws Exception {
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -351,7 +351,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistCallerSendsBye() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, true);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -367,7 +367,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	
 	public void testShootistUserAgentHeader() throws Exception {
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -406,7 +406,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	 */
 	public void testShootistContactTransport() throws Exception {
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);				
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);				
 		
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -429,7 +429,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	 */
 	public void testShootistOutboundInterfaceTransport() throws Exception {
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", ListeningPoint.TCP, AUTODIALOG, null);				
+				"sender", "gov.nist", ListeningPoint.TCP, AUTODIALOG, null, null, null);				
 		
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -453,7 +453,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistRegister() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -474,7 +474,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	public void testShootistProxyAuthorization() throws Exception {
 //		receiver.sendInvite();
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		SipProvider senderProvider = receiver.createProvider();			
@@ -492,7 +492,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	// Tests Issue 1693 http://code.google.com/p/mobicents/issues/detail?id=1693
 	public void testShootistErrorResponse() throws Exception {
 		receiverProtocolObjects =new ProtocolObjects(
-				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null);
+				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
 		receiver.setProvisionalResponsesToSend(new ArrayList<Integer>());

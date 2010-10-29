@@ -68,9 +68,9 @@ public class CallForwardingB2BUAReInviteJunitTest extends SipServletTestCase {
 		super.setUp();
 
 		senderProtocolObjects = new ProtocolObjects("forward-sender",
-				"gov.nist", TRANSPORT, AUTODIALOG, null);
+				"gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 		receiverProtocolObjects = new ProtocolObjects("receiver",
-				"gov.nist", TRANSPORT, AUTODIALOG, null);
+				"gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 			
 	}
 	
