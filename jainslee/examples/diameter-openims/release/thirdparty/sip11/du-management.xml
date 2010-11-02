@@ -5,7 +5,7 @@
 	<!-- SYSTEM RELATED -->
 	<property environment="system" />
 	<property name="jboss.home" value="${system.JBOSS_HOME}" />
-	<property name="node" value="default" />
+	<property name="node" value="slee-default" />
 	<property name="jboss.deploy" value="${jboss.home}/server/${node}/deploy" />
 
 	<!-- CORE RELATED -->
