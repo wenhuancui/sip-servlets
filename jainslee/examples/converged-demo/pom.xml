@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>converged-demo-parent</artifactId>
 	<groupId>org.mobicents.examples.converged</groupId>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 
 
 	<packaging>pom</packaging>
@@ -55,11 +55,11 @@
 	</modules>
 
 	<properties>
-		<mobicents.resources.sip11.version>5.0.0.GA-JBCP5</mobicents.resources.sip11.version>
-		<mobicents.resources.mgcp.version>5.0.0.GA-JBCP5</mobicents.resources.mgcp.version>
-		<mobicents.core.version>5.0.0.GA-JBCP5</mobicents.core.version>
-		<mobicents.tools.mavenplugin.du.version>5.0.0.GA-JBCP5</mobicents.tools.mavenplugin.du.version>
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.resources.sip11.version>5.0.1.GA-JBCP5</mobicents.resources.sip11.version>
+		<mobicents.resources.mgcp.version>5.0.1.GA-JBCP5</mobicents.resources.mgcp.version>
+		<mobicents.core.version>5.0.1.GA-JBCP5</mobicents.core.version>
+		<mobicents.tools.mavenplugin.du.version>5.0.1.GA-JBCP5</mobicents.tools.mavenplugin.du.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.1.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 
 	<build>

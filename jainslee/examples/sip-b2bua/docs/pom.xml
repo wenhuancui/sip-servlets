@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>mobicents-slee-example-sip11-b2b</artifactId>
 		<groupId>org.mobicents.examples</groupId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 	
 	<artifactId>mobicents-slee-example-sip-b2bua-docs</artifactId>

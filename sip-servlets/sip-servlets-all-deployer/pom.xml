@@ -4,12 +4,12 @@
 	<parent>
         	<artifactId>mobicents-parent</artifactId>
         	<groupId>org.mobicents</groupId>
-			<version>5.0.0.GA-JBCP5</version>
+			<version>5.0.1.GA-JBCP5</version>
     	</parent>
 	<groupId>org.mobicents.servlet.sip</groupId>
 
 	<artifactId>sip-servlets-all-deployer</artifactId>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 	<packaging>pom</packaging>	
 	<name>Mobicents Sip Servlets assembly default deployer</name>
 	

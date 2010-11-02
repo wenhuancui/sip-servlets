@@ -8,12 +8,12 @@
   <parent>
     <groupId>org.mobicents</groupId>
     <artifactId>mobicents-parent</artifactId>
-    <version>5.0.0.GA-JBCP5</version>
+    <version>5.0.1.GA-JBCP5</version>
   </parent>
 
   <groupId>org.mobicents.servers.diameter.resources</groupId>
   <artifactId>base-parent</artifactId>
-  <version>5.0.0.GA-JBCP5</version>
+  <version>5.0.1.GA-JBCP5</version>
 
   <name>Mobicents :: Diameter Resources :: ${pom.artifactId}</name>
 
@@ -28,7 +28,7 @@
   <properties>
     <!-- Mobicents Diameter Components Versions -->
     <mobicents.diameter.jdiameter.version>1.5.3.1-build353-JBCP5</mobicents.diameter.jdiameter.version>
-    <mobicents.diameter.mux.version>5.0.0.GA-JBCP5</mobicents.diameter.mux.version>
+    <mobicents.diameter.mux.version>5.0.1.GA-JBCP5</mobicents.diameter.mux.version>
 	<!-- Documentation Related Properties -->
     <docs.profile>mobicents</docs.profile>
     <docs.ra.name>Diameter Base</docs.ra.name>

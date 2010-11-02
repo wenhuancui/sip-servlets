@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>jcc-camel-provider</artifactId>
 		<groupId>org.mobicents.resources.jcc</groupId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 
 

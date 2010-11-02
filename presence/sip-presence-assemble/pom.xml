@@ -4,11 +4,11 @@
 	<parent>
 		<artifactId>sip-presence-parent</artifactId>
 		<groupId>org.mobicents.servers.sippresence</groupId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>sip-presence-assemble</artifactId>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 	<packaging>pom</packaging>
 		
 	<name>SipPresence assembly</name>

@@ -4,14 +4,14 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.protocols.stream</groupId>
 	<artifactId>stream-parent</artifactId>
 	<packaging>pom</packaging>
 	<name>Mobicents Streaming</name>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 	<description>Simple, NIO like stream library.</description>
 	
 	<properties>
@@ -23,7 +23,7 @@
 
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
 		<mobicents.tools.mavenplugin.eclipse.version>
-			5.0.0.GA-JBCP5
+			5.0.1.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 	

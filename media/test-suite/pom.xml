@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.testsuite</groupId>
 	<artifactId>mms-testsuite</artifactId>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 	<name>Mobicents Media Server Test Suite</name>
 	<url>http://www.mobicents.org/products_media_server.html</url>
 	<packaging>pom</packaging>
@@ -23,10 +23,10 @@
 	</modules>
 
 	<properties>
-		<mgcp-stack.version>5.0.0.GA-JBCP5</mgcp-stack.version>
-		<mms.version>5.0.0.GA-JBCP5</mms.version>
+		<mgcp-stack.version>5.0.1.GA-JBCP5</mgcp-stack.version>
+		<mms.version>5.0.1.GA-JBCP5</mms.version>
 		<jfree-chart.version>1.0.0</jfree-chart.version>
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.1.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 
 	<dependencyManagement>

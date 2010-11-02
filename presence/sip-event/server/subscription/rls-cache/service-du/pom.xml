@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.sipevent</groupId>
 		<artifactId>sip-event-subscription-control-rls-cache</artifactId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 		
 	<artifactId>sip-event-subscription-control-rls-cache-service-DU</artifactId>

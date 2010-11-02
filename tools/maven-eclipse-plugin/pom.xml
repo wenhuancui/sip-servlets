@@ -3,7 +3,7 @@
 
 	<artifactId>maven-eclipse-plugin</artifactId>
 	<groupId>org.mobicents.tools</groupId>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 	
 	<description>
 		Maven Plugin to generate Eclipse project files, based on code

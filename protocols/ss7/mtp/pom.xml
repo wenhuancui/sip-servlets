@@ -4,12 +4,12 @@
 	<parent>
 		<artifactId>ss7-parent</artifactId>
 		<groupId>org.mobicents.protocols.ss7</groupId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.protocols.ss7.mtp</groupId>
 	<artifactId>mtp-parent</artifactId>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 	<name>Mobicents MTP Parent</name>
 	<packaging>pom</packaging>
 	
@@ -22,7 +22,7 @@
 
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
 		<mobicents.tools.mavenplugin.eclipse.version>
-			5.0.0.GA-JBCP5
+			5.0.1.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 	

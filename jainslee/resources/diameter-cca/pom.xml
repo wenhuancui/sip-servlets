@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.mobicents</groupId>
     <artifactId>mobicents-parent</artifactId>
-    <version>5.0.0.GA-JBCP5</version>
+    <version>5.0.1.GA-JBCP5</version>
   </parent>
 
   <groupId>org.mobicents.servers.diameter.resources</groupId>
   <artifactId>cca-parent</artifactId>
-  <version>5.0.0.GA-JBCP5</version>
+  <version>5.0.1.GA-JBCP5</version>
 
   <name>Mobicents :: Diameter Resources :: ${pom.artifactId}</name>
 
@@ -24,7 +24,7 @@
 
   <properties>
     <!-- Mobicents Diameter Components Versions -->
-    <mobicents.diameter.resources.base-common.version>5.0.0.GA-JBCP5</mobicents.diameter.resources.base-common.version>
+    <mobicents.diameter.resources.base-common.version>5.0.1.GA-JBCP5</mobicents.diameter.resources.base-common.version>
 	<!-- Documentation Related Properties -->
     <docs.profile>mobicents</docs.profile>
     <docs.ra.name>Diameter CCA</docs.ra.name>

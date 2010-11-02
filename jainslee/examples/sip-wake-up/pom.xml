@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 	
 	<artifactId>mobicents-slee-example-sip-wake-up</artifactId>
 	<groupId>org.mobicents.examples</groupId>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 					
 	<modules>
 		<module>sbb</module>						

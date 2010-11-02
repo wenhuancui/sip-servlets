@@ -1,11 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.ha.javax.sip</groupId>
@@ -20,9 +20,9 @@
 	</scm>
 
 	<properties>
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.0.GA-JBCP5
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.1.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
-		<mobicents.cluster.version>5.0.0.GA-JBCP5</mobicents.cluster.version>
+		<mobicents.cluster.version>5.0.1.GA-JBCP5</mobicents.cluster.version>
 	</properties>
 
 	<dependencyManagement>
@@ -54,7 +54,7 @@
 		<dependency>
 			<groupId>org.mobicents.javax.sip</groupId>
 			<artifactId>mobicents-jain-sip-ext</artifactId>
-			<version>5.0.0.GA-JBCP5</version>
+			<version>5.0.1.GA-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

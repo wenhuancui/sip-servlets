@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.0.GA-JBCP5</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 	
 	<groupId>org.mobicents.servers.jainslee.core</groupId>
 	<artifactId>mobicents-slee-core</artifactId>
-	<version>5.0.0.GA-JBCP5</version>
+	<version>5.0.1.GA-JBCP5</version>
 	
 	<packaging>pom</packaging>
 	
@@ -51,7 +51,7 @@
 		<slee.vendor>JBoss, a Red Hat division</slee.vendor>
 		<slee.version>${pom.version}</slee.version>
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
-		<mobicents.cluster.version>5.0.0.GA-JBCP5</mobicents.cluster.version>
+		<mobicents.cluster.version>5.0.1.GA-JBCP5</mobicents.cluster.version>
 	</properties>
 	
 	<dependencyManagement>
