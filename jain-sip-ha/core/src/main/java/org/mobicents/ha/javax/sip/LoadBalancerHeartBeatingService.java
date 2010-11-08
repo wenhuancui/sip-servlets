@@ -36,7 +36,6 @@ public interface LoadBalancerHeartBeatingService {
 	void init(ClusteredSipStack clusteredSipStack, Properties stackProperties);
 	
 	void start();
-	
 	void stop();
 	
 	/**
