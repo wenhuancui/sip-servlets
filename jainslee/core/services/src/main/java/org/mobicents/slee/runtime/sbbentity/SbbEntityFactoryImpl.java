@@ -16,6 +16,7 @@ import org.mobicents.slee.container.AbstractSleeContainerModule;
 import org.mobicents.slee.container.sbbentity.SbbEntity;
 import org.mobicents.slee.container.sbbentity.SbbEntityFactory;
 import org.mobicents.slee.container.transaction.TransactionContext;
+import org.mobicents.slee.container.transaction.TransactionalAction;
 
 /**
  * 
@@ -85,7 +86,6 @@ public class SbbEntityFactoryImpl extends AbstractSleeContainerModule implements
 		// add tx actions to unlock it when the tx ends
 		SbbEntityUnlockTransactionalAction rollbackAction = new SbbEntityUnlockTransactionalAction(sbbEntity,lock,true,true,lockFacility);
 		SbbEntityUnlockTransactionalAction commitAction = new SbbEntityUnlockTransactionalAction(sbbEntity,lock,true,false,lockFacility);
-		
 		txContext.getAfterRollbackActions().add(rollbackAction);
 		txContext.getAfterCommitActions().add(commitAction);
 		
@@ -142,6 +142,7 @@ public class SbbEntityFactoryImpl extends AbstractSleeContainerModule implements
 			final SbbEntityCacheData cacheData = new SbbEntityCacheData(sbbeId,sleeContainer.getCluster().getMobicentsCache());
 			if (!cacheData.exists()) {
 				lockFacility.remove(sbbeId);
+				lock.unlock();
 				return null;
 			}
 			
@@ -218,13 +219,23 @@ public class SbbEntityFactoryImpl extends AbstractSleeContainerModule implements
 	 * @throws SystemException
 	 */
 	private void removeSbbEntityWithCurrentClassLoader(
-			SbbEntity sbbEntity, boolean removeFromParent) throws TransactionRequiredException, SystemException {
+			final SbbEntity sbbEntity, boolean removeFromParent) throws TransactionRequiredException, SystemException {
 		
 		// remove entity
 		sbbEntity.remove(removeFromParent);
 		// remove from tx data
-		sleeContainer.getTransactionManager().getTransactionContext().getData().remove(
-				sbbEntity.getSbbEntityId());			
+		final TransactionContext txContext = sleeContainer.getTransactionManager().getTransactionContext(); 
+		txContext.getData().remove(sbbEntity.getSbbEntityId());	
+		// if sbb entity is not root add a tx action to ensure lock is removed
+		if (!sbbEntity.isRootSbbEntity()) {
+			TransactionalAction txAction = new TransactionalAction() {
+				@Override
+				public void execute() {
+					lockFacility.remove(sbbEntity.getSbbEntityId());
+				}
+			};
+			txContext.getAfterCommitActions().add(txAction);
+		}
 	}
 
 	// --- helpers

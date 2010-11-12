@@ -3,7 +3,8 @@ package org.mobicents.slee.container.component.deployment.jaxb.descriptors.ra;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.mobicents.slee.container.component.deployment.jaxb.descriptors.common.references.MLibraryRef;
+import javax.slee.management.LibraryID;
+
 import org.mobicents.slee.container.component.deployment.jaxb.descriptors.common.references.MProfileSpecRef;
 import org.mobicents.slee.container.component.deployment.jaxb.descriptors.common.references.MResourceAdaptorTypeRef;
 
@@ -28,7 +29,7 @@ public class MResourceAdaptor {
 
   // For JAIN SLEE 1.1 Only
   protected boolean ignoreRaTypeEventTypeCheck = false;
-  protected List<MLibraryRef> libraryRef = new ArrayList<MLibraryRef>();
+  private List<LibraryID> libraryRefs = new ArrayList<LibraryID>();
   protected List<MProfileSpecRef> profileSpecRef = new ArrayList<MProfileSpecRef>();
   protected List<MConfigProperty> configProperty = new ArrayList<MConfigProperty>();
   
@@ -64,12 +65,19 @@ public class MResourceAdaptor {
     
     for(org.mobicents.slee.container.component.deployment.jaxb.slee11.ra.LibraryRef libraryRef11 : resourceAdaptor11.getLibraryRef())
     {
-      this.libraryRef.add( new MLibraryRef(libraryRef11) );
+    	this.libraryRefs.add(new LibraryID(libraryRef11.getLibraryName()
+    			.getvalue(), libraryRef11.getLibraryVendor().getvalue(),
+    			libraryRef11.getLibraryVersion().getvalue()));
     }
 
     for(org.mobicents.slee.container.component.deployment.jaxb.slee11.ra.ConfigProperty configProperty11 : resourceAdaptor11.getConfigProperty())
     {
       this.configProperty.add( new MConfigProperty(configProperty11) );
+    }
+    
+    for(org.mobicents.slee.container.component.deployment.jaxb.slee11.ra.ProfileSpecRef profileSpecRef : resourceAdaptor11.getProfileSpecRef())
+    {
+      this.profileSpecRef.add(new MProfileSpecRef(profileSpecRef));
     }
     
     this.resourceAdaptorClasses = new MResourceAdaptorClasses(resourceAdaptor11.getResourceAdaptorClasses());
@@ -116,9 +124,9 @@ public class MResourceAdaptor {
     return ignoreRaTypeEventTypeCheck;
   }
   
-  public List<MLibraryRef> getLibraryRef()
+  public List<LibraryID> getLibraryRefs()
   {
-    return libraryRef;
+    return libraryRefs;
   }
   
   public List<MProfileSpecRef> getProfileSpecRef()
