@@ -9,7 +9,7 @@
 
 	<artifactId>mobicents-jain-sip-ha-core</artifactId>
 
-	<dependencies>
+	<dependencies>		
 		<dependency>
 			<groupId>javax.sip</groupId>
 			<artifactId>jain-sip-ri</artifactId>

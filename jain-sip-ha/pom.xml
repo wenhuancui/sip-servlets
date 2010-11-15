@@ -1,6 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<version>5.0.1.GA-JBCP5</version>
 
 	<parent>
 		<groupId>org.mobicents</groupId>
@@ -10,13 +9,14 @@
 
 	<groupId>org.mobicents.ha.javax.sip</groupId>
 	<artifactId>mobicents-jain-sip-ha</artifactId>
+	<version>5.0.1.GA-JBCP5</version>
 
 	<packaging>pom</packaging>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/mobicents-jain-sip-ha-0.11</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/mobicents-jain-sip-ha-0.11</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/mobicents-jain-sip-ha-0.11</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-sip-ha/5.0.1.GA-JBCP5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-sip-ha/5.0.1.GA-JBCP5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-sip-ha/5.0.1.GA-JBCP5</url>
 	</scm>
 
 	<properties>
@@ -39,6 +39,12 @@
 				<version>${mobicents.cluster.version}</version>
 				<scope>provided</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.mobicents.tools</groupId>
+				<artifactId>sip-balancer-jar</artifactId>
+				<version>5.0.1.GA-JBCP5</version>
+				<scope>provided</scope>
+			</dependency>			
 		</dependencies>
 	</dependencyManagement>
 
@@ -105,7 +111,7 @@
 		</profile>
 	</profiles>
 
-	
+
 	<!--
 		dupe info from parent, but it's only way to retrieve the parent
 		without checkout

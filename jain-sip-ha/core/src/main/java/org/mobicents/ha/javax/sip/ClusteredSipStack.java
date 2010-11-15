@@ -43,14 +43,18 @@ public interface ClusteredSipStack extends SipStack {
 	public static final String REPLICATION_STRATEGY_PROPERTY = "org.mobicents.ha.javax.sip.REPLICATION_STRATEGY";
 	
 	SIPDialog getDialog(String dialogId);	
+
 	void putDialog(SIPDialog dialog);
+		
 	void removeDialog(SIPDialog dialog);		
+
 	void remoteDialogRemoval(String dialogId);
 		
 	/**
 	 * @param sipCache the sipCache to set
 	 */
 	void setSipCache(SipCache sipCache);
+
 	/**
 	 * @return the sipCache
 	 */

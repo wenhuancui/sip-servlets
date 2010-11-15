@@ -61,7 +61,7 @@ import org.mobicents.tools.sip.balancer.SIPNode;
  *
  */
 public class LoadBalancerHeartBeatingServiceImpl implements LoadBalancerHeartBeatingService, LoadBalancerHeartBeatingServiceImplMBean {
-	
+
 	public static String LB_HB_SERVICE_MBEAN_NAME = "org.mobicents.jain.sip:type=load-balancer-heartbeat-service,name=";
 	
 	public static final int DEFAULT_RMI_PORT = 2000;
@@ -86,9 +86,9 @@ public class LoadBalancerHeartBeatingServiceImpl implements LoadBalancerHeartBea
 	protected boolean started = false;
   
 	protected Set<LoadBalancerHeartBeatingListener> loadBalancerHeartBeatingListeners;
-	
-	ObjectName oname = null;
     
+	ObjectName oname = null;
+	
     public LoadBalancerHeartBeatingServiceImpl() {
 		loadBalancerHeartBeatingListeners = new CopyOnWriteArraySet<LoadBalancerHeartBeatingListener>();
 	}
@@ -155,9 +155,13 @@ public class LoadBalancerHeartBeatingServiceImpl implements LoadBalancerHeartBea
 		}
 		
 		registerMBean();
-    }        
-
-	public void stop() {
+		
+		if(logger.isLoggingEnabled(StackLogger.TRACE_DEBUG)) {
+			logger.logDebug("Load Balancer Heart Beating Service has been started");
+		}
+    }
+    
+    public void stop() {
     	// Force removal from load balancer upon shutdown 
     	// added for Issue 308 (http://code.google.com/p/mobicents/issues/detail?id=308)
     	ArrayList<SIPNode> info = getConnectorsAsSIPNode();
@@ -173,9 +177,13 @@ public class LoadBalancerHeartBeatingServiceImpl implements LoadBalancerHeartBea
 		started = false;
 		
 		unRegisterMBean();
+		
+		if(logger.isLoggingEnabled(StackLogger.TRACE_DEBUG)) {
+			logger.logDebug("Load Balancer Heart Beating Service has been stopped");
+		}
     }
-	
-	protected void registerMBean() {
+    
+    protected void registerMBean() {
     	String mBeanName = LB_HB_SERVICE_MBEAN_NAME + sipStack.getStackName();
 		try {
 			oname = new ObjectName(mBeanName);
@@ -196,7 +204,7 @@ public class LoadBalancerHeartBeatingServiceImpl implements LoadBalancerHeartBea
 		} catch (Exception e) {
 			logger.logError("Could not unregister the stack as an MBean under the following name" + mBeanName);
 		}		
-	}		
+	}	
 	
     /**
      * {@inheritDoc}
@@ -338,7 +346,7 @@ public class LoadBalancerHeartBeatingServiceImpl implements LoadBalancerHeartBea
 			}
 			
 			if(logger.isLoggingEnabled(StackLogger.TRACE_DEBUG)) {
-				logger.logDebug("following balancer name : " + keyToRemove + "/address:" + addr + " removed");
+				logger.logDebug("following balancer name : " + keyToRemove +"/address:"+ addr + " removed");
 			}
 			
 			return true;
@@ -565,7 +573,8 @@ public class LoadBalancerHeartBeatingServiceImpl implements LoadBalancerHeartBea
 	 *
 	 */
 	protected class BalancerPingTimerTask extends TimerTask {
-		
+
+		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {			
 			ArrayList<SIPNode> info = getConnectorsAsSIPNode();						
