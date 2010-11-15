@@ -820,13 +820,13 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	 * @see javax.sip.SipListener#processDialogTerminated(javax.sip.DialogTerminatedEvent)
 	 */
 	public void processDialogTerminated(final DialogTerminatedEvent dialogTerminatedEvent) {
+		final Dialog dialog = dialogTerminatedEvent.getDialog();		
+		if(logger.isDebugEnabled()) {
+			logger.debug("Dialog Terminated => dialog Id : " + dialogTerminatedEvent.getDialog().getDialogId());
+		}
+		
 		getAsynchronousExecutor().execute(new Runnable() {
-			
 			public void run() {
-				Dialog dialog = dialogTerminatedEvent.getDialog();		
-				if(logger.isDebugEnabled()) {
-					logger.debug("Dialog Terminated => dialog Id : " + dialogTerminatedEvent.getDialog().getDialogId());
-				}
 				boolean appDataFound = false;
 				TransactionApplicationData dialogAppData = (TransactionApplicationData) dialog.getApplicationData();
 				TransactionApplicationData txAppData = null; 
@@ -846,7 +846,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 //					dialog.setApplicationData(null);
 				}		
 				if(!appDataFound && logger.isDebugEnabled()) {
-					logger.debug("no application data for this dialog " + dialogTerminatedEvent.getDialog().getDialogId());
+					logger.debug("no application data for this dialog " + dialog.getDialogId());
 				}
 			}
 		});
@@ -949,16 +949,15 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	 * @see gov.nist.javax.sip.SipListenerExt#processDialogTimeout(gov.nist.javax.sip.DialogTimeoutEvent)
 	 */
 	public void processDialogTimeout(final DialogTimeoutEvent timeoutEvent) {
-		getAsynchronousExecutor().execute(new Runnable() {
-			
-			public void run() {
-				final Dialog dialog = timeoutEvent.getDialog();
-				if(logger.isDebugEnabled()) {
-					logger.info("dialog timeout " + dialog + " reason => " + timeoutEvent.getReason());
-				}	
-				if(timeoutEvent.getReason() == Reason.AckNotReceived) {			
-					final TransactionApplicationData tad = (TransactionApplicationData) dialog.getApplicationData();
-					if(tad != null && tad.getSipServletMessage() != null) {
+		final Dialog dialog = timeoutEvent.getDialog();
+		if(logger.isDebugEnabled()) {
+			logger.info("dialog timeout " + dialog + " reason => " + timeoutEvent.getReason());
+		}	
+		if(timeoutEvent.getReason() == Reason.AckNotReceived) {			
+			final TransactionApplicationData tad = (TransactionApplicationData) dialog.getApplicationData();
+			if(tad != null && tad.getSipServletMessage() != null) {
+				getAsynchronousExecutor().execute(new Runnable() {
+					public void run() {				
 						final SipServletMessageImpl sipServletMessage = tad.getSipServletMessage();
 						final SipSessionKey sipSessionKey = sipServletMessage.getSipSessionKey();
 						final MobicentsSipSession sipSession = sipServletMessage.getSipSession();
@@ -979,13 +978,16 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 								tryToInvalidateSession(sipSessionKey, false);						
 							}		
 						}
-						tad.cleanUp();					
+						tad.cleanUp();										
+						dialog.setApplicationData(null);
 					}
-				}
+				});
+			} else{
 				dialog.setApplicationData(null);
 			}
-		});
-
+		} else {
+			dialog.setApplicationData(null);
+		}
 	}
 	
 	/*
@@ -993,21 +995,21 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	 * @see javax.sip.SipListener#processTimeout(javax.sip.TimeoutEvent)
 	 */
 	public void processTimeout(final TimeoutEvent timeoutEvent) {
-		getAsynchronousExecutor().execute(new Runnable() {
-			
-			public void run() {
-				Transaction transaction = null;
-				if(timeoutEvent.isServerTransaction()) {
-					transaction = timeoutEvent.getServerTransaction();
-				} else {
-					transaction = timeoutEvent.getClientTransaction();
-				}
-				if(logger.isDebugEnabled()) {
-					logger.debug("transaction " + transaction + " timed out => " + transaction.getRequest().toString());
-				}
-				
-				TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
-				if(tad != null && tad.getSipServletMessage() != null) {
+		Transaction eventTransaction = null;
+		if(timeoutEvent.isServerTransaction()) {
+			eventTransaction = timeoutEvent.getServerTransaction();
+		} else {
+			eventTransaction = timeoutEvent.getClientTransaction();
+		}
+		final Transaction transaction = eventTransaction;		
+		if(logger.isDebugEnabled()) {
+			logger.debug("transaction " + transaction + " timed out => " + transaction.getRequest().toString());
+		}
+		
+		final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
+		if(tad != null && tad.getSipServletMessage() != null) {
+			getAsynchronousExecutor().execute(new Runnable() {
+				public void run() {
 					SipServletMessageImpl sipServletMessage = tad.getSipServletMessage();
 					SipSessionKey sipSessionKey = sipServletMessage.getSipSessionKey();
 					MobicentsSipSession sipSession = sipServletMessage.getSipSession();					
@@ -1055,10 +1057,9 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 					// don't clean up for the same reason we don't invalidate the sip session right above
 					tad.cleanUp();				
 					transaction.setApplicationData(null);
-				}		
-			}
-		});
-
+				}					
+			});
+		}
 	}
 	
 	private boolean checkForAckNotReceived(SipServletMessageImpl sipServletMessage) {
@@ -1163,21 +1164,21 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	 * @see javax.sip.SipListener#processTransactionTerminated(javax.sip.TransactionTerminatedEvent)
 	 */
 	public void processTransactionTerminated(final TransactionTerminatedEvent transactionTerminatedEvent) {
-		getAsynchronousExecutor().execute(new Runnable() {
-			
-			public void run() {
-				Transaction transaction = null;
-				if(transactionTerminatedEvent.isServerTransaction()) {
-					transaction = transactionTerminatedEvent.getServerTransaction();
-				} else {
-					transaction = transactionTerminatedEvent.getClientTransaction();
-				}
-				if(logger.isDebugEnabled()) {
-					logger.info("transaction " + transaction + " terminated => " + transaction.getRequest().toString());
-				}		
-				
-				TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
-				if(tad != null && tad.getSipServletMessage() != null) {
+		Transaction eventTransaction = null;
+		if(transactionTerminatedEvent.isServerTransaction()) {
+			eventTransaction = transactionTerminatedEvent.getServerTransaction();
+		} else {
+			eventTransaction = transactionTerminatedEvent.getClientTransaction();
+		}
+		final Transaction transaction = eventTransaction;
+		if(logger.isDebugEnabled()) {
+			logger.info("transaction " + transaction + " terminated => " + transaction.getRequest().toString());
+		}		
+		
+		final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
+		if(tad != null && tad.getSipServletMessage() != null) {
+			getAsynchronousExecutor().execute(new Runnable() {
+				public void run() {				
 					SipServletMessageImpl sipServletMessageImpl = tad.getSipServletMessage();
 					SipSessionKey sipSessionKey = sipServletMessageImpl.getSipSessionKey();
 					MobicentsSipSession sipSession = sipServletMessageImpl.getSipSession();
@@ -1231,17 +1232,17 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 						tryToInvalidateSession(sipSessionKey, transactionTerminatedEvent.isServerTransaction());				
 
 					}			
-				} else {
-					if(logger.isDebugEnabled()) {
-						logger.debug("TransactionApplicationData not available on the following request " + transaction.getRequest().toString());
-					}
-					if(tad != null) {
-						tad.cleanUp();
-					}
-					transaction.setApplicationData(null);
-				}		
+				}
+			});
+		} else {
+			if(logger.isDebugEnabled()) {
+				logger.debug("TransactionApplicationData not available on the following request " + transaction.getRequest().toString());
 			}
-		});
+			if(tad != null) {
+				tad.cleanUp();
+			}
+			transaction.setApplicationData(null);
+		}	
 
 	}
 
