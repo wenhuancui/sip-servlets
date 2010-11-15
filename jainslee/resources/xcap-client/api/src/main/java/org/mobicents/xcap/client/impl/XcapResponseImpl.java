@@ -5,9 +5,9 @@ package org.mobicents.xcap.client.impl;
 
 import java.io.Serializable;
 
-import org.apache.http.Header;
 import org.mobicents.xcap.client.XcapEntity;
 import org.mobicents.xcap.client.XcapResponse;
+import org.mobicents.xcap.client.header.Header;
 
 /**
  * @author martins
@@ -22,6 +22,7 @@ public class XcapResponseImpl implements XcapResponse, Serializable {
 	
 	private final int statusCode;
 	private final String eTag;
+	private final String mimetype;
 	private final Header[] headers;
 	private final XcapEntity xcapEntity;
 	
@@ -31,10 +32,11 @@ public class XcapResponseImpl implements XcapResponse, Serializable {
 	 * @param headers
 	 * @param xcapEntity
 	 */
-	public XcapResponseImpl(int statusCode, String eTag, Header[] headers,
+	public XcapResponseImpl(int statusCode, String eTag,  String mimetype, Header[] headers,
 			XcapEntity xcapEntity) {
 		this.statusCode = statusCode;
 		this.eTag = eTag;
+		this.mimetype = mimetype;
 		this.headers = headers;
 		this.xcapEntity = xcapEntity;
 	}
@@ -60,6 +62,14 @@ public class XcapResponseImpl implements XcapResponse, Serializable {
 		return headers;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.xcap.client.XcapResponse#getMimetype()
+	 */
+	public String getMimetype() {
+		return mimetype;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.mobicents.xcap.client.XcapResponse#getCode()
 	 */

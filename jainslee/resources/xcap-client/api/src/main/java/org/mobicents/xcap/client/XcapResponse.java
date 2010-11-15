@@ -3,7 +3,7 @@
  */
 package org.mobicents.xcap.client;
 
-import org.apache.http.Header;
+import org.mobicents.xcap.client.header.Header;
 
 /**
  * @author martins
@@ -11,12 +11,34 @@ import org.apache.http.Header;
  */
 public interface XcapResponse {
 
+	/**
+	 * 
+	 * @return
+	 */
 	public int getCode();
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public XcapEntity getEntity();
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public String getETag();
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public String getMimetype();
+	
+	/**
+	 * 
+	 * @return
+	 */
 	public Header[] getHeaders();
 	
 }

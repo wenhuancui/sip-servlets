@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * 
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @authors tag. All rights reserved.
+ * See the copyright.txt in the distribution for a full listing
+ * of individual contributors.
+ *
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the GNU General Public License, v. 2.0.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * v. 2.0 along with this distribution; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
 package org.mobicents.slee.resource.diameter.base.handlers;
 
 import java.util.HashMap;
@@ -14,7 +36,6 @@ import org.jdiameter.api.IllegalDiameterStateException;
 import org.jdiameter.api.InternalException;
 import org.jdiameter.api.Message;
 import org.jdiameter.api.OverloadException;
-import org.jdiameter.api.Request;
 import org.jdiameter.api.RouteException;
 import org.jdiameter.api.SessionFactory;
 import org.jdiameter.api.acc.ClientAccSession;
@@ -27,9 +48,9 @@ import org.jdiameter.api.app.AppAnswerEvent;
 import org.jdiameter.api.app.AppRequestEvent;
 import org.jdiameter.api.app.AppSession;
 import org.jdiameter.api.app.StateChangeListener;
-import org.jdiameter.client.impl.app.acc.ClientAccSessionImpl;
+import org.jdiameter.client.api.ISessionFactory;
 import org.jdiameter.common.api.app.IAppSessionFactory;
-import org.jdiameter.server.impl.app.acc.ServerAccSessionImpl;
+import org.jdiameter.common.impl.app.acc.AccSessionFactoryImpl;
 
 /**
  * 
@@ -38,7 +59,7 @@ import org.jdiameter.server.impl.app.acc.ServerAccSessionImpl;
  * @author <a href="mailto:brainslog@gmail.com"> Alexandre Mendonca </a>
  * @author <a href="mailto:baranowb@gmail.com"> Bartosz Baranowski </a>
  */
-public class AccountingSessionFactory implements IAppSessionFactory, ServerAccSessionListener, StateChangeListener, ClientAccSessionListener {
+public class AccountingSessionFactory extends AccSessionFactoryImpl implements IAppSessionFactory, ServerAccSessionListener, StateChangeListener<AppSession>, ClientAccSessionListener {
 
   private static HashSet<Integer> accEventCodes = new HashSet<Integer>();
   private static HashSet<Integer> authEventCodes = new HashSet<Integer>();
@@ -51,7 +72,7 @@ public class AccountingSessionFactory implements IAppSessionFactory, ServerAccSe
     accEventCodes.add(AccountingAnswer.commandCode);
   }
 
-  protected HashMap<ApplicationId, BaseSessionCreationListener> ras;
+  protected HashMap<ApplicationId, DiameterRAInterface> ras;
   protected long messageTimeout = 5000;
   protected SessionFactory sessionFactory = null;
   protected final static Logger logger = Logger.getLogger(AccountingSessionFactory.class);
@@ -66,39 +87,31 @@ public class AccountingSessionFactory implements IAppSessionFactory, ServerAccSe
    */
 
   private AccountingSessionFactory() {
-    this.ras = new HashMap<ApplicationId, BaseSessionCreationListener>();
+    this.ras = new HashMap<ApplicationId, DiameterRAInterface>();
   }
 
-  public void registerListener(BaseSessionCreationListener ra, long messageTimeout, SessionFactory sessionFactory) {
+  public void registerListener(DiameterRAInterface ra, long messageTimeout, SessionFactory sessionFactory) {
     for (ApplicationId appId : ra.getSupportedApplications()) {
       this.ras.put(appId, ra);
     }
     this.messageTimeout = messageTimeout;
     this.sessionFactory = sessionFactory;
+    super.setSessionFactory((ISessionFactory) sessionFactory);
   }
 
   public AppSession getNewSession(String sessionId, Class<? extends AppSession> aClass, ApplicationId applicationId, Object[] args) {
-    try {
-      if (aClass == ServerAccSession.class) {
-        Request request = (Request) args[0];
-
-        ServerAccSessionImpl session = new ServerAccSessionImpl(sessionFactory.getNewSession(request.getSessionId()), sessionFactory, request, this, messageTimeout, true, new StateChangeListener[] { this });
-        BaseSessionCreationListener ra = this.ras.get(applicationId) != null ? this.ras.get(applicationId) : this.ras.values().iterator().next();
-        ra.sessionCreated(session);
-        return session;
-      }
-      else if (aClass == ClientAccSession.class) {
-        ClientAccSessionImpl session = sessionId == null ? new ClientAccSessionImpl(sessionFactory, this, applicationId) : new ClientAccSessionImpl(sessionFactory, sessionId, this, applicationId);
-        session.addStateChangeNotification(this);
-        BaseSessionCreationListener ra = this.ras.get(applicationId) != null ? this.ras.get(applicationId) : this.ras.values().iterator().next();
-        ra.sessionCreated(session);
-        return session;
-      }
+    AppSession session = super.getNewSession(sessionId, aClass, applicationId, args);
+    if (aClass == ServerAccSession.class) {
+      //BaseSessionCreationListener ra = this.ras.get(applicationId) != null ? this.ras.get(applicationId) : this.ras.values().iterator().next();
+      //ra.sessionCreated((ServerAccSession)session);
+      return session;
     }
-    catch (Exception e) {
-      logger.error("Failure to obtain new Accounting Session.", e);
+    else if (aClass == ClientAccSession.class) {
+      //BaseSessionCreationListener ra = this.ras.get(applicationId) != null ? this.ras.get(applicationId) : this.ras.values().iterator().next();
+      //ra.sessionCreated((ClientAccSession)session);
+      return session;
     }
-
+    
     return null;
   }
 
@@ -125,6 +138,25 @@ public class AccountingSessionFactory implements IAppSessionFactory, ServerAccSe
     //FIXME: add code here.
   }
 
+  /*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.jdiameter.common.impl.app.auth.AuthSessionFactoryImpl#stateChanged
+	 * (org.jdiameter.api.app.AppSession, java.lang.Enum, java.lang.Enum)
+	 */
+	@Override
+	public void stateChanged(AppSession source, Enum oldState, Enum newState) {
+		//inform one who might need that
+		//BaseSessionCreationListener ra = this.ras.get(source.getSessionAppId());
+		//FIXME: Alex?
+		//ra.stateChanged(source,oldState,newState);
+		if(logger.isInfoEnabled())
+		{
+			logger.info("Diameter Base AccountingSessionFactory :: stateChanged :: source["+source+"] :: oldState[" + oldState + "], newState[" + newState + "]");
+		}
+	}
+  
   private void doFireEvent(AppSession appSession, Message message) {
     ApplicationId appId = null;
     for(ApplicationId curAppId : message.getApplicationIdAvps()) {
@@ -134,7 +166,7 @@ public class AccountingSessionFactory implements IAppSessionFactory, ServerAccSe
       }
     }
 
-    BaseSessionCreationListener ra = appId != null ? this.ras.get(appId) : this.ras.values().iterator().next();
+    DiameterRAInterface ra = appId != null ? this.ras.get(appId) : this.ras.values().iterator().next();
 
     if(ra != null) {
       ra.fireEvent(appSession.getSessions().get(0).getSessionId(), message);

@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * 
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @authors tag. All rights reserved.
+ * See the copyright.txt in the distribution for a full listing
+ * of individual contributors.
+ *
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the GNU General Public License, v. 2.0.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * v. 2.0 along with this distribution; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
 package org.mobicents.slee.resource.diameter.base.handlers;
 
 import org.apache.log4j.Logger;
@@ -28,6 +50,7 @@ import org.jdiameter.common.api.app.IAppSessionFactory;
 import org.jdiameter.common.api.app.auth.IAuthMessageFactory;
 import org.jdiameter.common.impl.app.AppAnswerEventImpl;
 import org.jdiameter.common.impl.app.AppRequestEventImpl;
+import org.jdiameter.common.impl.app.auth.AuthSessionFactoryImpl;
 import org.jdiameter.server.impl.app.auth.ServerAuthSessionImpl;
 
 /**
@@ -37,45 +60,35 @@ import org.jdiameter.server.impl.app.auth.ServerAuthSessionImpl;
  * @author <a href="mailto:brainslog@gmail.com"> Alexandre Mendonca </a>
  * @author <a href="mailto:baranowb@gmail.com"> Bartosz Baranowski </a>
  */
-public class AuthorizationSessionFactory implements IAppSessionFactory, IAuthMessageFactory, ServerAuthSessionListener, StateChangeListener, ClientAuthSessionListener {
+public class AuthorizationSessionFactory extends AuthSessionFactoryImpl implements IAppSessionFactory, IAuthMessageFactory, ServerAuthSessionListener, StateChangeListener<AppSession>, ClientAuthSessionListener {
 
   private long authAppId = 19301L;
 
-  protected BaseSessionCreationListener ra;
+  protected DiameterRAInterface ra;
   protected long messageTimeout = 5000;
   protected SessionFactory sessionFactory = null;
-  protected final static Logger logger = Logger.getLogger(AccountingSessionFactory.class);
+  protected final static Logger logger = Logger.getLogger(AuthorizationSessionFactory.class);
 
   private boolean stateless = true;
 
-  public AuthorizationSessionFactory(BaseSessionCreationListener ra, long messageTimeout, SessionFactory sessionFactory) {
-    super();
+  public AuthorizationSessionFactory(DiameterRAInterface ra, long messageTimeout, SessionFactory sessionFactory) {
+    super(sessionFactory);
     this.ra = ra;
     this.messageTimeout = messageTimeout;
     this.sessionFactory = sessionFactory;
   }
 
   public AppSession getNewSession(String sessionId, Class<? extends AppSession> aClass, ApplicationId applicationId, Object[] args) {
-    try {
-      if (aClass == ServerAuthSession.class) {
-        Request request = (Request) args[0];
+    AppSession session = super.getNewSession(sessionId, aClass, applicationId, args);
+    if (aClass == ServerAuthSession.class) {
+      ServerAuthSessionImpl serverAuthSession = (ServerAuthSessionImpl)session;
 
-        ServerAuthSessionImpl session = new ServerAuthSessionImpl(sessionFactory.getNewSession(request.getSessionId()), sessionFactory, request, this, this, messageTimeout, stateless, this);
-        this.ra.sessionCreated(session);
-
-        return session;
-      }
-      else {
-        if (aClass == ClientAuthSession.class) {
-          ClientAuthSessionImpl session = sessionId == null ? new ClientAuthSessionImpl(stateless, this, sessionFactory, this) : new ClientAuthSessionImpl(stateless, sessionId, this, sessionFactory, this);
-          session.addStateChangeNotification(this);
-          this.ra.sessionCreated(session);
-          return session;
-        }
-      }
+      return serverAuthSession;
     }
-    catch (Exception e) {
-      logger.error("", e);
+    else if (aClass == ClientAuthSession.class) {
+      ClientAuthSessionImpl clientAuthSession = (ClientAuthSessionImpl)session;
+
+      return clientAuthSession;
     }
 
     return null;
@@ -84,6 +97,24 @@ public class AuthorizationSessionFactory implements IAppSessionFactory, IAuthMes
   public void stateChanged(Enum oldState, Enum newState) {
     logger.info("Diameter Base AuthorizationSessionFactory :: stateChanged :: oldState[" + oldState + "], newState[" + newState + "]");
   }
+  
+  
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.jdiameter.common.impl.app.auth.AuthSessionFactoryImpl#stateChanged
+	 * (org.jdiameter.api.app.AppSession, java.lang.Enum, java.lang.Enum)
+	 */
+	@Override
+	public void stateChanged(AppSession source, Enum oldState, Enum newState) {
+		//inform one who might need that
+		//this.ra.stateChanged(source,oldState,newState);
+		if(logger.isInfoEnabled())
+		{
+			logger.info("Diameter Base AuthorizationSessionFactory :: stateChanged :: source["+source+"] :: oldState[" + oldState + "], newState[" + newState + "]");
+		}
+	}
 
   public void doAbortSessionRequestEvent(ClientAuthSession appSession, AbortSessionRequest asr) throws InternalException, IllegalDiameterStateException, RouteException, OverloadException {
     logger.info("Diameter Base AuthorizationSessionFactory :: doAbortSessionRequestEvent :: appSession[" + appSession + "], ASR[" + asr + "]");

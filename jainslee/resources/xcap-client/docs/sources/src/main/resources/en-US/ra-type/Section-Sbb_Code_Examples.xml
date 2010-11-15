@@ -19,6 +19,9 @@
 		
 		<programlisting language="Java" role="JAVA">
 			<![CDATA[
+		// create auth credentials
+		Credentials credentials = ra.getCredentialsFactory().getHttpDigestCredentials(username,password);
+			
 		// create doc uri		
 		String documentSelector = DocumentSelectorBuilder.getUserDocumentSelectorBuilder("resource-lists", userName, documentName).toPercentEncodedString(); 
 		UriBuilder uriBuilder = new UriBuilder()
@@ -126,7 +129,8 @@
 		jAXBContext.createMarshaller().marshal(listType, baos);
 		
 		// lets put the element using the sync interface
-		XcapResponse response = ra.put(uri,ElementResource.MIMETYPE,baos.toByteArray(),null,credentials);
+		XcapResponse response = ra.put(uri,ElementResource.MIMETYPE,
+			baos.toByteArray(),null,credentials);
 		// check put response
 		if (response != null) {
 			if(response.getCode() == 201) {
@@ -155,7 +159,7 @@
 		
 		<programlisting language="Java" role="JAVA">
 			<![CDATA[
-	public void onResponseEvent(ResponseEvent event, ActivityContextInterface aci) {
+	public void onGetResponseEvent(ResponseEvent event, ActivityContextInterface aci) {
 				
 		// check put response
 		XcapResponse response = event.getResponse();

@@ -2,9 +2,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-    <groupId>org.mobicents.servers.diameter.resources</groupId>
-  	<artifactId>base-common-parent</artifactId>
-  	<version>5.0.1.GA-JBCP5</version>
+		<groupId>org.mobicents.servers.diameter.resources</groupId>
+		<artifactId>base-common-parent</artifactId>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>base-common-ra</artifactId>
@@ -16,6 +16,11 @@
 			<groupId>${pom.groupId}</groupId>
 			<artifactId>base-common-ratype</artifactId>
 			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.servers.jainslee.core</groupId>
+			<artifactId>spi</artifactId>
+			<version>${mobicents.slee.version}</version>
 		</dependency>
 	</dependencies>
 

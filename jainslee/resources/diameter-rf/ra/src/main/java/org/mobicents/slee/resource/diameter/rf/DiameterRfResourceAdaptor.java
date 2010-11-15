@@ -2,8 +2,6 @@ package org.mobicents.slee.resource.diameter.rf;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.ObjectName;
 import javax.naming.OperationNotSupportedException;
@@ -22,16 +20,20 @@ import javax.slee.resource.ReceivableService;
 import javax.slee.resource.ResourceAdaptor;
 import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
+import javax.transaction.Transaction;
 
 import net.java.slee.resource.diameter.base.CreateActivityException;
 import net.java.slee.resource.diameter.base.DiameterActivity;
-import net.java.slee.resource.diameter.base.events.AccountingAnswer;
-import net.java.slee.resource.diameter.base.events.AccountingRequest;
+import net.java.slee.resource.diameter.base.DiameterException;
 import net.java.slee.resource.diameter.base.events.DiameterMessage;
 import net.java.slee.resource.diameter.base.events.avp.DiameterIdentity;
-import net.java.slee.resource.diameter.rf.RfClientSession;
+import net.java.slee.resource.diameter.rf.RfAvpFactory;
+import net.java.slee.resource.diameter.rf.RfClientSessionActivity;
 import net.java.slee.resource.diameter.rf.RfMessageFactory;
 import net.java.slee.resource.diameter.rf.RfProvider;
+import net.java.slee.resource.diameter.rf.RfServerSessionActivity;
+import net.java.slee.resource.diameter.rf.events.RfAccountingAnswer;
+import net.java.slee.resource.diameter.rf.events.RfAccountingRequest;
 
 import org.jboss.mx.util.MBeanServerLocator;
 import org.jdiameter.api.Answer;
@@ -48,28 +50,33 @@ import org.jdiameter.api.Request;
 import org.jdiameter.api.Session;
 import org.jdiameter.api.SessionFactory;
 import org.jdiameter.api.Stack;
-import org.jdiameter.api.acc.ClientAccSession;
-import org.jdiameter.api.acc.ServerAccSession;
 import org.jdiameter.api.auth.ClientAuthSession;
 import org.jdiameter.api.auth.ServerAuthSession;
+import org.jdiameter.api.rf.ClientRfSession;
+import org.jdiameter.api.rf.ServerRfSession;
 import org.jdiameter.client.api.ISessionFactory;
-import org.jdiameter.client.impl.app.acc.ClientAccSessionImpl;
-import org.jdiameter.server.impl.app.acc.ServerAccSessionImpl;
+import org.jdiameter.client.impl.app.rf.ClientRfSessionImpl;
+import org.jdiameter.common.api.app.rf.IRfSessionFactory;
+import org.jdiameter.server.impl.app.rf.ServerRfSessionImpl;
 import org.mobicents.diameter.stack.DiameterListener;
 import org.mobicents.diameter.stack.DiameterStackMultiplexerMBean;
+import org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptorContext;
+import org.mobicents.slee.resource.diameter.AbstractClusteredDiameterActivityManagement;
+import org.mobicents.slee.resource.diameter.DiameterActivityManagement;
+import org.mobicents.slee.resource.diameter.LocalDiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityHandle;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityImpl;
 import org.mobicents.slee.resource.diameter.base.DiameterAvpFactoryImpl;
+import org.mobicents.slee.resource.diameter.base.DiameterBaseMarshaler;
 import org.mobicents.slee.resource.diameter.base.DiameterMessageFactoryImpl;
-import org.mobicents.slee.resource.diameter.base.EventIDCache;
 import org.mobicents.slee.resource.diameter.base.EventIDFilter;
-import org.mobicents.slee.resource.diameter.base.events.AccountingAnswerImpl;
-import org.mobicents.slee.resource.diameter.base.events.AccountingRequestImpl;
 import org.mobicents.slee.resource.diameter.base.events.DiameterMessageImpl;
 import org.mobicents.slee.resource.diameter.base.events.ErrorAnswerImpl;
 import org.mobicents.slee.resource.diameter.base.events.ExtensionDiameterMessageImpl;
-import org.mobicents.slee.resource.diameter.base.handlers.AccountingSessionFactory;
-import org.mobicents.slee.resource.diameter.base.handlers.BaseSessionCreationListener;
+import org.mobicents.slee.resource.diameter.base.handlers.DiameterRAInterface;
+import org.mobicents.slee.resource.diameter.rf.events.RfAccountingAnswerImpl;
+import org.mobicents.slee.resource.diameter.rf.events.RfAccountingRequestImpl;
+import org.mobicents.slee.resource.diameter.rf.handlers.RfSessionFactory;
 
 /**
  * Diameter Rf Resource Adaptor
@@ -77,7 +84,7 @@ import org.mobicents.slee.resource.diameter.base.handlers.BaseSessionCreationLis
  * @author <a href="mailto:brainslog@gmail.com"> Alexandre Mendonca </a>
  * @author <a href="mailto:baranowb@gmail.com"> Bartosz Baranowski </a>
  */
-public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListener, BaseSessionCreationListener {
+public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListener, DiameterRAInterface,org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptor<String, DiameterActivity> {
 
   private static final long serialVersionUID = 1L;
 
@@ -110,6 +117,12 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
   private ResourceAdaptorContext raContext;
 
   /**
+   * FT/HA version of RA context.
+   */
+  private FaultTolerantResourceAdaptorContext<String, DiameterActivity> ftRAContext;
+
+  protected DiameterBaseMarshaler marshaler = new DiameterBaseMarshaler();
+  /**
    * The SLEE endpoint defines the contract between the SLEE and the resource
    * adaptor that enables the resource adaptor to deliver events
    * asynchronously to SLEE endpoints residing in the SLEE. This contract
@@ -138,13 +151,14 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
   // Diameter Base Factories
   private DiameterMessageFactoryImpl baseMessageFactory;
   private DiameterAvpFactoryImpl baseAvpFactory;
-
+//Rf Specific Factories
+  private RfMessageFactoryImpl rfMessageFactory;
+  private RfAvpFactory rfAvpFactory;
   private SessionFactory sessionFactory = null;
 
-  // Rf Specific Factories
-  private RfMessageFactoryImpl rfMessageFactory;
+  
 
-  private AccountingSessionFactory accSessionFactory;
+  private IRfSessionFactory rfSessionFactory;
 
   /**
    * the EventLookupFacility is used to look up the event id of incoming
@@ -153,11 +167,12 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
   private transient EventLookupFacility eventLookup = null;
 
   /**
-   * The list of activites stored in this resource adaptor. If this resource
+   * The list of activities stored in this resource adaptor. If this resource
    * adaptor were a distributed and highly available solution, this storage
    * were one of the candidates for distribution.
    */
-  private transient ConcurrentHashMap<ActivityHandle, DiameterActivity> activities = null;
+  //private transient ConcurrentHashMap<ActivityHandle, DiameterActivity> activities = null;
+  private transient DiameterActivityManagement activities;
 
   /**
    * A link to the DiameterProvider which then will be exposed to Sbbs
@@ -176,7 +191,8 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
     return eventFlags;
   }
 
-  private static final int ACTIVITY_FLAGS = ActivityFlags.REQUEST_ENDED_CALLBACK;
+  private static final int DEFAULT_ACTIVITY_FLAGS = ActivityFlags.REQUEST_ENDED_CALLBACK;
+  private static final int MARSHALABLE_ACTIVITY_FLAGS = ActivityFlags.setSleeMayMarshal(DEFAULT_ACTIVITY_FLAGS);
 
   public DiameterRfResourceAdaptor() {
     // TODO: Initialize any default values.
@@ -202,6 +218,43 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
     this.eventLookup = null;
   }
 
+  // FT Lifecycle methods ------------------------------------------------
+
+  /*
+   * (non-Javadoc)
+   * @see org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptor#setFaultTolerantResourceAdaptorContext
+   * (org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptorContext)
+   */
+  public void setFaultTolerantResourceAdaptorContext(FaultTolerantResourceAdaptorContext<String, DiameterActivity> ctx) {
+    this.ftRAContext = ctx;
+  }
+
+  /*
+   * (non-Javadoc)
+   * @see org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptor#unsetFaultTolerantResourceAdaptorContext()
+   */
+  public void unsetFaultTolerantResourceAdaptorContext() {
+    this.ftRAContext = null;
+    //clear this.activities ??
+  }
+
+  // FT methods ----------------------------------------------------------
+
+  /*
+   * (non-Javadoc)
+   * @see org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptor#dataRemoved(java.io.Serializable)
+   */
+  public void dataRemoved(String arg0) {
+    this.activities.remove(getActivityHandle(arg0));
+  }
+
+  /* (non-Javadoc)
+   * @see org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptor#failOver(java.io.Serializable)
+   */
+  public void failOver(String arg0) {
+    throw new UnsupportedOperationException();
+  }
+
   public void raActive() {
     if(tracer.isFineEnabled()) {
       tracer.fine("Diameter Rf RA :: raActive.");
@@ -222,25 +275,27 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
 
       this.raProvider = new RfProviderImpl(this);
 
-      this.activities = new ConcurrentHashMap<ActivityHandle, DiameterActivity>();
+      ///this.activities = new ConcurrentHashMap<ActivityHandle, DiameterActivity>();
 
       // Initialize the protocol stack
       initStack();
 
+      //Init activities mgmt
+
+      initActivitiesMgmt();
       // Initialize factories
       this.baseAvpFactory = new DiameterAvpFactoryImpl();
       this.baseMessageFactory = new DiameterMessageFactoryImpl(stack);
 
-      this.rfMessageFactory = new RfMessageFactoryImpl(baseMessageFactory, stack);
-
+      this.rfMessageFactory = new RfMessageFactoryImpl(baseMessageFactory,null, stack);
+      this.rfAvpFactory = new RfAvpFactoryImpl();
       // Register Accounting App Session Factories
       this.sessionFactory = this.stack.getSessionFactory();
 
-      this.accSessionFactory = AccountingSessionFactory.INSTANCE;
-      this.accSessionFactory.registerListener(this, 5000L, sessionFactory); // FIXME: Get timeout from stack
-
-      ((ISessionFactory) sessionFactory).registerAppFacory(ServerAccSession.class, accSessionFactory);
-      ((ISessionFactory) sessionFactory).registerAppFacory(ClientAccSession.class, accSessionFactory);
+      this.rfSessionFactory = new RfSessionFactory(this,sessionFactory);
+  
+      ((ISessionFactory) sessionFactory).registerAppFacory(ServerRfSession.class, rfSessionFactory);
+      ((ISessionFactory) sessionFactory).registerAppFacory(ClientRfSession.class, rfSessionFactory);
     }
     catch (Exception e) {
       tracer.severe("Error Activating Diameter Rf RA Entity", e);
@@ -259,20 +314,20 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
       tracer.severe("Failed to unregister Rf RA from Diameter Mux.", e);
     }
 
-    synchronized (this.activities) {
-      for (ActivityHandle activityHandle : activities.keySet()) {
-        try {
-          if(tracer.isInfoEnabled()) {
-            tracer.info("Ending activity [" + activityHandle + "]");
-          }
-
-          activities.get(activityHandle).endActivity();
-        }
-        catch (Exception e) {
-          tracer.severe("Error Deactivating Activity", e);
-        }
-      }
-    }
+    //synchronized (this.activities) {
+    //  for (ActivityHandle activityHandle : activities.keySet()) {
+    //    try {
+    //      if(tracer.isInfoEnabled()) {
+    //        tracer.info("Ending activity [" + activityHandle + "]");
+    //      }
+    //
+    //      activities.get(activityHandle).endActivity();
+    //    }
+    //    catch (Exception e) {
+    //      tracer.severe("Error Deactivating Activity", e);
+    //    }
+    //  }
+    //}
 
     if(tracer.isInfoEnabled()) {
       tracer.info("Diameter Rf RA :: raStopping completed.");
@@ -284,9 +339,9 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
       tracer.fine("Diameter Rf RA :: raInactive.");
     }
 
-    synchronized (this.activities) {
-      activities.clear();
-    }
+    //synchronized (this.activities) {
+    //  activities.clear();
+    //}
     activities = null;
 
     if(tracer.isInfoEnabled()) {
@@ -305,7 +360,7 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
       String[] appIdsStrings  = appIdsStr.split(", ");
 
       acctApplicationIds = new ArrayList<ApplicationId>(appIdsStrings.length);
-      
+
       for(String appId : appIdsStrings) {
         String[] vendorAndAppId = appId.split(":");
         acctApplicationIds.add(ApplicationId.createByAccAppId(Long.valueOf(vendorAndAppId[0]), Long.valueOf(vendorAndAppId[1]))); 
@@ -345,8 +400,7 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
    * @see javax.slee.resource.ResourceAdaptor#getMarshaler()
    */
   public Marshaler getMarshaler() {
-    // TODO Auto-generated method stub
-    return null;
+    return marshaler;
   }
 
   // Event filtering methods ---------------------------------------------
@@ -367,8 +421,8 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
 
   public void queryLiveness(ActivityHandle handle) {
     tracer.info("Diameter Rf RA :: queryLiveness :: handle[" + handle + "].");
-
-    DiameterActivityImpl activity = (DiameterActivityImpl) activities.get(handle);
+    if(!(handle instanceof DiameterActivityHandle)){ return ;}
+    DiameterActivityImpl activity = (DiameterActivityImpl) activities.get((DiameterActivityHandle)handle);
 
     if (activity != null && !activity.isValid()) {
       try {
@@ -384,8 +438,8 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
     if(tracer.isFineEnabled()) {
       tracer.fine("Diameter Rf RA :: getActivity :: handle[" + handle + "].");
     }
-
-    return this.activities.get(handle);
+    if(!(handle instanceof DiameterActivityHandle)){ return null;}
+    return this.activities.get((DiameterActivityHandle)handle);
   }
 
   public ActivityHandle getActivityHandle(Object activity) {
@@ -397,17 +451,8 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
       return null;
     }
 
-    DiameterActivity inActivity = (DiameterActivity) activity;
-
-    for (Map.Entry<ActivityHandle, DiameterActivity> activityInfo : this.activities.entrySet()) {
-      Object curActivity = activityInfo.getValue();
-
-      if (curActivity.equals(inActivity)) {
-        return activityInfo.getKey();
-      }
-    }
-
-    return null;
+    DiameterActivityImpl inActivity = (DiameterActivityImpl) activity;
+    return inActivity.getActivityHandle();
   }
 
   public void administrativeRemove(ActivityHandle handle) {
@@ -436,10 +481,10 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
 
   public void activityEnded(ActivityHandle handle) {
     tracer.info("Diameter Rf RA :: activityEnded :: handle[" + handle + ".");
-
+    if(!(handle instanceof DiameterActivityHandle)){ return ;}
     if(this.activities != null) {
       synchronized (this.activities) {
-        this.activities.remove(handle);
+        this.activities.remove((DiameterActivityHandle)handle);
       }
     }
   }
@@ -449,7 +494,10 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
       tracer.fine("Diameter Rf RA :: activityUnreferenced :: handle[" + handle + "].");
     }
 
-    this.activityEnded(handle);
+    //this.activityEnded(handle);
+    if(handle instanceof DiameterActivityHandle) {
+      this.endActivity((DiameterActivityHandle) handle);
+    }
   }
 
   // Event and Activities management -------------------------------------
@@ -474,6 +522,15 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
           this.raContext.getSleeEndpoint().fireEventTransacted(handle, eventID, event, address, null, EVENT_FLAGS);
         }
         else */{
+        	//fetch state for Server Activities
+        	Object o = getActivity(handle);
+            if(o == null) {
+              Transaction t = raContext.getSleeTransactionManager().getTransaction();
+              throw new IllegalStateException("TX[ "+t+" ] No activity for handle: "+handle);
+            }
+            if(o instanceof RfServerSessionActivityImpl && event instanceof RfAccountingRequest) {
+              ((RfServerSessionActivityImpl)o).fetchSessionData((RfAccountingRequest)event,true);
+            }
           this.raContext.getSleeEndpoint().fireEvent(handle, eventID, event, address, null, EVENT_FLAGS);
         }       
         return true;
@@ -484,6 +541,16 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
     }
 
     return false;
+  }
+
+  @Override
+  public void endActivity(DiameterActivityHandle arg0) {
+    this.sleeEndpoint.endActivity(arg0);
+  }
+
+  @Override
+  public void update(DiameterActivityHandle arg0, DiameterActivity arg1) {
+    this.activities.update(arg0, arg1);
   }
 
   /*
@@ -518,8 +585,8 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
     boolean isRequest = message.isRequest();
 
     switch (commandCode) {
-    case AccountingAnswer.commandCode: // ACR/ACA
-      return isRequest ? new AccountingRequestImpl(message) : new AccountingAnswerImpl(message);
+    case RfAccountingAnswer.commandCode: // ACR/ACA
+      return isRequest ? new RfAccountingRequestImpl(message) : new RfAccountingAnswerImpl(message);
 
     default:
       return new ExtensionDiameterMessageImpl(message);
@@ -537,12 +604,12 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
     try {
       // Inform SLEE that Activity Started
       DiameterActivityImpl activity = (DiameterActivityImpl) ac;
-      sleeEndpoint.startActivity(activity.getActivityHandle(), activity, ACTIVITY_FLAGS);
+      sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
 
       // Set the listener
       activity.setSessionListener(this);
 
-      // Put it into our activites map
+      // Put it into our activities map
       activities.put(activity.getActivityHandle(), activity);
 
       if(tracer.isInfoEnabled()) {
@@ -575,6 +642,96 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
     }
   }
 
+  private void initActivitiesMgmt() {
+    final DiameterRAInterface lst = this;
+    if (this.ftRAContext.isLocal()) {
+      if(tracer.isInfoEnabled()) {
+        tracer.info(raContext.getEntityName() + " -- running in LOCAL mode.");
+      }
+      this.activities = new LocalDiameterActivityManagement();
+    }
+    else {
+      tracer.info(raContext.getEntityName() + " -- running in CLUSTER mode.");
+      final org.mobicents.slee.resource.cluster.ReplicatedData<String, DiameterActivity> clusteredData = this.ftRAContext.getReplicateData(true);
+      // get special one
+      this.activities = new AbstractClusteredDiameterActivityManagement(
+          this.raContext.getTracer(""), stack, this.raContext.getSleeTransactionManager(), clusteredData) {
+
+        @Override
+        protected void performBeforeReturn(DiameterActivityImpl activity) {
+          // do all the dirty work;
+          try {
+            Session session = null;
+            if (activity.getClass().equals(DiameterActivityImpl.class)) {
+              // check as first. since it requires session recreation.
+              // JIC: is this required?
+              session = this.diameterStack.getSessionFactory().getNewSession(activity.getSessionId());
+              performBeforeReturnOnBase(activity, session);
+              return;
+            }
+            else if (activity instanceof RfServerSessionActivity) {
+              RfServerSessionActivityImpl acc = (RfServerSessionActivityImpl) activity;
+              ServerRfSession appSession = this.diameterStack.getSession(activity.getSessionId(), ServerRfSession.class);
+              session = appSession.getSessions().get(0);
+              performBeforeReturnOnBase(activity, session);
+              performBeforeReturnRf(acc);
+              acc.setSession(appSession);
+            }
+            else if (activity instanceof RfClientSessionActivity) {
+              RfClientSessionActivityImpl acc = (RfClientSessionActivityImpl) activity;
+              ClientRfSession appSession = this.diameterStack.getSession(activity.getSessionId(), ClientRfSession.class);
+              session = appSession.getSessions().get(0);
+              performBeforeReturnOnBase(activity, session);
+              performBeforeReturnRf(acc);
+              acc.setSession(appSession);
+            }
+            else {
+              throw new IllegalArgumentException("Unknown activity type: " + activity);
+            }
+          }
+          catch (Exception e) {
+            throw new DiameterException(e);
+          }
+        }
+
+        private void performBeforeReturnOnBase(DiameterActivityImpl ac, Session session) {
+          DiameterMessageFactoryImpl msgFactory = new DiameterMessageFactoryImpl(session, stack, new DiameterIdentity[] {});
+          ac.setAvpFactory(baseAvpFactory);
+          ac.setMessageFactory(msgFactory);
+          ac.setCurrentWorkingSession(session);
+          ac.setSessionListener(lst);
+        }
+
+        private void performBeforeReturnRf(RfClientSessionActivityImpl ac) {
+          // we just have to set factory
+          RfMessageFactoryImpl rfMessageFactory = new RfMessageFactoryImpl(baseMessageFactory, ac.getSessionId(),stack);
+          ac.setRfMessageFactory(rfMessageFactory);
+        }
+
+        private void performBeforeReturnRf(RfServerSessionActivityImpl ac) {
+          // we just have to set factory
+          RfMessageFactoryImpl rfMessageFactory = new RfMessageFactoryImpl(baseMessageFactory,ac.getSessionId(), stack);
+          ac.setRfMessageFactory(rfMessageFactory);
+        }
+
+        @Override
+        public DiameterActivity get(DiameterActivityHandle handle) {
+          return super.get(handle);
+        }
+
+        @Override
+        public void put(DiameterActivityHandle handle, DiameterActivity activity) {
+          super.put(handle, activity);
+        }
+
+        @Override
+        public DiameterActivity remove(DiameterActivityHandle handle) {
+          return super.remove(handle);
+        }
+      };
+    }
+  }
+
   /**
    * Create the Diameter Activity Handle for an given session id
    * 
@@ -597,13 +754,13 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
     try {
       activity = (DiameterActivityImpl) raProvider.createActivity(request);
 
-      if(activity instanceof RfServerSessionImpl) {
-        RfServerSessionImpl assai = (RfServerSessionImpl)activity;
-        ((ServerAccSessionImpl)assai.getSession()).processRequest(request);
+      if(activity instanceof RfServerSessionActivityImpl) {
+        RfServerSessionActivityImpl assai = (RfServerSessionActivityImpl)activity;
+        ((ServerRfSessionImpl)assai.getSession()).processRequest(request);
       }
-      else if(activity instanceof RfClientSessionImpl) {
-        RfClientSessionImpl assai = (RfClientSessionImpl)activity;
-        ((ClientAccSessionImpl)assai.getSession()).processRequest(request);
+      else if(activity instanceof RfClientSessionActivityImpl) {
+        RfClientSessionActivityImpl assai = (RfClientSessionActivityImpl)activity;
+        ((ClientRfSessionImpl)assai.getSession()).processRequest(request);
       }
     }
     catch (CreateActivityException e) {
@@ -661,10 +818,10 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
    * (non-Javadoc)
    * @see org.mobicents.slee.resource.diameter.base.handlers.BaseSessionCreationListener#sessionCreated(org.jdiameter.api.acc.ClientAccSession)
    */
-  public void sessionCreated(ClientAccSession session) {
+  public void sessionCreated(ClientRfSession session) {
     DiameterMessageFactoryImpl msgFactory = new DiameterMessageFactoryImpl(stack);
 
-    RfClientSessionImpl activity = new RfClientSessionImpl(msgFactory, baseAvpFactory, session, null, null, sleeEndpoint, stack);
+    RfClientSessionActivityImpl activity = new RfClientSessionActivityImpl(msgFactory, baseAvpFactory, session, null, null,stack);
 
     activity.setSessionListener(this);
     session.addStateChangeNotification(activity);
@@ -675,10 +832,10 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
    * (non-Javadoc)
    * @see org.mobicents.slee.resource.diameter.base.handlers.BaseSessionCreationListener#sessionCreated(org.jdiameter.api.acc.ServerAccSession)
    */
-  public void sessionCreated(ServerAccSession session) {
+  public void sessionCreated(ServerRfSession session) {
     DiameterMessageFactoryImpl msgFactory = new DiameterMessageFactoryImpl(stack);
 
-    RfServerSessionImpl activity = new RfServerSessionImpl(msgFactory, baseAvpFactory, session, null, null, sleeEndpoint, stack);
+    RfServerSessionActivityImpl activity = new RfServerSessionActivityImpl(msgFactory, baseAvpFactory, session, null, null, stack);
 
     session.addStateChangeNotification(activity);
     activity.setSessionListener(this);
@@ -699,22 +856,6 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
    */
   public void sessionCreated(ClientAuthSession session) {
     tracer.severe("Unexpected Auth Session at Rf Resource Adaptor.");
-  }
-
-  /*
-   * (non-Javadoc)
-   * @see org.mobicents.slee.resource.diameter.base.handlers.BaseSessionCreationListener#sessionCreated(org.jdiameter.api.Session)
-   */
-  public void sessionCreated(Session session) {
-    if(session instanceof ServerAccSession) {
-      sessionCreated((ServerAccSession)session);
-    }
-    else if(session instanceof ClientAccSession) {
-      sessionCreated((ClientAccSession)session);
-    }
-    else {
-      tracer.severe("Diameter Rf RA :: Unexpected Session [" + session + "]");
-    }
   }
 
   /*
@@ -765,7 +906,7 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
       String sessionId = message.getSessionId();
       DiameterActivityHandle handle = new DiameterActivityHandle(sessionId);
 
-      if (activities.keySet().contains(handle)) {
+      if (activities.containsKey(handle)) {
         return activities.get(handle);
       }
       else {
@@ -803,15 +944,16 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
     }
 
     private DiameterActivity createRfServerSessionActivity(Request request) throws CreateActivityException {
-      ServerAccSession session = null;
+      ServerRfSession session = null;
 
       try {
         ApplicationId appId = request.getApplicationIdAvps().isEmpty() ? null : request.getApplicationIdAvps().iterator().next(); 
-        session = ((ISessionFactory) stack.getSessionFactory()).getNewAppSession(request.getSessionId(), appId, ServerAccSession.class, request);
+        session = ((ISessionFactory) stack.getSessionFactory()).getNewAppSession(request.getSessionId(), appId, ServerRfSession.class, request);
 
         if (session == null) {
           throw new CreateActivityException("Got NULL Session while creating Server Accounting Activity");
         }
+        sessionCreated(session);
       }
       catch (InternalException e) {
         throw new CreateActivityException("Internal exception while creating Server Accounting Activity", e);
@@ -820,20 +962,23 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
         throw new CreateActivityException("Illegal Diameter State exception while creating Server Accounting Activity", e);
       }
 
-      return (RfServerSessionImpl) activities.get(getActivityHandle(session.getSessions().get(0).getSessionId()));
+      return (RfServerSessionActivityImpl) activities.get(getActivityHandle(session.getSessions().get(0).getSessionId()));
     }
 
     // Actual Provider Methods 
 
-    public RfClientSession createRfClientSessionActivity() throws CreateActivityException {
+    public RfClientSessionActivity createRfClientSessionActivity() throws CreateActivityException {
       return createRfClientSessionActivity(null, null);
     }
 
-    public RfClientSession createRfClientSessionActivity(DiameterIdentity destinationHost, DiameterIdentity destinationRealm) throws CreateActivityException {
+    public RfClientSessionActivity createRfClientSessionActivity(DiameterIdentity destinationHost, DiameterIdentity destinationRealm) throws CreateActivityException {
       try {
-        ClientAccSession session = ((ISessionFactory) stack.getSessionFactory()).getNewAppSession(null, acctApplicationIds.get(0), ClientAccSession.class);
-
-        return new RfClientSessionImpl(rfMessageFactory, baseAvpFactory, session, destinationHost, destinationRealm, ra.sleeEndpoint, stack);
+        ClientRfSession session = ((ISessionFactory) stack.getSessionFactory()).getNewAppSession(null, acctApplicationIds.get(0), ClientRfSession.class);
+        if (session == null) {
+          throw new CreateActivityException("Got NULL Session while creating Client Accounting Activity");
+        }
+        sessionCreated(session);
+        return new RfClientSessionActivityImpl(baseMessageFactory, baseAvpFactory, session, destinationHost, destinationRealm, stack);
       }
       catch (Exception e) {
         throw new CreateActivityException("Internal exception while creating Client Accounting Activity", e);
@@ -844,18 +989,22 @@ public class DiameterRfResourceAdaptor implements ResourceAdaptor, DiameterListe
       return ra.rfMessageFactory;
     }
 
-    public AccountingAnswer sendAccountingRequest(AccountingRequest accountingRequest) {
+    public RfAvpFactory getRfAvpFactory() {
+      return ra.rfAvpFactory;
+    }
+
+    public RfAccountingAnswer sendRfAccountingRequest(RfAccountingRequest accountingRequest) {
       try {
         String sessionId = accountingRequest.getSessionId();
         DiameterActivityHandle handle = new DiameterActivityHandle(sessionId);
 
-        if (!activities.keySet().contains(handle)) {
+        if (!activities.containsKey(handle)) {
           createActivity(((DiameterMessageImpl)accountingRequest).getGenericData());
         }
 
         DiameterActivityImpl activity = (DiameterActivityImpl) getActivity(handle);
 
-        return (AccountingAnswer) activity.sendSyncMessage(accountingRequest);
+        return (RfAccountingAnswer) activity.sendSyncMessage(accountingRequest);
       }
       catch (Exception e) {
         tracer.severe("Failure sending sync request.", e);

@@ -22,9 +22,9 @@
 	</properties>
 	
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/remote-slee-connection/2.1.0.GA</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/remote-slee-connection/2.1.0.GA</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/remote-slee-connection/2.1.0.GA</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/remote-slee-connection/5.0.1.GA-JBCP5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/remote-slee-connection/5.0.1.GA-JBCP5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/remote-slee-connection/5.0.1.GA-JBCP5</url>
 	</scm>
 
 	<build>
@@ -50,9 +50,10 @@
 	<profiles>
 		<profile>
 			<id>maven-release</id>
-			<!-- modules>
+			<modules>
 				<module>docs</module>	
-			</modules-->
+				<module>release</module>
+			</modules>
 			<build>
 				<plugins>
 					<plugin>
@@ -69,9 +70,10 @@
 		</profile>
 		<profile>
 			<id>release</id>
-			<!-- modules>
+			<modules>
 				<module>docs</module>
-			</modules-->
+				<module>release</module>
+			</modules>
 		</profile>		
 	</profiles>
 	

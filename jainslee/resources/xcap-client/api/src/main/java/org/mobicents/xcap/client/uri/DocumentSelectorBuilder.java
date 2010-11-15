@@ -3,7 +3,7 @@
  */
 package org.mobicents.xcap.client.uri;
 
-import org.mobicents.xcap.client.uri.enconding.UriComponentEncoder;
+import org.mobicents.xcap.client.uri.encoding.UriComponentEncoder;
 
 /**
  * @author martins
@@ -49,6 +49,6 @@ public class DocumentSelectorBuilder {
 	 * @return
 	 */
 	public String toPercentEncodedString() {
-		return UriComponentEncoder.encodeQuery(this.toString());
+		return UriComponentEncoder.encodePath(this.toString());
 	}
 }

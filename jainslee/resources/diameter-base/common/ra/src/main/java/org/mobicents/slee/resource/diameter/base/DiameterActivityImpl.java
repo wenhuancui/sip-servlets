@@ -1,15 +1,43 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * 
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @authors tag. All rights reserved.
+ * See the copyright.txt in the distribution for a full listing
+ * of individual contributors.
+ *
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the GNU General Public License, v. 2.0.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License,
+ * v. 2.0 along with this distribution; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
 package org.mobicents.slee.resource.diameter.base;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
 
 import javax.naming.OperationNotSupportedException;
-import javax.slee.resource.SleeEndpoint;
 
 import net.java.slee.resource.diameter.base.DiameterActivity;
 import net.java.slee.resource.diameter.base.DiameterAvpFactory;
 import net.java.slee.resource.diameter.base.DiameterMessageFactory;
+import net.java.slee.resource.diameter.base.events.AbortSessionAnswer;
+import net.java.slee.resource.diameter.base.events.AccountingAnswer;
+import net.java.slee.resource.diameter.base.events.CapabilitiesExchangeAnswer;
+import net.java.slee.resource.diameter.base.events.DeviceWatchdogAnswer;
 import net.java.slee.resource.diameter.base.events.DiameterMessage;
+import net.java.slee.resource.diameter.base.events.DisconnectPeerAnswer;
+import net.java.slee.resource.diameter.base.events.ReAuthAnswer;
+import net.java.slee.resource.diameter.base.events.SessionTerminationAnswer;
 import net.java.slee.resource.diameter.base.events.avp.AvpNotAllowedException;
 import net.java.slee.resource.diameter.base.events.avp.DiameterIdentity;
 
@@ -20,8 +48,16 @@ import org.jdiameter.api.Message;
 import org.jdiameter.api.Request;
 import org.jdiameter.api.Session;
 import org.jdiameter.common.impl.validation.JAvpNotAllowedException;
+import org.mobicents.slee.resource.diameter.base.events.AbortSessionAnswerImpl;
+import org.mobicents.slee.resource.diameter.base.events.AccountingAnswerImpl;
+import org.mobicents.slee.resource.diameter.base.events.CapabilitiesExchangeAnswerImpl;
+import org.mobicents.slee.resource.diameter.base.events.DeviceWatchdogAnswerImpl;
 import org.mobicents.slee.resource.diameter.base.events.DiameterMessageImpl;
-import org.mobicents.slee.resource.diameter.base.handlers.BaseSessionCreationListener;
+import org.mobicents.slee.resource.diameter.base.events.DisconnectPeerAnswerImpl;
+import org.mobicents.slee.resource.diameter.base.events.ErrorAnswerImpl;
+import org.mobicents.slee.resource.diameter.base.events.ReAuthAnswerImpl;
+import org.mobicents.slee.resource.diameter.base.events.SessionTerminationAnswerImpl;
+import org.mobicents.slee.resource.diameter.base.handlers.DiameterRAInterface;
 
 /**
  * 
@@ -32,33 +68,35 @@ import org.mobicents.slee.resource.diameter.base.handlers.BaseSessionCreationLis
  */
 public class DiameterActivityImpl implements DiameterActivity {
 
+  private static final long serialVersionUID = -1065881101052214841L;
+
   protected static Logger logger = Logger.getLogger(DiameterActivityImpl.class);
 
-  protected Session session = null;
   protected String sessionId = null;
-  
-  protected DiameterActivityHandle handle = null;
-  
-  protected DiameterMessageFactory messageFactory = null;
-  protected DiameterAvpFactory avpFactory = null;
-  
-  protected EventListener<Request, Answer> raEventListener = null;
+
   protected DiameterIdentity destinationHost = null;
   protected DiameterIdentity destinationRealm = null;
-  protected SleeEndpoint endpoint = null;
-
-  protected BaseSessionCreationListener baseListener = null;
 
   protected boolean terminateAfterProcessing = false;
 
-  public DiameterActivityImpl(DiameterMessageFactory messageFactory, DiameterAvpFactory avpFactory, Session session, EventListener<Request, Answer> raEventListener, DiameterIdentity destinationHost, DiameterIdentity destinationRealm, SleeEndpoint endpoint)
-  {
+  //base session used by this activity
+  protected transient Session session = null;
+  //event listener, in case of DiameterActivityImpl it will be RA, in specific application session it will
+  //be app session impl. Required to properly receive messages back ?
+  protected transient EventListener<Request, Answer> eventListener = null;
+  protected transient DiameterRAInterface baseListener = null;
+
+  protected transient DiameterMessageFactory messageFactory = null;
+  protected transient DiameterAvpFactory avpFactory = null;
+  protected transient DiameterActivityHandle handle = null;
+
+  public DiameterActivityImpl(DiameterMessageFactory messageFactory, DiameterAvpFactory avpFactory, Session session, EventListener<Request, Answer> raEventListener, DiameterIdentity destinationHost, DiameterIdentity destinationRealm) {
     super();
 
     this.messageFactory = messageFactory;
     this.avpFactory = avpFactory;
     this.session = session;
-    this.raEventListener = raEventListener;
+    this.eventListener = raEventListener;
 
     this.destinationHost = destinationHost;
     this.destinationRealm = destinationRealm;
@@ -67,11 +105,10 @@ public class DiameterActivityImpl implements DiameterActivity {
       this.setCurrentWorkingSession(session);
       this.sessionId = session.getSessionId();
     }
-
-    this.endpoint = endpoint;
   }
 
-  protected void setCurrentWorkingSession(Session session) {
+  // setters, only used by cluster part
+  public void setCurrentWorkingSession(Session session) {
     this.sessionId = session.getSessionId();
     this.session = session;
 
@@ -80,14 +117,38 @@ public class DiameterActivityImpl implements DiameterActivity {
     }
   }
 
-  public void endActivity()
-  {
+  /**
+   * @param eventListener
+   *            the eventListener to set
+   */
+  public void setEventListener(EventListener<Request, Answer> eventListener) {
+    this.eventListener = eventListener;
+  }
+
+  /**
+   * @param messageFactory
+   *            the messageFactory to set
+   */
+  public void setMessageFactory(DiameterMessageFactory messageFactory) {
+    this.messageFactory = messageFactory;
+  }
+
+  /**
+   * @param avpFactory
+   *            the avpFactory to set
+   */
+  public void setAvpFactory(DiameterAvpFactory avpFactory) {
+    this.avpFactory = avpFactory;
+  }
+
+  public void endActivity() {
     if(session != null) {
       session.release();
     }
 
     try {
-      endpoint.endActivity(this.getActivityHandle());
+      //endpoint.endActivity(this.getActivityHandle());
+      this.baseListener.endActivity(this.getActivityHandle());
     }
     catch (Exception e) {
       logger.error("Failed to end activity [" + this + "].", e);
@@ -107,12 +168,10 @@ public class DiameterActivityImpl implements DiameterActivity {
   }
 
   public void sendMessage(DiameterMessage message) throws IOException {
-    // FIXME: baranowb - this is async send?
     try {
       if (message instanceof DiameterMessageImpl) {
         DiameterMessageImpl msg = (DiameterMessageImpl) message;
-        this.session.send(msg.getGenericData(), this.raEventListener);
-        // FIXME: baranowb; get dest host and realm :], possibly some other avps
+        this.session.send(msg.getGenericData(), this.eventListener);
       }
       else {
         throw new OperationNotSupportedException("Trying to send wrong type of message? [" + message.getClass() + "] \n" + message);
@@ -129,17 +188,54 @@ public class DiameterActivityImpl implements DiameterActivity {
   // ============= IMPL methods
 
   public DiameterActivityHandle getActivityHandle() {
+    if (this.handle == null) {
+      this.handle = new DiameterActivityHandle(this.sessionId);
+    }
     return this.handle;
   }
 
   public DiameterMessage sendSyncMessage(DiameterMessage message) {
+    DiameterMessage answer = null;
+
     try {
       if (message instanceof DiameterMessageImpl) {
-        DiameterMessageImpl msg = (DiameterMessageImpl) message;
-        Future<Message> response = this.session.send( msg.getGenericData());
-        // FIXME: alexandre: get dest host and realm, possibly some other avps
+        Future<Message> future = this.session.send(((DiameterMessageImpl) message).getGenericData());
 
-        return (DiameterMessage) response.get();
+        Message receivedMessage = future.get(); 
+
+        if (!receivedMessage.isRequest()) {
+          if(receivedMessage.isError()) {
+            answer = new ErrorAnswerImpl(receivedMessage);
+          }
+          else {
+            switch (receivedMessage.getCommandCode()) {
+            case AbortSessionAnswer.commandCode:
+              answer = new AbortSessionAnswerImpl(receivedMessage);
+              break;
+            case AccountingAnswer.commandCode:
+              answer = new AccountingAnswerImpl(receivedMessage);
+              break;
+            case CapabilitiesExchangeAnswer.commandCode:
+              answer = new CapabilitiesExchangeAnswerImpl(receivedMessage);
+              break;
+            case DeviceWatchdogAnswer.commandCode:
+              answer = new DeviceWatchdogAnswerImpl(receivedMessage);
+              break;
+            case DisconnectPeerAnswer.commandCode:
+              answer = new DisconnectPeerAnswerImpl(receivedMessage);
+              break;
+            case ReAuthAnswer.commandCode:
+              answer = new ReAuthAnswerImpl(receivedMessage);
+              break;
+            case SessionTerminationAnswer.commandCode:
+              answer = new SessionTerminationAnswerImpl(receivedMessage);
+              break;
+            }
+          }
+        }
+        else {
+          logger.error("Received a REQUEST message when expecting an ANSWER.");
+        }
       }
       else {
         throw new OperationNotSupportedException("Trying to send wrong type of message? [" + message.getClass() + "] \n" + message);
@@ -152,7 +248,7 @@ public class DiameterActivityImpl implements DiameterActivity {
       logger.error("Failure sending sync request.", e);
     }
 
-    return null;
+    return answer;
   }
 
   public boolean isValid() {
@@ -164,23 +260,80 @@ public class DiameterActivityImpl implements DiameterActivity {
   }
 
   public void setSessionListener(Object ra) {
-    this.baseListener = (BaseSessionCreationListener) ra;
+    this.baseListener = (DiameterRAInterface) ra;
   }
 
   protected void clean() {
+    //FIXME: not called anymore?
     this.session = null;
     this.handle = null;
     this.avpFactory = null;
-    this.raEventListener = null;
+    this.eventListener = null;
     this.avpFactory = null;
-    this.handle = null;
+    //this.handle = null;
   }
 
   public void setTerminateAfterProcessing(boolean terminateAfterProcessing) {
     this.terminateAfterProcessing = terminateAfterProcessing;
+    this.baseListener.update(getActivityHandle(), this);
   }
-  
+
   public boolean isTerminateAfterProcessing() {
     return terminateAfterProcessing;
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((destinationHost == null) ? 0 : destinationHost.hashCode());
+    result = prime * result + ((destinationRealm == null) ? 0 : destinationRealm.hashCode());
+    result = prime * result + ((sessionId == null) ? 0 : sessionId.hashCode());
+    result = prime * result + (terminateAfterProcessing ? 1231 : 1237);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    DiameterActivityImpl other = (DiameterActivityImpl) obj;
+    if (destinationHost == null) {
+      if (other.destinationHost != null) {
+        return false;
+      }
+    }
+    else if (!destinationHost.equals(other.destinationHost)) {
+      return false;
+    }
+    if (destinationRealm == null) {
+      if (other.destinationRealm != null) {
+        return false;
+      }
+    }
+    else if (!destinationRealm.equals(other.destinationRealm)) {
+      return false;
+    }
+    if (sessionId == null) {
+      if (other.sessionId != null) {
+        return false;
+      }
+    }
+    else if (!sessionId.equals(other.sessionId)) {
+      return false;
+    }
+    if (terminateAfterProcessing != other.terminateAfterProcessing) {
+      return false;
+    }
+
+    return true;
+  }
+
 }
