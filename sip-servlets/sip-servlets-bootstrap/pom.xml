@@ -74,7 +74,7 @@
 	</scm>
 	<properties>
 		<!-- MOBICENTS TOOL VERSIONS -->
-		<mobicents.tools.mavenplugin.eclipse.version>1.0.0.BETA2</mobicents.tools.mavenplugin.eclipse.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.0.1.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 	
 	<dependencies>
