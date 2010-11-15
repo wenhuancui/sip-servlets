@@ -14,11 +14,11 @@ import org.jdiameter.api.app.AppRequestEvent;
 
 /**
  * A Session Termination Request is a request from a client to a server
+ * 
  * @version 1.5.1 Final
  */
 
 public interface SessionTermRequest extends AppRequestEvent {
-
 
   public static final String _SHORT_NAME = "STR";
   public static final String _LONG_NAME = "Session-Termination-Request";
@@ -36,4 +36,5 @@ public interface SessionTermRequest extends AppRequestEvent {
    * @throws AvpDataException if result code avp is not integer
    */
   int getTerminationCause() throws AvpDataException;
+
 }

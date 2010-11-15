@@ -12,7 +12,9 @@ package org.jdiameter.api.auth.events;
 import org.jdiameter.api.app.AppAnswerEvent;
 
 /**
- * A Answer message is sent by a recipient of Request once it has received and interpreted the Request.
+ * A Answer message is sent by a recipient of Request once it has received and
+ * interpreted the Request.
+ * 
  * @version 1.5.1 Final
  */
 

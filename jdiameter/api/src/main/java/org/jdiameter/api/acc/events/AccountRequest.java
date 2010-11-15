@@ -13,10 +13,10 @@ import org.jdiameter.api.AvpDataException;
 import org.jdiameter.api.app.AppRequestEvent;
 
 /**
- *  A Account Request is a request from a client to a server
+ * An Account Request is a request from a client to a server
+ * 
  * @version 1.5.1 Final
  */
-
 public interface AccountRequest extends AppRequestEvent {
 
   public static final String _SHORT_NAME = "ACR";
@@ -35,4 +35,5 @@ public interface AccountRequest extends AppRequestEvent {
    * @throws AvpDataException if result code avp is not integer
    */
   long getAccountingRecordNumber() throws AvpDataException;
+
 }

@@ -93,8 +93,8 @@
 			<exclude>org.mobicents.servers.diameter:jdiameter-impl</exclude>
 			<exclude>picocontainer:picocontainer</exclude-->
 			<exclude>xml-apis:xml-apis</exclude>
-			<exclude>org.slf4j:slf4j-api</exclude>
-			<exclude>org.slf4j:slf4j-log4j12</exclude>
+			<!--exclude>org.slf4j:slf4j-api</exclude>
+			<exclude>org.slf4j:slf4j-log4j12</exclude-->
           </excludes>
 
         </configuration>

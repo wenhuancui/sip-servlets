@@ -14,6 +14,7 @@ import org.jdiameter.api.app.AppRequestEvent;
 
 /**
  * A ReAuthentication Request is a request from a client to a server
+ * 
  * @version 1.5.1 Final
  */
 
@@ -36,5 +37,6 @@ public interface ReAuthRequest extends AppRequestEvent {
    * @return Auth-Application-Id value of request
    * @throws AvpDataException if avp is not integer
    */
-  long getAuthApplicationId()  throws AvpDataException;    
+  long getAuthApplicationId()  throws AvpDataException;
+
 }

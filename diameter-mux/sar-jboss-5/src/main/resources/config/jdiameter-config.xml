@@ -44,6 +44,10 @@
       <Entity name="ConnectionTimer" size="1"/>
       <Entity name="StatisticTimer" size="1"/>
     </Concurrent>
+    <!-- To enable clustering uncomment the following lines
+    <SessionDatasource value="org.mobicents.diameter.impl.ha.data.ReplicatedDataSource"/>
+    <TimerFacility value="org.mobicents.diameter.impl.ha.timer.ReplicatedTimerFacilityImpl"/>
+	-->
     </Parameters>
 
   <Network>
@@ -52,13 +56,13 @@
       <Peer name="aaa://127.0.0.1:21812" attempt_connect="false" rating="1" />
       
       <!-- Ericsson SDK Client -->
-      <!--Peer name="aaa://127.0.0.1:11812" attempt_connect="false" rating="1"/-->
+      <!-- Peer name="aaa://127.0.0.1:11812" attempt_connect="false" rating="1"/-->
       
       <!-- Ericsson SDK Emulator -->
-      <!--Peer name="aaa://127.0.0.1:21812" attempt_connect="true" rating="1" /-->
+      <!-- Peer name="aaa://127.0.0.1:21812" attempt_connect="true" rating="1" /-->
       
       <!-- Sh / CCA / Cx/Dx -->
-      <!-- Peer name="aaa://127.0.0.1.3868" attempt_connect="false" rating="1" /-->
+      <!-- Peer name="aaa://uac.mobicents.org" attempt_connect="false" rating="1" /-->
 
       <!-- Sh (OpenIMS) -->
       <!-- Peer name="aaa://192.168.124.132:3868" attempt_connect="true" rating="1" /-->
@@ -92,13 +96,13 @@
       </Realm-->
       
       <!--  CCA -->
-      <!--  Realm name="mobicents.org" peers="127.0.0.1" local_action="LOCAL" dynamic="false" exp_time="1">
+      <!-- Realm name="mobicents.org" peers="127.0.0.1" local_action="LOCAL" dynamic="false" exp_time="1">
         <ApplicationID>
           <VendorId value="0" />
           <AuthApplId value="4" />
           <AcctApplId value="0" />
         </ApplicationID>
-      </Realm-->
+      </Realm -->
       
       <!-- Cx/Dx -->
       <!-- Realm name="mobicents.org" peers="127.0.0.1" local_action="LOCAL" dynamic="false" exp_time="1">

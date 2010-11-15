@@ -13,12 +13,12 @@ import org.jdiameter.api.AvpDataException;
 import org.jdiameter.api.app.AppAnswerEvent;
 
 /**
- * A Answer message is sent by a recipient of Request once it has
- * received and interpreted the Request.
+ * An Answer message is sent by a recipient of Request once it has received and
+ * interpreted the Request.
+ * 
  * @version 1.5.1 Final
  */
 public interface AccountAnswer extends AppAnswerEvent {
-
 
   public static final String _SHORT_NAME = "ACA";
   public static final String _LONG_NAME = "Accounting-Answer";
@@ -36,4 +36,5 @@ public interface AccountAnswer extends AppAnswerEvent {
    * @throws AvpDataException if result code avp is not integer
    */
   long getAccountingRecordNumber() throws AvpDataException;
+
 }

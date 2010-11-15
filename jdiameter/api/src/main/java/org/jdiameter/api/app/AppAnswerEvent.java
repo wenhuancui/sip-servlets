@@ -18,11 +18,11 @@ import org.jdiameter.api.AvpDataException;
  */
 public interface AppAnswerEvent extends AppEvent {
 
-    /**
-     * Return result code of snswer message
-     * @return result code of snswer message
-     * @throws AvpDataException if result code avp absent
-     */
-     Avp getResultCodeAvp() throws AvpDataException;
-    
+  /**
+   * Return result code (or experimental if present) AVP of answer message
+   * @return result code (or experimental if present) AVP of answer message
+   * @throws AvpDataException if result code avp absent
+   */
+  Avp getResultCodeAvp() throws AvpDataException;
+
 }

@@ -9,11 +9,12 @@
  */
 package org.jdiameter.api.auth.events;
 
-import org.jdiameter.api.app.AppRequestEvent;
 import org.jdiameter.api.AvpDataException;
+import org.jdiameter.api.app.AppRequestEvent;
 
 /**
  * A Abort Session Request is a request from a client to a server
+ * 
  * @version 1.5.1 Final
  */
 

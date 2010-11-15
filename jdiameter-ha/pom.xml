@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>2.9</version>
+		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.servers.diameter</groupId>
 	<artifactId>jdiameter-ha-parent</artifactId>
-	<version>1.0.0.BETA2</version>
+	<version>5.0.1.GA-JBCP5</version>
 
 	<name>Mobicents :: Diameter Stack HA :: ${pom.artifactId}</name>
 
@@ -21,8 +21,8 @@
 	</modules>
 
 	<properties>
-		<jdiameter.version>1.5.4.0-build402</jdiameter.version>
-		<mobicents.cluster.version>1.6</mobicents.cluster.version>
+		<jdiameter.version>5.0.1.GA-JBCP5</jdiameter.version>
+		<mobicents.cluster.version>5.0.1.GA-JBCP5</mobicents.cluster.version>
 	</properties>
 
 	<dependencyManagement>

@@ -1,12 +1,25 @@
-/**
- * Start time:16:23:22 2009-08-17<br>
- * Project: diameter-parent<br>
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @authors tag. All rights reserved.
+ * See the copyright.txt in the distribution for a full listing
+ * of individual contributors.
  * 
- * @author <a href="mailto:baranowb@gmail.com">Bartosz Baranowski </a>
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the GNU General Public License, v. 2.0.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License,
+ * v. 2.0 along with this distribution; if not, write to the Free 
+ * Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
  */
 package org.jdiameter.client.impl.app.cxdx;
-
-import java.util.concurrent.TimeUnit;
 
 import org.jdiameter.api.Answer;
 import org.jdiameter.api.EventListener;
@@ -34,9 +47,12 @@ import org.jdiameter.api.cxdx.events.JServerAssignmentAnswer;
 import org.jdiameter.api.cxdx.events.JServerAssignmentRequest;
 import org.jdiameter.api.cxdx.events.JUserAuthorizationAnswer;
 import org.jdiameter.api.cxdx.events.JUserAuthorizationRequest;
+import org.jdiameter.client.api.IContainer;
+import org.jdiameter.client.api.ISessionFactory;
 import org.jdiameter.client.impl.app.cxdx.Event.Type;
 import org.jdiameter.common.api.app.cxdx.CxDxSessionState;
 import org.jdiameter.common.api.app.cxdx.ICxDxMessageFactory;
+import org.jdiameter.common.api.app.cxdx.ICxDxSessionFactory;
 import org.jdiameter.common.impl.app.AppAnswerEventImpl;
 import org.jdiameter.common.impl.app.AppRequestEventImpl;
 import org.jdiameter.common.impl.app.cxdx.CxDxSession;
@@ -44,27 +60,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Start time:16:23:22 2009-08-17<br>
- * Project: diameter-parent<br>
+ * Diameter Cx/Dx Client Session implementation 
  * 
  * @author <a href="mailto:baranowb@gmail.com">Bartosz Baranowski </a>
+ * @author <a href="mailto:brainslog@gmail.com"> Alexandre Mendonca </a>
  */
 public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSession, EventListener<Request, Answer>, NetworkReqListener {
 
   private static final long serialVersionUID = 1L;
 
   private static final Logger logger = LoggerFactory.getLogger(CxDxClientSessionImpl.class);
-  // FIXME: use super..super.appId ??
+
+  // Factories and Listeners --------------------------------------------------
+  private transient ClientCxDxSessionListener listener;
+
   protected long appId = -1;
-  private ClientCxDxSessionListener listener;
-  private ICxDxMessageFactory factory;
 
   public CxDxClientSessionImpl(ICxDxMessageFactory fct, SessionFactory sf, ClientCxDxSessionListener lst) {
     this(null, fct, sf, lst);
   }
 
   public CxDxClientSessionImpl(String sessionId, ICxDxMessageFactory fct, SessionFactory sf, ClientCxDxSessionListener lst) {
-	super(sf);
+    super(sf,sessionId);
     if (lst == null) {
       throw new IllegalArgumentException("Listener can not be null");
     }
@@ -74,17 +91,19 @@ public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSess
 
     appId = fct.getApplicationId();
     listener = lst;
-    factory = fct;
-    try {
-      if (sessionId == null) {
-        session = sf.getNewSession();
-      } else {
-        session = sf.getNewSession(sessionId);
-      }
-      session.setRequestListener(this);
-    } catch (InternalException e) {
-      throw new IllegalArgumentException(e);
-    }
+    super.messageFactory = fct;
+    //    try {
+    //      if (sessionId == null) {
+    //        session = sf.getNewSession();
+    //      }
+    //      else {
+    //        session = sf.getNewSession(sessionId);
+    //      }
+    //      session.setRequestListener(this);
+    //    }
+    //    catch (InternalException e) {
+    //      throw new IllegalArgumentException(e);
+    //    }
   }
 
   /*
@@ -92,6 +111,7 @@ public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSess
    * 
    * @see org.jdiameter.api.app.StateMachine#getState(java.lang.Class)
    */
+  @SuppressWarnings("unchecked")
   public <E> E getState(Class<E> stateType) {
     return stateType == CxDxSessionState.class ? (E) super.state : null;
   }
@@ -101,10 +121,10 @@ public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSess
    * @see org.jdiameter.api.NetworkReqListener#processRequest(org.jdiameter.api.Request)
    */
   public Answer processRequest(Request request) {
-	  RequestDelivery rd  = new RequestDelivery();
-	  rd.session = this;
-	  rd.request = request;
-	  super.scheduler.execute(rd);
+    RequestDelivery rd  = new RequestDelivery();
+    rd.session = this;
+    rd.request = request;
+    super.scheduler.execute(rd);
     return null;
   }
 
@@ -161,11 +181,11 @@ public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSess
    * @see org.jdiameter.api.EventListener#receivedSuccessMessage(org.jdiameter.api.Message, org.jdiameter.api.Message)
    */
   public void receivedSuccessMessage(Request request, Answer answer) {
-	  AnswerDelivery rd = new AnswerDelivery();
-		rd.session = this;
-		rd.request = request;
-		rd.answer = answer;
-		super.scheduler.execute(rd);
+    AnswerDelivery rd = new AnswerDelivery();
+    rd.session = this;
+    rd.request = request;
+    rd.answer = answer;
+    super.scheduler.execute(rd);
   }
 
   /*
@@ -185,19 +205,11 @@ public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSess
 
   protected void send(Event.Type type, AppEvent request, AppEvent answer) throws InternalException {
     try {
-      
       if (type != null) {
         handleEvent(new Event(type, request, answer));
       }
-//      AppEvent event = null;
-//      if (request != null) {
-//        event = request;
-//      } else {
-//        event = answer;
-//      }
-//      session.send(event.getMessage(), this);
-
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       throw new InternalException(e);
     }
   }
@@ -206,8 +218,7 @@ public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSess
     try {
       sendAndStateLock.lock();
       if (!super.session.isValid()) {
-        // FIXME?
-        // throw new InternalException("Generic session is not valid.");
+        // FIXME: throw new InternalException("Generic session is not valid.");
         return false;
       }
       CxDxSessionState newState = null;
@@ -217,13 +228,18 @@ public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSess
       case IDLE:
         switch (eventType) {
         case RECEIVE_PPR:
-          super.scheduler.schedule(new TimeoutTimerTask((Request) ((AppEvent) event.getData()).getMessage()), CxDxSession._TX_TIMEOUT, TimeUnit.MILLISECONDS);
+          //super.scheduler.schedule(new TimeoutTimerTask((Request) ((AppEvent) event.getData()).getMessage()), CxDxSession._TX_TIMEOUT, TimeUnit.MILLISECONDS);
+          super.buffer = ((AppEvent) event.getData()).getMessage();
+          super.startMsgTimer();
           newState = CxDxSessionState.MESSAGE_SENT_RECEIVED;
           listener.doPushProfileRequest(this, (JPushProfileRequest) event.getData());
           break;
+
         case RECEIVE_RTR:
-          super.scheduler.schedule(new TimeoutTimerTask((Request) ((AppEvent) event.getData()).getMessage()), CxDxSession._TX_TIMEOUT, TimeUnit.MILLISECONDS);
+          //super.scheduler.schedule(new TimeoutTimerTask((Request) ((AppEvent) event.getData()).getMessage()), CxDxSession._TX_TIMEOUT, TimeUnit.MILLISECONDS);
           newState = CxDxSessionState.MESSAGE_SENT_RECEIVED;
+          super.buffer = ((AppEvent) event.getData()).getMessage();
+          super.startMsgTimer();
           listener.doRegistrationTerminationRequest(this, (JRegistrationTerminationRequest) event.getData());
           break;
 
@@ -231,61 +247,66 @@ public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSess
           newState = CxDxSessionState.MESSAGE_SENT_RECEIVED;
           super.session.send(((AppEvent) event.getData()).getMessage(),this);
           break;
+
         default:
-          logger.error("Something went wrong, we should not b here, its a bug.");
-        break;
+          logger.error("Invalid Event Type {} for Cx/Dx Client Session at state {}.", eventType, super.state);
+          break;
         }
-
         break;
 
-        // hmm, this allow rtr from this side, but this should not happen.
       case MESSAGE_SENT_RECEIVED:
-
         switch (eventType) {
         case TIMEOUT_EXPIRES:
           newState = CxDxSessionState.TIMEDOUT;
           break;
+
         case SEND_MESSAGE:
-          if (super.timeoutTaskFuture != null) {
-            super.timeoutTaskFuture.cancel(false);
-            super.timeoutTaskFuture = null;
-          }
+          //          if (super.timeoutTaskFuture != null) {
+          //            super.timeoutTaskFuture.cancel(false);
+          //            super.timeoutTaskFuture = null;
+          //          }
           super.session.send(((AppEvent) event.getData()).getMessage(), this);
           newState = CxDxSessionState.TERMINATED;
           break;
+
         case RECEIVE_LIA:
-          //CxDxSession.scheduler.schedule(new TimeoutTimerTask((Request) event.getData()), CxDxSession._TX_TIMEOUT, TimeUnit.MILLISECONDS);
           newState = CxDxSessionState.TERMINATED;
+          super.cancelMsgTimer();
           listener.doLocationInformationAnswer(this, null, (JLocationInfoAnswer) event.getData());
           break;
+
         case RECEIVE_MAA:
-         // CxDxSession.scheduler.schedule(new TimeoutTimerTask((Request) event.getData()), CxDxSession._TX_TIMEOUT, TimeUnit.MILLISECONDS);
           newState = CxDxSessionState.TERMINATED;
+          super.cancelMsgTimer();
           listener.doMultimediaAuthAnswer(this, null, (JMultimediaAuthAnswer) event.getData());
           break;
+
         case RECEIVE_SAA:
-        //  CxDxSession.scheduler.schedule(new TimeoutTimerTask((Request) event.getData()), CxDxSession._TX_TIMEOUT, TimeUnit.MILLISECONDS);
           newState = CxDxSessionState.TERMINATED;
+          super.cancelMsgTimer();
           listener.doServerAssignmentAnswer(this, null, (JServerAssignmentAnswer) event.getData());
           break;
+
         case RECEIVE_UAA:
-         // CxDxSession.scheduler.schedule(new TimeoutTimerTask((Request) event.getData()), CxDxSession._TX_TIMEOUT, TimeUnit.MILLISECONDS);
           newState = CxDxSessionState.TERMINATED;
+          super.cancelMsgTimer();
           listener.doUserAuthorizationAnswer(this, null, (JUserAuthorizationAnswer) event.getData());
           break;
-        default:
-          // FIXME: this could be rtr?
-          throw new InternalException("Can not receive more messages after initial!!!. Command: " + event.getData());
-        }
 
+        default:
+          throw new InternalException("Should not receive more messages after initial. Command: " + event.getData());
+        }
         break;
+
       case TERMINATED:
-        throw new InternalException("Cant receive message in state termianted. Command: " + event.getData());
+        throw new InternalException("Cant receive message in state TERMINATED. Command: " + event.getData());
+
       case TIMEDOUT:
-        throw new InternalException("Cant receive message in state timedout. Command: " + event.getData());
+        throw new InternalException("Cant receive message in state TIMEDOUT. Command: " + event.getData());
+
       default:
-        logger.error("Wrong state: " + super.state);
-      break;
+        logger.error("Cx/Dx Client FSM in wrong state: {}", super.state);
+        break;
       }
 
       if (newState != null && newState != super.state) {
@@ -302,95 +323,151 @@ public class CxDxClientSessionImpl extends CxDxSession implements ClientCxDxSess
     return true;
   }
 
+  @SuppressWarnings("unchecked")
   protected void setState(CxDxSessionState newState) {
     CxDxSessionState oldState = super.state;
     super.state = newState;
+    super.sessionDataSource.updateSession(this);
     for (StateChangeListener i : stateListeners) {
-      i.stateChanged((Enum) oldState, (Enum) newState);
+      i.stateChanged(this,(Enum) oldState, (Enum) newState);
     }
     if (newState == CxDxSessionState.TERMINATED || newState == CxDxSessionState.TIMEDOUT) {
-
+      super.cancelMsgTimer();	
       this.release();
+      //      if (super.timeoutTaskFuture != null) {
+      //        timeoutTaskFuture.cancel(true);
+      //        timeoutTaskFuture = null;
+      //      }
+    }
+  }
 
-      if (super.timeoutTaskFuture != null) {
-        timeoutTaskFuture.cancel(true);
-        timeoutTaskFuture = null;
+  /* (non-Javadoc)
+   * @see org.jdiameter.common.impl.app.AppSessionImpl#onTimer(java.lang.String)
+   */
+  @Override
+  public void onTimer(String timerName) {
+    if(timerName.equals(CxDxSession.TIMER_NAME_MSG_TIMEOUT)) {
+      try{
+        sendAndStateLock.lock();
+        try {
+          handleEvent(new Event(Event.Type.TIMEOUT_EXPIRES, new AppRequestEventImpl(super.buffer), null));
+        }
+        catch (Exception e) {
+          logger.debug("Failure handling Timeout event.");
+        }
+        super.buffer = null;
+        super.timerId_timeout = null;
+        super.sessionDataSource.updateSession(this);
+      }
+      finally {
+        sendAndStateLock.unlock();
       }
     }
   }
 
-  private class TimeoutTimerTask implements Runnable {
-    private Request r;
-
-    public TimeoutTimerTask(Request r) {
-      super();
-      this.r = r;
+  
+  /* (non-Javadoc)
+   * @see org.jdiameter.common.impl.app.cxdx.CxDxSession#relink(org.jdiameter.client.api.IContainer)
+   */
+  @Override
+  public void relink(IContainer stack) {
+	  // JIC: in case someone needs that replicable.
+    if(super.sf == null) {
+      super.relink(stack);
+      ICxDxSessionFactory fct = (ICxDxSessionFactory) ((ISessionFactory) super.sf).getAppSessionFactory(ClientCxDxSession.class);
+      this.listener = fct.getClientSessionListener();
     }
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + (int) (appId ^ (appId >>> 32));
+    return result;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!super.equals(obj)) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+
+    CxDxClientSessionImpl other = (CxDxClientSessionImpl) obj;
+    if (appId != other.appId) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private class RequestDelivery implements Runnable {
+    ClientCxDxSession session;
+    Request request;
 
     public void run() {
       try {
-        handleEvent(new Event(Event.Type.TIMEOUT_EXPIRES, new AppRequestEventImpl(r), null));
+        if (request.getCommandCode() == JRegistrationTerminationRequest.code) {
+          handleEvent(new Event(Event.Type.RECEIVE_RTR, messageFactory.createRegistrationTerminationRequest(request), null));
+        }
+        else if (request.getCommandCode() == JPushProfileRequest.code) {
+          handleEvent(new Event(Event.Type.RECEIVE_PPR, messageFactory.createPushProfileRequest(request), null));
+        }
+        else {
+          listener.doOtherEvent(session, new AppRequestEventImpl(request), null);
+        }
       }
       catch (Exception e) {
-        logger.debug("Failure handling Timeout event.");
+        logger.debug("Failed to process request message", e);
       }
     }
-
   }
 
-	private class RequestDelivery implements Runnable {
-		ClientCxDxSession session;
-		Request request;
+  private class AnswerDelivery implements Runnable {
+    ClientCxDxSession session;
+    Answer answer;
+    Request request;
 
-		public void run() {
+    public void run() {
+      try {
+        switch (answer.getCommandCode()) {
+        case JUserAuthorizationAnswer.code:
+          handleEvent(new Event(Event.Type.RECEIVE_UAA, messageFactory.createUserAuthorizationRequest(request), messageFactory.createUserAuthorizationAnswer(answer)));
+          break;
 
-			try {
-				if (request.getCommandCode() == JRegistrationTerminationRequest.code) {
-					handleEvent(new Event(Event.Type.RECEIVE_RTR, factory.createRegistrationTerminationRequest(request), null));
-				} else if (request.getCommandCode() == JPushProfileRequest.code) {
-					handleEvent(new Event(Event.Type.RECEIVE_PPR, factory.createPushProfileRequest(request), null));
-				} else {
-					listener.doOtherEvent(session, new AppRequestEventImpl(request), null);
-				}
-			} catch (Exception e) {
-				logger.debug("Failed to process request message", e);
-			}
+        case JServerAssignmentAnswer.code:
+          handleEvent(new Event(Event.Type.RECEIVE_SAA, messageFactory.createServerAssignmentRequest(request), messageFactory.createServerAssignmentAnswer(answer)));
+          break;
 
-		}
+        case JMultimediaAuthAnswer.code:
+          handleEvent(new Event(Event.Type.RECEIVE_MAA, messageFactory.createMultimediaAuthRequest(request), messageFactory.createMultimediaAuthAnswer(answer)));
+          break;
 
-	}
+        case JLocationInfoAnswer.code:
+          handleEvent(new Event(Event.Type.RECEIVE_LIA, messageFactory.createLocationInfoRequest(request), messageFactory.createLocationInfoAnswer(answer)));
+          break;
 
-	private class AnswerDelivery implements Runnable {
-		ClientCxDxSession session;
-		Answer answer;
-		Request request;
-
-		public void run() {
-			try {
-				switch (answer.getCommandCode()) {
-				case JUserAuthorizationAnswer.code:
-					handleEvent(new Event(Event.Type.RECEIVE_UAA, factory.createUserAuthorizationRequest(request), factory.createUserAuthorizationAnswer(answer)));
-					break;
-				case JServerAssignmentAnswer.code:
-					handleEvent(new Event(Event.Type.RECEIVE_SAA, factory.createServerAssignmentRequest(request), factory.createServerAssignmentAnswer(answer)));
-					break;
-				case JMultimediaAuthAnswer.code:
-					handleEvent(new Event(Event.Type.RECEIVE_MAA, factory.createMultimediaAuthRequest(request), factory.createMultimediaAuthAnswer(answer)));
-					break;
-				case JLocationInfoAnswer.code:
-					handleEvent(new Event(Event.Type.RECEIVE_LIA, factory.createLocationInfoRequest(request), factory.createLocationInfoAnswer(answer)));
-					break;
-
-				default:
-					listener.doOtherEvent(session, new AppRequestEventImpl(request), new AppAnswerEventImpl(answer));
-					break;
-				}
-			} catch (Exception e) {
-				logger.debug("Failed to process success message", e);
-			}
-
-		}
-
-	}
+        default:
+          listener.doOtherEvent(session, new AppRequestEventImpl(request), new AppAnswerEventImpl(answer));
+          break;
+        }
+      }
+      catch (Exception e) {
+        logger.debug("Failed to process success message", e);
+      }
+    }
+  }
 
 }
