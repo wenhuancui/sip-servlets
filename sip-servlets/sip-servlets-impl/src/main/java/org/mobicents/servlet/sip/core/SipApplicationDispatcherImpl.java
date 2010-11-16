@@ -1190,8 +1190,12 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 						if(logger.isDebugEnabled()) {
 							logger.debug("no sip session were returned for this key " + sipServletMessageImpl.getSipSessionKey() + " and message " + sipServletMessageImpl);
 						}
-					}									
+					}		
 					
+					if(tad.getProxyBranch() != null) {
+						tad.getProxyBranch().removeTransaction(transaction.getBranchId());
+					}
+
 					// Issue 1333 : B2buaHelper.getPendingMessages(linkedSession, UAMode.UAC) returns empty list
 					// don't remove the transaction on terminated state for INVITE Tx because it won't be possible
 					// to create the ACK on second leg for B2BUA apps

@@ -24,7 +24,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -52,13 +51,14 @@ import javax.sip.message.Response;
 import org.apache.log4j.Logger;
 import org.mobicents.javax.servlet.sip.ProxyExt;
 import org.mobicents.servlet.sip.JainSipUtils;
-import org.mobicents.servlet.sip.SipFactories;
 import org.mobicents.servlet.sip.address.SipURIImpl;
 import org.mobicents.servlet.sip.address.TelURLImpl;
+import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
 import org.mobicents.servlet.sip.message.SipFactoryImpl;
 import org.mobicents.servlet.sip.message.SipServletRequestImpl;
 import org.mobicents.servlet.sip.message.SipServletResponseImpl;
+import org.mobicents.servlet.sip.proxy.ProxyBranchImpl.TransactionRequest;
 
 /**
  * @author root
@@ -171,6 +171,8 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 	 * @see javax.servlet.sip.Proxy#cancel()
 	 */
 	public void cancel() {
+		if(ackReceived) 
+			throw new IllegalStateException("There has been an ACK received. Can not cancel more brnaches, the INVITE tx has finished.");
 		cancelAllExcept(null, null, null, null, true);
 	}
 	
@@ -179,13 +181,16 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 	 * @see javax.servlet.sip.Proxy#cancel(java.lang.String[], int[], java.lang.String[])
 	 */
 	public void cancel(String[] protocol, int[] reasonCode, String[] reasonText) {
+		if(ackReceived) 
+			throw new IllegalStateException("There has been an ACK received. Can not cancel more brnaches, the INVITE tx has finished.");
 		cancelAllExcept(null, protocol, reasonCode, reasonText, true);
 	}
 
 	public void cancelAllExcept(ProxyBranch except, String[] protocol, int[] reasonCode, String[] reasonText, boolean throwExceptionIfCannotCancel) {
-		if(ackReceived) throw new IllegalStateException("There has been an ACK received on this branch. Can not cancel.");
 		for(ProxyBranch proxyBranch : proxyBranches.values()) {		
 			if(!proxyBranch.equals(except)) {
+				// Do not make this check in the beginning of the method, because in case of reINVITE etc, we already have a single brnch nd this method
+				// would have no actual effect, no need to fail it just because we've already seen ACK. Only throw exception if there are other branches.
 				try {
 					proxyBranch.cancel(protocol, reasonCode, reasonText);
 				} catch (IllegalStateException e) {
@@ -658,12 +663,12 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 		}
 			
 		if(logger.isDebugEnabled())
-			logger.debug("Proxy branch has NOT timed out");
+					logger.debug("Proxy branch has NOT timed out");
 
 		//Otherwise proceed with proxying the response
 		final SipServletResponseImpl proxiedResponse = 
 			ProxyUtils.createProxiedResponse(response, proxyBranch);
-
+		
 
 		if(proxiedResponse == null || proxiedResponse.getMessage() == null) {
 			if(logger.isDebugEnabled())
@@ -674,7 +679,7 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 		try {
 
 			if(originalRequest != null && proxiedResponse.getRequest() != null) {
-
+				
 				// non retransmission case
 				try {
 					String branch = ((Via)proxiedResponse.getMessage().getHeader(Via.NAME)).getBranch();

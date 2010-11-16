@@ -17,19 +17,19 @@
 package org.mobicents.servlet.sip.proxy;
 
 import gov.nist.javax.sip.TransactionExt;
+import gov.nist.javax.sip.header.Via;
 import gov.nist.javax.sip.message.SIPMessage;
 import gov.nist.javax.sip.stack.SIPClientTransaction;
-import gov.nist.javax.sip.stack.SIPTransaction;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 
@@ -45,6 +45,7 @@ import javax.servlet.sip.ar.SipApplicationRoutingDirective;
 import javax.sip.ClientTransaction;
 import javax.sip.SipException;
 import javax.sip.SipProvider;
+import javax.sip.Transaction;
 import javax.sip.header.RouteHeader;
 import javax.sip.header.ViaHeader;
 import javax.sip.message.Request;
@@ -101,8 +102,24 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	private boolean waitingForPrack;
 	public transient ViaHeader viaHeader;
 	
-	private static transient Timer timer = new Timer();
+	/*
+	 * It is best to use a linked list here because we expect more than one tx only very rarely.
+	 * Hashmaps, sets, etc allocate some buffers, making them have much bigger mem footprint.
+	 * This list is kept because we need to support concurrent INVITE and other transactions happening
+	 * in both directions in proxy. http://code.google.com/p/mobicents/issues/detail?id=1852
+	 * 
+	 */
+	public transient LinkedList<TransactionRequest> ongoingTransactions = new LinkedList<TransactionRequest>();
 	
+	public static class TransactionRequest {
+		public TransactionRequest(String branch, SipServletRequestImpl request) {
+			this.branchId = branch;
+			this.request = request;
+		}
+		public String branchId;
+		public SipServletRequestImpl request;
+	}
+	private static transient Timer timer = new Timer();
 	// empty constructor used only for Externalizable interface
 	public ProxyBranchImpl() {}
 	
@@ -320,6 +337,10 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 			}
 			recordRoute = recordRouteURI;
 		}
+		if(!originalRequest.getMethod().equalsIgnoreCase("ACK") && !originalRequest.getMethod().equalsIgnoreCase("PRACK")) {
+			String branch = ((Via)originalRequest.getMessage().getHeader(Via.NAME)).getBranch();
+			this.ongoingTransactions.add(new TransactionRequest(branch, originalRequest));
+		}
 						
 		Request cloned = ProxyUtils.createProxiedRequest(
 				outgoingRequest,
@@ -439,7 +460,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 				this.setWaitingForPrack(true); // this branch is expecting a PRACK now
 			}
 			
-			final SipServletResponse proxiedResponse = 
+			final SipServletResponseImpl proxiedResponse = 
 				ProxyUtils.createProxiedResponse(response, this);
 			
 			if(proxiedResponse == null) {
@@ -449,10 +470,21 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 			}
 			
 			try {
+				String branch = ((Via)proxiedResponse.getMessage().getHeader(Via.NAME)).getBranch();
+				synchronized(this.ongoingTransactions) {
+					for(TransactionRequest tr : this.ongoingTransactions) {
+						if(tr.branchId.equals(branch)) {
+							((SipServletResponseImpl)proxiedResponse).setTransaction(tr.request.getTransaction());
+							((SipServletResponseImpl)proxiedResponse).setOriginalRequest(tr.request);
+							break;
+						}
+					}
+				}
+
 				proxiedResponse.send();
 				if(logger.isDebugEnabled())
 					logger.debug("Proxy response sent out sucessfully");
-			} catch (IOException e) {
+			} catch (Exception e) {
 				logger.error("A problem occured while proxying a response", e);
 			}
 			
@@ -521,18 +553,43 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		return timedOut;
 	}
 	
+	public void removeTransaction(String branch) {
+		synchronized(this.ongoingTransactions) {
+			TransactionRequest remove = null;
+			for(TransactionRequest tr : this.ongoingTransactions) {
+				if(tr.branchId.equals(branch)) {
+					remove = tr;
+					break;
+				}
+			}
+			if(remove != null) {
+				boolean removed = this.ongoingTransactions.remove(remove);
+				if(logger.isDebugEnabled()) {
+					logger.debug("Removed transaction from proxy " + branch + " success: " + removed);
+				}
+			} else {
+				if(logger.isDebugEnabled()) {
+					logger.debug("Removing transaction from proxy " + branch + " FAILED. It was null");
+				}
+			}
+		}
+	}
+	
 	/**
 	 * Call this method when a subsequent request must be proxied through the branch.
 	 * 
 	 * @param request
 	 */
 	public void proxySubsequentRequest(SipServletRequestImpl request) {		
-		
+		if(!request.getMethod().equalsIgnoreCase("ACK") && !request.getMethod().equalsIgnoreCase("PRACK")) {
+			String branch = ((Via)request.getMessage().getHeader(Via.NAME)).getBranch();
+			this.ongoingTransactions.add(new TransactionRequest(branch, request));
+		}
 		// A re-INVITE needs special handling without goind through the dialog-stateful methods
 		if(request.getMethod().equalsIgnoreCase("INVITE")) {
 			if(logger.isDebugEnabled()) {
 				logger.debug("Proxying reinvite request " + request);
-			}
+			}			
 			proxyDialogStateless(request);
 			return;
 		}
@@ -615,8 +672,11 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		// Update the last proxied request
 		request.setRoutingState(RoutingState.PROXIED);
 		this.prackOriginalRequest = request;
-		
-		URI targetURI = this.targetURI;
+				
+		URI targetURI = null; 
+		if(request.getMethod().equals(Request.PRACK) || request.getMethod().equals(Request.ACK)) {
+			targetURI = this.targetURI;
+		}
 		
 		// Determine the direction of the request. Either it's from the dialog initiator (the caller)
 		// or from the callee
@@ -625,7 +685,6 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 			targetURI = proxy.getPreviousNode();
 		}
 		
-//		ProxyParams params = new ProxyParams(targetURI, null, null, null);
 		Request clonedRequest = 
 			ProxyUtils.createProxiedRequest(request, this, targetURI, null, null, null);
 
