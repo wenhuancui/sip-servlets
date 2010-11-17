@@ -8,7 +8,6 @@
 	</parent>
 	
 	<artifactId>client-appusages-rls-services</artifactId>
-	<packaging>jar</packaging>
 				
 	<dependencies>
 		<dependency>

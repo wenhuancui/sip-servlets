@@ -7,8 +7,6 @@
 		<version>5.0.1.GA-JBCP5</version>
 	</parent>
 	
-	<packaging>jar</packaging>
-	
 	<artifactId>client-appusages-resource-lists</artifactId>
 	
 </project>
