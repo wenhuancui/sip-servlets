@@ -75,7 +75,6 @@
 		<!-- PRESENCE SERVICE BUILD CONFIGURATION -->
 		
 		<xdm.server.xcap.root>/mobicents</xdm.server.xcap.root>
-		<xdm.server.xcap.dynamicUserProvision>true</xdm.server.xcap.dynamicUserProvision>
 		
 		<presence.server.notifier.presrules.auid>org.openmobilealliance.pres-rules</presence.server.notifier.presrules.auid>
 		<presence.server.notifier.presrules.documentName>pres-rules</presence.server.notifier.presrules.documentName>
@@ -130,6 +129,16 @@
 				<groupId>org.mobicents</groupId>
 				<version>5.0.1.GA-JBCP5</version>
 			</dependency>
+			<dependency>
+				<groupId>org.mobicents.resources</groupId>
+				<artifactId>mobicents-slee-ra-xcap-client-ratype</artifactId>
+				<version>5.0.1.GA-JBCP5</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mobicents.servers.jainslee.enablers</groupId>
+				<artifactId>xdm-client-sbb</artifactId>
+				<version>5.0.1.GA-JBCP5</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	
@@ -154,9 +163,9 @@
 	</build>
 	
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/trunk/servers/sip-presence</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/trunk/servers/sip-presence</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/trunk/servers/sip-presence</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/sip-presence/5.0.1.GA-JBCP5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/sip-presence/5.0.1.GA-JBCP5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/sip-presence/5.0.1.GA-JBCP5</url>
 	</scm>
 	
 	<!-- dupe info from parent, but it's only way to retrieve the parent without user configuration -->
@@ -206,7 +215,6 @@
 				</plugins>
 			</build>		
 		</profile>
-		
 		<profile>
       	<id>assemble</id>
       	<activation>
