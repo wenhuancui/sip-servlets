@@ -14,6 +14,11 @@
 			<groupId>org.mobicents.resources</groupId>
 			<artifactId>mobicents-slee-ra-xcap-client-ratype</artifactId>
 		</dependency>
+	    <dependency>
+		  <artifactId>xcap-client-api</artifactId>
+		  <groupId>org.mobicents</groupId>
+	      <version>5.0.1.GA-JBCP5</version>
+	    </dependency>
 	</dependencies>
 	
 </project>
