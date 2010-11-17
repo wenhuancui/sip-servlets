@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<packaging>jar</packaging>
@@ -129,7 +128,14 @@
 											<overWrite>true</overWrite>
 											<outputDirectory>${deploy.dir}/${libs.dir.name}</outputDirectory>
 										</artifactItem>
-										
+										<artifactItem>
+											<artifactId>client-appusages-xcap-caps</artifactId>
+											<groupId>org.mobicents.servers.xdm</groupId>
+											<version>${pom.version}</version>
+											<overWrite>true</overWrite>
+											<outputDirectory>${deploy.dir}/${libs.dir.name}</outputDirectory>
+										</artifactItem>
+																							
 										<artifactItem>
 											<groupId>org.mobicents.servers.xdm</groupId>
 											<artifactId>xdms-core-datasource-pu</artifactId>
@@ -222,7 +228,35 @@
 											<overWrite>true</overWrite>
 											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
 										</artifactItem>		
-										
+										<artifactItem>
+											<groupId>org.mobicents.servers.xdm</groupId>
+											<artifactId>xdms-appusages-oma-xcap-directory-bean</artifactId>
+											<version>${pom.version}</version>
+											<overWrite>true</overWrite>
+											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.mobicents.servers.xdm</groupId>
+											<artifactId>xdms-appusages-oma-group-usage-list-bean</artifactId>
+											<version>${pom.version}</version>
+											<overWrite>true</overWrite>
+											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.mobicents.servers.xdm</groupId>
+											<artifactId>xdms-appusages-oma-user-profile-bean</artifactId>
+											<version>${pom.version}</version>
+											<overWrite>true</overWrite>
+											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.mobicents.servers.xdm</groupId>
+											<artifactId>xdms-appusages-oma-locked-user-profile-bean</artifactId>
+											<version>${pom.version}</version>
+											<overWrite>true</overWrite>
+											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
+										</artifactItem>
+												
 										<artifactItem>
 											<groupId>org.mobicents.servers.xdm</groupId>
 											<artifactId>xdms-core-datasource-DU</artifactId>
@@ -290,7 +324,7 @@
 									<tasks>
 										<copy overwrite="true" file="resources/configuration/sip-event/subscription/META-INF/jboss-beans.xml" todir="${deploy.dir}/${beans.dir.name}/configuration/sip-event/subscription/META-INF" />
 										<copy overwrite="true" todir="${deploy.dir}/${beans.dir.name}/appusages/xsd">
-											<fileset dir="../appusages/xsd"/>
+											<fileset dir="../appusages/xsd" />
 										</copy>
 									</tasks>
 								</configuration>

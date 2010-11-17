@@ -14,10 +14,12 @@ public class ServerConfiguration implements ServerConfigurationMBean {
 	private String schemeAndAuthority = "http://"+serverHost+":"+serverPort;
 	
 	private String xcapRoot = "/mobicents";
-	
-	private boolean dynamicUserProvision;
-	
+		
 	private String authenticationRealm;
+	
+	private boolean localXcapAuthentication;
+	
+	private boolean allowAssertedUserIDs;
 	
 	private static final ServerConfiguration INSTANCE = new ServerConfiguration();
 	
@@ -87,20 +89,6 @@ public class ServerConfiguration implements ServerConfigurationMBean {
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.mobicents.slee.xdm.server.ServerConfigurationMBean#getDynamicUserProvision()
-	 */
-	public boolean getDynamicUserProvision() {
-		return dynamicUserProvision;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.mobicents.slee.xdm.server.ServerConfigurationMBean#setDynamicUserProvision(boolean)
-	 */
-	public void setDynamicUserProvision(boolean value) {
-		this.dynamicUserProvision = value;
-	}
-	
-	/* (non-Javadoc)
 	 * @see org.mobicents.slee.xdm.server.ServerConfigurationMBean#getAuthenticationRealm()
 	 */
 	public String getAuthenticationRealm() {
@@ -119,4 +107,39 @@ public class ServerConfiguration implements ServerConfigurationMBean {
 			authenticationRealm = getServerHost();
 		}
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.slee.xdm.server.ServerConfigurationMBean#getLocalXcapAuthentication()
+	 */
+	@Override
+	public boolean getLocalXcapAuthentication() {
+		return localXcapAuthentication;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.slee.xdm.server.ServerConfigurationMBean#setLocalXcapAuthentication(boolean)
+	 */
+	@Override
+	public void setLocalXcapAuthentication(boolean value) {
+		this.localXcapAuthentication = value;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.slee.xdm.server.ServerConfigurationMBean#getAllowAssertedUserIDs()
+	 */
+	public boolean getAllowAssertedUserIDs() {
+		return allowAssertedUserIDs;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.slee.xdm.server.ServerConfigurationMBean#setAllowAssertedUserIDs(boolean)
+	 */
+	public void setAllowAssertedUserIDs(boolean allowAssertedUserIDs) {
+		this.allowAssertedUserIDs = allowAssertedUserIDs;
+	}
+	
 }
