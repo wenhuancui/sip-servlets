@@ -8,8 +8,6 @@
 		<relativePath>../../../..</relativePath>
 	</parent>
 	
-	<packaging>jar</packaging>
-	
 	<groupId>org.mobicents.servers.sipevent</groupId>
 	<artifactId>sip-event-publication-control-data</artifactId>
 				

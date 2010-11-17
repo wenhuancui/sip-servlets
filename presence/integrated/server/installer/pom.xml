@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<packaging>pom</packaging>
@@ -234,6 +233,34 @@
 											<overWrite>true</overWrite>
 											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
 										</artifactItem>
+										<artifactItem>
+											<groupId>org.mobicents.servers.xdm</groupId>
+											<artifactId>xdms-appusages-oma-xcap-directory-bean</artifactId>
+											<version>${pom.version}</version>
+											<overWrite>true</overWrite>
+											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.mobicents.servers.xdm</groupId>
+											<artifactId>xdms-appusages-oma-group-usage-list-bean</artifactId>
+											<version>${pom.version}</version>
+											<overWrite>true</overWrite>
+											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.mobicents.servers.xdm</groupId>
+											<artifactId>xdms-appusages-oma-user-profile-bean</artifactId>
+											<version>${pom.version}</version>
+											<overWrite>true</overWrite>
+											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
+										</artifactItem>
+										<artifactItem>
+											<groupId>org.mobicents.servers.xdm</groupId>
+											<artifactId>xdms-appusages-oma-locked-user-profile-bean</artifactId>
+											<version>${pom.version}</version>
+											<overWrite>true</overWrite>
+											<outputDirectory>${deploy.dir}/${beans.dir.name}/appusages</outputDirectory>
+										</artifactItem>
 											
 										<artifactItem>
 											<groupId>org.mobicents.servers.xdm</groupId>
@@ -316,7 +343,7 @@
 								<configuration>
 									<tasks>
 										<copy overwrite="true" todir="${deploy.dir}/${beans.dir.name}/appusages/xsd">
-											<fileset dir="../../../xdm/server/appusages/xsd"/>
+											<fileset dir="../../../xdm/server/appusages/xsd" />
 										</copy>
 									</tasks>
 								</configuration>

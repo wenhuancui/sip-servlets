@@ -8,7 +8,6 @@
 		<artifactId>sip-presence-parent</artifactId>
 		<groupId>org.mobicents.servers.sippresence</groupId>
 		<version>5.0.1.GA-JBCP5</version>
-		<relativePath>../..</relativePath>
 	</parent>
 	
 	<artifactId>sip-presence-client</artifactId>
