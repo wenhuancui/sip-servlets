@@ -19,6 +19,10 @@
 		<module>resource-lists</module>
 		<module>rls-services</module>
 		<module>xcap-caps</module>
+		<module>oma-xcap-directory</module>
+		<module>oma-group-usage-list</module>
+		<module>oma-user-profile</module>
+		<module>oma-locked-user-profile</module>
 	</modules>
 	
 </project>
