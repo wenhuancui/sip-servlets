@@ -9,7 +9,14 @@
 	<artifactId>sip-servlets-impl</artifactId>
 	<packaging>jar</packaging>
 	<name>Sip Servlets Implementation</name>
-	<url>http://www.mobicents.org-a.googlepages.com/products_sip_servlets.html</url>
+	<url>http://www.mobicents.org/products_sip_servlets.html</url>
+	
+	<properties>
+		<mobicents.name>JBCP</mobicents.name>
+		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
+		<release.timestamp>${maven.build.timestamp}</release.timestamp>
+	</properties>
+	
 	<dependencies>
 		<!-- sip servlet spec dependency -->
 		<dependency>
@@ -126,14 +133,14 @@
 	</dependencies>
 	
 	<build>
-		<!-- resources>
+		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
 			</resource>
-		</resources-->		
+		</resources>		
 		<plugins>	
-			<!-- plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
 				<version>1.0-beta-4</version>
@@ -149,7 +156,7 @@
 					<buildNumberPropertiesFileLocation>${basedir}/src/main/resources/org/mobicents/servlet/sip/core</buildNumberPropertiesFileLocation>					
 					<revisionOnScmFailure>no-revision</revisionOnScmFailure>
 				</configuration>
-			</plugin-->	
+			</plugin>	
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
    				<groupId>org.mobicents.tools</groupId>
