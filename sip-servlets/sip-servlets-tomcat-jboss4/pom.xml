@@ -96,21 +96,21 @@
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jboss</artifactId>
-			<version>${jboss.version}</version>
+			<version>4.2.3.GA</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jboss-system</artifactId>
-			<version>${jboss.version}</version>
+			<version>4.2.3.GA</version>
 			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jboss-jmx</artifactId>
-			<version>${jboss.version}</version>
+			<version>4.2.3.GA</version>
 			<scope>provided</scope>
 		</dependency>
 	
@@ -125,7 +125,7 @@
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jbosssx</artifactId>
-			<version>${jboss.version}</version>
+			<version>4.2.3.GA</version>
 			<scope>provided</scope>
 		</dependency>
 		  
