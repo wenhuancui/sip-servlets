@@ -39,7 +39,7 @@
 	      <outputDirectory>/</outputDirectory>
 	    </file>
 	    <file>
-	      <source>${basedir}/../../web/target/mgcp-demo-audio.war</source>
+	      <source>../../web/target/mgcp-demo-audio.war</source>
 	      <outputDirectory>/</outputDirectory>
 	    </file>
 	  </files>
