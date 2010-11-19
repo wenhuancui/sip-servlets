@@ -15,14 +15,6 @@
 	      <useDefaultExcludes>true</useDefaultExcludes>
 	      <outputDirectory>/</outputDirectory>
 	    </fileSet>
-	    <!-- fileSet>
-	      <directory>${basedir}/web/target</directory>
-	      <includes>
-	        <include>*.war</include>
-	      </includes>
-	      <useDefaultExcludes>true</useDefaultExcludes>
-	      <outputDirectory>/</outputDirectory>
-	    </fileSet-->
 	  </fileSets>
 	<files>
 	    <file>
@@ -36,10 +28,6 @@
 	    </file>
 	    <file>
 	      <source>${basedir}/../../README.txt</source>
-	      <outputDirectory>/</outputDirectory>
-	    </file>
-	    <file>
-	      <source>../../web/target/mgcp-demo-audio.war</source>
 	      <outputDirectory>/</outputDirectory>
 	    </file>
 	  </files>
