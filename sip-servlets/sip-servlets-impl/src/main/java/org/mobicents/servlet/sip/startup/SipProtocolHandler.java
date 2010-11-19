@@ -511,7 +511,7 @@ public class SipProtocolHandler implements ProtocolHandler, MBeanRegistration {
 	                ( sipStack, rgOname, null );
 	        }
 			setStarted(true);
-		} catch (Exception ex) {			
+		} catch (Throwable ex) {			
 			logger.error(
 					"A problem occured while setting up SIP Connector " + ipAddress + ":" + port + "/" + signalingTransport + "-- check server.xml for tomcat. ", ex);						
 		} finally {
