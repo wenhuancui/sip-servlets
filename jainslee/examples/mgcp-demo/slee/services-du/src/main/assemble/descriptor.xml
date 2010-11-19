@@ -38,5 +38,9 @@
 	      <source>${basedir}/../../README.txt</source>
 	      <outputDirectory>/</outputDirectory>
 	    </file>
+	    <file>
+	      <source>${basedir}/../../web/target/mgcp-demo-audio.war</source>
+	      <outputDirectory>/</outputDirectory>
+	    </file>
 	  </files>
 </assembly>
