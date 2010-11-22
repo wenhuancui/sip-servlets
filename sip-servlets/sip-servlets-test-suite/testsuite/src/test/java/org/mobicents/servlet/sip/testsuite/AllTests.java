@@ -172,7 +172,6 @@ public class AllTests {
 		suite.addTestSuite(SameInstanceServletTest.class);
 		suite.addTestSuite(DistributableServletTest.class);
 		suite.addTestSuite(ShootistSipServletForkingTest.class);
-		suite.addTestSuite(BasicFailoverTest.class);
 		suite.addTestSuite(SipURITest.class);
 		suite.addTestSuite(AddressTest.class);
 		suite.addTestSuite(TelURLTest.class);
