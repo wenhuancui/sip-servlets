@@ -46,7 +46,6 @@ import org.mobicents.servlet.sip.testsuite.deployment.DeploymentTest;
 import org.mobicents.servlet.sip.testsuite.deployment.DistributableServletTest;
 import org.mobicents.servlet.sip.testsuite.deployment.NoApplicationDeployedTest;
 import org.mobicents.servlet.sip.testsuite.deployment.SameInstanceServletTest;
-import org.mobicents.servlet.sip.testsuite.failover.BasicFailoverTest;
 import org.mobicents.servlet.sip.testsuite.join.JoinSipServletTest;
 import org.mobicents.servlet.sip.testsuite.listeners.ListenersSipServletTest;
 import org.mobicents.servlet.sip.testsuite.mapping.ServletMappingSipServletTest;
