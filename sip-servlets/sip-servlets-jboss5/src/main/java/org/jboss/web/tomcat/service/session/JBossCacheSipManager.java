@@ -4717,28 +4717,30 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 		return mobicentsCluster;
 	}
 
-	public class AlwaysTrueOutdatedSessionChecker implements
-			OutdatedSessionChecker {
-		public boolean isSessionOutdated(
-				ClusteredSession<? extends OutgoingDistributableSessionData> session) {
-			return true;
-		}
+// For EAP Branch it has to stay commented 
 
-	}
-
-	public class AskSessionOutdatedSessionChecker implements
-			OutdatedSessionChecker {
-		public boolean isSessionOutdated(
-				ClusteredSession<? extends OutgoingDistributableSessionData> session) {
-			return session.isOutdated();
-		}
-
-	}
-
-	public interface OutdatedSessionChecker {
-		boolean isSessionOutdated(
-				ClusteredSession<? extends OutgoingDistributableSessionData> session);
-	}
+//	public class AlwaysTrueOutdatedSessionChecker implements
+//			OutdatedSessionChecker {
+//		public boolean isSessionOutdated(
+//				ClusteredSession<? extends OutgoingDistributableSessionData> session) {
+//			return true;
+//		}
+//
+//	}
+//
+//	public class AskSessionOutdatedSessionChecker implements
+//			OutdatedSessionChecker {
+//		public boolean isSessionOutdated(
+//				ClusteredSession<? extends OutgoingDistributableSessionData> session) {
+//			return session.isOutdated();
+//		}
+//
+//	}
+//
+//	public interface OutdatedSessionChecker {
+//		boolean isSessionOutdated(
+//				ClusteredSession<? extends OutgoingDistributableSessionData> session);
+//	}
 	
 	public class AlwaysTrueOutdatedSipSessionChecker implements
 			OutdatedSipSessionChecker {
