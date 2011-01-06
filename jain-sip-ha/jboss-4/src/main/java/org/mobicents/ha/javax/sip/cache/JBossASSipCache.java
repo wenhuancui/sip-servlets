@@ -23,6 +23,7 @@ package org.mobicents.ha.javax.sip.cache;
 
 import gov.nist.core.StackLogger;
 import gov.nist.javax.sip.stack.SIPDialog;
+import gov.nist.javax.sip.stack.SIPServerTransaction;
 
 import java.util.Map;
 import java.util.Properties;
@@ -249,5 +250,4 @@ public class JBossASSipCache extends AbstractJBossSipCache implements SipCache {
 	public boolean inLocalMode() {		
 		return isLocal;
 	}
-
 }

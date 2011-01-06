@@ -1,8 +1,15 @@
 package org.mobicents.ha.javax.sip;
 
+import gov.nist.javax.sip.ResponseEventExt;
+
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TooManyListenersException;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -25,6 +32,8 @@ import javax.sip.message.MessageFactory;
 import javax.sip.message.Request;
 
 import org.mobicents.ha.javax.sip.cache.ManagedMobicentsSipCache;
+import org.mobicents.tools.sip.balancer.NodeRegisterRMIStub;
+import org.mobicents.tools.sip.balancer.SIPNode;
 
 public class SimpleB2BUA implements SipListener {
  
@@ -41,13 +50,17 @@ public class SimpleB2BUA implements SipListener {
 	private MessageFactory messageFactory;
 	private Properties properties;
 	private SimpleB2BUAHandler b2buaHandler;
+	private TimerTask keepaliveTask;
+	private String transport;
 	
-	public SimpleB2BUA(String stackName, int myPort, String ipAddress) throws NumberFormatException, SipException, TooManyListenersException, InvalidArgumentException, ParseException {
+	public SimpleB2BUA(String stackName, int myPort, String ipAddress, String transport, ReplicationStrategy replicationStrategy, boolean useLoadBalancer) throws NumberFormatException, SipException, TooManyListenersException, InvalidArgumentException, ParseException {
+		this.transport = transport;
 		properties = new Properties();        
         properties.setProperty("javax.sip.STACK_NAME", stackName);
-        properties.setProperty(SIP_PORT_BIND, String.valueOf(myPort));
-        //properties.setProperty("javax.sip.OUTBOUND_PROXY", Integer
-        //                .toString(BALANCER_PORT));
+        properties.setProperty(SIP_PORT_BIND, String.valueOf(myPort));        
+        if(useLoadBalancer) {
+        	properties.setProperty("javax.sip.OUTBOUND_PROXY", ipAddress + ":" + Integer.toString(5065) + "/" + transport);
+        }
         // You need 16 for logging traces. 32 for debug + traces.
         // Your code will limp at 32 but it is best for debugging.
         properties.setProperty("gov.nist.javax.sip.TRACE_LEVEL", "32");
@@ -57,16 +70,16 @@ public class SimpleB2BUA implements SipListener {
                 stackName + "log.xml");
         properties.setProperty("javax.sip.AUTOMATIC_DIALOG_SUPPORT", "off");
         properties.setProperty("gov.nist.javax.sip.REENTRANT_LISTENER", "true");
-        properties.setProperty("org.mobicents.ha.javax.sip.REPLICATION_STRATEGY", "ConfirmedDialogNoApplicationData");
+        properties.setProperty("org.mobicents.ha.javax.sip.REPLICATION_STRATEGY", replicationStrategy.toString());
         properties.setProperty(ManagedMobicentsSipCache.STANDALONE, "true");
         System.setProperty("jgroups.bind_addr", ipAddress);
         System.setProperty("jgroups.udp.mcast_addr", "FFFF::232.5.5.5");
         System.setProperty("jboss.server.log.threshold", "DEBUG");
         System.setProperty("jbosscache.config.validate", "false");
-		initStack(ipAddress);
+		initStack(ipAddress, transport);
 	}
 	
-	private void initStack(String ipAddress) throws SipException, TooManyListenersException,
+	public void initStack(String ipAddress, String transport) throws SipException, TooManyListenersException,
 			NumberFormatException, InvalidArgumentException, ParseException {
 		this.sipFactory = SipFactory.getInstance();
 		this.sipFactory.setPathName("org.mobicents.ha");
@@ -76,12 +89,13 @@ public class SimpleB2BUA implements SipListener {
 		this.listeningPoint = this.sipStack.createListeningPoint(properties.getProperty(
 				SIP_BIND_ADDRESS, ipAddress), Integer.valueOf(properties
 				.getProperty(SIP_PORT_BIND, "5060")), properties.getProperty(
-				TRANSPORTS_BIND, "udp"));
+				TRANSPORTS_BIND, transport));
 		this.provider = this.sipStack.createSipProvider(this.listeningPoint);
 		this.provider.addSipListener(this);
 		this.headerFactory = sipFactory.createHeaderFactory();
 		this.messageFactory = sipFactory.createMessageFactory();
-		b2buaHandler = new SimpleB2BUAHandler(provider,headerFactory,messageFactory, Integer.parseInt(properties.getProperty(SIP_PORT_BIND)));
+		b2buaHandler = new SimpleB2BUAHandler(provider,headerFactory,messageFactory, Integer.parseInt(properties.getProperty(SIP_PORT_BIND)), transport);
+		properties.setProperty(SIP_BIND_ADDRESS, ipAddress);
 	}
 
 	private AtomicLong counter = new AtomicLong();
@@ -127,8 +141,9 @@ public class SimpleB2BUA implements SipListener {
 				
 		if (dialog != null) {
 			System.out.println("dialog is " +  dialog.getDialogId() + " for response " +responseEvent.getResponse() );
-			if (responseEvent.getClientTransaction() == null) {
+			if (((ResponseEventExt)responseEvent).isRetransmission()) {
 				// retransmission, drop it
+				System.out.println("dropping retransmission for response " +responseEvent.getResponse() + "on dialog " + dialog.getDialogId());
 				return;
 			}			
 			if (b2buaHandler != null) {				
@@ -178,18 +193,24 @@ public class SimpleB2BUA implements SipListener {
 	}
 	
 	public void stop() {
+		stop(true);
+	}
+	
+	public void stop(boolean stopSipStack) {
 		Iterator<SipProvider> sipProviderIterator = sipStack.getSipProviders();
         try{
             while (sipProviderIterator.hasNext()) {
                 SipProvider sipProvider = sipProviderIterator.next();
-                ListeningPoint[] listeningPoints = sipProvider.getListeningPoints();
-                for (ListeningPoint listeningPoint : listeningPoints) {
-                    sipProvider.removeListeningPoint(listeningPoint);
-                    sipStack.deleteListeningPoint(listeningPoint);
-                    listeningPoints = sipProvider.getListeningPoints();
+                if(!ListeningPoint.TCP.equalsIgnoreCase(transport)) {
+	                ListeningPoint[] listeningPoints = sipProvider.getListeningPoints();
+	                for (ListeningPoint listeningPoint : listeningPoints) {
+	                    sipProvider.removeListeningPoint(listeningPoint);
+	                    sipStack.deleteListeningPoint(listeningPoint);
+	                    listeningPoints = sipProvider.getListeningPoints();
+	                }
                 }
                 sipProvider.removeSipListener(this);
-                sipStack.deleteSipProvider(sipProvider);
+                sipStack.deleteSipProvider(sipProvider);                
                 sipProviderIterator = sipStack.getSipProviders();
             }
         } catch (Exception e) {
@@ -199,12 +220,96 @@ public class SimpleB2BUA implements SipListener {
         listeningPoint = null;
         provider = null;
         sipFactory.resetFactory();
-        sipFactory = null;
-        sipStack.stop();
-        sipStack = null;
-        b2buaHandler = null;
-        properties = null;
-        headerFactory = null;
-        messageFactory = null;
-	}	
+        
+        if(stopSipStack){
+        	sipStack.stop();
+        	sipStack = null;
+        	headerFactory = null;
+            messageFactory = null;
+            sipFactory = null;
+            b2buaHandler = null;
+            properties = null;
+        }                     
+	}
+
+	/**
+	 * @param b2buaHandler the b2buaHandler to set
+	 */
+	public void setB2buaHandler(SimpleB2BUAHandler b2buaHandler) {
+		this.b2buaHandler = b2buaHandler;
+	}
+
+	/**
+	 * @return the b2buaHandler
+	 */
+	public SimpleB2BUAHandler getB2buaHandler() {
+		return b2buaHandler;
+	}
+	
+	public void pingBalancer() {
+		final SIPNode appServerNode = new SIPNode(sipStack.getStackName(), properties.getProperty(SIP_BIND_ADDRESS));
+		if(ListeningPoint.UDP.equalsIgnoreCase(transport)) {
+			appServerNode.getProperties().put("udpPort",  Integer.parseInt(properties.getProperty(SIP_PORT_BIND)));
+		} else {
+			appServerNode.getProperties().put("tcpPort",  Integer.parseInt(properties.getProperty(SIP_PORT_BIND)));
+		}
+		keepaliveTask = new TimerTask() {
+			@Override
+			public void run() {
+				ArrayList<SIPNode> nodes = new ArrayList<SIPNode>();
+				nodes.add(appServerNode);
+				sendKeepAliveToBalancers(nodes);
+			}
+		};
+		new Timer().schedule(keepaliveTask, 0, 1000);
+	}
+	
+	 private void sendKeepAliveToBalancers(ArrayList<SIPNode> info) {
+ 		if(true) {
+ 			Thread.currentThread().setContextClassLoader(NodeRegisterRMIStub.class.getClassLoader());
+ 			try {
+ 				Registry registry = LocateRegistry.getRegistry(properties.getProperty(SIP_BIND_ADDRESS), 2000);
+ 				NodeRegisterRMIStub reg=(NodeRegisterRMIStub) registry.lookup("SIPBalancer");
+ 				reg.handlePing(info);
+ 			} catch (Exception e) {
+ 				if(sipStack != null) {
+ 					((ClusteredSipStack)sipStack).getStackLogger().logError("couldn't contact the LB, cancelling the keepalive task");
+ 				}
+ 				keepaliveTask.cancel();
+ 			}
+ 		}
+
+ 	}	
+	 
+	 public void stopPingBalancer() {
+		 keepaliveTask.cancel();
+		 Thread.currentThread().setContextClassLoader(NodeRegisterRMIStub.class.getClassLoader());
+		try {
+			Registry registry = LocateRegistry.getRegistry(properties.getProperty(SIP_BIND_ADDRESS), 2000);
+			NodeRegisterRMIStub reg=(NodeRegisterRMIStub) registry.lookup("SIPBalancer");
+			final SIPNode appServerNode = new SIPNode(sipStack.getStackName(), properties.getProperty(SIP_BIND_ADDRESS));
+			if(ListeningPoint.UDP.equalsIgnoreCase(transport)) {
+				appServerNode.getProperties().put("udpPort",  Integer.parseInt(properties.getProperty(SIP_PORT_BIND)));
+			} else {
+				appServerNode.getProperties().put("tcpPort",  Integer.parseInt(properties.getProperty(SIP_PORT_BIND)));
+			}
+			ArrayList<SIPNode> nodes = new ArrayList<SIPNode>();
+			nodes.add(appServerNode);
+			reg.forceRemoval(nodes);
+		} catch (Exception e) {
+			
+		}
+	 }
+
+	 public boolean checkTransactionsRemoved() {
+			System.out.println("client transaction table size " +  ((SipStackImpl)sipStack).getClientTransactionTableSize());
+			if(((SipStackImpl)sipStack).getClientTransactionTableSize() > 0) {
+				return false;
+			}
+			System.out.println("server transaction table size " +  ((SipStackImpl)sipStack).getServerTransactionTableSize());
+			if(((SipStackImpl)sipStack).getServerTransactionTableSize() > 0) {			
+				return false;
+			}
+			return true;
+		}
 }

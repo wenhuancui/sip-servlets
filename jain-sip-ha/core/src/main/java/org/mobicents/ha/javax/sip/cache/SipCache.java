@@ -21,7 +21,10 @@
  */
 package org.mobicents.ha.javax.sip.cache;
 
+import gov.nist.javax.sip.stack.MobicentsHASIPClientTransaction;
+import gov.nist.javax.sip.stack.SIPClientTransaction;
 import gov.nist.javax.sip.stack.SIPDialog;
+import gov.nist.javax.sip.stack.SIPServerTransaction;
 
 import java.util.Properties;
 
@@ -40,7 +43,7 @@ public interface SipCache {
 	public static final String DIALOG_PARENT_FQN_ELEMENT = "Dialogs";
 	public static final String SERVER_TX_PARENT_FQN_ELEMENT = "ServerTransactions";
 	public static final String CLIENT_TX_PARENT_FQN_ELEMENT = "ClientTransactions";
-	
+
 	/**
 	 * Set the Clustered Sip Stack that created this sip cache instance 
 	 * @param clusteredSipStack the Clustered Sip Stack that created this sip cache instance
@@ -93,9 +96,48 @@ public interface SipCache {
 	void removeDialog(String dialogId) throws SipCacheException;
 
 	/**
+	 * Evict the dialog from the cache memory
+	 * @param dialogId the id of the dialog to evict
+	 */
+	void evictDialog(String dialogId);
+	
+	/**
+	 * Retrieve the server transaction with the passed transactionId from the cache
+	 * @param transactionId id of the transaction to retrieve from the cache 
+	 * @return the transaction with the passed transactionId from the cache, null if not found
+	 */
+	SIPServerTransaction getServerTransaction(String transactionId) throws SipCacheException;	
+	/**
+	 * Store the server transaction into the cache
+	 * @param serverTransaction the transaction to store
+	 */
+	void putServerTransaction(SIPServerTransaction serverTransaction) throws SipCacheException;
+	/**
+	 * Remove the transaction from the cache
+	 * @param serverTransaction the id of the transaction to remove
+	 */
+	void removeServerTransaction(String transactionId) throws SipCacheException;
+	
+	/**
+	 * Retrieve the client transaction with the passed transactionId from the cache
+	 * @param transactionId id of the transaction to retrieve from the cache 
+	 * @return the transaction with the passed transactionId from the cache, null if not found
+	 */
+	SIPClientTransaction getClientTransaction(String transactionId) throws SipCacheException;	
+	/**
+	 * Store the client transaction into the cache
+	 * @param clientTransaction the transaction to store
+	 */
+	void putClientTransaction(SIPClientTransaction clientTransaction) throws SipCacheException;
+	/**
+	 * Remove the transaction from the cache
+	 * @param transactionId the id of the transaction to remove
+	 */
+	void removeClientTransaction(String transactionId) throws SipCacheException;
+	
+	/**
 	 * Indicates if the cache is running in local or clustered mode.
 	 * @return
 	 */
 	boolean inLocalMode();
-	
 }

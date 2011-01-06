@@ -10,6 +10,8 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +50,7 @@ public class BalancerRunner implements BalancerRunnerMBean {
 	HtmlAdaptorServer adapter = new HtmlAdaptorServer();
 	ObjectName adapterName = null;
 	JMXConnectorServer cs = null;
+	HttpBalancerForwarder httpBalancerForwarder;
 
 	/**
 	 * @param args
@@ -68,28 +71,10 @@ public class BalancerRunner implements BalancerRunnerMBean {
 		BalancerRunner balancerRunner = new BalancerRunner();
 		balancerRunner.start(configurationFileLocation); 
 	}
-
-	/**
-	 * @param configurationFileLocation
-	 */
-	public void start(String configurationFileLocation) {
-		File file = new File(configurationFileLocation);
-        FileInputStream fileInputStream = null;
-        try {
-        	fileInputStream = new FileInputStream(file);
-		} catch (FileNotFoundException e) {
-			throw new IllegalArgumentException("the configuration file location " + configurationFileLocation + " does not exists !");
-		}
-        
-        Properties properties = new Properties(System.getProperties());
-        try {
-			properties.load(fileInputStream);
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Unable to load the properties configuration file located at " + configurationFileLocation);
-		}
-
+	
+	public void start(Properties properties) {
 		String ipAddress = properties.getProperty(HOST_PROP);
-				
+		
 		InetAddress addr = null;
 		try {
 			addr = InetAddress.getByName(ipAddress);
@@ -157,7 +142,12 @@ public class BalancerRunner implements BalancerRunnerMBean {
 			
 			fwd = new SIPBalancerForwarder(properties, reg);
 			fwd.start();
-			new HttpBalancerForwarder().start();
+			httpBalancerForwarder = new HttpBalancerForwarder();
+			try {
+			httpBalancerForwarder.start();
+			} catch (org.jboss.netty.channel.ChannelException e) {
+				logger.warning("HTTP forwarder could not be restarted.");
+			}
 			
 			BalancerContext.balancerContext.balancerAlgorithm.init();
 			
@@ -180,12 +170,72 @@ public class BalancerRunner implements BalancerRunnerMBean {
 			return;
 		}
 	}
+	Timer timer;
+	long lastupdate = 0;
+
+	/**
+	 * @param configurationFileLocation
+	 */
+	public void start(final String configurationFileLocation) {
+		File file = new File(configurationFileLocation);
+		lastupdate = file.lastModified();
+        FileInputStream fileInputStream = null;
+        try {
+        	fileInputStream = new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			throw new IllegalArgumentException("the configuration file location " + configurationFileLocation + " does not exists !");
+		}
+        
+        Properties properties = new Properties(System.getProperties());
+        try {
+			properties.load(fileInputStream);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Unable to load the properties configuration file located at " + configurationFileLocation);
+		} finally {
+			try {
+				fileInputStream.close();
+			} catch (IOException e) {
+				logger.warning("Problem closing file " + e);
+			}
+		}
+		timer = new Timer();
+		timer.scheduleAtFixedRate(new TimerTask() {
+			public void run() {
+				File conf = new File(configurationFileLocation);
+				if(lastupdate < conf.lastModified()) {
+					lastupdate = conf.lastModified();
+					logger.info("Configuration file changed, applying changes.");
+					FileInputStream fileInputStream = null;
+					try {
+						fileInputStream = new FileInputStream(conf);
+						BalancerContext.balancerContext.properties.load(fileInputStream);
+						BalancerContext.balancerContext.balancerAlgorithm.configurationChanged();
+					} catch (Exception e) {
+						logger.warning("Problem reloading configuration " + e);
+					} finally {
+						if(fileInputStream != null) {
+							try {
+								fileInputStream.close();
+							} catch (Exception e) {
+								logger.severe("Problem closing stream " + e);
+							}
+						}
+					}
+				}
+			}
+		}, 3000, 2000);
+
+		start(properties);
+
+	}
 	
 	public void stop() {
+		if(timer != null) timer.cancel();
+		timer = null;
 		logger.info("Stopping the sip forwarder");
 		fwd.stop();
-		logger.info("Stopping the node registry");
-		reg.stopRegistry();
+		logger.info("Stopping the http forwarder");
+		httpBalancerForwarder.stop();
 		logger.info("Unregistering the node registry");
 		MBeanServer server = ManagementFactory.getPlatformMBeanServer();		
 		try {
@@ -193,17 +243,31 @@ public class BalancerRunner implements BalancerRunnerMBean {
 			if (server.isRegistered(on)) {
 				server.unregisterMBean(on);
 			}
+			if(server.isRegistered(adapterName)) {
+				server.unregisterMBean(adapterName);
+			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "An unexpected error occurred while stopping the load balancer", e);
 		}
 		try {
-			cs.stop();
+			if(cs != null) {
+				if(cs.isActive()) {
+					cs.stop();
+				}
+				cs = null;
+				BalancerContext.balancerContext.balancerAlgorithm.stop();
+				adapter.stop();
+				logger.info("Stopping the node registry");
+				reg.stopRegistry();
+				reg = null;
+				adapter = null;
+				System.gc();
+			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "An unexpected error occurred while stopping the load balancer", e);
 		}	
 		
-		BalancerContext.balancerContext.balancerAlgorithm.stop();
-		adapter.stop();
+		
 	}
 
 	//JMX 
@@ -260,6 +324,19 @@ public class BalancerRunner implements BalancerRunnerMBean {
 			i++;
 		}
 		return nodeList;
+	}
+
+	public Properties getProperties() {
+		return BalancerContext.balancerContext.properties;
+	}
+
+	public String getProperty(String key) {
+		return BalancerContext.balancerContext.properties.getProperty(key);
+	}
+
+	public void setProperty(String key, String value) {
+		BalancerContext.balancerContext.properties.setProperty(key, value);
+		BalancerContext.balancerContext.balancerAlgorithm.configurationChanged();
 	}
 }
 

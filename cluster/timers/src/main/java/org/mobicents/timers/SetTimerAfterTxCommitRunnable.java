@@ -58,7 +58,14 @@ public class SetTimerAfterTxCommitRunnable implements Runnable {
 		task.setSetTimerTransactionalAction(null);
 		
 		if (!canceled) {
-				
+			
+			TimerTask previousTask = scheduler.getLocalRunningTasksMap().putIfAbsent(task.getData().getTaskID(), task);
+			if(previousTask != null) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("A task with id " + task.getData().getTaskID() + " has already been added to the local tasks, not rescheduling");
+				}
+			}
+			
 			final TimerTaskData taskData = task.getData();
 			// calculate delay
 			long delay = taskData.getStartTime() - System.currentTimeMillis();

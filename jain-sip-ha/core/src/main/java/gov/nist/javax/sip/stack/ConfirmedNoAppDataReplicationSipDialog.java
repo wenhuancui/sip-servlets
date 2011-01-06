@@ -21,12 +21,15 @@
  */
 package gov.nist.javax.sip.stack;
 
+import gov.nist.core.CommonLogger;
+import gov.nist.core.StackLogger;
 import gov.nist.javax.sip.SipProviderImpl;
 import gov.nist.javax.sip.message.SIPResponse;
 
 import javax.sip.DialogState;
 
 import org.mobicents.ha.javax.sip.ClusteredSipStack;
+import org.mobicents.ha.javax.sip.ReplicationStrategy;
 import org.mobicents.ha.javax.sip.cache.SipCacheException;
 
 /**
@@ -36,6 +39,8 @@ import org.mobicents.ha.javax.sip.cache.SipCacheException;
  *
  */
 public class ConfirmedNoAppDataReplicationSipDialog extends AbstractHASipDialog {	
+	
+	private static StackLogger logger = CommonLogger.getLogger(ConfirmedNoAppDataReplicationSipDialog.class);
 	
 	private static final long serialVersionUID = -779892668482217624L;
 
@@ -56,11 +61,22 @@ public class ConfirmedNoAppDataReplicationSipDialog extends AbstractHASipDialog 
 	 */
 	protected void replicateState() {
 		final DialogState dialogState = getState();
-		if (dialogState == DialogState.CONFIRMED && isCreated && super.dialogId != null && isRemoteTagSet() && isLocalTagSet() && getStack().getDialog(getDialogIdToReplicate()) != null) {
+		final ReplicationStrategy replicationStrategy = ((ClusteredSipStack)getStack()).getReplicationStrategy();
+		boolean replicationStateVsDialogStateOK= false;		
+		if (logger.isLoggingEnabled(StackLogger.TRACE_DEBUG)) {
+			logger.logDebug("dialogState = " + dialogState + ", replicationStrategy = " + replicationStrategy);
+		}
+		if(dialogState == DialogState.CONFIRMED && (replicationStrategy == ReplicationStrategy.ConfirmedDialog|| replicationStrategy == ReplicationStrategy.ConfirmedDialogNoApplicationData)) {
+			replicationStateVsDialogStateOK = true;
+		}
+		if((dialogState == DialogState.EARLY || dialogState == DialogState.CONFIRMED) && replicationStrategy == ReplicationStrategy.EarlyDialog) {
+			replicationStateVsDialogStateOK = true;
+		}
+		if (replicationStateVsDialogStateOK && isCreated && super.dialogId != null && isRemoteTagSet() && isLocalTagSet() && getStack().getDialog(getDialogIdToReplicate()) != null) {
 			try {
 				((ClusteredSipStack)getStack()).getSipCache().putDialog(this);
 			} catch (SipCacheException e) {
-				getStack().getStackLogger().logError("problem storing dialog " + getDialogId() + " into the distributed cache", e);
+				logger.logError("problem storing dialog " + getDialogId() + " into the distributed cache", e);
 			}
 		}
 	}

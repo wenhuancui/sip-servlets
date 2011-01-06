@@ -25,7 +25,9 @@ import gov.nist.core.StackLogger;
 import gov.nist.javax.sip.SipProviderImpl;
 import gov.nist.javax.sip.message.SIPResponse;
 import gov.nist.javax.sip.stack.AbstractHASipDialog;
+import gov.nist.javax.sip.stack.SIPClientTransaction;
 import gov.nist.javax.sip.stack.SIPDialog;
+import gov.nist.javax.sip.stack.SIPServerTransaction;
 
 import java.text.ParseException;
 import java.util.Map;
@@ -61,18 +63,9 @@ public abstract class AbstractJBossSipCache {
 				final SIPResponse lastResponse = (SIPResponse) SipFactory.getInstance().createMessageFactory().createResponse(lastResponseStringified);
 				haSipDialog = HASipDialogFactory.createHASipDialog(clusteredSipStack.getReplicationStrategy(), (SipProviderImpl)clusteredSipStack.getSipProviders().next(), lastResponse);
 				haSipDialog.setDialogId(dialogId);			
-				updateDialogMetaData(dialogMetaData, dialogAppData, haSipDialog);
+				updateDialogMetaData(dialogMetaData, dialogAppData, haSipDialog, true);
 				// setLastResponse won't be called on recreation since version will be null on recreation				
-				haSipDialog.setLastResponse(lastResponse);
-				if(haSipDialog.isServer()) {
-					if(clusteredSipStack.getStackLogger().isLoggingEnabled(StackLogger.TRACE_DEBUG)) {
-						clusteredSipStack.getStackLogger().logDebug("HA SIP Dialog is Server " + haSipDialog.isServer() + " switching parties on recreation");
-					}
-					Address remoteParty = haSipDialog.getLocalParty();
-					Address localParty = haSipDialog.getRemoteParty();
-					haSipDialog.setLocalPartyInternal(localParty);
-					haSipDialog.setRemotePartyInternal(remoteParty);
-				}					
+				haSipDialog.setLastResponse(lastResponse);							
 				if(clusteredSipStack.getStackLogger().isLoggingEnabled(StackLogger.TRACE_DEBUG)) {
 					clusteredSipStack.getStackLogger().logDebug("HA SIP Dialog " + dialogId + " localTag  = " + haSipDialog.getLocalTag());
 					clusteredSipStack.getStackLogger().logDebug("HA SIP Dialog " + dialogId + " remoteTag  = " + haSipDialog.getRemoteTag());
@@ -86,7 +79,7 @@ public abstract class AbstractJBossSipCache {
 			}
 		} else {
 			if(clusteredSipStack.getStackLogger().isLoggingEnabled(StackLogger.TRACE_DEBUG)) {
-				clusteredSipStack.getStackLogger().logDebug("HA SIP Dialog " + haSipDialog + " with dialogId " + haSipDialog.getDialogIdToReplicate() + " has null metadata in the cache, not creating it correctly");
+				clusteredSipStack.getStackLogger().logDebug("HA SIP Dialog " + haSipDialog + " with dialogId " + dialogId + " has null metadata in the cache, not creating it correctly");
 			}
 		}
 		
@@ -106,7 +99,7 @@ public abstract class AbstractJBossSipCache {
 					final String lastResponseStringified = (String) dialogMetaData.get(AbstractHASipDialog.LAST_RESPONSE);				
 					final SIPResponse lastResponse = (SIPResponse) SipFactory.getInstance().createMessageFactory().createResponse(lastResponseStringified);
 					haSipDialog.setLastResponse(lastResponse);
-					updateDialogMetaData(dialogMetaData, dialogAppData, haSipDialog);
+					updateDialogMetaData(dialogMetaData, dialogAppData, haSipDialog, false);
 				}  catch (PeerUnavailableException e) {
 					throw new SipCacheException("A problem occured while retrieving the following dialog " + haSipDialog.getDialogIdToReplicate() + " from the TreeCache", e);
 				} catch (ParseException e) {
@@ -132,9 +125,9 @@ public abstract class AbstractJBossSipCache {
 	 * @throws ParseException
 	 * @throws PeerUnavailableException
 	 */
-	private void updateDialogMetaData(Map<String, Object> dialogMetaData, Object dialogAppData, HASipDialog haSipDialog) throws ParseException,
+	private void updateDialogMetaData(Map<String, Object> dialogMetaData, Object dialogAppData, HASipDialog haSipDialog, boolean recreation) throws ParseException,
 			PeerUnavailableException {
-		haSipDialog.setMetaDataToReplicate(dialogMetaData);
+		haSipDialog.setMetaDataToReplicate(dialogMetaData, recreation);
 		haSipDialog.setApplicationDataToReplicate(dialogAppData);
 		final String contactStringified = (String) dialogMetaData.get(AbstractHASipDialog.CONTACT_HEADER);
 		if(contactStringified != null) {
@@ -143,4 +136,32 @@ public abstract class AbstractJBossSipCache {
 			haSipDialog.setContactHeader(contactHeader);
 		}
 	}
+	
+	public void evictDialog(String dialogId) {
+		throw new UnsupportedOperationException("The dialog eviction feature is not available on JBoss AS 4.2.X");
+	}
+	
+	public SIPServerTransaction getServerTransaction(String transactionId) {
+		throw new UnsupportedOperationException("Transaction Replication is not supported on AS 4");
+	}
+
+	public void putServerTransaction(SIPServerTransaction serverTransaction) {
+		throw new UnsupportedOperationException("Transaction Replication is not supported on AS 4");
+	}
+
+	public void removeServerTransaction(String transactionId) {
+		throw new UnsupportedOperationException("Transaction Replication is not supported on AS 4");
+	}
+	
+	public SIPClientTransaction getClientTransaction(String transactionId) {
+		throw new UnsupportedOperationException("Transaction Replication is not supported on AS 4");
+	}
+
+	public void putClientTransaction(SIPClientTransaction serverTransaction) {
+		throw new UnsupportedOperationException("Transaction Replication is not supported on AS 4");
+	}
+
+	public void removeClientTransaction(String transactionId) {
+		throw new UnsupportedOperationException("Transaction Replication is not supported on AS 4");
+	}	
 }

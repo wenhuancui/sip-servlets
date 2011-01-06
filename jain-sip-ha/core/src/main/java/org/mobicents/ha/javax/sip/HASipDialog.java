@@ -38,10 +38,12 @@ public interface HASipDialog {
 	String getDialogIdToReplicate();
 	void setDialogId(String dialogId);
 	
+	String getMergeId();
+	
 	Map<String, Object> getMetaDataToReplicate();
 	Object getApplicationDataToReplicate();
 
-	void setMetaDataToReplicate(Map<String, Object> dialogMetaData);
+	void setMetaDataToReplicate(Map<String, Object> dialogMetaData, boolean recreation);
 	void setApplicationDataToReplicate(Object dialogAppData);
 
 	void setContactHeader(ContactHeader contactHeader);

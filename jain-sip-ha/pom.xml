@@ -4,25 +4,25 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.ha.javax.sip</groupId>
 	<artifactId>mobicents-jain-sip-ha</artifactId>
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 
 	<packaging>pom</packaging>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-sip-ha/5.0.1.GA-JBCP5</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-sip-ha/5.0.1.GA-JBCP5</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-sip-ha/5.0.1.GA-JBCP5</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-sip-ha/mobicents-jain-sip-ha-1.0.0.FINAL</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-sip-ha/mobicents-jain-sip-ha-1.0.0.FINAL</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-sip-ha/mobicents-jain-sip-ha-1.0.0.FINAL</url>
 	</scm>
 
 	<properties>
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.1.GA-JBCP5
+		<mobicents.tools.mavenplugin.eclipse.version>5.1.0.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
-		<mobicents.cluster.version>5.0.1.GA-JBCP5</mobicents.cluster.version>
+		<mobicents.cluster.version>5.1.0.GA-JBCP5</mobicents.cluster.version>
 	</properties>
 
 	<dependencyManagement>
@@ -42,7 +42,7 @@
 			<dependency>
 				<groupId>org.mobicents.tools</groupId>
 				<artifactId>sip-balancer-jar</artifactId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 				<scope>provided</scope>
 			</dependency>			
 		</dependencies>
@@ -60,7 +60,7 @@
 		<dependency>
 			<groupId>org.mobicents.javax.sip</groupId>
 			<artifactId>mobicents-jain-sip-ext</artifactId>
-			<version>5.0.1.GA-JBCP5</version>
+			<version>5.1.0.GA-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

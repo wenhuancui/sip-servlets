@@ -22,7 +22,9 @@
 package org.mobicents.ha.javax.sip;
 
 import gov.nist.core.StackLogger;
+import gov.nist.javax.sip.stack.MessageProcessor;
 import gov.nist.javax.sip.stack.SIPDialog;
+import gov.nist.javax.sip.stack.SIPTransaction;
 
 import javax.management.MBeanServer;
 import javax.sip.SipStack;
@@ -41,20 +43,17 @@ import org.mobicents.ha.javax.sip.cache.SipCache;
 public interface ClusteredSipStack extends SipStack {	
 	public static final String CACHE_CLASS_NAME_PROPERTY = "org.mobicents.ha.javax.sip.CACHE_CLASS_NAME";
 	public static final String REPLICATION_STRATEGY_PROPERTY = "org.mobicents.ha.javax.sip.REPLICATION_STRATEGY";
+	public static final String REPLICATE_APPLICATION_DATA = "org.mobicents.ha.javax.sip.REPLICATE_APPLICATION_DATA";
 	
 	SIPDialog getDialog(String dialogId);	
-
-	void putDialog(SIPDialog dialog);
-		
+	SIPDialog putDialog(SIPDialog dialog);
 	void removeDialog(SIPDialog dialog);		
-
 	void remoteDialogRemoval(String dialogId);
-		
+	void passivateDialog(HASipDialog dialog);
 	/**
 	 * @param sipCache the sipCache to set
 	 */
 	void setSipCache(SipCache sipCache);
-
 	/**
 	 * @return the sipCache
 	 */
@@ -78,5 +77,13 @@ public interface ClusteredSipStack extends SipStack {
 
 	void closeAllTcpSockets();
 	
-	MBeanServer getMBeanServer() throws Exception;
+	MBeanServer getMBeanServer() throws Exception;	
+	
+    MessageProcessor[] getStackMessageProcessors();
+     
+    SIPTransaction findTransaction(String transactionId, boolean isServer);
+    
+    boolean isReplicateApplicationData();
+	void remoteServerTransactionRemoval(String transactionId);
+	void remoteClientTransactionRemoval(String transactionId);
 }

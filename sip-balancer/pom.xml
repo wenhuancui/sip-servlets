@@ -5,26 +5,20 @@
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
-		<version>5.0.1.GA-JBCP5</version>		
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 	
 	<packaging>pom</packaging>
 	
 	<groupId>org.mobicents.tools</groupId>
 	<artifactId>sip-balancer</artifactId>
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 
 	<url>http://mobicents.org/</url>
 	
-	<properties>
-		<!-- MOBICENTS TOOL VERSIONS -->
-		<mobicents.tools.mavenplugin.eclipse.version>
-			5.0.1.GA-JBCP5
-		</mobicents.tools.mavenplugin.eclipse.version>
-	</properties>
 	<modules>
-		<module>jar</module>
-		<module>assemble</module>		
+		<module>jar</module>		
+		<module>assemble</module>
 	</modules>
 	
 	<profiles>
@@ -52,7 +46,6 @@
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
 				<groupId>org.mobicents.tools</groupId>
-				<version>${mobicents.tools.mavenplugin.eclipse.version}</version>
 				<inherited>false</inherited>
 				<executions />
 				<configuration>
@@ -119,8 +112,8 @@
 	</repositories>
 
   <scm>
-    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.0.3.FINAL</connection>
-    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.0.3.FINAL</developerConnection>
-    <url>http://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.0.3.FINAL</url>
+    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.1</connection>
+    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.1</developerConnection>
+    <url>http://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.1</url>
   </scm>
 </project>

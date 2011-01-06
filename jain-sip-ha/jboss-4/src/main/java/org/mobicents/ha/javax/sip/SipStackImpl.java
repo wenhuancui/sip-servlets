@@ -22,6 +22,7 @@
 package org.mobicents.ha.javax.sip;
 
 import gov.nist.core.StackLogger;
+import gov.nist.javax.sip.stack.MessageProcessor;
 
 import java.util.Properties;
 
@@ -147,5 +148,17 @@ public class SipStackImpl extends ClusteredSipStackImpl implements NotificationL
 	 */
 	public void handleNotification(Notification notification, Object handback) {
 		getStackLogger().setStackProperties(super.getConfigurationProperties());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.ha.javax.sip.ClusteredSipStack#passivateDialog(org.mobicents.ha.javax.sip.HASipDialog)
+	 */
+	public void passivateDialog(HASipDialog dialog) {
+		throw new UnsupportedOperationException("The dialog eviction feature is not available on JBoss AS 4.2.X");
+	}
+
+	public MessageProcessor[] getStackMessageProcessors() {
+		return getMessageProcessors();
 	}
 }

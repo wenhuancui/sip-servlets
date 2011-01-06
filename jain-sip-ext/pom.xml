@@ -4,16 +4,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.javax.sip</groupId>
 	<artifactId>mobicents-jain-sip-ext</artifactId>
-	<version>5.0.1.GA-JBCP5</version>
-
-	<properties>
-		<mobicents.tools.mavenplugin.eclipse.version>5.0.1.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
-	</properties>
+	<version>5.1.0.GA-JBCP5</version>
 
 	<dependencies>
 		<dependency>
@@ -33,18 +29,23 @@
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
 				<groupId>org.mobicents.tools</groupId>
-				<version>${mobicents.tools.mavenplugin.eclipse.version}</version>
 				<inherited>true</inherited>
 				<executions />
 				<configuration>
 					<excludePoms />
 					<resolveTransitiveDependencies>true</resolveTransitiveDependencies>
-					<eclipseProjectName>jain-sip-ha-core</eclipseProjectName>
+					<eclipseProjectName>mobicents-jain-sip-ext</eclipseProjectName>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 
+	<scm>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-sip-ext/1.0.BETA1</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-sip-ext/1.0.BETA1</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-sip-ext/1.0.BETA1</url>
+	</scm>
+	
 	<!--
 		dupe info from parent, but it's only way to retrieve the parent
 		without checkout

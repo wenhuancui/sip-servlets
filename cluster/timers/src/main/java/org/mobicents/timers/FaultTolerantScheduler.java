@@ -165,6 +165,15 @@ public class FaultTolerantScheduler {
 	}
 	
 	/**
+	 * Retrieves a local running task by its id
+	 * 
+	 * @return the local task if found, null otherwise
+	 */
+	public TimerTask getLocalRunningTask(Serializable taskId) {
+		return localRunningTasks.get(taskId);
+	}
+	
+	/**
 	 *  Retrieves the scheduler name.
 	 * @return the name
 	 */
@@ -198,12 +207,15 @@ public class FaultTolerantScheduler {
 	
 	// logic 
 	
+	public void schedule(TimerTask task) {
+		schedule(task, true);
+	}
 	/**
 	 * Schedules the specified task.
 	 * 
 	 * @param task
 	 */
-	public void schedule(TimerTask task) {
+	public void schedule(TimerTask task, boolean checkIfAlreadyPresent) {
 		
 		final TimerTaskData taskData = task.getData(); 
 		final Serializable taskID = taskData.getTaskID();
@@ -212,12 +224,13 @@ public class FaultTolerantScheduler {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Scheduling task with id "+taskID);
 		}
-		localRunningTasks.put(taskID, task);
 		
 		// store the task and data
 		final TimerTaskCacheData timerTaskCacheData = new TimerTaskCacheData(taskID, baseFqn, cluster);
 		if (timerTaskCacheData.create()) {
 			timerTaskCacheData.setTaskData(taskData);
+		} else if(checkIfAlreadyPresent) {
+            throw new IllegalStateException("timer task " + taskID + " already scheduled");
 		}
 				
 		// schedule task
@@ -240,15 +253,9 @@ public class FaultTolerantScheduler {
 							tc.getOrderedSynchronizationHandler()
 								.registerAtTail(new TransactionSynchronization(null,setTimerAction,null));
 						}
-					};
-					// action that cancels the schedule if the tx rollbacks
-					final Runnable rollbackAction = new Runnable() {
-						public void run() {
-							localRunningTasks.remove(taskID);
-						}
-					};
+					};					
 					tx.registerSynchronization(new TransactionSynchronization(
-							beforeCommitAction, null, rollbackAction));
+							beforeCommitAction, null, null));
 					task.setSetTimerTransactionalAction(setTimerAction);
 				}
 				else {
@@ -292,9 +299,14 @@ public class FaultTolerantScheduler {
 				Runnable cancelAction = new CancelTimerAfterTxCommitRunnable(task,this);
 				if (txManager != null) {
 					try {
-						Transaction tx = txManager.getTransaction();
-						if (tx != null) {
-							tx.registerSynchronization(new TransactionSynchronization(null,cancelAction,null));
+						// Fixes Issue 2131 http://code.google.com/p/mobicents/issues/detail?id=2131
+ 						// Calling cancel then schedule on a timer with the same Id in Transaction Context make them run reversed
+ 						// so registerItAtTail to have them ordered correctly
+						final TransactionContext tc = cluster.getMobicentsCache()
+							.getJBossCache().getInvocationContext().getTransactionContext();
+						if (tc != null) {
+							tc.getOrderedSynchronizationHandler()
+							.registerAtTail(new TransactionSynchronization(null,cancelAction,null));
 						}
 						else {
 							cancelAction.run();
@@ -335,11 +347,15 @@ public class FaultTolerantScheduler {
 	 */
 	private void recover(TimerTaskData taskData) {
 		TimerTask task = timerTaskFactory.newTimerTask(taskData);
-		if (logger.isDebugEnabled()) {
-			logger.debug("Recovering task with id "+taskData.getTaskID());
+		if(task != null) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Recovering task with id "+taskData.getTaskID());
+			}
+			task.beforeRecover();
+			// on recovery the task will already be in the cache so we don't check for it
+			// or an IllegalStateException will be thrown
+			schedule(task, false);
 		}
-		task.beforeRecover();
-		schedule(task);
 	}
 
 	public void shutdownNow() {
@@ -447,8 +463,15 @@ public class FaultTolerantScheduler {
 		 */
 		@SuppressWarnings("unchecked")
 		public void dataRemoved(Fqn clusteredCacheDataFqn) {
-			final TimerTask task = localRunningTasks.remove(clusteredCacheDataFqn.getLastElement());
+			Object lastElement = clusteredCacheDataFqn.getLastElement();
+			if (logger.isDebugEnabled()) {
+				logger.debug("remote notification dataRemoved( clusterCacheDataFqn = "+clusteredCacheDataFqn+"), lastElement " + lastElement);
+			}
+			final TimerTask task = localRunningTasks.remove(lastElement);
 			if (task != null) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("remote notification dataRemoved( task = "+task.getData().getTaskID()+" removed locally cancelling it");
+				}
 				task.cancel();
 			}			
 		}
