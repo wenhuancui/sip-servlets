@@ -16,6 +16,7 @@
  */
 package org.mobicents.servlet.sip.testsuite.simple;
 
+import java.io.File;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +29,7 @@ import javax.sip.InvalidArgumentException;
 import javax.sip.SipException;
 import javax.sip.SipProvider;
 import javax.sip.address.SipURI;
+import javax.sip.address.URI;
 import javax.sip.header.AllowHeader;
 import javax.sip.header.ContactHeader;
 import javax.sip.header.ServerHeader;
@@ -36,6 +38,7 @@ import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.SipServletTestCase;
+import org.mobicents.servlet.sip.startup.SipContext;
 import org.mobicents.servlet.sip.testsuite.ProtocolObjects;
 import org.mobicents.servlet.sip.testsuite.TestSipListener;
 
@@ -55,6 +58,7 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 	TestSipListener sender;
 	SipProvider senderProvider = null;
 	TestSipListener registerReciever;
+	SipContext sipContext;
 	
 	ProtocolObjects senderProtocolObjects;	
 	ProtocolObjects registerRecieverProtocolObjects;	
@@ -65,9 +69,10 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 
 	@Override
 	public void deployApplication() {
+		tomcat.getSipService().setDialogPendingRequestChecking(true);
 		assertTrue(tomcat.deployContext(
 				projectHome + "/sip-servlets-test-suite/applications/simple-sip-servlet/src/main/sipapp",
-				"sip-test-context", "sip-test"));
+				"sip-test-context", "sip-test", 1));
 	}
 
 	@Override
@@ -121,6 +126,123 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 		Response response = sender.getFinalResponse();
 		assertNull(response.getHeader(ContactHeader.NAME));
 	}
+	/*
+	 * Non regression test for Issue 2115 http://code.google.com/p/mobicents/issues/detail?id=2115
+	 * MSS unable to handle GenericURI URIs
+	 */
+	public void testShootmeGenericRURI() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+		String fromName = "sender";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+				
+//		String toUser = "receiver";
+//		String toSipAddress = "sip-servlets.com";
+//		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+//				toUser, toSipAddress);
+		
+		URI toAddress = senderProtocolObjects.addressFactory.createURI("urn:service:sos");
+		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, true);
+		sender.setUseToURIasRequestUri(false);
+		Thread.sleep(TIMEOUT);
+		assertTrue(sender.isAckSent());
+		assertTrue(sender.getOkToByeReceived());	
+		// test non regression for Issue 1687 : Contact Header is present in SIP Message where it shouldn't
+		Response response = sender.getFinalResponse();
+		assertNull(response.getHeader(ContactHeader.NAME));
+	}
+	
+	public void testShootmeSendByeOnExpire() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+		String fromName = "byeOnExpire";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+				
+		String toUser = "receiver";
+		String toSipAddress = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		sender.setSendBye(false);
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);	
+		Thread.sleep(5000);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(70000);
+		assertTrue(sender.isAckSent());
+		assertTrue(sender.getByeReceived());
+	}
+	
+	public void testShootmeExceptionOnExpirationCount() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+		new File("expirationFailure.tmp").delete();
+		assertFalse(new File("expirationFailure.tmp").exists());
+		String fromName = "exceptionOnExpire";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+				
+		String toUser = "receiver";
+		String toSipAddress = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		sender.setSendBye(false);
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);	
+		Thread.sleep(150000);
+		assertFalse(new File("expirationFailure.tmp").exists());
+	}
+	
+	public void testShootme491() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+		String fromName = "exceptionOnExpire";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+				
+		String toUser = "receiver";
+		String toSipAddress = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		sender.setSendBye(false);
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);	
+		Thread.sleep(2500);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(6000);
+		assertTrue(sender.numberOf491s>0);
+	}
+	
+	public void testShootme491withRetrans() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+		String fromName = "exceptionOnExpire";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+				
+		String toUser = "receiver";
+		String toSipAddress = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		sender.setSendBye(false);
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);	
+		Thread.sleep(2500);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(6000);
+		int current = sender.numberOf491s;
+		assertTrue(sender.numberOf491s>2);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(1000);
+		assertEquals(current, sender.numberOf491s);
+	}
 	
 	public void testShootmeSendBye() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
 		String fromName = "SSsendBye";
@@ -171,6 +293,26 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
 				toUser, toSipAddress);
 		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, new String[] {"additionalParameterableHeader","nonParameterableHeader"}, new String[] {"none","none"}, true);		
+		Thread.sleep(TIMEOUT);
+		assertTrue(sender.isAckSent());
+		assertTrue(sender.getOkToByeReceived());		
+	}
+	
+	/**
+	 * Non Regression Test for Issue http://code.google.com/p/mobicents/issues/detail?id=2201
+	 * javax.servlet.sip.ServletParseException: Impossible to parse the following header Remote-Party-ID as an address.
+	 */
+	public void testShootmeRemotePartyID() throws InterruptedException, SipException, ParseException, InvalidArgumentException {
+		String fromName = "RemotePartyId";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+				
+		String toUser = "receiver";
+		String toSipAddress = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, new String[] {"Remote-Party-ID", "Remote-Party-ID2", "Remote-Party-ID3", "Remote-Party-ID4", "Remote-Party-ID5"}, new String[] {"\"KATE SMITH\"<sip:4162375543@47.135.223.88;user=phone>; party=calling; privacy=off; screen=yes", "sip:4162375543@47.135.223.88;user=phone; party=calling; privacy=off; screen=yes", "<sip:4162375543@47.135.223.88;user=phone>; party=calling; privacy=off; screen=yes", "\"KATE SMITH\"<sip:4162375543@47.135.223.88>; party=calling; privacy=off; screen=yes", "<sip:4162375543@47.135.223.88>; party=calling; privacy=off; screen=yes"}, true);		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isAckSent());
 		assertTrue(sender.getOkToByeReceived());		
@@ -261,7 +403,9 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 		String fromSipAddress = "sip-servlets.com";
 		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
 				fromName, fromSipAddress);
-		registerReciever.setChallengeRequests(true);		
+		registerReciever.setChallengeRequests(true);
+		registerReciever.setSendBye(false);
+		sender.setSendBye(false);
 		sender.sendSipRequest("INVITE", fromAddress, fromAddress, null, null, false);		
 		Thread.sleep(TIMEOUT_CSEQ_INCREASE);
 		assertTrue(registerReciever.getLastRegisterCSeqNumber() == 4);
@@ -388,11 +532,11 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 		Thread.sleep(DIALOG_TIMEOUT + TIMEOUT);
 		// test http://code.google.com/p/mobicents/issues/detail?id=1681
 		// Make sure we get the 10 retrans for 200 to INVITE when no ACK is sent
-		// corresponding to Timer G
-		assertEquals( 10, sender.getNbRetrans());
+		// corresponding to Timer G		
 		List<String> allMessagesContent = sender.getAllMessagesContent();
 		assertEquals(1,allMessagesContent.size());
 		assertEquals("noAckReceived", allMessagesContent.get(0));
+		assertEquals( 10, sender.getNbRetrans());
 	}
 
 	public void testShootmeServerHeader() throws Exception {
@@ -406,6 +550,7 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
 				toUser, toSipAddress);
 		tomcat.removeConnector(sipConnector);
+		tomcat.stopTomcat();		
 		Properties sipStackProperties = new Properties();
 		sipStackProperties.setProperty("javax.sip.STACK_NAME", "mss-"
 				+ sipIpAddress + "-" + 5070);
@@ -419,7 +564,11 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 				"true");
 		sipStackProperties.setProperty("org.mobicents.servlet.sip.SERVER_HEADER",
 			"MobicentsSipServletsServer");
-		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport, sipStackProperties);
+		tomcat.getSipService().setSipStackProperties(sipStackProperties);
+		tomcat.getSipService().init();
+		tomcat.restartTomcat();
+		deployApplication();
+		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport);
 		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isAckSent());

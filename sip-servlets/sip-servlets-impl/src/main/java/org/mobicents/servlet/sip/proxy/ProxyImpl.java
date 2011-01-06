@@ -55,6 +55,7 @@ import org.mobicents.servlet.sip.address.SipURIImpl;
 import org.mobicents.servlet.sip.address.TelURLImpl;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
+import org.mobicents.servlet.sip.core.timers.ProxyTimerService;
 import org.mobicents.servlet.sip.message.SipFactoryImpl;
 import org.mobicents.servlet.sip.message.SipServletRequestImpl;
 import org.mobicents.servlet.sip.message.SipServletResponseImpl;
@@ -103,12 +104,15 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 	// The From-header of the initiator of the request. Used to determine the direction of the request.
 	// Caller -> Callee or Caller <- Callee
 	private String callerFromHeader;
+	// Issue 1791 : using a timer service created outside the application loader to avoid leaks on startup/shutdown
+	private transient ProxyTimerService proxyTimerService;
 
 	// empty constructor used only for Externalizable interface
 	public ProxyImpl() {}
 	
 	public ProxyImpl(SipServletRequestImpl request, SipFactoryImpl sipFactoryImpl)
 	{
+		this.proxyTimerService = ((MobicentsSipApplicationSession)request.getApplicationSession(false)).getSipContext().getProxyTimerService();
 		this.originalRequest = request;
 		this.sipFactoryImpl = sipFactoryImpl;
 		this.proxyBranches = new LinkedHashMap<URI, ProxyBranchImpl> ();		
@@ -412,7 +416,12 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 			throw new IllegalStateException("Cannot set a record route on an already started proxy");
 		}
 		if(rr) {
-			this.recordRouteURI = new SipURIImpl ( JainSipUtils.createRecordRouteURI( sipFactoryImpl.getSipNetworkInterfaceManager(), null));
+			Message message = null;
+			if(originalRequest != null) {
+				message = originalRequest.getMessage();
+			}
+			// record route should be based on the original received message
+			this.recordRouteURI = new SipURIImpl ( JainSipUtils.createRecordRouteURI( sipFactoryImpl.getSipNetworkInterfaceManager(), message));
 			if(logger.isDebugEnabled()) {
 				logger.debug("Record routing enabled for proxy, Record Route used will be : " + recordRouteURI.toString());
 			}
@@ -914,6 +923,19 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 	public void setProxy1xxTimeout(int timeout) {
 		proxy1xxTimeout = timeout;
 		
+	}
+	/**
+	 * @return the proxyTimerService
+	 */
+	public ProxyTimerService getProxyTimerService() {
+		return proxyTimerService;
+	}
+
+	public void addProxyBranch(ProxyBranchImpl proxyBranchImpl) {
+		if(proxyBranches == null) {
+			this.proxyBranches = new LinkedHashMap<URI, ProxyBranchImpl> ();
+		}
+		this.proxyBranches.put(proxyBranchImpl.getTargetURI(), proxyBranchImpl);
 	}
 
 	

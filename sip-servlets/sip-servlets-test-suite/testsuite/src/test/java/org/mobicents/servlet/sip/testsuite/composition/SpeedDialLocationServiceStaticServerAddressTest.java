@@ -16,8 +16,12 @@
  */
 package org.mobicents.servlet.sip.testsuite.composition;
 
+import java.util.ListIterator;
+
 import javax.sip.SipProvider;
 import javax.sip.address.SipURI;
+import javax.sip.header.ViaHeader;
+import javax.sip.message.Response;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.log4j.Logger;
@@ -104,7 +108,7 @@ public class SpeedDialLocationServiceStaticServerAddressTest extends SipServletT
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		udpProtocolHandler.setSipStackProperties(null);
+		tomcat.getSipService().setSipStackProperties(null);
 		udpProtocolHandler.setUseStaticAddress(true);
 		udpProtocolHandler.setStaticServerAddress("127.0.0.1");
 		udpProtocolHandler.setStaticServerPort(IPLB_ADDRESS);
@@ -195,11 +199,11 @@ public class SpeedDialLocationServiceStaticServerAddressTest extends SipServletT
 	}
 
 	public void testSpeedDialLocationServiceCalleeSendBye() throws Exception {
-		sender = new TestSipListener(5080, 5070, senderProtocolObjects, false);
+		sender = new TestSipListener(5080, 5005, senderProtocolObjects, false);
 		sender.setRecordRoutingProxyTesting(true);
 		SipProvider senderProvider = sender.createProvider();
 
-		receiver = new TestSipListener(5090, 5070, receiverProtocolObjects, true);
+		receiver = new TestSipListener(5090, 5005, receiverProtocolObjects, false);
 		receiver.setRecordRoutingProxyTesting(true);
 		SipProvider receiverProvider = receiver.createProvider();
 		
@@ -221,10 +225,41 @@ public class SpeedDialLocationServiceStaticServerAddressTest extends SipServletT
 		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
 				toUser, toHost);
 		
-		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
-		Thread.sleep(TIMEOUT);
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);	
+		Thread.sleep(7000);
+		receiver.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(7000);
+		receiver.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(7000);
+		receiver.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(7000);
+		receiver.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(7000);
+		receiver.sendInDialogSipRequest("BYE", null, null, null, null, null);
+		Thread.sleep(7000);
+		int count = 0;
+		ListIterator viaHeaders = sender.getInviteRequest().getHeaders(ViaHeader.NAME);
+		while(viaHeaders.hasNext()) {viaHeaders.next(); count++;}
+		
+
+		assertEquals(3, count); // must see exactly 3 via headers in the callee->caller direction
+		assertTrue(ipBalancer.sipMessageWithoutRetrans.size()<=27); // More than 26 messages means the something that should be bypassing is going through it
+		assertTrue(receiver.isAckReceived()); // is the ACK working in the callee->caller direction
+		assertTrue(sender.isAckReceived()); // is the ACK working in the caller->callee direction
+	
 		assertTrue(receiver.getOkToByeReceived());
-		assertTrue(sender.getByeReceived());		
+		assertTrue(sender.getByeReceived());	
+		
+		for(Response message : sender.allResponses) {
+			if(message.getStatusCode()>200) {
+				fail("We don't expect errors. This is error: " + message);
+			}
+		}
+		for(Response message : receiver.allResponses) {
+			if(message.getStatusCode()>200) {
+				fail("We don't expect errors. This is error: " + message);
+			}
+		}
 	}
 
 	public void testCancelSpeedDialLocationService() throws Exception {

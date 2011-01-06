@@ -30,6 +30,7 @@ import javax.sip.header.ProxyAuthenticateHeader;
 import javax.sip.header.ProxyAuthorizationHeader;
 import javax.sip.header.ToHeader;
 import javax.sip.header.UserAgentHeader;
+import javax.sip.header.ViaHeader;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
 
@@ -123,6 +124,11 @@ public class ShootistSipServletTest extends SipServletTestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
+
+        System.setProperty( "javax.net.ssl.keyStore",  ShootistSipServletTest.class.getResource("testkeys").getPath() );
+        System.setProperty( "javax.net.ssl.trustStore", ShootistSipServletTest.class.getResource("testkeys").getPath() );
+        System.setProperty( "javax.net.ssl.keyStorePassword", "passphrase" );
+        System.setProperty( "javax.net.ssl.keyStoreType", "jks" );
 		super.setUp();												
 	}
 	
@@ -132,10 +138,8 @@ public class ShootistSipServletTest extends SipServletTestCase {
 				"sender", "gov.nist", TRANSPORT, AUTODIALOG, null, null, null);
 					
 		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
-		SipProvider senderProvider = receiver.createProvider();			
-		
-		senderProvider.addSipListener(receiver);
-		
+		SipProvider receiverProvider = receiver.createProvider();			
+		receiverProvider.addSipListener(receiver);
 		receiverProtocolObjects.start();
 		tomcat.startTomcat();
 		deployApplication();
@@ -160,7 +164,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 		Thread.sleep(DIALOG_TIMEOUT + TIMEOUT);
 		assertTrue(receiver.isCancelReceived());	
 		List<String> allMessagesContent = receiver.getAllMessagesContent();
-		assertEquals(2,allMessagesContent.size());
+		assertTrue(allMessagesContent.size() >= 2);
 		assertTrue("sipSessionReadyToInvalidate", allMessagesContent.contains("sipSessionReadyToInvalidate"));
 		assertTrue("sipAppSessionReadyToInvalidate", allMessagesContent.contains("sipAppSessionReadyToInvalidate"));
 	}
@@ -376,6 +380,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 		
 		receiverProtocolObjects.start();
 		tomcat.removeConnector(sipConnector);
+		tomcat.stopTomcat();
 		Properties sipStackProperties = new Properties();
 		sipStackProperties.setProperty("javax.sip.STACK_NAME", "mss-"
 				+ sipIpAddress + "-" + 5070);
@@ -389,8 +394,11 @@ public class ShootistSipServletTest extends SipServletTestCase {
 				"true");
 		sipStackProperties.setProperty("org.mobicents.servlet.sip.USER_AGENT_HEADER",
 			"MobicentsSipServletsUserAgent");
-		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport, sipStackProperties);
-		tomcat.startTomcat();
+		tomcat.getSipService().setSipStackPropertiesFile(null);
+		tomcat.getSipService().setSipStackProperties(sipStackProperties);
+		tomcat.getSipService().init();
+		tomcat.restartTomcat();
+		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport);
 		deployApplication();
 		Thread.sleep(TIMEOUT);
 		assertTrue(receiver.getByeReceived());	
@@ -414,13 +422,38 @@ public class ShootistSipServletTest extends SipServletTestCase {
 		senderProvider.addSipListener(receiver);
 		
 		receiverProtocolObjects.start();
-		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5071, "tcp", null);
+		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5071, ListeningPoint.TCP);
 		tomcat.startTomcat();
 		deployApplication();
 		Thread.sleep(TIMEOUT);
 		assertTrue(receiver.getByeReceived());
 		ContactHeader contactHeader = (ContactHeader) receiver.getInviteRequest().getHeader(ContactHeader.NAME);	
 		assertFalse(((SipURI)contactHeader.getAddress().getURI()).toString().contains("transport=udp"));
+	}
+	
+	public void testShootistContactTlsTransport() throws Exception {
+		receiverProtocolObjects =new ProtocolObjects(
+				"tls_receiver", "gov.nist", "TLS", AUTODIALOG, null, null, null);				
+		
+		receiver = new TestSipListener(5080, 5070, receiverProtocolObjects, false);
+		SipProvider senderProvider = receiver.createProvider();			
+		
+		senderProvider.addSipListener(receiver);
+		
+		receiverProtocolObjects.start();
+		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5071, ListeningPoint.TCP);
+		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5072, ListeningPoint.TLS);
+		tomcat.startTomcat();
+		deployApplication("secureRURI", "true");
+		Thread.sleep(TIMEOUT);
+		assertTrue(receiver.getByeReceived());
+		ContactHeader contactHeader = (ContactHeader) receiver.getInviteRequest().getHeader(ContactHeader.NAME);	
+		assertTrue(((SipURI)contactHeader.getAddress().getURI()).toString().contains("sips:"));
+		assertTrue(((SipURI)contactHeader.getAddress().getURI()).toString().contains("5072"));
+		assertTrue(((SipURI)contactHeader.getAddress().getURI()).toString().toLowerCase().contains("transport=tls"));
+		String viaString = receiver.getInviteRequest().getHeader(ViaHeader.NAME).toString();
+		assertTrue(viaString.toLowerCase().contains("tls"));
+		assertTrue(viaString.toLowerCase().contains("5072"));
 	}
 	
 	/**
@@ -437,7 +470,7 @@ public class ShootistSipServletTest extends SipServletTestCase {
 		senderProvider.addSipListener(receiver);
 		
 		receiverProtocolObjects.start();
-		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5071, "tcp", null);
+		sipConnector = tomcat.addSipConnector(serverName, sipIpAddress, 5071, ListeningPoint.TCP);
 		tomcat.startTomcat();
 		deployApplication("outboundInterface", "tcp");
 		Thread.sleep(TIMEOUT);

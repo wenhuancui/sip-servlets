@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip</groupId>
 		<artifactId>sip-servlets-bootstrap</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>sip-servlets-impl</artifactId>
@@ -12,7 +12,7 @@
 	<url>http://www.mobicents.org/products_sip_servlets.html</url>
 	
 	<properties>
-		<mobicents.name>JBCP</mobicents.name>
+		<mobicents.name>Mobicents</mobicents.name>
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<release.timestamp>${maven.build.timestamp}</release.timestamp>
 	</properties>
@@ -22,25 +22,25 @@
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-spec</artifactId>
-			<version>1.1.13.2</version>			
+			<version>5.1.0.GA-JBCP5</version>			
 		</dependency>		
 
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-annotations</artifactId>
-			<version>5.0.1.GA-JBCP5</version>			
+			<version>5.1.0.GA-JBCP5</version>			
 		</dependency>
 
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-client</artifactId>
-			<version>5.0.1.GA-JBCP5</version>			
+			<version>5.1.0.GA-JBCP5</version>			
 		</dependency>
 		
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-jruby</artifactId>
-			<version>5.0.1.GA-JBCP5</version>			
+			<version>5.1.0.GA-JBCP5</version>			
 		</dependency>
 		
 		<!-- logging dependency -->

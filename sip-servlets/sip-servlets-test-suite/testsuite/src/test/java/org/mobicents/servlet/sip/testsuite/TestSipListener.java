@@ -16,8 +16,10 @@
  */
 package org.mobicents.servlet.sip.testsuite;
 
+import gov.nist.javax.sip.DialogExt;
 import gov.nist.javax.sip.address.SipUri;
 import gov.nist.javax.sip.header.HeaderFactoryExt;
+import gov.nist.javax.sip.header.ParameterNames;
 import gov.nist.javax.sip.header.SIPETag;
 import gov.nist.javax.sip.header.SIPHeaderNames;
 import gov.nist.javax.sip.header.WWWAuthenticate;
@@ -26,6 +28,8 @@ import gov.nist.javax.sip.header.extensions.ReplacesHeader;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,6 +53,7 @@ import javax.sip.address.Address;
 import javax.sip.address.SipURI;
 import javax.sip.address.TelURL;
 import javax.sip.address.URI;
+import javax.sip.header.AuthenticationInfoHeader;
 import javax.sip.header.AuthorizationHeader;
 import javax.sip.header.CSeqHeader;
 import javax.sip.header.CallIdHeader;
@@ -87,6 +92,9 @@ import org.mobicents.servlet.sip.security.authentication.DigestAuthenticator;
 
 public class TestSipListener implements SipListener {
 	private static final String TO_TAG = "5432";
+	
+	public List<Request> allRequests = new LinkedList<Request>();
+	public List<Response> allResponses = new LinkedList<Response>();
 
 	private static final String PLAIN_UTF8_CONTENT_SUBTYPE = "plain;charset=UTF-8";
 
@@ -97,6 +105,8 @@ public class TestSipListener implements SipListener {
 	private static final String APPLICATION_CONTENT_TYPE = "application";
 
 	private boolean sendBye;
+	
+	public int bindings;
 	
 	private boolean sendJoinMessage;
 	
@@ -188,6 +198,8 @@ public class TestSipListener implements SipListener {
 	
 	public int notifyCount = 0;
 	
+	public int numberOf491s = 0;
+	
 	private List<Integer> provisionalResponsesToSend;
 
 	private boolean useToURIasRequestUri;
@@ -203,6 +215,7 @@ public class TestSipListener implements SipListener {
 	private boolean referReceived;
 
 	private boolean challengeRequests;
+	private boolean multipleChallengeInResponse;
 	
 	private static Logger logger = Logger.getLogger(TestSipListener.class);
 	
@@ -278,8 +291,19 @@ public class TestSipListener implements SipListener {
 	private boolean sendNotify = true;
 	
 	private boolean countRetrans = false;	
-	private int nbRetrans = 0;
+	private int nbRetrans = 0;	
+	
+	public Request firstRequest;
+	public Request lastInvite;
 
+	private boolean disableSequenceNumberValidation = false;
+	
+	private boolean sendCancelOn1xx = false;
+
+	private boolean testNextNonce =false;
+	
+	private String nextNonce = null;
+	
 	class MyEventSource implements Runnable {
 		private TestSipListener notifier;
 		private EventHeader eventHeader;
@@ -326,7 +350,10 @@ public class TestSipListener implements SipListener {
 			return ;
 		}
 		
+		
 		Request request = requestReceivedEvent.getRequest();
+		allRequests.add(request);
+		if(firstRequest == null) firstRequest = request;
 		ServerTransaction serverTransactionId = requestReceivedEvent
 				.getServerTransaction();
 
@@ -445,7 +472,7 @@ public class TestSipListener implements SipListener {
 						protocolObjects.headerFactory.createHeader(SubscriptionStateHeader.NAME, "active;expires=3600");
 					headers.add(subscriptionStateHeader);
 					allMessagesContent.add("SIP/2.0 100 Trying");
-					sendInDialogSipRequest(Request.NOTIFY, "SIP/2.0 100 Trying", "message", "sipfrag;version=2.0", headers);
+					sendInDialogSipRequest(Request.NOTIFY, "SIP/2.0 100 Trying", "message", "sipfrag;version=2.0", headers, null);
 					Thread.sleep(1000);
 					headers.remove(subscriptionStateHeader);
 					subscriptionStateHeader = (SubscriptionStateHeader) 
@@ -456,12 +483,12 @@ public class TestSipListener implements SipListener {
 						headers.add(extensionHeader);
 					}
 					allMessagesContent.add("SIP/2.0 200 OK");
-					sendInDialogSipRequest(Request.NOTIFY, "SIP/2.0 200 OK", "message", "sipfrag;version=2.0", headers);
+					sendInDialogSipRequest(Request.NOTIFY, "SIP/2.0 200 OK", "message", "sipfrag;version=2.0", headers, null);
 				} else {
 					SubscriptionStateHeader subscriptionStateHeader = (SubscriptionStateHeader) 
 						protocolObjects.headerFactory.createHeader(SubscriptionStateHeader.NAME, "active;expires=3600");
 					headers.add(subscriptionStateHeader);
-					sendInDialogSipRequest(Request.NOTIFY, "SIP/2.0 100 Subsequent", "message", "sipfrag;version=2.0", headers);
+					sendInDialogSipRequest(Request.NOTIFY, "SIP/2.0 100 Subsequent", "message", "sipfrag;version=2.0", headers, null);
 				}
 			}
 			
@@ -857,6 +884,7 @@ public class TestSipListener implements SipListener {
         	ServerTransaction serverTransaction = serverTransactionId == null? sipProvider.getNewServerTransaction(request) : serverTransactionId;
         	
         	System.out.println("challenge Requests ? " +  challengeRequests);
+        	lastRegisterCSeqNumber = ((CSeqHeader)request.getHeader("CSeq")).getSeqNumber();
         	if(challengeRequests) {
 				// Verify AUTHORIZATION !!!!!!!!!!!!!!!!
 		        dsam = new DigestServerAuthenticationMethod();
@@ -870,7 +898,7 @@ public class TestSipListener implements SipListener {
 		            proxyAuthenticate.setParameter("nonce",dsam.generateNonce());
 		            //proxyAuthenticateImpl.setParameter("domain",authenticationMethod.getDomain());
 		            proxyAuthenticate.setParameter("opaque","");
-		            proxyAuthenticate.setParameter("stale","FALSE");
+		            
 		            proxyAuthenticate.setParameter("algorithm",dsam.getAlgorithm());
 		            responseauth.setHeader(proxyAuthenticate);
 		            // alexander kozlov : Adding the to tag to 407 as well 
@@ -886,12 +914,59 @@ public class TestSipListener implements SipListener {
 		
 		            System.out.println("RequestValidation: 407 PROXY_AUTHENTICATION_REQUIRED replied:\n"+responseauth.toString());
 		            return;
-		        }		        
-			}        	
-        	lastRegisterCSeqNumber = ((CSeqHeader)request.getHeader("CSeq")).getSeqNumber();
+		        } else if(multipleChallengeInResponse && lastRegisterCSeqNumber > 2 && lastRegisterCSeqNumber % 2 == 1) {
+		        	Response responseauth = protocolObjects.messageFactory.createResponse(Response.PROXY_AUTHENTICATION_REQUIRED,request);
+		     		
+//		        	ListIterator<Header> proxyAuthHeaders = request.getHeaders(ProxyAuthorizationHeader.NAME);
+//		        	while (proxyAuthHeaders.hasNext()) {
+//		        		ProxyAuthorizationHeader header = (ProxyAuthorizationHeader) proxyAuthHeaders.next();
+//		        		ProxyAuthenticateHeader proxyAuthenticate = 
+//			            	protocolObjects.headerFactory.createProxyAuthenticateHeader(dsam.getScheme());
+//		        		proxyAuthenticate.setAlgorithm(header.getAlgorithm());		        		
+//		        		proxyAuthenticate.setNonce(header.getNonce());
+//		        		proxyAuthenticate.setRealm(header.getRealm());
+//		        		proxyAuthenticate.setParameter("username", header.getParameter("username"));
+//		        		proxyAuthenticate.setParameter("uri", header.getParameter("uri"));
+//		        		proxyAuthenticate.setParameter("response", header.getParameter("response"));
+//		        		proxyAuthenticate.setStale(false);
+//						logger.debug("Adding auth header to challenge response " + proxyAuthenticate); 
+//						responseauth.addLast(proxyAuthenticate);
+//					}
+//		        	
+		            ProxyAuthenticateHeader proxyAuthenticate = 
+		            	protocolObjects.headerFactory.createProxyAuthenticateHeader(dsam.getScheme());
+		            proxyAuthenticate.setParameter("realm",dsam.getRealm(null));
+		            proxyAuthenticate.setParameter("nonce",dsam.generateNonce());
+		            //proxyAuthenticateImpl.setParameter("domain",authenticationMethod.getDomain());
+		            proxyAuthenticate.setParameter("opaque","");
+		            proxyAuthenticate.setStale(true);
+		            
+		            proxyAuthenticate.setParameter("algorithm",dsam.getAlgorithm());
+		            responseauth.addHeader(proxyAuthenticate);
+		            // alexander kozlov : Adding the to tag to 407 as well 
+		            ToHeader toHeader = (ToHeader) responseauth.getHeader(ToHeader.NAME);
+					if (toHeader.getTag() == null) {
+						toHeader.setTag(Integer.toString(new Random().nextInt(10000000)));
+					}
+					
+		            if (serverTransaction!=null)
+		                serverTransaction.sendResponse(responseauth);
+		            else 
+		                sipProvider.sendResponse(responseauth);
+		
+		            System.out.println("RequestValidation: 407 PROXY_AUTHENTICATION_REQUIRED replied:\n"+responseauth.toString());
+	        	}
+			}        	        	
             
 			Response okResponse = protocolObjects.messageFactory.createResponse(
 					Response.OK, request);			
+			if(testNextNonce) {
+				AuthenticationInfoHeader authenticationInfoHeader = protocolObjects.headerFactory.createAuthenticationInfoHeader("");
+				nextNonce = dsam.generateNonce();
+				authenticationInfoHeader.setNextNonce(nextNonce);
+				authenticationInfoHeader.removeParameter(ParameterNames.RESPONSE_AUTH);
+				okResponse.addHeader(authenticationInfoHeader);
+			}
 			ToHeader toHeader = (ToHeader) okResponse.getHeader(ToHeader.NAME);
 			if (toHeader.getTag() == null) {
 				toHeader.setTag(Integer.toString(new Random().nextInt(10000000)));
@@ -966,7 +1041,22 @@ public class TestSipListener implements SipListener {
 		            proxyAuthenticate.setParameter("stale","FALSE");
 		            proxyAuthenticate.setParameter("algorithm",dsam.getAlgorithm());
 		            responseauth.setHeader(proxyAuthenticate);
+		            
+		            if(multipleChallengeInResponse) {
+		            	proxyAuthenticate = 
+			            	protocolObjects.headerFactory.createProxyAuthenticateHeader(dsam.getScheme());
+			            proxyAuthenticate.setParameter("realm",dsam.getRealm(null));
+			            proxyAuthenticate.setParameter("nonce",dsam.generateNonce());
+			            //proxyAuthenticateImpl.setParameter("domain",authenticationMethod.getDomain());
+			            proxyAuthenticate.setParameter("opaque","");
+			            proxyAuthenticate.setParameter("stale","true");
+			            proxyAuthenticate.setParameter("algorithm",dsam.getAlgorithm());
+			            responseauth.addHeader(proxyAuthenticate);
+		            }
 		
+		            ToHeader toHeader = (ToHeader) responseauth.getHeader(ToHeader.NAME);
+		            toHeader.setTag(TO_TAG + 10000); // Application is supposed to set.
+		            
 		            if (serverTransaction!=null)
 		                serverTransaction.sendResponse(responseauth);
 		            else 
@@ -996,7 +1086,9 @@ public class TestSipListener implements SipListener {
 			}						
 			
 			logger.info("Shootme: dialog = " + dialog);
-			
+			if(dialog != null && disableSequenceNumberValidation) {
+				((DialogExt)dialog).disableSequenceNumberValidation();
+			}
 			this.inviteRequest = request;
 			
 			boolean sendReliably = false;
@@ -1031,8 +1123,15 @@ public class TestSipListener implements SipListener {
 				st.sendResponse(response);
 				return;
 			}
+		
 			
 			ContactHeader contactHeader = (ContactHeader)request.getHeader(ContactHeader.NAME);
+			if(contactHeader != null) {
+				Iterator it = request.getHeaders(ContactHeader.NAME);
+				int c=0;
+				while(it.hasNext()) {c++;it.next();}
+				bindings = c;
+			}
 			if(contactHeader != null && "0.0.0.0".equals(((SipURI)contactHeader.getAddress().getURI()).getHost())) {
 				abortProcessing = true;
 				throw new IllegalArgumentException("we received a contact header with 0.0.0.0 in an INVITE !");
@@ -1049,6 +1148,13 @@ public class TestSipListener implements SipListener {
 				if(testAckViaParam) {
 					ViaHeader viaHeader = (ViaHeader)getFinalResponse().getHeader(ViaHeader.NAME);
 					viaHeader.setParameter("testAckViaParam", "true");
+				}
+				if(testNextNonce) {
+					AuthenticationInfoHeader authenticationInfoHeader = protocolObjects.headerFactory.createAuthenticationInfoHeader("");
+					nextNonce = dsam.generateNonce();
+					authenticationInfoHeader.setNextNonce(nextNonce);					
+					authenticationInfoHeader.removeParameter(ParameterNames.RESPONSE_AUTH);
+					getFinalResponse().addHeader(authenticationInfoHeader);
 				}
 				ToHeader toHeader = (ToHeader) getFinalResponse().getHeader(ToHeader.NAME);
 				if(toHeader.getTag() == null) {
@@ -1076,21 +1182,25 @@ public class TestSipListener implements SipListener {
 	
 	public boolean checkProxyAuthorization(Request request) {
         // Let Acks go through unchallenged.
-        boolean retorno;
         ProxyAuthorizationHeader proxyAuthorization=
                 (ProxyAuthorizationHeader)request.getHeader(ProxyAuthorizationHeader.NAME);
 
        if (proxyAuthorization==null) {
-           System.out.println("Authentication failed: ProxyAuthorization header missing!");     
+    	   logger.error("Authentication failed: ProxyAuthorization header missing!");     
            return false;
        }else{
+    	   
+    	   if(nextNonce != null && !proxyAuthorization.getNonce().equals(nextNonce)) {
+    		   throw new IllegalArgumentException("Authentication failed: ProxyAuthorization nonce " + proxyAuthorization.getNonce() + " is different from the nextnonce  previously generated " + nextNonce);         		   
+    	   }
+    	   
            String username=proxyAuthorization.getParameter("username");
            //String password=proxyAuthorization.getParameter("password");
    
            try{
                 boolean res=dsam.doAuthenticate(username,proxyAuthorization,request);
-                if (res) System.out.println("Authentication passed for user: "+username);
-                else System.out.println("Authentication failed for user: "+username); 
+                if (res) logger.info("Authentication passed for user: "+username);
+                else logger.error("Authentication failed for user: "+username); 
                 return res;
            }
            catch(Exception e) {
@@ -1208,7 +1318,7 @@ public class TestSipListener implements SipListener {
 				List<Header> headers = new ArrayList<Header>();
 				Header reinviteHeader = protocolObjects.headerFactory.createHeader("ReInvite", "true");
 				headers.add(reinviteHeader);
-				sendInDialogSipRequest("INVITE", null, null, null, headers);
+				sendInDialogSipRequest("INVITE", null, null, null, headers, null);
 				reinviteSent = true;
 				return;
 			}
@@ -1222,6 +1332,8 @@ public class TestSipListener implements SipListener {
 			return ;
 		}		
 		Response response = (Response) responseReceivedEvent.getResponse();
+		allResponses.add(response);
+		if(response.getStatusCode() == 491) numberOf491s++;
 		RecordRouteHeader recordRouteHeader = (RecordRouteHeader)response.getHeader(RecordRouteHeader.NAME);
 		if(!recordRoutingProxyTesting && recordRouteHeader != null) {
 			abortProcessing = true;
@@ -1272,6 +1384,10 @@ public class TestSipListener implements SipListener {
 		try {			
 			if(response.getStatusCode() > 100 && response.getStatusCode() < 200) {
 				informationalResponse = response;
+				if(sendCancelOn1xx) {
+					sendCancel();
+					return;
+				}
 			}
 			if(response.getStatusCode() >= 200 && response.getStatusCode() < 700) {
 				logger.info("final response received : status code " + response.getStatusCode());
@@ -1306,7 +1422,7 @@ public class TestSipListener implements SipListener {
 						if(prackSent) {							
 							headers.add(protocolObjects.headerFactory.createHeader(RequireHeader.NAME, "100rel"));
 						} 						
-						sendInDialogSipRequest("INVITE", null, null, null, headers);
+						sendInDialogSipRequest("INVITE", null, null, null, headers, null);
 						
 						reinviteSent = true;
 						return;
@@ -1509,7 +1625,9 @@ public class TestSipListener implements SipListener {
 					((WWWAuthenticate) (response
 							.getHeader(SIPHeaderNames.WWW_AUTHENTICATE))),
 					"user",
-					"pass");
+					"pass",
+					((WWWAuthenticate) (response
+							.getHeader(SIPHeaderNames.WWW_AUTHENTICATE))).getNonce());
 			
 			requestauth.addHeader(authorization);
 		} catch (ParseException pa) {
@@ -1684,6 +1802,13 @@ public class TestSipListener implements SipListener {
 		return sipProvider;
 
 	}
+	
+	public void addListeningPoint(String ipAddress, int port, String transport) throws Exception {
+		logger.info("Shootist: addListeningPoint()");
+		ListeningPoint listeningPoint = protocolObjects.sipStack.createListeningPoint(
+				"127.0.0.1", port, transport);
+		sipProvider.addListeningPoint(listeningPoint);
+	}
 
 	public Request sendSipRequest(String method, URI fromURI, URI toURI, String messageContent, SipURI route, boolean useToURIasRequestUri) throws SipException, ParseException, InvalidArgumentException {
 		return sendSipRequest(method, fromURI, toURI, messageContent, route, useToURIasRequestUri, null, null, true);
@@ -1749,7 +1874,7 @@ public class TestSipListener implements SipListener {
 				fromHeader, toHeader, viaHeaders, maxForwards);
 		// Create contact headers
 		String host = "127.0.0.1";
-
+		request.setHeader(protocolObjects.headerFactory.createHeader("REM", "RRRREM"));
 		URI contactUrl = null;
 		if(fromURI instanceof SipURI) {
 			contactUrl = protocolObjects.addressFactory.createSipURI(
@@ -2125,13 +2250,19 @@ public class TestSipListener implements SipListener {
 
 	/**
 	 * 
+	 * @param transport TODO
 	 * @param messageToSend
 	 * @throws SipException
 	 * @throws InvalidArgumentException
 	 * @throws ParseException
 	 */ 
-	public void sendInDialogSipRequest(String method, String content, String contentType, String subContentType, List<Header> headers) throws SipException, InvalidArgumentException, ParseException {		
+	public void sendInDialogSipRequest(String method, String content, String contentType, String subContentType, List<Header> headers, String transport) throws SipException, InvalidArgumentException, ParseException {
+		
 		Request message = dialog.createRequest(method);
+		if(transport !=null) {
+			((SipURI)message.getRequestURI()).setTransportParam(transport);
+		}
+
 		if(content != null) {
 			ContentLengthHeader contentLengthHeader = 
 				protocolObjects.headerFactory.createContentLengthHeader(content.length());
@@ -2706,4 +2837,56 @@ public class TestSipListener implements SipListener {
 	public Request getPrackRequestReceived() {
 		return prackRequestReceived;
 	}
+
+	public void setMultipleChallengeInResponse(boolean multipleChallengeInResponse) {
+		this.multipleChallengeInResponse = multipleChallengeInResponse;
+	}
+
+	/**
+	 * @param disableSequenceNumberValidation the disableSequenceNumberValidation to set
+	 */
+	public void setDisableSequenceNumberValidation(
+			boolean disableSequenceNumberValidation) {
+		this.disableSequenceNumberValidation = disableSequenceNumberValidation;
+	}
+
+	/**
+	 * @return the disableSequenceNumberValidation
+	 */
+	public boolean isDisableSequenceNumberValidation() {
+		return disableSequenceNumberValidation;
+	}
+
+	/**
+	 * @param sendCancelOn1xx the sendCancelOn1xx to set
+	 */
+	public void setSendCancelOn1xx(boolean sendCancelOn1xx) {
+		this.sendCancelOn1xx = sendCancelOn1xx;
+	}
+
+	/**
+	 * @return the sendCancelOn1xx
+	 */
+	public boolean isSendCancelOn1xx() {
+		return sendCancelOn1xx;
+	}
+
+	/**
+	 * @param useToURIasRequestUri the useToURIasRequestUri to set
+	 */
+	public void setUseToURIasRequestUri(boolean useToURIasRequestUri) {
+		this.useToURIasRequestUri = useToURIasRequestUri;
+	}
+
+	/**
+	 * @return the useToURIasRequestUri
+	 */
+	public boolean isUseToURIasRequestUri() {
+		return useToURIasRequestUri;
+	}
+
+	public void setTestNextNonce(boolean b) {
+		this.testNextNonce  = b;
+	}
+
 }

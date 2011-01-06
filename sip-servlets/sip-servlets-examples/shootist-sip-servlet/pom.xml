@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip.example</groupId>
 		<artifactId>sip-servlets-examples-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>shootist-sip-servlet</artifactId>
@@ -14,9 +14,7 @@
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
-					<webXml>
-						${basedir}/src/main/sipapp/WEB-INF/sip.xml
-					</webXml>
+					<failOnMissingWebXml>false</failOnMissingWebXml>					
 					<warSourceDirectory>
 						${basedir}/src/main/sipapp
 					</warSourceDirectory>

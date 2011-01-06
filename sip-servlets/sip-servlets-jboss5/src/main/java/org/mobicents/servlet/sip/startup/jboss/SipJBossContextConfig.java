@@ -128,24 +128,23 @@ public class SipJBossContextConfig extends JBossContextConfig {
 		 * sip sepcific treatment 
 		 */
 		//description
-		// commented out causes it creates a compile error in JBCP it is not used anyway
-//		DescriptionGroupMetaData descriptionGroupMetaData = convergedMetaData.getDescriptionGroup();
-//		if(descriptionGroupMetaData != null) {
-//			DescriptionsImpl descriptionsImpl = (DescriptionsImpl)descriptionGroupMetaData.getDescriptions();
-//			if(descriptionsImpl != null && !descriptionsImpl.isEmpty()) {
-//				convergedContext.setDescription(((DescriptionImpl)descriptionsImpl.iterator().next()).getDescription());
-//			}
-//			IconsImpl iconsImpl = (IconsImpl)descriptionGroupMetaData.getIcons();
-//			if(iconsImpl != null && !iconsImpl.isEmpty()) {
-//				IconImpl iconImpl = (IconImpl)iconsImpl.iterator().next();
-//				convergedContext.setSmallIcon(iconImpl.getSmallIcon());
-//				convergedContext.setLargeIcon(iconImpl.getLargeIcon());
-//			}
-//			DisplayNamesImpl displayNamesImpl = (DisplayNamesImpl)descriptionGroupMetaData.getDisplayNames();
-//			if(displayNamesImpl != null && !displayNamesImpl.isEmpty()) {
-//				convergedContext.setDisplayName(((DisplayNameImpl)displayNamesImpl.iterator().next()).getDisplayName());
-//			}
-//		}
+		DescriptionGroupMetaData descriptionGroupMetaData = convergedMetaData.getDescriptionGroup();
+		if(descriptionGroupMetaData != null) {
+			DescriptionsImpl descriptionsImpl = (DescriptionsImpl)descriptionGroupMetaData.getDescriptions();
+			if(descriptionsImpl != null && !descriptionsImpl.isEmpty()) {
+				convergedContext.setDescription(((DescriptionImpl)descriptionsImpl.iterator().next()).getDescription());
+			}
+			IconsImpl iconsImpl = (IconsImpl)descriptionGroupMetaData.getIcons();
+			if(iconsImpl != null && !iconsImpl.isEmpty()) {
+				IconImpl iconImpl = (IconImpl)iconsImpl.iterator().next();
+				convergedContext.setSmallIcon(iconImpl.getSmallIcon());
+				convergedContext.setLargeIcon(iconImpl.getLargeIcon());
+			}
+			DisplayNamesImpl displayNamesImpl = (DisplayNamesImpl)descriptionGroupMetaData.getDisplayNames();
+			if(displayNamesImpl != null && !displayNamesImpl.isEmpty()) {
+				convergedContext.setDisplayName(((DisplayNameImpl)displayNamesImpl.iterator().next()).getDisplayName());
+			}
+		}
 		//app name
 		if(convergedMetaData.getApplicationName() == null) {
 			throw new SipDeploymentException("No app-name present in the sip.xml deployment descriptor or no SipApplication annotation defined");

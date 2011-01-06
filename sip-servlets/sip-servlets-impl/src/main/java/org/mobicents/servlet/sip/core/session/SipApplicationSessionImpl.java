@@ -49,6 +49,7 @@ import javax.servlet.sip.URI;
 
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.log4j.Logger;
+import org.mobicents.javax.servlet.sip.SipApplicationSessionAsynchronousWork;
 import org.mobicents.servlet.sip.annotation.ConcurrencyControlMode;
 import org.mobicents.servlet.sip.core.timers.SipApplicationSessionTimerTask;
 import org.mobicents.servlet.sip.message.MobicentsSipApplicationSessionFacade;
@@ -142,10 +143,7 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 			//scheduling the timer for session expiration
 			final int sipContextTimeout = sipContext.getSipApplicationSessionTimeout();
 			if(sipContextTimeout > 0) {				
-				sipApplicationSessionTimeout = sipContextTimeout * 60 * 1000L;				
-				expirationTimerTask = sipContext.getSipApplicationSessionTimerService().createSipApplicationSessionTimerTask(this);				
-				expirationTimerTask = sipContext.getSipApplicationSessionTimerService().schedule(expirationTimerTask, sipApplicationSessionTimeout, TimeUnit.MILLISECONDS);
-//				expirationTimerFuture = (ScheduledFuture<MobicentsSipApplicationSession>) sipContext.getSipApplicationSessionTimerService().schedule(expirationTimerTask, sipApplicationSessionTimeout, TimeUnit.MILLISECONDS);
+				sipApplicationSessionTimeout = sipContextTimeout * 60 * 1000L;								
 			} else {
 				if(logger.isDebugEnabled()) {
 					logger.debug("The sip application session "+ key +" will never expire ");
@@ -154,8 +152,7 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 				// never starts for the SipApplicationSession object and the container does 
 				// not consider the object to ever have expired
 //				expirationTime = -1;
-			}
-			notifySipApplicationSessionListeners(SipApplicationSessionEventType.CREATION);
+			}			
 		}
 		// Last Accessed Time set here instead of at the same time as creationTime
 		// Contribution from Naoki Nishihara from OKI 
@@ -216,6 +213,9 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 	}
 	
 	public SipSessionKey removeSipSession (MobicentsSipSession mobicentsSipSession) {
+		if(logger.isDebugEnabled()) {
+			logger.debug("Trying to remove sip session " + mobicentsSipSession);
+		}
 		final SipSessionKey key = mobicentsSipSession.getKey();
 		if(sipSessions != null) {			
 			boolean wasPresent = this.sipSessions.remove(key);
@@ -561,7 +561,20 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 		//doing the invalidation
 		for(MobicentsSipSession session: getSipSessions()) {
 			if(session.isValidInternal()) {
-				session.invalidate();
+				boolean lockSession = false;
+				if(bypassCheck && sipContext.getConcurrencyControlMode() == ConcurrencyControlMode.SipSession) {
+					lockSession = true;
+				}
+				try {
+					if(lockSession) {
+						sipContext.enterSipApp(this, session);
+					}
+					session.invalidate();
+				} finally {
+					if(lockSession) {
+						sipContext.exitSipApp(this, session);
+					}
+				}
 			}
 		}
 		for(HttpSession session: getHttpSessions()) {
@@ -654,10 +667,22 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 //		}
 		facade = null;
 	}
+	
+	public void cancelAllTimers() {
+		cancelExpirationTimer();
+		if(this.servletTimers != null) {
+			for(ServletTimer timer:this.servletTimers.values()) {
+				timer.cancel();
+			}
+		}
+	}
 
 	private void cancelExpirationTimer() {
 		sipContext.getSipApplicationSessionTimerService().cancel(expirationTimerTask);
-		expirationTimerTask = null;
+		if(expirationTimerTask != null) {
+			expirationTimerTask.setSipApplicationSession(null);
+			expirationTimerTask = null;
+		}
 	}
 
 	/*
@@ -1200,6 +1225,12 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 		return this.expirationTimerTask;
 	}
 
+	/**
+	 * @return the sipApplicationSessionTimeout
+	 */
+	public long getSipApplicationSessionTimeout() {
+		return sipApplicationSessionTimeout;
+	}
 	
 	public void setExpired(boolean hasExpired) {
 		expired = hasExpired;
@@ -1208,4 +1239,13 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 	public long getExpirationTimeInternal() {		
 		return expirationTime;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.javax.servlet.sip.SipApplicationSessionExt#scheduleAsynchronousWork(org.mobicents.javax.servlet.sip.SipApplicationSessionAsynchronousWork)
+	 */
+	public void scheduleAsynchronousWork(
+			SipApplicationSessionAsynchronousWork work) {
+		sipContext.getSipApplicationDispatcher().getAsynchronousExecutor().execute(new SipApplicationSessionAsyncTask(key, work, sipContext.getSipApplicationDispatcher().getSipFactory()));
+	}	
 }

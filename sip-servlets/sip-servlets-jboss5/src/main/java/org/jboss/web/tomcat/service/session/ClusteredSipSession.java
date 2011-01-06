@@ -16,7 +16,7 @@
  */
 package org.jboss.web.tomcat.service.session;
 
-import gov.nist.javax.sip.SipStackImpl;
+import gov.nist.javax.sip.message.RequestExt;
 
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
@@ -45,14 +45,15 @@ import javax.servlet.sip.SipSessionBindingListener;
 import javax.servlet.sip.SipSessionEvent;
 import javax.servlet.sip.SipSessionListener;
 import javax.sip.Dialog;
+import javax.sip.ServerTransaction;
 import javax.sip.SipStack;
+import javax.sip.Transaction;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Service;
-import org.apache.catalina.connector.Connector;
 import org.apache.catalina.util.Enumerator;
 import org.apache.catalina.util.StringManager;
 import org.apache.log4j.Logger;
@@ -65,6 +66,9 @@ import org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistrib
 import org.jboss.web.tomcat.service.session.notification.ClusteredSessionManagementStatus;
 import org.jboss.web.tomcat.service.session.notification.ClusteredSessionNotificationCause;
 import org.jboss.web.tomcat.service.session.notification.ClusteredSipSessionNotificationPolicy;
+import org.mobicents.ha.javax.sip.ClusteredSipStack;
+import org.mobicents.ha.javax.sip.HASipDialog;
+import org.mobicents.ha.javax.sip.ReplicationStrategy;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.SessionManagerUtil;
 import org.mobicents.servlet.sip.core.session.SipApplicationSessionKey;
@@ -73,8 +77,12 @@ import org.mobicents.servlet.sip.core.session.SipSessionImpl;
 import org.mobicents.servlet.sip.core.session.SipSessionKey;
 import org.mobicents.servlet.sip.message.B2buaHelperImpl;
 import org.mobicents.servlet.sip.message.SipFactoryImpl;
+import org.mobicents.servlet.sip.message.SipServletRequestImpl;
+import org.mobicents.servlet.sip.message.TransactionApplicationData;
+import org.mobicents.servlet.sip.proxy.ProxyBranchImpl;
 import org.mobicents.servlet.sip.proxy.ProxyImpl;
 import org.mobicents.servlet.sip.startup.SipService;
+import org.mobicents.servlet.sip.startup.StaticServiceHolder;
 
 /**
  * Abstract base class for sip session clustering based on SipSessionImpl. Different session
@@ -89,6 +97,12 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 
 	protected static final String B2B_SESSION_MAP = "b2bsm";
 	protected static final String B2B_SESSION_SIZE = "b2bss";
+	protected static final String TXS_SIZE = "txm";
+	protected static final String TXS_IDS= "txid";
+	protected static final String TXS_TYPE= "txt";
+	protected static final String ACKS_RECEIVED_SIZE = "ars";
+	protected static final String ACKS_RECEIVED_CSEQ = "arc";
+	protected static final String ACKS_RECEIVED_VALUE= "arv";
 	protected static final String PROXY = "prox";
 	protected static final String DIALOG_ID = "did";
 	protected static final String READY_TO_INVALIDATE = "rti";
@@ -328,6 +342,7 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 		this.isNew = true;
 		this.useJK = useJK;
 		this.firstAccess = true;
+		updateThisAccessedTime();		
 		accessCount = ACTIVITY_CHECK ? new AtomicInteger() : null;
 		// it starts with true so that it gets replicated when first created
 		sessionMetadataDirty = true;
@@ -758,6 +773,10 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 		this.timestamp.set(this.thisAccessedTime);
 		return this.timestamp.get();
 	}
+	
+	public void updateThisAccessedTime() {
+		thisAccessedTime = System.currentTimeMillis();
+	}
 
 	protected boolean isSessionMetadataDirty() {
 		return sessionMetadataDirty;
@@ -871,7 +890,52 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 				b2buaHelper.setSipManager(getManager());
 			}
 			b2buaHelper.setSessionMap(sessionMap);
-		}	
+		}
+		if(((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {
+			Integer txsSize = (Integer) metaData.get(TXS_SIZE);
+			String[] txIds = (String[])metaData.get(TXS_IDS);
+			Boolean[] txTypes = (Boolean[])metaData.get(TXS_TYPE);
+			if(logger.isDebugEnabled()) {
+				logger.debug("tx array size = " + txsSize + ", value = " + txIds);
+			}
+			if(txsSize != null && txIds != null) {
+				for (int i = 0; i < txsSize; i++) {
+					String txId = txIds[i];
+					Boolean txType = txTypes[i];
+					if(logger.isDebugEnabled()) {
+						logger.debug("trying to find tx with id = " + txId + ", type = " + txType + " locally or in the distributed cache");
+					}
+					Transaction transaction = ((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).findTransaction(txId, txType);					
+					addOngoingTransaction(transaction);
+					if(transaction != null) {
+						if(transaction instanceof ServerTransaction) { 
+							acksReceived.put(((RequestExt)transaction.getRequest()).getCSeqHeader().getSeqNumber(), false);								
+						} else if(proxy != null) {
+							final TransactionApplicationData transactionApplicationData = (TransactionApplicationData) transaction.getApplicationData();
+							if(logger.isDebugEnabled()) {
+								logger.debug("transaction application data from tx id " + txId + " is " + transactionApplicationData);
+							}
+							if(transactionApplicationData != null) {
+								if(logger.isDebugEnabled()) {
+									logger.debug("populating proxy from the transaction application data");
+								}
+								proxy.getTransactionMap().put(txId, transactionApplicationData);
+								ProxyBranchImpl proxyBranchImpl = transactionApplicationData.getProxyBranch();
+								if(proxyBranchImpl != null) {
+									if(logger.isDebugEnabled()) {
+										logger.debug("populating branch from the transaction application data");
+									}
+									proxyBranchImpl.setOutgoingRequest((SipServletRequestImpl)transactionApplicationData.getSipServletMessage());
+									proxyBranchImpl.setOriginalRequest((SipServletRequestImpl)proxy.getOriginalRequest());
+									proxyBranchImpl.setProxy(proxy);
+									proxy.addProxyBranch(proxyBranchImpl);
+								}
+							}
+						}
+					}
+				}				
+			}
+		}
 		if(logger.isDebugEnabled()) {
 			logger.debug("dialog to inject " + sessionCreatingDialogId);
 			if(sessionCreatingDialogId != null) {
@@ -884,15 +948,12 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 			if(container instanceof Engine) {
 				Service service = ((Engine)container).getService();
 				if(service instanceof SipService) {
-					Connector[] connectors = service.findConnectors();
-					for (Connector connector : connectors) {
-						SipStack sipStack = (SipStack)
-							connector.getProtocolHandler().getAttribute(SipStack.class.getSimpleName());
-						if(sipStack != null) {
-							sessionCreatingDialog = ((SipStackImpl)sipStack).getDialog(sessionCreatingDialogId); 
-							if(logger.isDebugEnabled()) {
-								logger.debug("dialog injected " + sessionCreatingDialog);
-							}
+					SipService sipService = (SipService) service;
+					SipStack sipStack = sipService.getSipStack();					
+					if(sipStack != null) {
+						sessionCreatingDialog = ((ClusteredSipStack)sipStack).getDialog(sessionCreatingDialogId); 
+						if(logger.isDebugEnabled()) {
+							logger.debug("dialog injected " + sessionCreatingDialog);
 						}
 					}
 				}
@@ -938,7 +999,28 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 					logger.debug("storing b2bua session array " + sessionArray);
 				}
 				metaData.put(B2B_SESSION_MAP, sessionArray);
-			}			
+			}	
+			if(((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {
+				final Set<Transaction> ongoingTransactions = getOngoingTransactions();
+				final int size = ongoingTransactions.size();
+				final String[] txIdArray = new String[size];
+				final Boolean[] txTypeArray = new Boolean[size];
+				int i = 0;
+				for (Transaction transaction : ongoingTransactions) {					
+					txIdArray[i] = transaction.getBranchId(); 
+					txTypeArray[i] = transaction instanceof ServerTransaction ? Boolean.TRUE : Boolean.FALSE;
+					i++;
+				}
+				metaData.put(TXS_SIZE, size);
+				if(logger.isDebugEnabled()) {
+					logger.debug("storing transaction ids array " + txIdArray);
+				}
+				metaData.put(TXS_IDS, txIdArray);
+				if(logger.isDebugEnabled()) {
+					logger.debug("storing transaction type array " + txTypeArray);
+				}
+				metaData.put(TXS_TYPE, txTypeArray);
+			}
 		}
 		distributedCacheManager.storeSipSessionData(outgoingData);
 		
@@ -1500,7 +1582,7 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 		}
 	}
 
-	private final void clearOutdated() {
+	public final void clearOutdated() {
 		// Only overwrite the access time if access() hasn't been called
 		// since setOutdatedVersion() was called
 		if (outdatedTime > thisAccessedTime) {
@@ -1550,7 +1632,7 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 	}
 
 	@Override
-	protected void setReadyToInvalidate(boolean readyToInvalidate) {
+	public void setReadyToInvalidate(boolean readyToInvalidate) {
 		boolean oldReadyToInvalidate = this.readyToInvalidate;
 		super.setReadyToInvalidate(readyToInvalidate);
 		if(oldReadyToInvalidate != readyToInvalidate) {
@@ -1560,7 +1642,7 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 	}
 	
 	@Override
-	protected void setValid(boolean isValid) {
+	public void setValid(boolean isValid) {
 		super.setValid(isValid);
 		sessionMetadataDirty();
 		metadata.getMetaData().put(IS_VALID, isValid);
@@ -1599,5 +1681,26 @@ public abstract class ClusteredSipSession<O extends OutgoingDistributableSession
 	
 	public String getHaId() {
 		return haId;
+	}
+	
+	@Override
+	public void passivate() {
+		notifyWillPassivate(ClusteredSessionNotificationCause.PASSIVATION);
+		processDialogPassivation();
+		sipApplicationSession = null;
+	}
+
+	public void processDialogPassivation() {				
+		if(sessionCreatingDialog != null) {
+			((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).passivateDialog((HASipDialog)sessionCreatingDialog);
+			TransactionApplicationData  applicationData = ((TransactionApplicationData)sessionCreatingDialog.getApplicationData());
+			if(applicationData != null) {
+				applicationData.cleanUp();
+				applicationData.getSipServletMessage().cleanUp();
+				applicationData.getSipServletMessage().setSipSession(null);
+				sessionCreatingDialog.setApplicationData(null);
+			}
+		}
+		sessionCreatingDialog = null;
 	}
 }

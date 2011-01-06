@@ -40,6 +40,7 @@ import org.mobicents.servlet.sip.testsuite.composition.NoApplicationDeployedJuni
 import org.mobicents.servlet.sip.testsuite.composition.ProxyB2BUACompositionTest;
 import org.mobicents.servlet.sip.testsuite.composition.SameSipSessionB2BUACompositionJunitTest;
 import org.mobicents.servlet.sip.testsuite.composition.SpeedDialLocationServiceJunitTest;
+import org.mobicents.servlet.sip.testsuite.concurrency.ConcurrentyControlAsyncWorkSessionIsolationTest;
 import org.mobicents.servlet.sip.testsuite.concurrency.ConcurrentyControlSipSessionIsolationTest;
 import org.mobicents.servlet.sip.testsuite.concurrency.CongestionControlTest;
 import org.mobicents.servlet.sip.testsuite.deployment.DeploymentTest;
@@ -133,6 +134,7 @@ public class AllTests {
 		suite.addTestSuite(ShootistPrackSipServletTest.class);
 		suite.addTestSuite(CallForwardingB2BUAPrackTest.class);
 		suite.addTestSuite(ConcurrentyControlSipSessionIsolationTest.class);
+		suite.addTestSuite(ConcurrentyControlAsyncWorkSessionIsolationTest.class);
 		suite.addTestSuite(CongestionControlTest.class);
 		suite.addTestSuite(ProxyBranchTimeoutTest.class);
 		suite.addTestSuite(PAssertedIdentityAuthTest.class);
@@ -170,7 +172,7 @@ public class AllTests {
 		suite.addTestSuite(DeploymentTest.class);
 		suite.addTestSuite(SameInstanceServletTest.class);
 		suite.addTestSuite(DistributableServletTest.class);
-		suite.addTestSuite(ShootistSipServletForkingTest.class);
+		suite.addTestSuite(ShootistSipServletForkingTest.class);		
 		suite.addTestSuite(SipURITest.class);
 		suite.addTestSuite(AddressTest.class);
 		suite.addTestSuite(TelURLTest.class);

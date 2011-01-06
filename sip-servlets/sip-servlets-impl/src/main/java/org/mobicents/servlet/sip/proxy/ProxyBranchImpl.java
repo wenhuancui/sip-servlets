@@ -31,7 +31,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Timer;
 
 import javax.servlet.ServletException;
 import javax.servlet.sip.Proxy;
@@ -45,7 +44,6 @@ import javax.servlet.sip.ar.SipApplicationRoutingDirective;
 import javax.sip.ClientTransaction;
 import javax.sip.SipException;
 import javax.sip.SipProvider;
-import javax.sip.Transaction;
 import javax.sip.header.RouteHeader;
 import javax.sip.header.ViaHeader;
 import javax.sip.message.Request;
@@ -81,7 +79,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	private transient SipServletRequestImpl prackOriginalRequest;
 	private transient SipServletRequestImpl outgoingRequest;
 	private transient SipServletResponseImpl lastResponse;
-	private transient URI targetURI;
+	private URI targetURI;
 	private transient SipURI outboundInterface;
 	private transient SipURI recordRouteURI;
 	private boolean recordRoutingEnabled;
@@ -119,7 +117,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		public String branchId;
 		public SipServletRequestImpl request;
 	}
-	private static transient Timer timer = new Timer();
+	
 	// empty constructor used only for Externalizable interface
 	public ProxyBranchImpl() {}
 	
@@ -358,7 +356,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		}
 		if(proxyBranch1xxTimeout > 0) {
 			proxy1xxTimeoutTask = new ProxyBranchTimerTask(this, ResponseType.INFORMATIONAL);				
-			timer.schedule(proxy1xxTimeoutTask, proxyBranch1xxTimeout * 1000L);
+			proxy.getProxyTimerService().schedule(proxy1xxTimeoutTask, proxyBranch1xxTimeout * 1000L);
 			proxyBranch1xxTimerStarted = true;
 		}
 		
@@ -697,13 +695,6 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		} catch (ParseException pe) {
 			logger.error("A problem occured while setting the via branch while proxying a request", pe);
 		}
-		
-		RouteHeader routeHeader = (RouteHeader) clonedRequest.getHeader(RouteHeader.NAME);
-		if(routeHeader != null) {
-			if(!sipApplicationDispatcher.isRouteExternal(routeHeader)) {
-				clonedRequest.removeFirst(RouteHeader.NAME);	
-			}
-		}	
 	
 		String transport = JainSipUtils.findTransport(clonedRequest);
 		SipProvider sipProvider =sipFactoryImpl.getSipNetworkInterfaceManager().findMatchingListeningPoint(
@@ -717,9 +708,30 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		if(sipAppSession != null) {
 			sipAppSession.access();
 		}
-		try {
-			ClientTransaction ctx = sipProvider
-				.getNewClientTransaction(clonedRequest);			
+
+	    SipConnector sipConnector = StaticServiceHolder.sipStandardService.findSipConnector(transport);
+
+		ClientTransaction ctx = null;	
+		try {	
+			if(sipConnector != null && sipConnector.isUseStaticAddress()) {
+				javax.sip.address.URI uri = clonedRequest.getRequestURI();
+				RouteHeader route = (RouteHeader) clonedRequest.getHeader(RouteHeader.NAME);
+				if(route != null) {
+					uri = route.getAddress().getURI();
+				}
+				if(uri.isSipURI()) {
+					javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
+					String host = sipUri.getHost();
+					int port = sipUri.getPort();
+					if(sipFactoryImpl.getSipApplicationDispatcher().isExternal(host, port, transport)) {
+						viaHeader.setHost(sipConnector.getStaticServerAddress());
+						viaHeader.setPort(sipConnector.getStaticServerPort());
+					}
+				}
+				SipServletRequestImpl.optimizeRouteHeaderAddressForInternalRoutingrequest(sipConnector,
+						clonedRequest, sipSession, sipFactoryImpl, transport);
+			}
+			ctx = sipProvider.getNewClientTransaction(clonedRequest);
 			ctx.setRetransmitTimer(sipApplicationDispatcher.getBaseTimerInterval());
 		    ((TransactionExt)ctx).setTimerT2(sipApplicationDispatcher.getT2Interval());
 		    ((TransactionExt)ctx).setTimerT4(sipApplicationDispatcher.getT4Interval());
@@ -730,9 +742,10 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 			ctx.setApplicationData(appData);
 			
 			ctx.sendRequest();
-		} catch (SipException e) {
-			logger.error("A problem occured while proxying a request in a dialog-stateless transaction", e);
-		}
+		} catch (Exception e) {
+			logger.error("A problem occured while proxying a request " + request + " in a dialog-stateless transaction", e);
+			JainSipUtils.terminateTransaction(ctx);
+		} 
 	}
 	
 	/**
@@ -779,7 +792,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 						if(logger.isDebugEnabled()) {
 							logger.debug("Proxy Branch Timeout set to " + proxyBranchTimeout);
 						}
-						timer.schedule(timerCTask, proxyBranchTimeout * 1000L);
+						proxy.getProxyTimerService().schedule(timerCTask, proxyBranchTimeout * 1000L);
 						proxyTimeoutTask = timerCTask;
 						proxyBranchTimerStarted = true;
 					} catch (IllegalStateException e) {
@@ -1027,6 +1040,48 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	public void setProxyBranch1xxTimeout(int timeout) {
 		proxyBranch1xxTimeout= timeout;
 		
+	}
+
+	/**
+	 * @param outgoingRequest the outgoingRequest to set
+	 */
+	public void setOutgoingRequest(SipServletRequestImpl outgoingRequest) {
+		this.outgoingRequest = outgoingRequest;
+	}
+
+	/**
+	 * @return the outgoingRequest
+	 */
+	public SipServletRequestImpl getOutgoingRequest() {
+		return outgoingRequest;
+	}
+
+	/**
+	 * @param originalRequest the originalRequest to set
+	 */
+	public void setOriginalRequest(SipServletRequestImpl originalRequest) {
+		this.originalRequest = originalRequest;
+	}
+
+	/**
+	 * @return the originalRequest
+	 */
+	public SipServletRequestImpl getOriginalRequest() {
+		return originalRequest;
+	}
+
+	/**
+	 * @param targetURI the targetURI to set
+	 */
+	public void setTargetURI(URI targetURI) {
+		this.targetURI = targetURI;
+	}
+
+	/**
+	 * @return the targetURI
+	 */
+	public URI getTargetURI() {
+		return targetURI;
 	}
 	
 }

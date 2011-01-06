@@ -18,7 +18,6 @@ package org.mobicents.servlet.sip.testsuite;
 
 import java.io.IOException;
 
-import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.sip.SipErrorEvent;
@@ -52,7 +51,7 @@ public class ShootmeSipServletAuth extends SipServlet implements SipErrorListene
 	public void init(ServletConfig servletConfig) throws ServletException {
 		logger.info("the simple sip servlet has been started");
 		super.init(servletConfig);		
-		if(!servletConfig.getServletContext().getInitParameter("testContextApplicationParameter").equals("OK")) {
+		if(!"OK".equals(servletConfig.getServletContext().getInitParameter("testContextApplicationParameter"))) {
 			throw new ServletException("Cannot read the Context ApplicationParameter");
 		} else {
 			logger.info("testContextApplicationParameter : " + servletConfig.getServletContext().getInitParameter("testContextApplicationParameter"));
@@ -141,5 +140,4 @@ public class ShootmeSipServletAuth extends SipServlet implements SipErrorListene
 	public void noPrackReceived(SipErrorEvent ee) {
 		logger.error("noPrackReceived.");
 	}
-
 }

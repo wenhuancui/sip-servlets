@@ -16,10 +16,6 @@
  */
 package org.mobicents.servlet.sip.core.session;
 
-import gov.nist.core.Separators;
-import gov.nist.javax.sip.address.Authority;
-import gov.nist.javax.sip.address.SipUri;
-
 import java.text.ParseException;
 import java.util.StringTokenizer;
 
@@ -189,7 +185,7 @@ public class SessionManagerUtil {
 			String sipSessionKey, String sipAppSessionId, String sipApplicationName) throws ParseException {
 		
 		if(logger.isDebugEnabled()) {
-			logger.debug("sipSession key to parse " + sipSessionKey );
+			logger.debug("sipSession ha key to parse " + sipSessionKey );
 		}
 		StringTokenizer stringTokenizer = new StringTokenizer(sipSessionKey, SESSION_KEY_SEPARATOR);
 		String fromTag = stringTokenizer.nextToken();

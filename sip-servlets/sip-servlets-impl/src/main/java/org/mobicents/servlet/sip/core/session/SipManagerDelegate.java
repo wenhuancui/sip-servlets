@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
@@ -27,6 +28,7 @@ import javax.servlet.sip.SipSession.State;
 
 import org.apache.catalina.Container;
 import org.apache.log4j.Logger;
+import org.mobicents.servlet.sip.core.timers.SipApplicationSessionTimerTask;
 import org.mobicents.servlet.sip.message.SipFactoryImpl;
 import org.mobicents.servlet.sip.startup.SipContext;
 
@@ -226,6 +228,21 @@ public abstract class SipManagerDelegate {
         }		
 		return sipApplicationSessionImpl;
 	}
+	
+	protected void scheduleExpirationTimer(MobicentsSipApplicationSession sipApplicationSession) {
+		// Sip Application Session Timer Task moved out of the SipApplicationSession constructor
+		// as for clustering it might not be needed to reschedule them on recreation
+		final SipContext sipContext = sipApplicationSession.getSipContext();
+		if(sipContext != null) {
+			if(sipContext.getSipApplicationSessionTimeout() > 0) {		
+				SipApplicationSessionTimerTask expirationTimerTask = sipContext.getSipApplicationSessionTimerService().createSipApplicationSessionTimerTask(sipApplicationSession);				
+				expirationTimerTask = sipContext.getSipApplicationSessionTimerService().schedule(expirationTimerTask, sipApplicationSession.getSipApplicationSessionTimeout(), TimeUnit.MILLISECONDS);
+				sipApplicationSession.setExpirationTimerTask(expirationTimerTask);
+			} 
+			
+			sipApplicationSession.notifySipApplicationSessionListeners(SipApplicationSessionEventType.CREATION);
+		}
+	}
 
 	/**
 	 * Retrieve a sip session from its key. If none exists, one can enforce
@@ -257,6 +274,13 @@ public abstract class SipManagerDelegate {
 	protected MobicentsSipSession createSipSession(final SipSessionKey key, final boolean create, final SipFactoryImpl sipFactoryImpl, final MobicentsSipApplicationSession sipApplicationSessionImpl) {
 		MobicentsSipSession sipSessionImpl = null;
 		final MobicentsSipSession newSipSessionImpl = getNewMobicentsSipSession(key, sipFactoryImpl, sipApplicationSessionImpl);
+		// notification moved out of the sip session constructor so that for derived sessions it can be 
+		// called after the attribute map has been set to avoid that the application can create a different one
+		// in accessing the sip session attributes in the sip session creation callback
+		if(sipApplicationSessionImpl.getSipContext() != null) {
+			// the sip context can be null if the AR returned an application that was not deployed
+			newSipSessionImpl.notifySipSessionListeners(SipSessionEventType.CREATION);
+		}
 		sipSessionImpl = sipSessions.putIfAbsent(key, newSipSessionImpl);
 		if(sipSessionImpl == null) {
 			if(logger.isDebugEnabled()) {
@@ -338,6 +362,14 @@ public abstract class SipManagerDelegate {
 		sipSessionImpl.setParentSession(parentSipSession);
 		
 		parentSipSession.addDerivedSipSessions(sipSessionImpl);
+		
+		// notification moved out of the sip session constructor so that for derived sessions it can be 
+		// called after the attribute map has been set to avoid that the application can create a different one
+		// in accessing the sip session attributes in the sip session creation callback
+		if(parentSipSession.getSipApplicationSession().getSipContext() != null) {
+			// the sip context can be null if the AR returned an application that was not deployed
+			sipSessionImpl.notifySipSessionListeners(SipSessionEventType.CREATION);
+		}
 		
 		return sipSessionImpl;
 	}

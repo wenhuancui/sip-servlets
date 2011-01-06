@@ -87,8 +87,8 @@ public class AppKeySipServletTest extends SipServletTestCase {
 	 * @throws Exception
 	 */
 	public void testAppKey() throws Exception {
-		tomcat.initTomcat(tomcatBasePath);
-		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport, null);
+		tomcat.initTomcat(tomcatBasePath, null);
+		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport);
 		tomcat.startTomcat();
 		deployApplication();
 		Thread.sleep(TIMEOUT);
@@ -101,8 +101,8 @@ public class AppKeySipServletTest extends SipServletTestCase {
 	 */
 	public void testWildcard() throws Exception {
 		tomcat.setDarConfigurationFilePath(getWilcardDarConfigurationFile());
-		tomcat.initTomcat(tomcatBasePath);
-		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport, null);
+		tomcat.initTomcat(tomcatBasePath, null);
+		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport);
 		tomcat.startTomcat();
 		deployApplication();
 		Thread.sleep(TIMEOUT);

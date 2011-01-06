@@ -29,10 +29,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
@@ -63,12 +65,15 @@ import javax.sip.ServerTransaction;
 import javax.sip.SipException;
 import javax.sip.SipProvider;
 import javax.sip.Transaction;
+import javax.sip.TransactionState;
 import javax.sip.address.TelURL;
 import javax.sip.header.AuthorizationHeader;
 import javax.sip.header.ContactHeader;
 import javax.sip.header.FromHeader;
+import javax.sip.header.Header;
 import javax.sip.header.MaxForwardsHeader;
 import javax.sip.header.ProxyAuthenticateHeader;
+import javax.sip.header.ProxyAuthorizationHeader;
 import javax.sip.header.RecordRouteHeader;
 import javax.sip.header.RouteHeader;
 import javax.sip.header.SubscriptionStateHeader;
@@ -79,10 +84,12 @@ import javax.sip.message.Request;
 import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
+import org.mobicents.javax.servlet.sip.SipServletRequestExt;
 import org.mobicents.servlet.sip.JainSipUtils;
 import org.mobicents.servlet.sip.SipConnector;
 import org.mobicents.servlet.sip.SipFactories;
 import org.mobicents.servlet.sip.address.AddressImpl;
+import org.mobicents.servlet.sip.address.GenericURIImpl;
 import org.mobicents.servlet.sip.address.SipURIImpl;
 import org.mobicents.servlet.sip.address.TelURLImpl;
 import org.mobicents.servlet.sip.address.URIImpl;
@@ -104,7 +111,9 @@ import org.mobicents.servlet.sip.startup.StaticServiceHolder;
 import org.mobicents.servlet.sip.startup.loading.SipServletImpl;
 
 public class SipServletRequestImpl extends SipServletMessageImpl implements
-		SipServletRequest {
+		SipServletRequestExt {
+
+	public static final String STALE = "stale";
 
 	private static final long serialVersionUID = 1L;
 
@@ -222,7 +231,11 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 			throw new IllegalStateException("No client transaction found!");
 
 		if(RoutingState.FINAL_RESPONSE_SENT.equals(routingState) || lastFinalResponse != null) {
-			throw new IllegalStateException("final response already sent!");
+			if(lastFinalResponse != null) {
+				throw new IllegalStateException("final response already sent : " + lastFinalResponse);
+			} else {
+				throw new IllegalStateException("final response already sent!");
+			}
 		}
 		
 		try {			
@@ -245,13 +258,17 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	 * @see javax.servlet.sip.SipServletRequest#createResponse(int)
 	 */
 	public SipServletResponse createResponse(int statusCode) {
-		return createResponse(statusCode, null);
+		return createResponse(statusCode, null, true);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see javax.servlet.sip.SipServletRequest#createResponse(int, java.lang.String)
+	 */
 	public SipServletResponse createResponse(final int statusCode, final String reasonPhrase) {
 		return createResponse(statusCode, reasonPhrase, true);
-	}
-
+	}		
+	
 	public SipServletResponse createResponse(final int statusCode, final String reasonPhrase, boolean validate) {
 		checkReadOnly();
 		final Transaction transaction = getTransaction();
@@ -350,6 +367,16 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 //				RouteHeader routeHeader = SipFactories.headerFactory.createRouteHeader(recordRouteHeader.getAddress());
 //				response.addHeader(routeHeader);
 //			}
+			
+			if(session != null && session.getCopyRecordRouteHeadersOnSubsequentResponses() && !isInitial() && Request.INVITE.equals(requestMethod)) {
+				// Miss Record-Route in Response for non compliant Server in reINVITE http://code.google.com/p/mobicents/issues/detail?id=2066
+				final ListIterator<RecordRouteHeader> recordRouteHeaders = request.getHeaders(RecordRouteHeader.NAME);
+				while (recordRouteHeaders.hasNext()) {
+					RecordRouteHeader recordRouteHeader = (RecordRouteHeader) recordRouteHeaders
+							.next();
+					response.addHeader(recordRouteHeader);
+				}
+			}
 			
 			final SipServletResponseImpl newSipServletResponse = new SipServletResponseImpl(response, super.sipFactoryImpl,
 					validate ? (ServerTransaction) transaction : transaction, session, getDialog(), false, false);
@@ -488,8 +515,9 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		else if (request.getRequestURI() instanceof javax.sip.address.TelURL)
 			return new TelURLImpl((javax.sip.address.TelURL) request
 					.getRequestURI());
-		else
-			throw new UnsupportedOperationException("Unsupported scheme");
+		else 
+			// From horacimacias : Fix for Issue 2115 MSS unable to handle GenericURI URIs
+			return new GenericURIImpl(request.getRequestURI());
 	}
 
 	/**
@@ -907,7 +935,40 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 			}
 		}
 	}
-	
+
+	public static void optimizeRequestUriHeaderAddressForInternalRoutingrequest(SipConnector sipConnector, Request request, MobicentsSipSession session,  SipFactoryImpl sipFactoryImpl, String transport) {
+		SipNetworkInterfaceManager sipNetworkInterfaceManager = sipFactoryImpl.getSipNetworkInterfaceManager();
+
+		javax.sip.address.URI uri =request.getRequestURI();
+		if(uri.isSipURI()) {
+			try {
+				javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
+				boolean isExternal = sipFactoryImpl.getSipApplicationDispatcher().isExternal(sipUri.getHost(), sipUri.getPort(), transport);
+				if(!isExternal) {
+					if(logger.isDebugEnabled()) {
+						logger.debug("The request is going internally due to RURI = " + uri);
+					}
+					ExtendedListeningPoint lp = null;
+					if(session.getOutboundInterface() != null) {
+
+						javax.sip.address.SipURI outboundInterfaceURI = (javax.sip.address.SipURI) SipFactories.addressFactory.createURI(session.getOutboundInterface());
+						lp = sipNetworkInterfaceManager.findMatchingListeningPoint(outboundInterfaceURI, false);
+					} else {
+						lp = sipNetworkInterfaceManager.findMatchingListeningPoint(transport, false);
+					}
+
+					sipUri.setHost(lp.getHost(false));
+					sipUri.setPort(lp.getPort());
+					sipUri.setTransportParam(lp.getTransport());
+				}
+			} catch (ParseException e) {
+				logger.error("AR optimization error", e);
+			}
+
+		}
+
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -931,9 +992,13 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 			((MessageExt)message).setApplicationData(sessionTransport);			
 			
 			ViaHeader viaHeader = (ViaHeader) message.getHeader(ViaHeader.NAME);
-		
+			
+			boolean isCancel = getMethod().equalsIgnoreCase(Request.CANCEL);
+			if(isCancel) {
+	    		getSipSession().setRequestsPending(0);
+			}
 			//Issue 112 fix by folsson
-		    if(!getMethod().equalsIgnoreCase(Request.CANCEL) && viaHeader == null) {
+		    if(!isCancel && viaHeader == null) {
 		    	boolean addViaHeader = false;
 		    	if(proxy == null) {
 		    		addViaHeader = true;
@@ -954,11 +1019,12 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				    }
 			    }
 		    } else {
-		    	if(getMethod().equalsIgnoreCase(Request.CANCEL)) {
-		    		if(getSipSession().getState().equals(State.INITIAL)) {
-		    			Transaction tx = inviteTransactionToCancel;
-		    			if(tx != null) {
-		    				logger.debug("Can not send CANCEL. Will try to STOP retransmissions " + tx);
+		    	if(isCancel) {
+		    		Transaction tx = inviteTransactionToCancel;
+	    			if(tx != null) {
+	    				// we rely on the transaction state to know if we send the cancel or not
+	    				if(tx.getState() == null || tx.getState().equals(TransactionState.CALLING) || tx.getState().equals(TransactionState.TRYING)) {
+		    				logger.debug("Can not send CANCEL. Will try to STOP retransmissions " + tx + " tx state " + tx.getState());
 		    				// We still haven't received any response on this call, so we can not send CANCEL,
 		    				// we will just stop the retransmissions
 		    				StaticServiceHolder.disableRetransmissionTimer.invoke(tx);
@@ -967,11 +1033,11 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		    					tad.setCanceled(true);
 		    				}
 		    				return;
-		    			} else {
-		    				logger.debug("Can not send CANCEL because noe response arrived. " +
-		    						"Can not stop retransmissions. The transaction is null");
-		    			}
-		    		}
+	    				}
+	    			} else {
+	    				logger.debug("Can not send CANCEL because no responses arrived. " +
+	    						"Can not stop retransmissions. The transaction is null");
+	    			}
 		    	}
 		    }
 			final String transport = JainSipUtils.findTransport(request);
@@ -984,47 +1050,54 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		    
 		    SipConnector sipConnector = StaticServiceHolder.sipStandardService.findSipConnector(transport);
 		    
-		    // Bypass the load balancer for outgoing requests by removing the route header for them
-		    if(sipConnector != null && sipConnector.isUseStaticAddress()) {
-		    	RouteHeader rh = (RouteHeader) request.getHeader(RouteHeader.NAME);
-		    	if(logger.isDebugEnabled()) {
-		    		logger.debug("We are looking at route header " + rh + " and SC is" + sipConnector.getStaticServerAddress() + ":" + sipConnector.getStaticServerPort());
-		    	}
-		    	if(rh != null) {
-		    		if(rh.getAddress().getURI().isSipURI()) {
-		    			javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI)rh.getAddress().getURI();
-		    			if(sipUri.getHost().equals(sipConnector.getStaticServerAddress())) {
-		    				int port = sipUri.getPort();
-		    				if(port <= 0) port = 5060;
-		    				if(port == sipConnector.getStaticServerPort()) {
-		    					request.removeHeader(RouteHeader.NAME);
-		    				}
-		    			}
-		    		}
-		    	}
-		    }
-		    
+		    final MobicentsSipApplicationSession sipApplicationSession = session.getSipApplicationSession();
 		    final String requestMethod = getMethod();
+			ExtendedListeningPoint matchingListeningPoint = sipNetworkInterfaceManager.findMatchingListeningPoint(
+					transport, false);
 			if(Request.ACK.equals(requestMethod)) {
-				session.getSessionCreatingDialog().sendAck(request);
-				final Transaction transaction = getTransaction();
-				final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
-				final B2buaHelperImpl b2buaHelperImpl = sipSession.getB2buaHelper();
-				if(b2buaHelperImpl != null && tad != null) {
-					// we unlink the originalRequest early to avoid keeping the messages in mem for too long
-					b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage());
-				}				
-				session.removeOngoingTransaction(transaction);	
-				if(tad != null) {
-					tad.cleanUp();
+				// Issue 1791 : using a different classloader created outside the application loader 
+				// to avoid leaks on startup/shutdown
+				final ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+				try {
+					final ClassLoader cl = sipApplicationSession.getSipContext().getClass().getClassLoader();
+					Thread.currentThread().setContextClassLoader(cl);
+					if(sipConnector != null && // Initial requests already use local address in RouteHeader.
+							sipConnector.isUseStaticAddress()) {
+						optimizeRouteHeaderAddressForInternalRoutingrequest(sipConnector, request, session, sipFactoryImpl, transport);
+					}
+					// Workaround wrong UA stack for Issue 1802 
+					if(viaHeader.getBranch() == null) {
+						final String branch = JainSipUtils.createBranch(sipApplicationSession.getKey().getId(),  sipFactoryImpl.getSipApplicationDispatcher().getHashFromApplicationName(session.getKey().getApplicationName()));			
+						viaHeader.setBranch(branch);
+					}
+					if(logger.isDebugEnabled()) {
+						logger.debug("Sending the ACK request " + request);
+					}
+					session.getSessionCreatingDialog().sendAck(request);
+					session.setRequestsPending(session.getRequestsPending()-1);
+					final Transaction transaction = getTransaction();
+					// transaction can be null in case of forking
+					if(transaction != null) {
+						final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
+						final B2buaHelperImpl b2buaHelperImpl = sipSession.getB2buaHelper();
+						if(b2buaHelperImpl != null && tad != null) {
+							// we unlink the originalRequest early to avoid keeping the messages in mem for too long
+							b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage());
+						}				
+						session.removeOngoingTransaction(transaction);					
+						if(tad != null) {
+							tad.cleanUp();
+						}
+					}
+					final SipProvider sipProvider = matchingListeningPoint.getSipProvider();	
+					// Issue 1468 : to handle forking, we shouldn't cleanup the app data since it is needed for the forked responses
+					if(((SipStackImpl)sipProvider.getSipStack()).getMaxForkTime() == 0 && transaction != null) {
+						transaction.setApplicationData(null);
+					}
+					return;
+				} finally {
+					Thread.currentThread().setContextClassLoader(oldClassLoader);
 				}
-				final SipProvider sipProvider = sipNetworkInterfaceManager.findMatchingListeningPoint(
-						transport, false).getSipProvider();	
-				// Issue 1468 : to handle forking, we shouldn't cleanup the app data since it is needed for the forked responses
-				if(((SipStackImpl)sipProvider.getSipStack()).getMaxForkTime() == 0) {
-					transaction.setApplicationData(null);
-				}
-				return;
 			}
 			
 			
@@ -1065,8 +1138,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 						}
 					}
 				}
-			}
-			final MobicentsSipApplicationSession sipApplicationSession = session.getSipApplicationSession();
+			}			
 			if(viaHeader.getBranch() == null) {
 				final String branch = JainSipUtils.createBranch(sipApplicationSession.getKey().getId(),  sipFactoryImpl.getSipApplicationDispatcher().getHashFromApplicationName(session.getKey().getApplicationName()));			
 				viaHeader.setBranch(branch);
@@ -1076,6 +1148,8 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 			}
 			if (super.getTransaction() == null) {				
 
+				final SipProvider sipProvider = matchingListeningPoint.getSipProvider();
+				
 				ContactHeader contactHeader = (ContactHeader)request.getHeader(ContactHeader.NAME);
 				if(contactHeader == null && !Request.REGISTER.equalsIgnoreCase(requestMethod) && JainSipUtils.CONTACT_HEADER_METHODS.contains(requestMethod) && proxy == null) {
 					final FromHeader fromHeader = (FromHeader) request.getHeader(FromHeader.NAME);
@@ -1089,23 +1163,34 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 						JainSipUtils.createContactHeader(sipNetworkInterfaceManager, request, fromName, session.getOutboundInterface());	
 					request.addHeader(contactHeader);
 				}
-				if(sipConnector != null && sipConnector.isUseStaticAddress()) {
-					if(proxy == null && contactHeader != null) {
-						boolean sipURI = contactHeader.getAddress().getURI().isSipURI();
-						if(sipURI) {
-							javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) contactHeader.getAddress().getURI();
+
+				if(proxy == null && contactHeader != null) {
+					boolean sipURI = contactHeader.getAddress().getURI().isSipURI();
+					if(sipURI) {
+						javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) contactHeader.getAddress().getURI();
+						if(sipConnector != null && sipConnector.isUseStaticAddress()) {
 							sipUri.setHost(sipConnector.getStaticServerAddress());
 							sipUri.setPort(sipConnector.getStaticServerPort());
+						} else {
+							boolean usePublicAddress = JainSipUtils.findUsePublicAddress(
+									sipNetworkInterfaceManager, request, matchingListeningPoint);
+							sipUri.setHost(matchingListeningPoint.getIpAddress(usePublicAddress));
+							sipUri.setPort(matchingListeningPoint.getPort());
+							
 						}
-					}
-				}
+						// http://code.google.com/p/mobicents/issues/detail?id=1150 only set transport if not udp
+						if(!"udp".equalsIgnoreCase(transport)) {
+							sipUri.setTransportParam(transport);
+						}
+						if("tls".equalsIgnoreCase(transport)) {
+							sipUri.setSecure(true);
+						}
+					} 
+				} 
 
 				if(logger.isDebugEnabled()) {
 					logger.debug("Getting new Client Tx for request " + request);
 				}
-				final SipProvider sipProvider = sipNetworkInterfaceManager.findMatchingListeningPoint(
-						transport, false).getSipProvider();
-				
 				/* 
 				 * If we the next hop is in this container we optimize the traffic by directing it here instead of going through load balancers.
 				 * This is must be done before creating the transaction, otherwise it will go to the host/port specified prior to the changes here.
@@ -1113,8 +1198,8 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				if(!isInitial() && sipConnector != null && // Initial requests already use local address in RouteHeader.
 						sipConnector.isUseStaticAddress()) {
 					optimizeRouteHeaderAddressForInternalRoutingrequest(sipConnector, request, session, sipFactoryImpl, transport);
-				}
-				
+				}								
+
 				final ClientTransaction ctx = sipProvider.getNewClientTransaction(request);				
 				ctx.setRetransmitTimer(sipFactoryImpl.getSipApplicationDispatcher().getBaseTimerInterval());
 			    ((TransactionExt)ctx).setTimerT2(sipFactoryImpl.getSipApplicationDispatcher().getT2Interval());
@@ -1142,11 +1227,11 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 									if(sipConnector != null && sipConnector.isUseStaticAddress()) {
 										sipUri.setHost(sipConnector.getStaticServerAddress());
 										sipUri.setPort(sipConnector.getStaticServerPort());
-									}
-									sipUri.setTransportParam(transport);
-									if(logger.isDebugEnabled()) {
-										logger.debug("Updated the RRH with static server address " + sipUri);
-									}
+										sipUri.setTransportParam(transport);
+										if(logger.isDebugEnabled()) {
+											logger.debug("Updated the RRH with static server address " + sipUri);
+										}
+									}																		
 								}
 							}
 						}
@@ -1193,8 +1278,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				session.setSessionCreatingTransactionRequest(this);
 
 			} else if (Request.PRACK.equals(request.getMethod())) {
-				final SipProvider sipProvider = sipNetworkInterfaceManager.findMatchingListeningPoint(
-						transport, false).getSipProvider();				
+				final SipProvider sipProvider = matchingListeningPoint.getSipProvider();				
 				final ClientTransaction ctx = sipProvider.getNewClientTransaction(request);
 				ctx.setRetransmitTimer(sipFactoryImpl.getSipApplicationDispatcher().getBaseTimerInterval());
 			    ((TransactionExt)ctx).setTimerT2(sipFactoryImpl.getSipApplicationDispatcher().getT2Interval());
@@ -1260,50 +1344,66 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 					session.removeSubscription(this);
 				}
 			}					
-			
-			updateContactHeaderTransport(transport);
+
+
+			if(sipConnector != null && sipConnector.isUseStaticAddress()) {
+				javax.sip.address.URI uri = request.getRequestURI();
+				RouteHeader route = (RouteHeader) request.getHeader(RouteHeader.NAME);
+				if(route != null) {
+					uri = route.getAddress().getURI();
+				}
+				if(uri.isSipURI()) {
+					javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
+					String host = sipUri.getHost();
+					int port = sipUri.getPort();
+					if(sipFactoryImpl.getSipApplicationDispatcher().isExternal(host, port, transport)) {
+						viaHeader.setHost(sipConnector.getStaticServerAddress());
+						viaHeader.setPort(sipConnector.getStaticServerPort());
+					}
+				}
+			}
+
 
 			//updating the last accessed times 
 			session.access();
 			sipApplicationSession.access();
 			Dialog dialog = getDialog();
 			if(session.getProxy() != null) dialog = null;
-			// If dialog does not exist or has no state.
-			if (dialog == null || dialog.getState() == null
-					|| (dialog.getState() == DialogState.EARLY && !Request.PRACK.equals(requestMethod)) || Request.CANCEL.equals(requestMethod)) {
-				if(logger.isDebugEnabled()) {
-					logger.debug("Sending the request " + request);
+			if(request.getMethod().equals(Request.CANCEL)) dialog = null;
+			// Issue 1791 : using a different classloader created outside the application loader 
+			// to avoid leaks on startup/shutdown
+			final ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+			try {
+				final ClassLoader cl = sipApplicationSession.getSipContext().getClass().getClassLoader();
+				Thread.currentThread().setContextClassLoader(cl);
+				// If dialog does not exist or has no state.
+				if (dialog == null || dialog.getState() == null
+						|| (dialog.getState() == DialogState.EARLY && !Request.PRACK.equals(requestMethod)) || Request.CANCEL.equals(requestMethod)) {
+					if(logger.isDebugEnabled()) {
+						logger.debug("Sending the request " + request);
+					}
+					((ClientTransaction) super.getTransaction()).sendRequest();
+				} else {
+					// This is a subsequent (an in-dialog) request. 
+					// we don't redirect it to the container for now
+					if(logger.isDebugEnabled()) {
+						logger.debug("Sending the in dialog request " + request);
+					}
+					dialog.sendRequest((ClientTransaction) getTransaction());
+				}			
+				isMessageSent = true;
+				
+				if(method.equals(Request.INVITE)) {
+					session.setRequestsPending(session.getRequestsPending()+1);
 				}
-				((ClientTransaction) super.getTransaction()).sendRequest();
-			} else {
-				// This is a subsequent (an in-dialog) request. 
-				// we don't redirect it to the container for now
-				if(logger.isDebugEnabled()) {
-					logger.debug("Sending the in dialog request " + request);
-				}
-				dialog.sendRequest((ClientTransaction) getTransaction());
-			}			
-			isMessageSent = true;
-		} catch (Exception ex) {			
-			throw new IllegalStateException("Error sending request " + request,ex);
-		}
-
-	}
-	
-	protected void updateContactHeaderTransport(String transport) throws ParseException {
-		ContactHeader contactHeader = (ContactHeader)message.getHeader(ContactHeader.NAME);
-		if(contactHeader != null) {
-			// We need to update the originally created contact header if the request changed the transport
-			javax.sip.address.URI uri = contactHeader.getAddress().getURI();
-			if(uri.isSipURI()) {
-				javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
-
-				// It is always UDP by default, so we only need to modify it if it is different that UDP
-				if(!transport.equalsIgnoreCase("udp")) {
-					sipUri.setTransportParam(transport);
-				}
+			} finally {
+				Thread.currentThread().setContextClassLoader(oldClassLoader);
 			}
-		}
+		} catch (Exception ex) {			
+			JainSipUtils.terminateTransaction(getTransaction());
+			throw new IllegalStateException("Error sending request " + request,ex);
+		} 
+
 	}
 
 	/**
@@ -1399,6 +1499,9 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		if(routingState.equals(RoutingState.SUBSEQUENT)) {
 			isInitial = false;
 		}
+		if(logger.isDebugEnabled()) {
+			logger.debug("setting routing state to " + routingState);
+		}
 		this.routingState = routingState;	
 	}
 	
@@ -1408,6 +1511,24 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	 */
 	public void addAuthHeader(SipServletResponse challengeResponse,
 			AuthInfo authInfo) {
+		addAuthHeader(challengeResponse, authInfo, false);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see javax.servlet.sip.SipServletRequest#addAuthHeader(javax.servlet.sip.SipServletResponse, java.lang.String, java.lang.String)
+	 */
+	public void addAuthHeader(SipServletResponse challengeResponse,
+			String username, String password) {
+		addAuthHeader(challengeResponse, username, password, false);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.javax.servlet.sip.SipServletRequestExt#addAuthHeader(javax.servlet.sip.SipServletResponse, javax.servlet.sip.AuthInfo, boolean)
+	 */
+	public void addAuthHeader(SipServletResponse challengeResponse,
+			AuthInfo authInfo, boolean cacheCredentials) {
 		checkReadOnly();
 		AuthInfoImpl authInfoImpl = (AuthInfoImpl) authInfo;
 		
@@ -1421,6 +1542,10 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		while(authHeaderIterator.hasNext()) {
 			WWWAuthenticateHeader wwwAuthHeader = 
 				(WWWAuthenticateHeader) authHeaderIterator.next();
+			// Fix for Issue 1832 : http://code.google.com/p/mobicents/issues/detail?id=1832 
+			// Authorization header is growing when nonce become stale, don't take into account stale headers
+			// in the challenge request
+			removeStaleAuthHeaders(wwwAuthHeader);
 //			String uri = wwwAuthHeader.getParameter("uri");
 			AuthInfoEntry authInfoEntry = authInfoImpl.getAuthInfo(wwwAuthHeader.getRealm());
 			
@@ -1431,48 +1556,67 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 					authInfoEntry.getUserName(),
 					authInfoEntry.getPassword(),
 					this.getRequestURI().toString());
+			
+			if(cacheCredentials) {
+				getSipSession().getSipSessionSecurity().addCachedAuthInfo(wwwAuthHeader.getRealm(), authInfoEntry);
+			}
 		}
 		
 		// Now check for Proxy-Authentication
 		authHeaderIterator = 
 			response.getHeaders(ProxyAuthenticateHeader.NAME);
 		while(authHeaderIterator.hasNext()) {
-			ProxyAuthenticateHeader wwwAuthHeader = 
+			ProxyAuthenticateHeader proxyAuthHeader = 
 				(ProxyAuthenticateHeader) authHeaderIterator.next();
+			// Fix for Issue 1832 : http://code.google.com/p/mobicents/issues/detail?id=1832 
+			// Authorization header is growing when nonce become stale, don't take into account stale headers
+			// in the challenge request
+			removeStaleAuthHeaders(proxyAuthHeader);
 //			String uri = wwwAuthHeader.getParameter("uri");
-			AuthInfoEntry authInfoEntry = authInfoImpl.getAuthInfo(wwwAuthHeader.getRealm());
+			AuthInfoEntry authInfoEntry = authInfoImpl.getAuthInfo(proxyAuthHeader.getRealm());
 			
 			if(authInfoEntry == null) throw new SecurityException(
-					"No credentials for the following realm: " + wwwAuthHeader.getRealm());
+					"No credentials for the following realm: " + proxyAuthHeader.getRealm());
 			
-			addChallengeResponse(wwwAuthHeader,
+			addChallengeResponse(proxyAuthHeader,
 					authInfoEntry.getUserName(),
 					authInfoEntry.getPassword(),
 					this.getRequestURI().toString());
+			
+			if(cacheCredentials) {
+				getSipSession().getSipSessionSecurity().addCachedAuthInfo(proxyAuthHeader.getRealm(), authInfoEntry);
+			}
 		}
-		
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see javax.servlet.sip.SipServletRequest#addAuthHeader(javax.servlet.sip.SipServletResponse, java.lang.String, java.lang.String)
+	 * @see org.mobicents.javax.servlet.sip.SipServletRequestExt#addAuthHeader(javax.servlet.sip.SipServletResponse, java.lang.String, java.lang.String, boolean)
 	 */
 	public void addAuthHeader(SipServletResponse challengeResponse,
-			String username, String password) {
+			String username, String password, boolean cacheCredentials) {
 		checkReadOnly();
 		SipServletResponseImpl challengeResponseImpl = 
 			(SipServletResponseImpl) challengeResponse;
 		
 		Response response = (Response) challengeResponseImpl.getMessage();
-		ListIterator authHeaderIterator = 
+		ListIterator<Header> authHeaderIterator = 
 			response.getHeaders(WWWAuthenticateHeader.NAME);
 		
 		// First
 		while(authHeaderIterator.hasNext()) {
 			WWWAuthenticateHeader wwwAuthHeader = 
 				(WWWAuthenticateHeader) authHeaderIterator.next();
+			// Fix for Issue 1832 : http://code.google.com/p/mobicents/issues/detail?id=1832 
+			// Authorization header is growing when nonce become stale, don't take into account stale headers
+			// in the challenge request
+			removeStaleAuthHeaders(wwwAuthHeader);
 //			String uri = wwwAuthHeader.getParameter("uri");
 			addChallengeResponse(wwwAuthHeader, username, password, this.getRequestURI().toString());
+			
+			if(cacheCredentials) {
+				getSipSession().getSipSessionSecurity().addCachedAuthInfo(wwwAuthHeader.getRealm(), new AuthInfoEntry(response.getStatusCode(), username, password));
+			}
 		}
 		
 		
@@ -1480,13 +1624,69 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 			response.getHeaders(ProxyAuthenticateHeader.NAME);
 		
 		while(authHeaderIterator.hasNext()) {
-			ProxyAuthenticateHeader wwwAuthHeader = 
+			ProxyAuthenticateHeader proxyAuthHeader = 
 				(ProxyAuthenticateHeader) authHeaderIterator.next();
-			String uri = wwwAuthHeader.getParameter("uri");
+			// Fix for Issue 1832 : http://code.google.com/p/mobicents/issues/detail?id=1832 
+			// Authorization header is growing when nonce become stale, don't take into account stale headers
+			// in the challenge request
+			removeStaleAuthHeaders(proxyAuthHeader);
+			String uri = proxyAuthHeader.getParameter("uri");
 			if(uri == null) uri = this.getRequestURI().toString();
-			addChallengeResponse(wwwAuthHeader, username, password, uri);
+			addChallengeResponse(proxyAuthHeader, username, password, uri);
+			
+			if(cacheCredentials) {
+				getSipSession().getSipSessionSecurity().addCachedAuthInfo(proxyAuthHeader.getRealm(), new AuthInfoEntry(response.getStatusCode(), username, password));
+			}
 		}
 	}
+	
+	/*
+	 * Fix for Issue 1832 : http://code.google.com/p/mobicents/issues/detail?id=1832
+	 * Authorization header is growing when nonce become stale, don't take into account stale headers
+	 * in the subsequent request
+	 * 
+	 * From RFC 2617 : stale
+     * A flag, indicating that the previous request from the client was
+     * rejected because the nonce value was stale. If stale is TRUE
+     * (case-insensitive), the client may wish to simply retry the request
+     * with a new encrypted response, without reprompting the user for a
+     * new username and password. The server should only set stale to TRUE
+     * if it receives a request for which the nonce is invalid but with a
+     * valid digest for that nonce (indicating that the client knows the
+     * correct username/password). If stale is FALSE, or anything other
+     * than TRUE, or the stale directive is not present, the username
+     * and/or password are invalid, and new values must be obtained.
+	 */
+	protected void removeStaleAuthHeaders(WWWAuthenticateHeader responseAuthHeader) {
+		String realm = responseAuthHeader.getRealm();
+		
+		ListIterator<Header> authHeaderIterator = 
+			message.getHeaders(AuthorizationHeader.NAME);
+		if(authHeaderIterator.hasNext()) {
+			message.removeHeader(AuthorizationHeader.NAME);
+			while(authHeaderIterator.hasNext()) {
+				AuthorizationHeader wwwAuthHeader = 
+					(AuthorizationHeader) authHeaderIterator.next();
+				if(realm != null && !realm.equalsIgnoreCase(wwwAuthHeader.getRealm())) {
+					message.addHeader(wwwAuthHeader);
+				}
+			}
+		}
+		
+		authHeaderIterator = 
+			message.getHeaders(ProxyAuthorizationHeader.NAME);
+		if(authHeaderIterator.hasNext()) {
+			message.removeHeader(ProxyAuthorizationHeader.NAME);
+			while(authHeaderIterator.hasNext()) {
+				ProxyAuthorizationHeader proxyAuthHeader = 
+					(ProxyAuthorizationHeader) authHeaderIterator.next();
+				if(realm != null && !realm.equalsIgnoreCase(proxyAuthHeader.getRealm())) {
+					message.addHeader(proxyAuthHeader);
+				}
+			}	
+		}
+	}
+	
 	
 	private void addChallengeResponse(
 			WWWAuthenticateHeader wwwAuthHeader,
@@ -1499,7 +1699,8 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				"", // TODO: What is this entity-body?
 				wwwAuthHeader,
 				username,
-				password);
+				password,
+				wwwAuthHeader.getNonce());
 		
 		message.addHeader(authorization);
 	}
@@ -1517,11 +1718,17 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	public void setResponse(SipServletResponseImpl response) {		
 		if(response.getStatus() >= 200 && 
 				(lastFinalResponse == null || lastFinalResponse.getStatus() < response.getStatus())) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("last final response " + response + " set on " + this);
+			}
 			this.lastFinalResponse = response;
 		}
 		// we keep the last informational response for noPrackReceived only
 		if(containsRel100(response.getMessage()) && (response.getStatus() > 100 && response.getStatus() < 200) && 
 				(lastInformationalResponse == null || lastInformationalResponse.getStatus() < response.getStatus())) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("last informational response " + lastInformationalResponse + " set on " + this);
+			}
 			this.lastInformationalResponse = response;
 		}
 	}
@@ -1796,6 +2003,9 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	}
 	
 	public void cleanUpLastResponses() {
+		if(logger.isDebugEnabled()) {
+			logger.debug("cleaning up last responses on " + this);
+		}
 		lastFinalResponse = null;
 		lastInformationalResponse = null;
 	}
@@ -1868,4 +2078,73 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		out.writeBoolean(isFinalResponseGenerated);
 		out.writeBoolean(is1xxResponseGenerated);	
 	}
+
+	/**
+	 * Added for Issue 2173 http://code.google.com/p/mobicents/issues/detail?id=2173
+	 * Handle Header [Authentication-Info: nextnonce="xyz"] in sip authorization responses
+	 */
+	public void updateAuthorizationHeadersWithNextNonce() {
+		if(logger.isDebugEnabled()) {
+			logger.debug("Updating authorization headers with nextnonce " + getSipSession().getSipSessionSecurity().getNextNonce());
+		}
+		List<Header> authorizationHeaders = new ArrayList<Header>();
+		
+		// First check for WWWAuthentication headers
+		ListIterator authHeaderIterator = 
+			message.getHeaders(AuthorizationHeader.NAME);
+		while(authHeaderIterator.hasNext()) {
+			AuthorizationHeader wwwAuthHeader = 
+				(AuthorizationHeader) authHeaderIterator.next();
+			AuthInfoEntry authInfoEntry = getSipSession().getSipSessionSecurity().getCachedAuthInfos().get(wwwAuthHeader.getRealm());
+			
+			if(authInfoEntry != null) {
+				
+				AuthorizationHeader authorization = DigestAuthenticator.getAuthorizationHeader(
+						getMethod(),
+						this.getRequestURI().toString(),
+						"", // TODO: What is this entity-body?
+						wwwAuthHeader,
+						authInfoEntry.getUserName(),
+						authInfoEntry.getPassword(),
+						getSipSession().getSipSessionSecurity().getNextNonce());
+
+				authorizationHeaders.add(authorization);
+			} else {
+				authorizationHeaders.add(wwwAuthHeader);
+			}
+		}
+		
+		// Now check for Proxy-Authentication
+		authHeaderIterator = 
+			message.getHeaders(ProxyAuthorizationHeader.NAME);
+		while(authHeaderIterator.hasNext()) {
+			ProxyAuthorizationHeader proxyAuthHeader = 
+				(ProxyAuthorizationHeader) authHeaderIterator.next();
+//			String uri = wwwAuthHeader.getParameter("uri");
+			AuthInfoEntry authInfoEntry = getSipSession().getSipSessionSecurity().getCachedAuthInfos().get(proxyAuthHeader.getRealm());
+			
+			if(authInfoEntry != null) { 
+					
+				AuthorizationHeader authorization = DigestAuthenticator.getAuthorizationHeader(
+						getMethod(),
+						this.getRequestURI().toString(),
+						"", // TODO: What is this entity-body?
+						proxyAuthHeader,
+						authInfoEntry.getUserName(),
+						authInfoEntry.getPassword(),
+						getSipSession().getSipSessionSecurity().getNextNonce());
+
+				authorizationHeaders.add(authorization);
+			} else {
+				authorizationHeaders.add(proxyAuthHeader);
+			}
+		}
+		
+		message.removeHeader(AuthorizationHeader.NAME);
+		message.removeHeader(ProxyAuthorizationHeader.NAME);
+		
+		for(Header header : authorizationHeaders) {
+			message.addHeader(header);
+		}
+	}	
 }

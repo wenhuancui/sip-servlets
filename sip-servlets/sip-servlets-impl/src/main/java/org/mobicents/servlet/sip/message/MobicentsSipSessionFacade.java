@@ -24,11 +24,14 @@ import javax.sip.SipException;
 import javax.sip.Transaction;
 
 import org.apache.log4j.Logger;
+import org.mobicents.javax.servlet.sip.SipSessionAsynchronousWork;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
 import org.mobicents.servlet.sip.core.session.SipApplicationSessionKey;
 import org.mobicents.servlet.sip.core.session.SipManager;
+import org.mobicents.servlet.sip.core.session.SipSessionEventType;
 import org.mobicents.servlet.sip.core.session.SipSessionKey;
+import org.mobicents.servlet.sip.core.session.SipSessionSecurity;
 import org.mobicents.servlet.sip.proxy.ProxyImpl;
 import org.mobicents.servlet.sip.startup.SipContext;
 import org.mobicents.servlet.sip.startup.StaticServiceHolder;
@@ -381,7 +384,7 @@ public class MobicentsSipSessionFacade implements MobicentsSipSession, Serializa
 
 	@Override
 	public String toString() {
-		return getSipSession().toString();
+		return sipSessionKey.toString();
 	}
 
 	public SipApplicationRouterInfo getNextSipApplicationRouterInfo() {
@@ -395,7 +398,7 @@ public class MobicentsSipSessionFacade implements MobicentsSipSession, Serializa
 
 	public void setAckReceived(long cSeq, boolean ackReceived) {
 		getSipSession().setAckReceived(cSeq, ackReceived);
-	}
+	}	
 
 	public void setCseq(long cseq) {
 		getSipSession().setCseq(cseq);
@@ -442,4 +445,38 @@ public class MobicentsSipSessionFacade implements MobicentsSipSession, Serializa
 	public void setTransport(String transport) {
 		sipSession.setTransport(transport);
 	}
+
+	public void scheduleAsynchronousWork(SipSessionAsynchronousWork work) {
+		sipSession.scheduleAsynchronousWork(work);
+	}
+
+	public int getRequestsPending() {
+		return sipSession.getRequestsPending();
+	}
+
+	public void setRequestsPending(int requests) {
+		sipSession.setRequestsPending(requests);
+	}
+
+	public void notifySipSessionListeners(SipSessionEventType creation) {
+		sipSession.notifySipSessionListeners(creation);		
+	}
+
+	public void setCopyRecordRouteHeadersOnSubsequentResponses(
+			boolean copyRecordRouteHeadersOnSubsequentResponses) {
+		sipSession.setCopyRecordRouteHeadersOnSubsequentResponses(copyRecordRouteHeadersOnSubsequentResponses);
+	}
+
+	public boolean getCopyRecordRouteHeadersOnSubsequentResponses() {
+		return sipSession.getCopyRecordRouteHeadersOnSubsequentResponses();
+	}
+
+	public SipSessionSecurity getSipSessionSecurity() {
+		return sipSession.getSipSessionSecurity();
+	}
+
+	public void setSipSessionSecurity(SipSessionSecurity sipSessionSecurity) {
+		sipSession.setSipSessionSecurity(sipSessionSecurity);
+	}
+
 }

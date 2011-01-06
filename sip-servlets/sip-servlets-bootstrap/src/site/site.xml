@@ -14,15 +14,16 @@
 			<item name="QA" href="qa.html" />
 		</menu>
 		<menu name="Documentation">
-			<item name="Community User Guide" href="./user_guides/sip_servlets/index.html"/>
-			<item name="SIP Servlets 1.1 Javadoc" href="./mss/jsr289/javadocs/index.html"/>
-			<item name="Mobicents SIP Servlets Extensions Javadoc" href="./mss/jsr289/extensions/index.html"/>
+			<item name="Community User Guide" href="http://hudson.jboss.org/hudson/view/Mobicents/job/MobicentsBooks/lastSuccessfulBuild/artifact/sip-servlets/index.html"/>
+			<item name="SIP Servlets 1.1 Javadoc" href="http://hudson.jboss.org/hudson/view/Mobicents/job/MobicentsBooks/lastSuccessfulBuild/artifact/api-docs/jsr289/javadocs/index.html"/>
+			<item name="Mobicents SIP Servlets Extensions Javadoc" href="http://hudson.jboss.org/hudson/view/Mobicents/job/MobicentsBooks/lastSuccessfulBuild/artifact/api-docs/jsr289/extensions/index.html"/>
 		</menu>
 		<menu name="Frameworks">
 			<item name="Seam Telco Framework" href="http://groups.google.com/group/mobicents-public/web/seam-telco-framework-for-sip-servlets"/>
 			<item name="SSF" href="./mss-ssf.html" collapse="true">
 				<item name="SSF" href="./mss/ssf/sf-api/site/en/index.html"/> 
 				<item name="SSF Flow API" href="./mss/ssf/sf-flow-api/en/index.html"/>
+				<item name="SSF on JBoss 5" href="./mss/ssf/sf-jboss5/en/index.html"/>
 			</item>			
 		</menu>
 		<menu name="Examples">
@@ -54,6 +55,7 @@
 				<item name="Diameter Event Charging" href="diameter_event_charging.html"/>
 				<item name="Diameter Sh OpenIMS Integration" href="mss-diameter_sh.html"/>
 				<item name="Diameter Ro/Rf example" href="mss-diameter_rorf.html"/>						
+				<item name="Presence Client example" href="mss-presence-client-example.html"/>
 			</item>
 		</menu>		
 		<menu name="Contribute">			

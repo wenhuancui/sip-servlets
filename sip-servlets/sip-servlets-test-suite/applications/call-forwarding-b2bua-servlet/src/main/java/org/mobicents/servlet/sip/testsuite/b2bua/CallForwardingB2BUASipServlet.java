@@ -16,6 +16,7 @@
  */
 package org.mobicents.servlet.sip.testsuite.b2bua;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -111,6 +112,22 @@ public class CallForwardingB2BUASipServlet extends SipServlet implements SipErro
 		SipSession session = request.getSession();
 		if(request.getTo().toString().contains("b2bua@sip-servlet")) {
 			session.createRequest("MESSAGE").send();
+		}
+		if(new File("proxy-b2bua.case.flag").exists()) {
+			try {
+				Thread.sleep(200);
+				SipServletRequest r = session.createRequest("INVITE");
+				String rheaderBefore = r.getHeader("Route");
+				r.send();
+				String rheaderAfter = r.getHeader("Route");
+				if(rheaderBefore == null || rheaderAfter == null || rheaderBefore.equals(rheaderAfter)) {
+					// we expect the sent request to used update Route header without IP LB address due to optimization
+					new File("proxy-b2bua.failure.flag").createNewFile();
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		if(request.getFrom().getURI().toString().contains("pending") || 
 				request.getFrom().getURI().toString().contains("factory") ||
@@ -209,7 +226,15 @@ public class CallForwardingB2BUASipServlet extends SipServlet implements SipErro
 			B2buaHelper b2buaHelper = request.getB2buaHelper();
 			SipSession origSession = b2buaHelper.getLinkedSession(request.getSession());
 			origSession.setAttribute("originalRequest", request);
-			b2buaHelper.createRequest(origSession, request, null).send();
+			Map<String, List<String>> headers=new HashMap<String, List<String>>();
+			List<String> contactHeaderList = new ArrayList<String>();
+			if(request.getHeader(ContactHeader.NAME).contains("transport=tcp")) {
+				contactHeaderList.add("\"callforwardingB2BUA\" <sip:test@127.0.0.1:5070;q=0.1;lr;transport=tcp;test>;test");
+			} else {
+				contactHeaderList.add("\"callforwardingB2BUA\" <sip:test@127.0.0.1:5070;q=0.1;lr;transport=udp;test>;test");
+			}
+			headers.put("Contact", contactHeaderList);
+			b2buaHelper.createRequest(origSession, request, headers).send();
 		}
 	}	
 	
@@ -279,10 +304,17 @@ public class CallForwardingB2BUASipServlet extends SipServlet implements SipErro
 	protected void doBye(SipServletRequest request) throws ServletException,
 			IOException {		
 		logger.info("Got BYE: " + request.toString());		
+		
 		if(request.getSession().getAttribute(ACT_AS_UAS) == null) {
 			//we forward the BYE
 			SipSession session = request.getSession();		
 			SipSession linkedSession = request.getB2buaHelper().getLinkedSession(session);
+			logger.info("Incoming side session state : " + request.getSession().getState());
+			logger.info("outgoing side session state : " + linkedSession.getState());
+			if(!linkedSession.getState().equals(State.CONFIRMED)) {
+				request.createResponse(500, "outgoing session state should be CONFIRMED and it is " + linkedSession.getState()).send();
+				return;
+			}
 			Map<String, List<String>> headers=new HashMap<String, List<String>>();
 			
 			List<String> userAgentHeaderList = new ArrayList<String>();
@@ -316,14 +348,15 @@ public class CallForwardingB2BUASipServlet extends SipServlet implements SipErro
 			SipSession session = request.getSession();
 			B2buaHelper b2buaHelper = request.getB2buaHelper();
 			SipSession linkedSession = b2buaHelper.getLinkedSession(session);
-			SipServletRequest originalRequest = (SipServletRequest)linkedSession.getAttribute("originalRequest");
-			if(originalRequest != null) {
-				SipServletRequest  cancelRequest = b2buaHelper.getLinkedSipServletRequest(originalRequest).createCancel();				
+//			SipServletRequest originalRequest = (SipServletRequest)linkedSession.getAttribute("originalRequest");
+//			if(originalRequest != null) {
+//				SipServletRequest  cancelRequest = b2buaHelper.getLinkedSipServletRequest(originalRequest).createCancel();				
+			SipServletRequest  cancelRequest = b2buaHelper.createCancel(linkedSession);
 				logger.info("forkedRequest = " + cancelRequest);			
 				cancelRequest.send();
-			} else {
-				logger.info("no invite to cancel, it hasn't been forwarded");
-			}
+//			} else {
+//				logger.info("no invite to cancel, it hasn't been forwarded");
+//			}
 		}
 	}
 	
@@ -468,10 +501,11 @@ public class CallForwardingB2BUASipServlet extends SipServlet implements SipErro
 				authInfo.addAuthInfo(sipServletResponse.getStatus(), "sip-servlets-realm", "user", "pass");
 				SipServletRequest req2 = sipServletResponse.getRequest();
 				B2buaHelper helper = req2.getB2buaHelper();
-//				SipServletRequest req1 = helper.getLinkedSipServletRequest(req2);
+				SipServletRequest req1 = helper.getLinkedSipServletRequest(req2);				
 				SipServletRequest challengeRequest = helper.createRequest(sipServletResponse.getSession(), req2,
 				null);
 				challengeRequest.addAuthHeader(sipServletResponse, authInfo);
+				req1.getSession().setAttribute("originalRequest", challengeRequest);
 				challengeRequest.send();
 			}
 		} else {

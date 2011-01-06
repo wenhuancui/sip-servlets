@@ -17,11 +17,14 @@
 package org.mobicents.servlet.sip.testsuite.proxy;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.sip.ListeningPoint;
 import javax.sip.SipProvider;
 import javax.sip.address.SipURI;
+import javax.sip.header.Header;
+import javax.sip.header.RouteHeader;
 import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
@@ -67,13 +70,13 @@ public class ProxyRecordRouteReInviteTest extends SipServletTestCase {
 		assertTrue(receiver.isAckReceived());
 		receiver.setAckReceived(false);
 		sender.setAckSent(false);
-		sender.sendInDialogSipRequest("INVITE", null, null, null, null);		
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isAckSent());
 		assertTrue(receiver.isAckReceived());
 		receiver.setAckReceived(false);
 		sender.setAckSent(false);		
-		receiver.sendInDialogSipRequest("INVITE", null, null, null, null);
+		receiver.sendInDialogSipRequest("INVITE", null, null, null, null, null);
 		Thread.sleep(TIMEOUT);
 		assertTrue(receiver.isAckSent());
 		assertTrue(sender.isAckReceived());
@@ -101,13 +104,13 @@ public class ProxyRecordRouteReInviteTest extends SipServletTestCase {
 		assertTrue(receiver.isAckReceived());
 		receiver.setAckReceived(false);
 		sender.setAckSent(false);
-		sender.sendInDialogSipRequest("INVITE", null, null, null, null);		
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isAckSent());
 		assertTrue(receiver.isAckReceived());
 		receiver.setAckReceived(false);
 		sender.setAckSent(false);		
-		receiver.sendInDialogSipRequest("INVITE", null, null, null, null);
+		receiver.sendInDialogSipRequest("INVITE", null, null, null, null, null);
 		Thread.sleep(TIMEOUT);
 		assertTrue(receiver.isAckSent());
 		assertTrue(sender.isAckReceived());
@@ -121,7 +124,7 @@ public class ProxyRecordRouteReInviteTest extends SipServletTestCase {
 	 * Non regression test for Issue 1792
 	 */
 	public void testProxyCancelTCP() throws Exception {
-		tomcat.addSipConnector(serverName, sipIpAddress, 5070, ListeningPoint.TCP, null);
+		tomcat.addSipConnector(serverName, sipIpAddress, 5070, ListeningPoint.TCP);
 		setupPhones(ListeningPoint.TCP);
 		String fromName = "unique-location";
 		String fromSipAddress = "sip-servlets.com";
@@ -146,6 +149,30 @@ public class ProxyRecordRouteReInviteTest extends SipServletTestCase {
 		assertTrue(receiver.isCancelReceived());
 		assertTrue(sender.isCancelOkReceived());		
 		assertTrue(sender.isRequestTerminatedReceived());			
+	}
+	
+	// Issue http://code.google.com/p/mobicents/issues/detail?id=1847
+	public void testProxyExtraRouteNoRewrite() throws Exception {
+		setupPhones(ListeningPoint.UDP);
+		String fromName = "unique-location";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);		
+		
+		String toSipAddress = "sip-servlets.com";
+		String toUser = "proxy-receiver";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);
+		Header rh = senderProtocolObjects.headerFactory.createHeader("Route", "sip:extra-route@127.0.0.1:5057;lr");
+		LinkedList<Header> hh = new LinkedList<Header>();
+		hh.add(rh);
+		Thread.sleep(TIMEOUT/4);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, hh, "udp");
+		Thread.sleep(TIMEOUT/2);
+		
+		assertTrue(receiver.getInviteRequest().getRequestURI().toString().contains("extra-route"));
 	}
 
 	public void setupPhones(String transport) throws Exception {

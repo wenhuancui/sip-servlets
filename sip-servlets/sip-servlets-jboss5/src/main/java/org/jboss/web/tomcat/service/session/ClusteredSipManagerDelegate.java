@@ -16,6 +16,7 @@
  */
 package org.jboss.web.tomcat.service.session;
 
+import org.apache.log4j.Logger;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistributableSessionData;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
@@ -32,7 +33,7 @@ import org.mobicents.servlet.sip.startup.SipContext;
  *
  */
 public class ClusteredSipManagerDelegate extends SipManagerDelegate {
-
+	private static final Logger logger = Logger.getLogger(ClusteredSipManagerDelegate.class);
 	/**
      * The descriptive information about this implementation.
      */
@@ -59,7 +60,16 @@ public class ClusteredSipManagerDelegate extends SipManagerDelegate {
 	@Override
 	protected MobicentsSipApplicationSession getNewMobicentsSipApplicationSession(
 			SipApplicationSessionKey key, SipContext sipContext) {
-		ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> session = null;
+		return getNewMobicentsSipApplicationSession(key, sipContext, false);
+	}
+	
+	protected MobicentsSipApplicationSession getNewMobicentsSipApplicationSession(
+			SipApplicationSessionKey key, SipContext sipContext, boolean recreate) {
+		ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> session = null;				
+		
+		if(!recreate) {
+			clusteredSipManager.checkSipApplicationSessionPassivation(key);
+		}
 		
 		if (replicationGranularity.equals(ReplicationGranularity.ATTRIBUTE)) {
 			session = new AttributeBasedClusteredSipApplicationSession(key,sipContext, useJK);
@@ -68,9 +78,25 @@ public class ClusteredSipManagerDelegate extends SipManagerDelegate {
 		} else {
 			session = new SessionBasedClusteredSipApplicationSession(key,sipContext, useJK);
 		}
-		clusteredSipManager.getDistributedCacheConvergedSipManager().sipApplicationSessionCreated(key.getId());
-		session.setNew(true);
-		return session;
+		clusteredSipManager.getDistributedCacheConvergedSipManager().sipApplicationSessionCreated(key.getId());		
+		MobicentsSipApplicationSession sipApplicationSessionImpl = sipApplicationSessions.putIfAbsent(key, session);
+		if (sipApplicationSessionImpl == null) {
+			// put succeeded, use new value
+			if(logger.isDebugEnabled()) {
+				logger.debug("Adding a recreated sip application session with the key : " + key);
+			}
+            sipApplicationSessionImpl = session;
+            final String appGeneratedKey = key.getAppGeneratedKey(); 
+    		if(appGeneratedKey != null) {    		
+            	sipApplicationSessionsByAppGeneratedKey.putIfAbsent(appGeneratedKey, sipApplicationSessionImpl);
+            }
+    		session.setNew(true);
+    		((ClusteredSipApplicationSession<OutgoingDistributableSessionData>)session).clearOutdated();
+        }
+		if(!recreate) {
+			scheduleExpirationTimer(sipApplicationSessionImpl);
+		}		
+		return sipApplicationSessionImpl;
 	}
 
 	/* (non-Javadoc)
@@ -80,7 +106,18 @@ public class ClusteredSipManagerDelegate extends SipManagerDelegate {
 	protected MobicentsSipSession getNewMobicentsSipSession(SipSessionKey key,
 			SipFactoryImpl sipFactoryImpl,
 			MobicentsSipApplicationSession mobicentsSipApplicationSession) {
+		return getNewMobicentsSipSession(key, sipFactoryImpl, mobicentsSipApplicationSession, false);
+	}
+	
+	protected MobicentsSipSession getNewMobicentsSipSession(SipSessionKey key,
+			SipFactoryImpl sipFactoryImpl,
+			MobicentsSipApplicationSession mobicentsSipApplicationSession, boolean recreate) {
 		ClusteredSipSession<? extends OutgoingDistributableSessionData> session = null;
+		
+		if(!recreate) {
+			clusteredSipManager.checkSipSessionPassivation(key);
+		}
+		
 		if (replicationGranularity.equals(ReplicationGranularity.ATTRIBUTE)) {
 			session = new AttributeBasedClusteredSipSession(key, sipFactoryImpl, mobicentsSipApplicationSession, useJK);
 		} else if (replicationGranularity.equals(ReplicationGranularity.FIELD)) {
@@ -90,7 +127,15 @@ public class ClusteredSipManagerDelegate extends SipManagerDelegate {
 		}
 		clusteredSipManager.getDistributedCacheConvergedSipManager().sipSessionCreated(mobicentsSipApplicationSession.getKey().getId(), SessionManagerUtil.getSipSessionHaKey(key));
 		session.setNew(true);
-		return session;
+		MobicentsSipSession sipSessionImpl = sipSessions.putIfAbsent(key, session);
+		if(sipSessionImpl == null) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("Adding a recreated sip session with the key : " + key);
+			}
+			// put succeeded, use new value
+            sipSessionImpl = session;
+		}
+		return sipSessionImpl;
 	}
 
 	public ClusteredSipSession putSipSession(SipSessionKey key, ClusteredSipSession session) {

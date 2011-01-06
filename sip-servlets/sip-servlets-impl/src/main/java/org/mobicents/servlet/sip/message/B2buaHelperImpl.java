@@ -16,6 +16,7 @@
  */
 package org.mobicents.servlet.sip.message;
 
+import gov.nist.javax.sip.header.HeaderExt;
 import gov.nist.javax.sip.header.ims.PathHeader;
 import gov.nist.javax.sip.message.SIPMessage;
 
@@ -315,6 +316,7 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 			
 			ContactHeader contactHeader = (ContactHeader) subsequentRequest.getHeader(ContactHeader.NAME);
 			if(contactHeader != null && contactHeaderSet.size() > 0) {
+				subsequentRequest.removeHeader(ContactHeader.NAME);
 				setContactHeaders(contactHeaderSet, newSubsequentServletRequest, contactHeader);
 			}
 			
@@ -357,14 +359,29 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 	private void copyNonSystemHeaders(SipServletRequestImpl origRequestImpl,
 			SipServletRequestImpl newSubsequentServletRequest) {
 		final Message origMessage = origRequestImpl.getMessage();
+		final Message subsequentMessage = newSubsequentServletRequest.getMessage();		
 		ListIterator<String> headerNames = origMessage.getHeaderNames();
 		while (headerNames.hasNext()) {
 			String headerName = headerNames.next();
 			if(!JainSipUtils.SYSTEM_HEADERS.contains(headerName) && !headerName.equalsIgnoreCase(ContactHeader.NAME)) {
-				Header origHeader = origMessage.getHeader(headerName);
-				newSubsequentServletRequest.getMessage().addHeader(((Header)origHeader.clone()));
-				if(logger.isDebugEnabled()) {
-					logger.debug("original header " + origHeader + " copied in the new subsequent request");
+				HeaderExt origHeader = (HeaderExt) origMessage.getHeader(headerName);
+				ListIterator<Header> subsHeaderIt = subsequentMessage.getHeaders(headerName);
+				// Issue http://code.google.com/p/mobicents/issues/detail?id=2094
+				// B2b re-invite for authentication will duplicate Remote-Party-ID header
+				// checking if the subsequent request and original request share the same header name and value
+				// before copying to avoid duplicating the headers
+				boolean headerNameValueAlreadyPresent = false;
+				while (subsHeaderIt.hasNext() && !headerNameValueAlreadyPresent) {
+					HeaderExt subsHeader = (HeaderExt) subsHeaderIt.next();
+					if(origHeader.getValue().equals(subsHeader.getValue())) {
+						headerNameValueAlreadyPresent = true;
+					}
+				}
+				if(!headerNameValueAlreadyPresent) {
+					subsequentMessage.addHeader(((Header)origHeader.clone()));
+					if(logger.isDebugEnabled()) {
+						logger.debug("original header " + origHeader + " copied in the new subsequent request");
+					}
 				}
 			}
 		}
@@ -553,8 +570,8 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 		if (mode.equals(UAMode.UAC)) {
 			final Set<Transaction> ongoingTransactions = sipSessionImpl.getOngoingTransactions();
 			if(ongoingTransactions != null) {
-				for ( Transaction transaction: ongoingTransactions) {
-					if ( transaction instanceof ClientTransaction) {
+				for (Transaction transaction: ongoingTransactions) {
+					if (transaction instanceof ClientTransaction) {
 						final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
 						// Issue1571 http://code.google.com/p/mobicents/issues/detail?id=1571
 						// NullPointerException in SipServletResponseImpl.isCommitted 
@@ -581,17 +598,19 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 					}
 				}
 			}
-			
 		} else {
-			for ( Transaction transaction: sipSessionImpl.getOngoingTransactions()) {
-				if ( transaction instanceof ServerTransaction) {
-					final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
-					final SipServletMessage sipServletMessage = tad.getSipServletMessage();
-					//not specified if ACK is a committed message in the spec but it seems not since Proxy api test
-					//testCanacel101 method adds a header to the ACK and it cannot be on a committed message
-					//so we don't want to return ACK as pending messages here. related to TCK test B2BUAHelper.testCreateRequest002
-					if (!sipServletMessage.isCommitted() && !Request.ACK.equals(sipServletMessage.getMethod())) {
-						retval.add(sipServletMessage);
+			final Set<Transaction> ongoingTransactions = sipSessionImpl.getOngoingTransactions();
+			if(ongoingTransactions != null) {
+				for (Transaction transaction: ongoingTransactions) {
+					if (transaction instanceof ServerTransaction) {
+						final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
+						final SipServletMessage sipServletMessage = tad.getSipServletMessage();
+						//not specified if ACK is a committed message in the spec but it seems not since Proxy api test
+						//testCanacel101 method adds a header to the ACK and it cannot be on a committed message
+						//so we don't want to return ACK as pending messages here. related to TCK test B2BUAHelper.testCreateRequest002
+						if (!sipServletMessage.isCommitted() && !Request.ACK.equals(sipServletMessage.getMethod())) {
+							retval.add(sipServletMessage);
+						}
 					}
 				}
 			}
@@ -780,7 +799,10 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 		for (SipServletRequestImpl linkedRequest : originalRequestMap.keySet()) {
 			if(linkedRequest.getSipSessionKey().equals(((MobicentsSipSession) session).getKey()) && 
 					linkedRequest.getMethod().equalsIgnoreCase(Request.INVITE) && 
-					!linkedRequest.isFinalResponseGenerated()) {
+					!linkedRequest.isFinalResponseGenerated() &&
+					// Fix for Issue http://code.google.com/p/mobicents/issues/detail?id=2114
+					// 	In B2b servlet, after re-INVITE, and try to create CANCEL will get "final response already sent!" exception.
+					linkedRequest.getLastFinalResponse() == null) {
 				final SipServletRequestImpl sipServletRequestImpl = (SipServletRequestImpl)linkedRequest.createCancel();
 				((MobicentsSipSession)sipServletRequestImpl.getSession()).setB2buaHelper(this);
 				return sipServletRequestImpl;

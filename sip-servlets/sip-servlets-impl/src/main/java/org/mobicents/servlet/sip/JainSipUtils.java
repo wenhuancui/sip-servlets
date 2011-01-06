@@ -30,6 +30,7 @@ import gov.nist.javax.sip.header.ims.SecurityServerHeader;
 import gov.nist.javax.sip.header.ims.SecurityVerifyHeader;
 import gov.nist.javax.sip.header.ims.ServiceRouteHeader;
 import gov.nist.javax.sip.message.SIPMessage;
+import gov.nist.javax.sip.stack.SIPClientTransaction;
 
 import java.text.ParseException;
 import java.util.HashMap;
@@ -40,6 +41,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.sip.ListeningPoint;
+import javax.sip.ObjectInUseException;
+import javax.sip.Transaction;
 import javax.sip.address.SipURI;
 import javax.sip.address.URI;
 import javax.sip.header.AcceptEncodingHeader;
@@ -96,7 +99,6 @@ import javax.sip.message.Message;
 import javax.sip.message.Request;
 
 import org.apache.log4j.Logger;
-import org.mobicents.servlet.sip.address.SipURIImpl;
 import org.mobicents.servlet.sip.core.ExtendedListeningPoint;
 import org.mobicents.servlet.sip.core.SipNetworkInterfaceManager;
 import org.mobicents.servlet.sip.core.dispatchers.MessageDispatcher;
@@ -110,6 +112,7 @@ import org.mobicents.servlet.sip.message.SipFactoryImpl.NamesComparator;
  * @author Jean Deruelle
  */
 public final class JainSipUtils {
+	private static final Logger logger = Logger.getLogger(JainSipUtils.class);
 	
 	/**
      * The maximum int value that could correspond to a port nubmer.
@@ -606,7 +609,36 @@ public final class JainSipUtils {
 				URI uri = route.getAddress().getURI();
 				if(uri instanceof SipURI) {
 					SipURI sipURI = (SipURI) uri;
-					String transportParam = sipURI.getTransportParam();
+					if(sipURI.isSecure()) {
+						transport = ListeningPoint.TLS;
+					} else {
+						String transportParam = sipURI.getTransportParam();
+
+						if (transportParam != null
+								&& transportParam.equalsIgnoreCase(ListeningPoint.TLS)) {
+							transport = ListeningPoint.TLS;
+						}
+						//Fix by Filip Olsson for Issue 112
+						else if ((transportParam != null
+								&& transportParam.equalsIgnoreCase(ListeningPoint.TCP)) || 
+								request.getContentLength().getContentLength() > 4096) {
+							transport = ListeningPoint.TCP;
+						}
+					}
+				}
+			}
+		}
+
+		if(transport == null && message instanceof Request) {
+			transport = ListeningPoint.UDP;
+			Request request = (Request)message;
+			URI ruri = request.getRequestURI();
+			if(ruri instanceof SipURI) {
+				SipURI sruri = ((javax.sip.address.SipURI) ruri);
+				if(sruri.isSecure()) {
+					transport = ListeningPoint.TLS;
+				} else {
+					String transportParam = sruri.getTransportParam();
 
 					if (transportParam != null
 							&& transportParam.equalsIgnoreCase(ListeningPoint.TLS)) {
@@ -618,27 +650,6 @@ public final class JainSipUtils {
 							request.getContentLength().getContentLength() > 4096) {
 						transport = ListeningPoint.TCP;
 					}
-				}
-			}
-		}
-
-		if(transport == null && message instanceof Request) {
-			transport = ListeningPoint.UDP;
-			Request request = (Request)message;
-
-			if(request.getRequestURI() instanceof SipURI) {
-				String transportParam = ((javax.sip.address.SipURI) request
-					.getRequestURI()).getTransportParam();
-				
-				if (transportParam != null
-						&& transportParam.equalsIgnoreCase(ListeningPoint.TLS)) {
-					transport = ListeningPoint.TLS;
-				}
-				//Fix by Filip Olsson for Issue 112
-				else if ((transportParam != null
-					&& transportParam.equalsIgnoreCase(ListeningPoint.TCP)) || 
-					request.getContentLength().getContentLength() > 4096) {
-					transport = ListeningPoint.TCP;
 				}
 			}
 		}
@@ -661,5 +672,20 @@ public final class JainSipUtils {
 				return true;
 		}
 		return false;
+	}
+
+	public static void terminateTransaction(Transaction transaction) {
+		// Issue 2130 (http://code.google.com/p/mobicents/issues/detail?id=2130) : Memory leak in Sip stack when INFO message is used 
+		// fail before the ctx is created to avoid mem leaks
+		if(transaction != null && transaction instanceof SIPClientTransaction) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("terminating transaction " + transaction + " with transaction id "+ transaction.getBranchId());
+			}
+			try {
+				transaction.terminate();
+			} catch (ObjectInUseException e) {
+				logger.error("Couldn't terminate the transaction " + transaction + " with transaction id "+ transaction.getBranchId());
+			}
+		}
 	}	
 }

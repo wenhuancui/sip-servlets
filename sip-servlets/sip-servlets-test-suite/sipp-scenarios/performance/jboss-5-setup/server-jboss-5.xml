@@ -7,11 +7,13 @@
    <Listener className="org.apache.catalina.core.JasperListener" />
 
    <Service name="jboss.web"
+   		sipPathName="org.mobicents.ha" 
 		className="org.mobicents.servlet.sip.startup.SipStandardService"  		
   		sipApplicationDispatcherClassName="org.mobicents.servlet.sip.core.SipApplicationDispatcherImpl"
   		concurrencyControlMode="None"
   		congestionControlCheckingInterval="-1"
-  		darConfigurationFileLocation="conf/dars/mobicents-dar.properties">
+  		darConfigurationFileLocation="conf/dars/mobicents-dar.properties"
+  		sipStackPropertiesFile="conf/mss-sip-stack.properties">
 
       <!-- A HTTP/1.1 Connector on port 8080 -->
       <Connector protocol="HTTP/1.1" port="8080" address="${jboss.bind.address}" 
@@ -38,8 +40,7 @@
     <Connector port="5080"     	 
 	     ipAddress = "${jboss.bind.address}"
 	     protocol="org.mobicents.servlet.sip.startup.SipProtocolHandler"
-	     signalingTransport="udp" 
-    	 sipStackPropertiesFile="conf/mss-sip-stack.properties"/>
+	     signalingTransport="udp"/>
 
       <Engine name="jboss.web" defaultHost="localhost"  className="org.mobicents.servlet.sip.startup.SipStandardEngine">
 

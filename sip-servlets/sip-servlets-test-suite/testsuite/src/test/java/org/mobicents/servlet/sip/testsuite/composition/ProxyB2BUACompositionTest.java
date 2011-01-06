@@ -49,6 +49,7 @@ public class ProxyB2BUACompositionTest extends SipServletTestCase {
 	}
 
 	private void deployCallForwarding() {
+		tomcat.getSipService().setDialogPendingRequestChecking(true);
 		assertTrue(tomcat.deployContext(
 				projectHome + "/sip-servlets-test-suite/applications/call-forwarding-b2bua-servlet/src/main/sipapp",
 				"call-forwarding-b2bua-context", 
@@ -113,6 +114,139 @@ public class ProxyB2BUACompositionTest extends SipServletTestCase {
 		assertTrue(receiver.getByeReceived());
 	}
 
+	public void testSpeedDialLocationServiceCallerReInviteSendBye() throws Exception {		
+		sender = new TestSipListener(5080, 5070, senderProtocolObjects, false);
+		sender.setRecordRoutingProxyTesting(true);
+		sender.sendByeInNewThread = true;
+		SipProvider senderProvider = sender.createProvider();
+
+		receiver = new TestSipListener(5090, 5070, receiverProtocolObjects, false);
+		receiver.setRecordRoutingProxyTesting(true);
+		SipProvider receiverProvider = receiver.createProvider();
+
+		receiverProvider.addSipListener(receiver);
+		senderProvider.addSipListener(sender);
+
+		senderProtocolObjects.start();
+		receiverProtocolObjects.start();
+
+		String fromName = "forward-pending-sender";
+		String fromHost = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromHost);
+				
+		String toUser = "b2bua";
+		String toHost = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toHost);
+		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
+		Thread.sleep(TIMEOUT);
+		assertTrue(sender.b2buamessagereceived);
+		assertEquals(200, sender.getFinalResponseStatus());
+		sender.setFinalResponseStatus(-1);
+		
+		receiver.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(TIMEOUT);
+		assertEquals(200, receiver.getFinalResponseStatus());
+		
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(TIMEOUT);
+		assertEquals(200, sender.getFinalResponseStatus());
+		
+		sender.sendInDialogSipRequest("BYE", null, null, null, null, null);
+		Thread.sleep(TIMEOUT);
+		assertTrue(sender.getOkToByeReceived());
+		assertTrue(receiver.getByeReceived());
+	}
+
+	public void test491Response() throws Exception {		
+		sender = new TestSipListener(5080, 5070, senderProtocolObjects, false);
+		sender.setRecordRoutingProxyTesting(true);
+		sender.sendByeInNewThread = true;
+		SipProvider senderProvider = sender.createProvider();
+
+		receiver = new TestSipListener(5090, 5070, receiverProtocolObjects, false);
+		receiver.setRecordRoutingProxyTesting(true);
+		SipProvider receiverProvider = receiver.createProvider();
+
+		receiverProvider.addSipListener(receiver);
+		senderProvider.addSipListener(sender);
+
+		senderProtocolObjects.start();
+		receiverProtocolObjects.start();
+
+		String fromName = "forward-pending-sender";
+		String fromHost = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromHost);
+				
+		String toUser = "b2bua";
+		String toHost = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toHost);
+		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
+		Thread.sleep(TIMEOUT);
+		assertTrue(sender.b2buamessagereceived);
+		assertEquals(200, sender.getFinalResponseStatus());
+		sender.setFinalResponseStatus(-1);
+		Thread.sleep(3000);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+
+		try {
+			Thread.sleep(300);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		Thread.sleep(TIMEOUT);
+		assertEquals(1, sender.numberOf491s);
+	}
+	
+	public void test491ResponseTough() throws Exception {		
+		sender = new TestSipListener(5080, 5070, senderProtocolObjects, false);
+		sender.setRecordRoutingProxyTesting(true);
+		sender.sendByeInNewThread = true;
+		SipProvider senderProvider = sender.createProvider();
+
+		receiver = new TestSipListener(5090, 5070, receiverProtocolObjects, false);
+		receiver.setRecordRoutingProxyTesting(true);
+		SipProvider receiverProvider = receiver.createProvider();
+
+		receiverProvider.addSipListener(receiver);
+		senderProvider.addSipListener(sender);
+
+		senderProtocolObjects.start();
+		receiverProtocolObjects.start();
+
+		String fromName = "forward-pending-sender";
+		String fromHost = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromHost);
+				
+		String toUser = "b2bua";
+		String toHost = "sip-servlets.com";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toHost);
+		
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
+		Thread.sleep(TIMEOUT);
+		assertTrue(sender.b2buamessagereceived);
+		assertEquals(200, sender.getFinalResponseStatus());
+		sender.setFinalResponseStatus(-1);
+		Thread.sleep(3000);
+		receiver.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		receiver.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
+		sender.sendInDialogSipRequest("BYE", null, null, null, null, null);
+		Thread.sleep(TIMEOUT);
+		assertEquals(2, sender.numberOf491s);
+		assertEquals(2, receiver.numberOf491s);
+	}
 	
 	@Override
 	protected void tearDown() throws Exception {	

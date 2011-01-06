@@ -16,8 +16,10 @@
  */
 package org.mobicents.servlet.sip.testsuite;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Iterator;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletConfig;
@@ -34,6 +36,8 @@ import javax.servlet.sip.SipErrorEvent;
 import javax.servlet.sip.SipErrorListener;
 import javax.servlet.sip.SipFactory;
 import javax.servlet.sip.SipServlet;
+import javax.servlet.sip.SipServletContextEvent;
+import javax.servlet.sip.SipServletListener;
 import javax.servlet.sip.SipServletRequest;
 import javax.servlet.sip.SipServletResponse;
 import javax.servlet.sip.SipSession;
@@ -42,21 +46,26 @@ import javax.servlet.sip.SipSessionListener;
 import javax.servlet.sip.SipURI;
 import javax.servlet.sip.TimerListener;
 import javax.servlet.sip.TimerService;
+import javax.servlet.sip.URI;
 import javax.servlet.sip.SipSession.State;
 import javax.sip.ListeningPoint;
 
 import org.apache.log4j.Logger;
+import org.mobicents.javax.servlet.sip.SipSessionExt;
 import org.mobicents.servlet.sip.SipConnector;
 import org.mobicents.servlet.sip.listener.SipConnectorListener;
 
 public class SimpleSipServlet 
 		extends SipServlet 
-		implements SipErrorListener, TimerListener, SipConnectorListener, SipSessionListener, SipApplicationSessionListener {
+		implements SipErrorListener, TimerListener, SipConnectorListener, SipSessionListener, SipApplicationSessionListener, SipServletListener {
 	
+	private static final String TEST_EXCEPTION_ON_EXPIRE = "exceptionOnExpire";
+	private static final String TEST_BYE_ON_EXPIRE = "byeOnExpire";
 	private static transient Logger logger = Logger.getLogger(SimpleSipServlet.class);
 	private static final long serialVersionUID = 1L;
 	private static final String TEST_PRACK = "prack";
 	private static final String TEST_ERROR_RESPONSE = "testErrorResponse";
+	private static final String TEST_2X_ACK = "test2xACK";	
 	private static final String TEST_REGISTER_C_SEQ = "testRegisterCSeq";
 	private static final String TEST_REGISTER_NO_CONTACT = "testRegisterNoContact";
 	private static final String TEST_REGISTER_SAVED_SESSION = "testRegisterSavedSession";
@@ -86,6 +95,8 @@ public class SimpleSipServlet
 	SipSession registerSipSession;
 	SipSession inviteSipSession;
 		
+	int timeout = 15000;
+	
 	@Override
 	protected void doBranchResponse(SipServletResponse resp)
 			throws ServletException, IOException {
@@ -102,6 +113,7 @@ public class SimpleSipServlet
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 		logger.info("the simple sip servlet has been started");
+		new File("expirationFailure.tmp").delete();
 		super.init(servletConfig);
 	}
 
@@ -110,7 +122,13 @@ public class SimpleSipServlet
 	 */
 	protected void doInvite(SipServletRequest request) throws ServletException,
 			IOException {
-		String fromString = request.getFrom().toString();
+		
+		// From horacimacias : Non regression test for Issue 2115 MSS unable to handle GenericURI URIs
+		URI requestURI = request.getRequestURI();
+		logger.info("request URI : " + requestURI);
+		
+		String fromString = request.getFrom().toString();				
+		
 		// case for http://code.google.com/p/mobicents/issues/detail?id=1681
 		if(fromString.contains(TEST_NO_ACK_RECEIVED)) {
 			request.createResponse(SipServletResponse.SC_OK).send();
@@ -119,6 +137,16 @@ public class SimpleSipServlet
 		logger.info("from : " + fromString);
 		logger.info("Got request: "
 				+ request.getMethod());	
+		
+		request.setAttribute("test", "test");
+		String requestAttribute = (String)request.getAttribute("test");
+		request.removeAttribute("test");
+		if(!requestAttribute.equalsIgnoreCase("test")) {
+			SipServletResponse sipServletResponse = request.createResponse(SipServletResponse.SC_SERVER_INTERNAL_ERROR);
+			sipServletResponse.send();
+			return;
+		}		
+		
 		if(!request.getApplicationSession().getInvalidateWhenReady()) {
 			SipServletResponse sipServletResponse = request.createResponse(SipServletResponse.SC_SERVER_INTERNAL_ERROR);
 			sipServletResponse.send();
@@ -142,6 +170,14 @@ public class SimpleSipServlet
 				
 		if(fromString.contains(TEST_BYE_ON_DESTROY)) {
 			inviteSipSession = request.getSession();
+		}
+		if(fromString.contains(TEST_BYE_ON_EXPIRE)) {
+			inviteSipSession = request.getSession();
+			inviteSipSession.setAttribute(TEST_BYE_ON_EXPIRE, true);
+		}
+		if(fromString.contains(TEST_EXCEPTION_ON_EXPIRE)) {
+			inviteSipSession = request.getSession();
+			inviteSipSession.setAttribute(TEST_EXCEPTION_ON_EXPIRE, true);
 		}
 		if(fromString.contains(TEST_ERROR_RESPONSE)) {	
 			request.getApplicationSession().setAttribute(TEST_ERROR_RESPONSE, "true");
@@ -194,6 +230,46 @@ public class SimpleSipServlet
 				return;
 			}
 		}				
+		
+		if(fromString.contains("RemotePartyId")) {
+			Address remotePID = request.getAddressHeader("Remote-Party-ID");
+			Address remotePID2 = request.getAddressHeader("Remote-Party-ID2");
+			Address remotePID3 = request.getAddressHeader("Remote-Party-ID3");
+			Address remotePID4 = request.getAddressHeader("Remote-Party-ID4");
+			Address remotePID5 = request.getAddressHeader("Remote-Party-ID5");
+			boolean sendErrorResponse = false;
+			logger.info("Remote-Party-ID value is " + remotePID);
+			logger.info("Remote-Party-ID2 value is " + remotePID2);
+			logger.info("Remote-Party-ID3 value is " + remotePID3);
+			logger.info("Remote-Party-ID4 value is " + remotePID4);
+			logger.info("Remote-Party-ID5 value is " + remotePID5);
+			
+			if(!remotePID.toString().trim().equals("\"KATE SMITH\" <sip:4162375543@47.135.223.88;user=phone>; screen=yes; party=calling; privacy=off")) {
+				sendErrorResponse = true;
+				logger.info("Remote-Party-ID Sending Error Response ");
+			}
+			if(!remotePID2.toString().trim().equals("sip:4162375543@47.135.223.88;user=phone; screen=yes; party=calling; privacy=off")) {
+				sendErrorResponse = true;
+				logger.info("Remote-Party-ID2 Sending Error Response ");								
+			}
+			if(!remotePID3.toString().trim().equals("<sip:4162375543@47.135.223.88;user=phone>; screen=yes; party=calling; privacy=off")) {
+				sendErrorResponse = true;
+				logger.info("Remote-Party-ID3 Sending Error Response ");
+			}
+			if(!remotePID4.toString().trim().equals("\"KATE SMITH\" <sip:4162375543@47.135.223.88>; screen=yes; party=calling; privacy=off")) {
+				sendErrorResponse = true;
+				logger.info("Remote-Party-ID4 Sending Error Response ");
+			}
+			if(!remotePID5.toString().trim().equals("<sip:4162375543@47.135.223.88>; screen=yes; party=calling; privacy=off")) {
+				sendErrorResponse = true;
+				logger.info("Remote-Party-ID5 Sending Error Response ");
+			}		
+			if(sendErrorResponse) {
+				SipServletResponse sipServletResponse = request.createResponse(SipServletResponse.SC_SERVER_INTERNAL_ERROR);
+				sipServletResponse.send();
+				return;
+			}
+		}
 		
 		request.getAddressHeader(TEST_NON_EXISTING_HEADER);
 		request.getHeader(TEST_NON_EXISTING_HEADER);		
@@ -258,6 +334,7 @@ public class SimpleSipServlet
 					logger.error("an IllegalArgumentException should be thrown when trying to set the Contact Header on a 2xx response");
 					sipServletResponse = request.createResponse(SipServletResponse.SC_SERVER_INTERNAL_ERROR);
 					sipServletResponse.send();
+					return;
 				} catch (IllegalArgumentException e) {
 					logger.info("Contact Header is not set-able for the 2XX response to an INVITE");
 				}				
@@ -348,11 +425,21 @@ public class SimpleSipServlet
 				}
 				req.getSession().setAttribute("nbAcks", nbOfAcks);
 			} else if(TEST_IS_SIP_SERVLET_SEND_BYE.equalsIgnoreCase(((SipURI)req.getFrom().getURI()).getUser())) {				
-				timerService.createTimer(req.getApplicationSession(), 10000, false, (Serializable)req.getSession());
+				timerService.createTimer(req.getApplicationSession(), timeout, false, (Serializable)req.getSession());
+			} else if(TEST_EXCEPTION_ON_EXPIRE.equalsIgnoreCase(((SipURI)req.getFrom().getURI()).getUser())) {
+				try {
+					Thread.sleep(1000);
+					SipServletRequest r = req.getSession().createRequest("INVITE");
+					r.send();
+
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
 			}
 		}
 		String fromString = req.getFrom().toString();
-		if(fromString.contains(TEST_ERROR_RESPONSE)) {			
+		if(fromString.contains(TEST_ERROR_RESPONSE) || fromString.contains(TEST_2X_ACK)) {			
 			sendMessage(req.getApplicationSession(), sipFactory, "ackReceived", null);
 			return;
 		}
@@ -459,7 +546,7 @@ public class SimpleSipServlet
 			logger.error("Exception occured while sending the request",e);			
 		}
 	}
-
+	
 	@Override
 	protected void doRegister(SipServletRequest req) throws ServletException,
 			IOException {
@@ -472,23 +559,28 @@ public class SimpleSipServlet
 		}
 		SipServletResponse resp = req.createResponse(response);
 		resp.send();
+		
 	}
 	
 	@Override
 	protected void doInfo(SipServletRequest req) throws ServletException,
 			IOException {
 		String content = (String) req.getContent();
-		req.getSession().setAttribute("mutable", content);
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		int response = SipServletResponse.SC_OK;
-		if(!content.equals(req.getSession().getAttribute("mutable")))
-			response = SipServletResponse.SC_SERVER_INTERNAL_ERROR;
-		
+		if(content != null) {
+			req.getSession().setAttribute("mutable", content);
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+			if(!content.equals(req.getSession().getAttribute("mutable")))
+				response = SipServletResponse.SC_SERVER_INTERNAL_ERROR;
+		} else {
+			SipURI outboundInterface = (SipURI) sipFactory.createURI("sip:" + req.getInitialRemoteAddr()+ ":" + req.getLocalPort() + ";transport=" + req.getTransport());
+			((SipSessionExt)req.getSession()).setOutboundInterface(outboundInterface);
+		}
 		SipServletResponse resp = req.createResponse(response);
 		resp.send();
 	}
@@ -552,7 +644,6 @@ public class SimpleSipServlet
 			try {
 				((SipSession)info).createRequest("BYE").send();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -645,7 +736,7 @@ public class SimpleSipServlet
 	
 	@Override
 	public void destroy() {
-		if(inviteSipSession != null) {
+		if(inviteSipSession != null && inviteSipSession.isValid()) {
 			try {
 				inviteSipSession.createRequest("BYE").send();
 			} catch (IOException e) {
@@ -693,16 +784,52 @@ public class SimpleSipServlet
 
 
 
-	public void sessionExpired(SipApplicationSessionEvent ev) {
-		// TODO Auto-generated method stub
-		
+	public void sessionExpired(SipApplicationSessionEvent event) {
+		if(logger.isInfoEnabled()) {
+			logger.info("Distributable Simple Servlet: sip app session " + event.getApplicationSession().getId() + " expired");
+		}		
+		Iterator<SipSession> sipSessionsIt = (Iterator<SipSession>) event.getApplicationSession().getSessions("SIP");
+		if(sipSessionsIt.hasNext()) {
+			SipSession sipSession = sipSessionsIt.next();
+			if(sipSession != null && sipSession.getAttribute(TEST_BYE_ON_EXPIRE)!=null)
+			{
+				if(sipSession != null && sipSession.isValid() && !State.TERMINATED.equals(sipSession.getState())) {
+					try {
+						sipSession.createRequest("BYE").send();
+					} catch (IOException e) {
+						logger.error("An unexpected exception occured while sending the BYE", e);
+					}				
+				}
+			} 
+			if(sipSession != null && sipSession.getAttribute(TEST_EXCEPTION_ON_EXPIRE)!=null) {
+				Integer expirations = (Integer) sipSession.getAttribute("expirations");
+				if(expirations == null) expirations = 1;
+				sipSession.setAttribute("expirations", expirations + 1);
+				if(expirations>1) {
+					logger.fatal("TOO MANY EXPIRATIONS");
+					try {
+						new File("expirationFailure.tmp").createNewFile();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+				throw new IllegalStateException();
+			}
+		}
 	}
-
-
 
 	public void sessionReadyToInvalidate(SipApplicationSessionEvent ev) {
 		if(ev.getApplicationSession().getAttribute(TEST_ERROR_RESPONSE) != null) {
 			sendMessage(sipFactory.createApplicationSession(), sipFactory, "sipAppSessionReadyToInvalidate", null);
+		}
+	}
+
+	public void servletInitialized(SipServletContextEvent ce) {
+		String byeDelayString = getServletContext().getInitParameter("byeDelay");
+		if(byeDelayString != null) {
+			timeout= Integer.parseInt(byeDelayString);
 		}
 	}
 }

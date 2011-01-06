@@ -16,8 +16,11 @@
  */
 package org.mobicents.servlet.sip.testsuite.security;
 
+import java.util.ListIterator;
+
 import javax.sip.SipProvider;
 import javax.sip.address.SipURI;
+import javax.sip.header.Header;
 
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.SipServletTestCase;
@@ -92,11 +95,57 @@ public class CallForwardingB2BUAAuthTest extends SipServletTestCase {
 		String toUser = "receiver";
 		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
 				toUser, toSipAddress);
-		
-		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
+				
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, new String[] {"Remote-Party-ID"}, new String[] {"<sip:test@127.0.0.1:5080>;screen=yes;privacy=off;party=calling;-call-initiator=5016;-call-initiator-location=int;-redirected-by;-int-ext=5016;-ent-name=Acro;-direction=ext;-call-id=55665"}, true);		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.getOkToByeReceived());
 		assertTrue(receiver.getByeReceived());
+		// Non Regression test for http://code.google.com/p/mobicents/issues/detail?id=2094
+		// B2b re-invite for authentication will duplicate Remote-Party-ID header
+		ListIterator<Header> it = receiver.getInviteRequest().getHeaders("Remote-Party-ID");
+		int nbHeaders= 0;
+		while (it.hasNext()) {
+			Header header = it.next();
+			nbHeaders++;
+		}
+		assertEquals(1, nbHeaders);
+	}
+	
+	/*
+	 * Non regression test for Issue http://code.google.com/p/mobicents/issues/detail?id=2114
+	 * In B2b servlet, after re-INVITE, and try to create CANCEL will get "final response already sent!" exception.
+	 */
+	public void testCallForwardingAuthCancel() throws Exception {
+		sender = new TestSipListener(5080, 5070, senderProtocolObjects, true);
+		sender.setSendCancelOn1xx(true);
+		SipProvider senderProvider = sender.createProvider();
+
+		receiver = new TestSipListener(5090, 5070, receiverProtocolObjects, false);
+		receiver.setChallengeRequests(true);
+		receiver.setWaitForCancel(true);
+		SipProvider receiverProvider = receiver.createProvider();
+
+		receiverProvider.addSipListener(receiver);
+		senderProvider.addSipListener(sender);
+
+		senderProtocolObjects.start();
+		receiverProtocolObjects.start();
+
+		String fromName = "forward-sender";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+		
+		String toSipAddress = "sip-servlets.com";
+		String toUser = "receiver";
+		SipURI toAddress = senderProtocolObjects.addressFactory.createSipURI(
+				toUser, toSipAddress);
+				
+		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, new String[] {"Remote-Party-ID"}, new String[] {"<sip:test@127.0.0.1:5080>;screen=yes;privacy=off;party=calling;-call-initiator=5016;-call-initiator-location=int;-redirected-by;-int-ext=5016;-ent-name=Acro;-direction=ext;-call-id=55665"}, true);		
+		Thread.sleep(TIMEOUT);
+		assertTrue(sender.isCancelOkReceived());
+		assertTrue(sender.isRequestTerminatedReceived());
+		assertTrue(receiver.isCancelReceived());
 	}
 	
 	@Override

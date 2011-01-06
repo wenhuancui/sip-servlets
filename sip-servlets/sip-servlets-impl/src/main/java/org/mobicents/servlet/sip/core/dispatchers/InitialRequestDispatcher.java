@@ -72,6 +72,7 @@ import org.mobicents.servlet.sip.message.SipServletMessageImpl;
 import org.mobicents.servlet.sip.message.SipServletRequestImpl;
 import org.mobicents.servlet.sip.message.TransactionApplicationData;
 import org.mobicents.servlet.sip.startup.SipContext;
+import org.mobicents.servlet.sip.startup.StaticServiceHolder;
 import org.mobicents.servlet.sip.startup.loading.SipServletMapping;
 
 /**
@@ -165,7 +166,15 @@ public class InitialRequestDispatcher extends RequestDispatcher {
 		// Upon receiving an initial request for processing, a container MUST check the topmost Route header and 
 		// Request-URI (in that order) to see if it contains an encoded URI. 
 		// If it does, the container MUST use the encoded URI to locate the targeted SipApplicationSession object
-		String targetedApplicationKey = ((Parameters)request.getRequestURI()).getParameter(MobicentsSipApplicationSession.SIP_APPLICATION_KEY_PARAM_NAME);
+		URI requestURI = request.getRequestURI();
+		// From horacimacias : Fix for Issue 2115 MSS unable to handle GenericURI URIs
+		// check the URI is an instance of Parameters. GenericURI doesn't implement Parameters
+		String targetedApplicationKey;
+		if(requestURI instanceof Parameters) {
+			targetedApplicationKey = ((Parameters)requestURI).getParameter(MobicentsSipApplicationSession.SIP_APPLICATION_KEY_PARAM_NAME);
+		} else {
+			targetedApplicationKey = null;
+		}
 		MobicentsSipApplicationSession encodeURISipApplicationSession = retrieveTargetedApplication(targetedApplicationKey);
 		SipTargetedRequestInfo targetedRequestInfo = null;
 		if(encodeURISipApplicationSession != null) {
@@ -206,17 +215,18 @@ public class InitialRequestDispatcher extends RequestDispatcher {
 			if(targetedRequestInfo != null) {
 				// If no match is found, but the Request-URI in the INVITE corresponds to a conference URI, the UAS MUST ignore the Join header and continue
 				// processing the INVITE as if the Join header did not exist
-			} else 
-			//Otherwise if no match is found, the UAS rejects the INVITE and returns a 481 Call/Transaction Does Not Exist response.  
-			if(joinReplacesDialog == null && targetedRequestInfo == null) {
-				throw new DispatcherException(Response.CALL_OR_TRANSACTION_DOES_NOT_EXIST, "Join/Replaces Header : no match is found as per RFC 3911, Section 4 or RFC 3891, Section 3 in the request " + request);
-			} else 
-			//Likewise, if the Join/Replaces header field matches a dialog which was not created with an INVITE, the UAS MUST reject the request with a 481 response.	
-			if(((TransactionApplicationData)joinReplacesDialog.getApplicationData()) != null && !Request.INVITE.equals(((TransactionApplicationData)joinReplacesDialog.getApplicationData()).getSipServletMessage().getMethod())) {					 
+			}  else if(joinReplacesDialog == null && targetedRequestInfo == null) {				
+				// Issue 2048 : Should comply with 15.11.4.4.If no SipSession matching the tuple is found, 
+				// the container MUST pass the request to the Application Router as an untargeted request, i.e., where the SipTargetedRequestInfo argument to getNextApplication() is null.
+				// so nothing to do here
+				
+				//Otherwise if no match is found, the UAS rejects the INVITE and returns a 481 Call/Transaction Does Not Exist response.
+//				throw new DispatcherException(Response.CALL_OR_TRANSACTION_DOES_NOT_EXIST, "Join/Replaces Header : no match is found as per RFC 3911, Section 4 or RFC 3891, Section 3 in the request " + request);
+			} else if(((TransactionApplicationData)joinReplacesDialog.getApplicationData()) != null && !Request.INVITE.equals(((TransactionApplicationData)joinReplacesDialog.getApplicationData()).getSipServletMessage().getMethod())) {
+				//Likewise, if the Join/Replaces header field matches a dialog which was not created with an INVITE, the UAS MUST reject the request with a 481 response.
 				throw new DispatcherException(Response.CALL_OR_TRANSACTION_DOES_NOT_EXIST, "Join/Replaces header field matches a dialog which was not created with an INVITE as per RFC 3911, Section 4 or RFC 3891, Section 3 in the request " + request);
-			} else
-			// If the Join/Replaces header field matches a dialog which has already terminated, the UA SHOULD decline the request with a 603 Declined response.
-			if(DialogState.TERMINATED.equals(joinReplacesDialog.getState())) {
+			} else if(DialogState.TERMINATED.equals(joinReplacesDialog.getState())) {
+				// If the Join/Replaces header field matches a dialog which has already terminated, the UA SHOULD decline the request with a 603 Declined response.
 				throw new DispatcherException(Response.DECLINE, "Join/Replaces header field matches a dialog which has already terminated as per RFC 3911, Section 4 or RFC 3891, Section 3 in the request " + request);
 			}
 			//TODO If the initiator of the new INVITE has authenticated successfully as equivalent to the user who is being joined, then the join is authorized
@@ -367,6 +377,13 @@ public class InitialRequestDispatcher extends RequestDispatcher {
 					sipContext, sipServletRequest, nextApplicationName);
 			sipApplicationSession = sipManager.getSipApplicationSession(
 					sipApplicationSessionKey, true);
+
+			if(StaticServiceHolder.sipStandardService.isHttpFollowsSip()) {
+				String jvmRoute = StaticServiceHolder.sipStandardService.getJvmRoute();
+				if(jvmRoute == null) {
+					sipApplicationSession.setJvmRoute(jvmRoute);
+				}
+			}
 		}	
 		
 		//sip application session association
@@ -401,6 +418,7 @@ public class InitialRequestDispatcher extends RequestDispatcher {
 		sipSessionImpl.setCseq(cSeq);
 		
 		if(request.getMethod().equals(Request.INVITE)) {
+			sipSessionImpl.setRequestsPending(sipSessionImpl.getRequestsPending() + 1);
 			sipSessionImpl.setAckReceived(cSeq, false);			
 		}
 		final InitialDispatchTask dispatchTask = new InitialDispatchTask(sipServletRequest, sipProvider);
@@ -620,29 +638,31 @@ public class InitialRequestDispatcher extends RequestDispatcher {
 	 */
 	private MobicentsSipSession retrieveSipSession(Dialog dialog) {
 		
-		Iterator<SipContext> iterator = sipApplicationDispatcher.findSipApplications();
-		while(iterator.hasNext()) {
-			SipContext sipContext = iterator.next();
-			SipManager sipManager = sipContext.getSipManager();
-			
-			Iterator<MobicentsSipSession> sipSessionsIt= sipManager.getAllSipSessions();
-			while (sipSessionsIt.hasNext()) {
-				MobicentsSipSession mobicentsSipSession = (MobicentsSipSession) sipSessionsIt
-						.next();
-				SipSessionKey sessionKey = mobicentsSipSession.getKey();				
-				if(sessionKey.getCallId().trim().equals(dialog.getCallId().getCallId())) {
-					if(logger.isDebugEnabled()) {
-						logger.debug("found session with the same Call Id " + sessionKey + ", to Tag " + sessionKey.getToTag());
-						logger.debug("dialog localParty = " + dialog.getLocalParty().getURI() + ", localTag " + dialog.getLocalTag());
-						logger.debug("dialog remoteParty = " + dialog.getRemoteParty().getURI() + ", remoteTag " + dialog.getRemoteTag());
-					}
-					if(sessionKey.getFromTag().equals(dialog.getLocalTag()) && sessionKey.getToTag().equals(dialog.getRemoteTag())) {
-						if(mobicentsSipSession.getProxy() == null) {
-							return mobicentsSipSession;	
+		if(dialog != null) {
+			Iterator<SipContext> iterator = sipApplicationDispatcher.findSipApplications();
+			while(iterator.hasNext()) {
+				SipContext sipContext = iterator.next();
+				SipManager sipManager = sipContext.getSipManager();
+				
+				Iterator<MobicentsSipSession> sipSessionsIt= sipManager.getAllSipSessions();
+				while (sipSessionsIt.hasNext()) {
+					MobicentsSipSession mobicentsSipSession = (MobicentsSipSession) sipSessionsIt
+							.next();
+					SipSessionKey sessionKey = mobicentsSipSession.getKey();				
+					if(sessionKey.getCallId().trim().equals(dialog.getCallId().getCallId())) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("found session with the same Call Id " + sessionKey + ", to Tag " + sessionKey.getToTag());
+							logger.debug("dialog localParty = " + dialog.getLocalParty().getURI() + ", localTag " + dialog.getLocalTag());
+							logger.debug("dialog remoteParty = " + dialog.getRemoteParty().getURI() + ", remoteTag " + dialog.getRemoteTag());
 						}
-					} else if (sessionKey.getFromTag().equals(dialog.getRemoteTag()) && sessionKey.getToTag().equals(dialog.getLocalTag())){
-						if(mobicentsSipSession.getProxy() == null) {
-							return mobicentsSipSession;	
+						if(sessionKey.getFromTag().equals(dialog.getLocalTag()) && sessionKey.getToTag().equals(dialog.getRemoteTag())) {
+							if(mobicentsSipSession.getProxy() == null) {
+								return mobicentsSipSession;	
+							}
+						} else if (sessionKey.getFromTag().equals(dialog.getRemoteTag()) && sessionKey.getToTag().equals(dialog.getLocalTag())){
+							if(mobicentsSipSession.getProxy() == null) {
+								return mobicentsSipSession;	
+							}
 						}
 					}
 				}
@@ -718,6 +738,11 @@ public class InitialRequestDispatcher extends RequestDispatcher {
 				// to save memory and avoid unecessary replication
 				sipSessionImpl.setRoutingRegion(null);
 				sipSessionImpl.setSipSubscriberURI(null);
+				
+				// exitSipAppHa completes the replication task. It might block for a while if the state is too big
+				// We should never call exitAipApp before exitSipAppHa, because exitSipApp releases the lock on the
+				// Application of SipSession (concurrency control lock). If this happens a new request might arrive
+				// and modify the state during Serialization or other non-thread safe operation in the serialization
 				sipContext.exitSipAppHa(sipServletRequest, null);
 				sipContext.exitSipApp(appSession, sipSessionImpl);				
 			}

@@ -173,7 +173,15 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 	@SuppressWarnings("unchecked")
 	public SipServletRequest createAck() {
 		final Response response = getResponse();
-		if(!Request.INVITE.equals(((SIPTransaction)getTransaction()).getMethod()) || (response.getStatusCode() >= 100 && response.getStatusCode() < 200) || isAckGenerated) {
+		if(logger.isDebugEnabled()) {
+			logger.debug("transaction " + getTransaction());
+			logger.debug("originalRequest " + originalRequest);
+		}
+		// transaction can be null in case of forking
+		if(((getTransaction() == null && originalRequest != null && !Request.INVITE.equals(getMethod()) && !Request.INVITE.equals(originalRequest.getMethod()))) || 
+				(getTransaction() != null && !Request.INVITE.equals(((SIPTransaction)getTransaction()).getMethod())) || 
+				(response.getStatusCode() >= 100 && response.getStatusCode() < 200) || 
+				isAckGenerated) {
 			if(logger.isDebugEnabled()) {
 				logger.debug("transaction state " + ((SIPTransaction)getTransaction()).getMethod() + " status code " + response.getStatusCode() + " isAckGenerated " + isAckGenerated);
 			}
@@ -188,6 +196,8 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 				logger.debug("dialog to create the ack Request " + dialog);
 			}
 			Request ackRequest = dialog.createAck(cSeqHeader.getSeqNumber());
+			// Workaround wrong UA stack for Issue 1802 
+			ackRequest.removeHeader(ViaHeader.NAME);
 			if(logger.isInfoEnabled()) {
 				logger.info("ackRequest just created " + ackRequest);
 			}
@@ -237,7 +247,7 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 			if(logger.isDebugEnabled()) {
 				logger.debug("dialog to create the prack Request " + dialog);
 			}
-			Request prackRequest = dialog.createPrack(response);
+			Request prackRequest = dialog.createPrack(response);			
 			if(logger.isInfoEnabled()) {
 				logger.info("prackRequest just created " + prackRequest);
 			}
@@ -504,8 +514,10 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 				}
 			}
 			if(logger.isDebugEnabled()) {
-				logger.debug("original req method "+ originalRequest.getMethod());
-				logger.debug("original req routing state "+ originalRequest.getRoutingState());
+				logger.debug("original req "+ originalRequest);
+				if(originalRequest != null) {					
+					logger.debug("original req routing state "+ originalRequest.getRoutingState());
+				}
 				if(transaction != null) {
 					logger.debug("transaction dialog "+ transaction.getDialog());
 				}
@@ -561,42 +573,55 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 				originalRequest.setRoutingState(RoutingState.FINAL_RESPONSE_SENT);				
 			}
 			if(originalRequest != null) {				
-				originalRequest.setResponse(this);					
+				originalRequest.setResponse(this);
+				if(originalRequest.getTransaction() !=  null && originalRequest.getTransaction().getApplicationData() != null && ((TransactionApplicationData)originalRequest.getTransaction().getApplicationData()).getSipServletMessage() != null) {
+					// used for early dialog failover purposes
+					((SipServletRequestImpl)((TransactionApplicationData)originalRequest.getTransaction().getApplicationData()).getSipServletMessage()).setResponse(this);
+				}				
 			}
 			//updating the last accessed times 
 			session.access();
 			sipApplicationSession.access();
-			if(transaction == null) {
-				if(logger.isDebugEnabled()) {
-					logger.debug("Sending response statelessly " + message);
+			// Issue 1791 : using a different classloader created outside the application loader 
+			// to avoid leaks on startup/shutdown
+			final ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+			try {
+				final ClassLoader cl = sipApplicationSession.getSipContext().getClass().getClassLoader();
+				Thread.currentThread().setContextClassLoader(cl);
+				if(transaction == null) {
+					if(logger.isDebugEnabled()) {
+						logger.debug("Sending response statelessly " + message);
+					}
+					final String transport = JainSipUtils.findTransport(((SipServletRequestImpl)this.getRequest()).getMessage());
+					final SipProvider sipProvider = sipFactoryImpl.getSipNetworkInterfaceManager().findMatchingListeningPoint(
+							transport, false).getSipProvider();
+					sipProvider.sendResponse((Response)this.message);
+				} else if(sendReliably) {
+					if(logger.isDebugEnabled()) {
+						logger.debug("Sending response reliably " + message);
+					}
+					dialog.sendReliableProvisionalResponse((Response)this.message);
+				} else {
+					if(logger.isDebugEnabled()) {
+						logger.debug("Sending response " + message + " through tx " + transaction);
+					}
+					transaction.sendResponse( (Response)this.message );
+					if(dialog != null) {
+						// we need to set the dialog again because it's possible that when the dialog
+						// was created it was in null state thus no dialog id so we need to reset it to trigger
+						// replication of the dialog id since the dialog id is computed only after the response has been sent
+						session.setSessionCreatingDialog(dialog);
+					}
 				}
-				final String transport = JainSipUtils.findTransport(((SipServletRequestImpl)this.getRequest()).getMessage());
-				final SipProvider sipProvider = sipFactoryImpl.getSipNetworkInterfaceManager().findMatchingListeningPoint(
-						transport, false).getSipProvider();
-				sipProvider.sendResponse((Response)this.message);
-			} else if(sendReliably) {
-				if(logger.isDebugEnabled()) {
-					logger.debug("Sending response reliably " + message);
-				}
-				dialog.sendReliableProvisionalResponse((Response)this.message);
-			} else {
-				if(logger.isDebugEnabled()) {
-					logger.debug("Sending response " + message + " through tx " + transaction);
-				}
-				transaction.sendResponse( (Response)this.message );
-				if(dialog != null) {
-					// we need to set the dialog again because it's possible that when the dialog
-					// was created it was in null state thus no dialog id so we need to reset it to trigger
-					// replication of the dialog id since the dialog id is computed only after the response has been sent
-					session.setSessionCreatingDialog(dialog);
-				}
+				isMessageSent = true;
+				if(isProxiedResponse) {
+					isResponseForwardedUpstream = true;
+				}		
+			} finally {
+				Thread.currentThread().setContextClassLoader(oldClassLoader);
 			}
-			isMessageSent = true;
-			if(isProxiedResponse) {
-				isResponseForwardedUpstream = true;
-			}			
 		} catch (Exception e) {			
-			throw new IllegalStateException("an exception occured when sending the response", e);
+			throw new IllegalStateException("an exception occured when sending the response " + message, e);
 		}
 	}
 	/*
@@ -788,7 +813,7 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 		out.writeBoolean(isPrackGenerated);
 		out.writeBoolean(hasBeenReceived);
 	}
-	
+
 	public boolean isRetransmission() {		
 		return isRetransmission;
 	}

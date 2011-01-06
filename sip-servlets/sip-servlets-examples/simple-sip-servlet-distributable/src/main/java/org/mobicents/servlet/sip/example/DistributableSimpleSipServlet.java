@@ -17,6 +17,7 @@
 package org.mobicents.servlet.sip.example;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -95,9 +96,9 @@ public class DistributableSimpleSipServlet
 		if(!(((SipURI)request.getFrom().getURI()).getUser()).contains(NO_ATTRIBUTES)) {
 			if(request.isInitial()) { 
 				request.getSession().setAttribute("INVITE", RECEIVED);
-	//			request.getSession().setAttribute("sipSessionActivationListener", new SipSessionActivationListenerAttribute());
+				request.getSession().setAttribute("sipSessionActivationListener", new SipSessionActivationListenerAttribute());
 				request.getApplicationSession().setAttribute("INVITE", RECEIVED);
-	//			request.getSession().setAttribute("sipAppSessionActivationListener", new SipApplicationSessionActivationListenerAttribute());
+				request.getApplicationSession().setAttribute("sipAppSessionActivationListener", new SipApplicationSessionActivationListenerAttribute());
 				if(((SipURI)request.getTo().getURI()).getUser().contains("reinvite")) {
 					if(logger.isInfoEnabled()) {			
 						logger.info("Distributable Simple Servlet: setting isReINVITE");
@@ -235,13 +236,18 @@ public class DistributableSimpleSipServlet
 		if(logger.isInfoEnabled()) {
 			logger.info("Distributable Simple Servlet: sip app session " + event.getApplicationSession().getId() + " expired");
 		}		
-		SipSession sipSession = (SipSession)event.getApplicationSession().getSessions("SIP").next();
-		if(sipSession != null && sipSession.isValid() && !State.TERMINATED.equals(sipSession.getState())) {
-			try {
-				sipSession.createRequest("BYE").send();
-			} catch (IOException e) {
-				logger.error("An unexpected exception occured while sending the BYE", e);
-			}				
+		if(event.getApplicationSession().isValid()) {
+			Iterator<SipSession> sipSessionsIt = (Iterator<SipSession>) event.getApplicationSession().getSessions("SIP");
+			if(sipSessionsIt.hasNext()) {
+				SipSession sipSession = sipSessionsIt.next();
+				if(sipSession != null && sipSession.isValid() && !State.TERMINATED.equals(sipSession.getState())) {
+					try {
+						sipSession.createRequest("BYE").send();
+					} catch (IOException e) {
+						logger.error("An unexpected exception occured while sending the BYE", e);
+					}				
+				}
+			}
 		}
 	}
 

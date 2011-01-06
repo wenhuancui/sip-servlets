@@ -3,25 +3,25 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip.example</groupId>
 		<artifactId>sip-servlets-examples-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.mobicents.servlet.sip.example</groupId>
 	<artifactId>diameter-event-charging</artifactId>
 	<packaging>war</packaging>
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 	<name>Diameter Event Charging Sip Servlet Example</name>
 	<dependencies>
     <dependency>
       <groupId>org.mobicents.servers.diameter</groupId>
       <artifactId>jdiameter-api</artifactId>
-	  <version>5.0.1.GA-JBCP5</version>
+      <version>5.1.0.GA-JBCP5</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.mobicents.servers.diameter</groupId>
       <artifactId>mobicents-diameter-mux-jar</artifactId>
-	<version>${pom.version}</version>
+	  <version>${pom.version}</version>
       <scope>provided</scope>
     </dependency>    
     <!-- dependency>
@@ -50,6 +50,7 @@
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
 					<warSourceDirectory>
 						${basedir}/src/main/sipapp
 					</warSourceDirectory>

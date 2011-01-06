@@ -24,7 +24,9 @@ package org.mobicents.servlet.sip.core.timers;
 import org.apache.log4j.Logger;
 import org.jboss.web.tomcat.service.session.ClusteredSipManager;
 import org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistributableSessionData;
+import org.mobicents.servlet.sip.annotation.ConcurrencyControlMode;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
+import org.mobicents.servlet.sip.startup.SipContext;
 import org.mobicents.timers.TimerTask;
 import org.mobicents.timers.TimerTaskData;
 import org.mobicents.timers.TimerTaskFactory;
@@ -51,19 +53,24 @@ public class SipApplicationSessionTaskFactory implements TimerTaskFactory {
 	public TimerTask newTimerTask(TimerTaskData data) {	
 		SipApplicationSessionTaskData sasData = (SipApplicationSessionTaskData)data;
 		MobicentsSipApplicationSession sipApplicationSession = sipManager.getSipApplicationSession(sasData.getKey(), false);
-		if(logger.isDebugEnabled()) {
-			if(sipApplicationSession == null) {
-				logger.debug("sip application session for key " + sasData.getKey() + " was not found neither locally or in the cache, sas expiration timer recreation will be problematic");
-			} else {
-				logger.debug("sip application session for key " + sasData.getKey() + " was found");
-			}
-		}
-		FaultTolerantSasTimerTask faultTolerantSasTimerTask = new FaultTolerantSasTimerTask(sipApplicationSession, sasData);
 		if(sipApplicationSession != null) {
-			sipApplicationSession.setExpirationTimerTask(faultTolerantSasTimerTask);
-		} 
-		
-		return faultTolerantSasTimerTask;
+			if(sipApplicationSession.getExpirationTimerTask() == null) {
+				if(((SipContext)sipManager.getContainer()).getConcurrencyControlMode() != ConcurrencyControlMode.SipApplicationSession) {
+					if(logger.isDebugEnabled()) {
+						logger.debug("sip application session for key " + sasData.getKey() + " was found");						
+					}
+					FaultTolerantSasTimerTask faultTolerantSasTimerTask = new FaultTolerantSasTimerTask(sipApplicationSession, sasData);
+					if(sipApplicationSession != null) {
+						sipApplicationSession.setExpirationTimerTask(faultTolerantSasTimerTask);
+					}
+					return faultTolerantSasTimerTask;
+				} 
+			}
+		} else {
+			logger.debug("sip application session for key " + sasData.getKey() + " was not found neither locally or in the cache, not recovering the sas timer task");
+		}
+		// returning null to avoid recovery since it was already recovered above
+		return null;
 	}
 
 }

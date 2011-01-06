@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+import javax.servlet.sip.ServletTimer;
 import javax.servlet.sip.SipApplicationSessionActivationListener;
 import javax.servlet.sip.SipApplicationSessionAttributeListener;
 import javax.servlet.sip.SipApplicationSessionBindingEvent;
@@ -63,6 +64,9 @@ import org.mobicents.servlet.sip.core.session.SipApplicationSessionKey;
 import org.mobicents.servlet.sip.core.session.SipListenersHolder;
 import org.mobicents.servlet.sip.core.session.SipManager;
 import org.mobicents.servlet.sip.core.session.SipSessionKey;
+import org.mobicents.servlet.sip.core.timers.ClusteredSipApplicationSessionTimerService;
+import org.mobicents.servlet.sip.core.timers.FaultTolerantSasTimerTask;
+import org.mobicents.servlet.sip.core.timers.TimerServiceTask;
 import org.mobicents.servlet.sip.startup.SipContext;
 
 /**
@@ -74,10 +78,13 @@ import org.mobicents.servlet.sip.startup.SipContext;
  */
 public abstract class ClusteredSipApplicationSession<O extends OutgoingDistributableSessionData> extends SipApplicationSessionImpl {
 
+	private static final String JVM_ROUTE = "jv";
+
 	private static transient Logger logger = Logger.getLogger(ClusteredSipApplicationSession.class);
 	
 	protected static final String HTTP_SESSIONS = "hs";
 	protected static final String SIP_SESSIONS = "ss";
+	protected static final String SERVLETS_TIMERS = "st";
 	protected static final String IS_VALID = "iv";
 	protected static final String INVALIDATION_POLICY = "ip";	
 	protected static final String CREATION_TIME = "ct";
@@ -122,7 +129,7 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 	 * The string manager for this package.
 	 */
 	protected static final StringManager sm = StringManager
-			.getManager(ClusteredSession.class.getPackage().getName());
+			.getManager(ClusteredSession.class.getPackage().getName());	
 
 	// ----------------------------------------------------- Instance Variables
 
@@ -289,6 +296,8 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 	 * call
 	 */
 	private transient boolean needsPostReplicateActivation;
+	
+	private transient String[] servletTimerIds;
 
 	// ------------------------------------------------------------ Constructors
 
@@ -302,6 +311,7 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 		this.useJK = useJK;
 		this.isNew = true;
 		this.firstAccess = true;
+		updateThisAccessedTime();
 		accessCount = ACTIVITY_CHECK ? new AtomicInteger() : null;
 		// it starts with true so that it gets replicated when first created
 		sessionMetadataDirty = true;
@@ -393,6 +403,10 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 	@Override
 	public long getLastAccessedTime() {
 		return this.thisAccessedTime;
+	}
+	
+	public void updateThisAccessedTime() {
+		thisAccessedTime = System.currentTimeMillis();
 	}
 
 	public void setNew(boolean isNew) {
@@ -649,6 +663,9 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 		if(metadata.isHttpSessionsMapModified()) {
 			this.metadata.getMetaData().put(HTTP_SESSIONS, httpSessions.toArray(new String[httpSessions.size()]));
 		}
+		if(metadata.isServletTimersMapModified()) {
+			this.metadata.getMetaData().put(SERVLETS_TIMERS, servletTimers.keySet().toArray(new String[servletTimers.keySet().size()]));
+		}
 	}
 
 	protected boolean isSessionAttributeMapDirty() {
@@ -685,6 +702,10 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 		this.setValid(md.isValid());
 		this.metadata = md;
 		
+		String jvmRoute = (String) md.getMetaData().get(JVM_ROUTE);
+		setJvmRoute(jvmRoute);
+		
+		
 		// From Sip Application Session
 		Boolean valid = (Boolean) md.getMetaData().get(IS_VALID);
 		if(valid != null) {
@@ -697,6 +718,8 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 				sipSessions.add(sipSessionKey);							
 			}	
 		}
+		servletTimerIds = (String[])md.getMetaData().get(SERVLETS_TIMERS);
+		
 		String[] httpSessionIds = (String[])md.getMetaData().get(HTTP_SESSIONS);
 		if(httpSessionIds != null && httpSessionIds.length > 0) {
 			if(httpSessions == null) {
@@ -922,6 +945,19 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 		Set<String> keySet = getAttributesInternal().keySet();
 		return ((String[]) keySet.toArray(new String[keySet.size()]));
 	}
+	
+	@Override
+	public void passivate() {
+		notifyWillPassivate(ClusteredSessionNotificationCause.PASSIVATION);
+		((FaultTolerantSasTimerTask)expirationTimerTask).passivate();
+		expirationTimerTask = null;
+		if(servletTimers != null) {
+			for (ServletTimer servletTimer : servletTimers.values()) {
+				((TimerServiceTask) servletTimer).passivate();
+			}
+			servletTimers.clear();
+		}
+	}	
 	
 	/**
 	 * Inform any HttpSessionActivationListener that the session will passivate.
@@ -1337,7 +1373,7 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 		}
 	}
 
-	private final void clearOutdated() {
+	public final void clearOutdated() {
 		// Only overwrite the access time if access() hasn't been called
 		// since setOutdatedVersion() was called
 		if (outdatedTime > thisAccessedTime) {
@@ -1360,7 +1396,7 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 		super.setValid(isValid);
 		sessionMetadataDirty();
 		metadata.getMetaData().put(IS_VALID, isValid);
-	}			
+	}		
 	
 	@Override
 	public int setExpires(int deltaMinutes) {		
@@ -1390,6 +1426,18 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 	}
 	
 	@Override
+	public void addServletTimer(ServletTimer servletTimer) {
+		super.addServletTimer(servletTimer);
+		metadata.setServletTimersMapModified(true);		
+	}
+	
+	@Override
+	public void removeServletTimer(ServletTimer servletTimer) {
+		super.removeServletTimer(servletTimer);
+		metadata.setServletTimersMapModified(true);
+	}
+	
+	@Override
 	public boolean addHttpSession(HttpSession httpSession) {
 		boolean wasNotPresent = super.addHttpSession(httpSession);
 		if(wasNotPresent) {
@@ -1407,7 +1455,30 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 		return wasPresent;
 	}
 	
+	@Override
+	public void setJvmRoute(String jvmRoute) {
+		super.setJvmRoute(jvmRoute);
+		sessionMetadataDirty();
+		metadata.getMetaData().put(JVM_ROUTE, jvmRoute);
+	}
+	
 	public String getHaId() {
 		return key.getId();
+	}
+
+	public void rescheduleTimersLocally() {		
+		((ClusteredSipApplicationSessionTimerService)sipContext.getSipApplicationSessionTimerService()).rescheduleTimerLocally(this);
+		if(servletTimerIds != null) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("SipApplicationSession " + key + " number of servletTimers to reschedule locally " + servletTimerIds.length);
+			}
+			for(String servletTimerId : servletTimerIds) {
+				ServletTimer servletTimer = ((ClusteredSipServletTimerService)sipContext.getTimerService()).rescheduleTimerLocally(this, servletTimerId);
+				if(servletTimer != null) {
+					super.addServletTimer(servletTimer);
+				}
+			}
+		}
+		servletTimerIds = null;
 	}
 }

@@ -76,6 +76,9 @@ import org.mobicents.servlet.sip.core.session.SipSessionsUtilImpl;
 import org.mobicents.servlet.sip.core.session.SipStandardManager;
 import org.mobicents.servlet.sip.core.timers.FaultTolerantSasTimerService;
 import org.mobicents.servlet.sip.core.timers.FaultTolerantTimerServiceImpl;
+import org.mobicents.servlet.sip.core.timers.ProxyTimerService;
+import org.mobicents.servlet.sip.core.timers.ProxyTimerServiceImpl;
+import org.mobicents.servlet.sip.core.timers.SipApplicationSessionTimerService;
 import org.mobicents.servlet.sip.core.timers.SipServletTimerService;
 import org.mobicents.servlet.sip.core.timers.StandardSipApplicationSessionTimerService;
 import org.mobicents.servlet.sip.core.timers.TimerServiceImpl;
@@ -156,7 +159,9 @@ public class SipStandardContext extends StandardContext implements SipContext {
     // timer service used to schedule sip application session expiration timer
     protected transient SipApplicationSessionTimerService sasTimerService = null;
     // timer service used to schedule sip servlet originated timer tasks
-    protected transient SipServletTimerService timerService = null;   	
+    protected transient SipServletTimerService timerService = null;
+    // timer service used to schedule proxy timer tasks
+    protected transient ProxyTimerService proxyTimerService = null;  
     
 	/**
 	 * 
@@ -222,6 +227,9 @@ public class SipStandardContext extends StandardContext implements SipContext {
 			} else {
 				timerService = new TimerServiceImpl();
 			}
+		}
+		if(proxyTimerService == null) {
+			proxyTimerService = new ProxyTimerServiceImpl();
 		}
 		if(sasTimerService == null || !sasTimerService.isStarted()) {
 			if(getDistributable() && hasDistributableManager) {
@@ -327,6 +335,10 @@ public class SipStandardContext extends StandardContext implements SipContext {
 			}
 			if(logger.isInfoEnabled()) {
 				logger.info("sip application session timeout for this context is " + sipApplicationSessionTimeout + " minutes");
+			}
+			
+			if(logger.isInfoEnabled()) {
+				logger.info("http session timeout for this context is " + getSessionTimeout() + " minutes");
 			}
 			if(logger.isInfoEnabled()) {
 				logger.info("sip context started");
@@ -491,9 +503,14 @@ public class SipStandardContext extends StandardContext implements SipContext {
 		}
 		// Issue 1478 : nullify the ref to avoid reusing it
 		sasTimerService = null;
-		if(timerService != null && timerService.isStarted()) {
+		// Issue 1791 : don't check is the service is started it makes the stop
+		// of tomcat hang
+		if(timerService != null) {
 			timerService.stop();
 		}	
+		if(proxyTimerService != null) {
+			proxyTimerService.stop();
+		}
 		// Issue 1478 : nullify the ref to avoid reusing it
 		timerService = null;
 		getServletContext().setAttribute(javax.servlet.sip.SipServlet.TIMER_SERVICE, null);
@@ -766,6 +783,13 @@ public class SipStandardContext extends StandardContext implements SipContext {
 	}
 	
 	/**
+	 * @return the proxyTimerService
+	 */
+	public ProxyTimerService getProxyTimerService() {
+		return proxyTimerService;
+	}
+	
+	/**
      * Get naming context full name.
      */
     private String getNamingContextName() {    	
@@ -936,60 +960,38 @@ public class SipStandardContext extends StandardContext implements SipContext {
 				if(sipSession != null) {
 					final Semaphore semaphore = sipSession.getSemaphore();
 					if(semaphore != null) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("SipSession: Before semaphore acquire for sipApplicationSession=" + sipApplicationSession +
+									" sipSession=" + sipSession + " semaphore=" + semaphore);
+						}
 						semaphore.acquireUninterruptibly();
-					}
-				} else if (sipApplicationSession != null) {
-					// if the sip session is null but not the sip app session,
-					// we try to acquire the semaphore of all the underlying sip sessions
-					// but this could lead to deadlocks in certain cases, if it occurs
-					// it is recommended to upgrade to SipApplicationSession concurrency control mode
-					Iterator<MobicentsSipSession> sipSessionIt = (Iterator<MobicentsSipSession>) 
-						sipApplicationSession.getSipSessions().iterator();
-					while (sipSessionIt.hasNext()) {
-						MobicentsSipSession childSipSession = sipSessionIt
-								.next();
-						final Semaphore semaphore = childSipSession.getSemaphore();
-						if(semaphore != null) {
-							semaphore.acquireUninterruptibly();
+						if(logger.isDebugEnabled()) {
+							logger.debug("SipSession: After semaphore acquire for sipApplicationSession=" + sipApplicationSession +
+									" sipSession=" + sipSession + " semaphore=" + semaphore);
 						}
 					}
-				}
+				} 
 				break;
 			case SipApplicationSession:
 				if(sipApplicationSession != null) {
 					final Semaphore semaphore = sipApplicationSession.getSemaphore();
 					if(semaphore != null) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("SipAppSession: Before semaphore acquire for sipApplicationSession=" + sipApplicationSession +
+									" sipSession=" + sipSession + " semaphore=" + semaphore);
+						}
 						semaphore.acquireUninterruptibly();
+						if(logger.isDebugEnabled()) {
+							logger.debug("SipAppSession: After semaphore acquire for sipApplicationSession=" + sipApplicationSession +
+									" sipSession=" + sipSession + " semaphore=" + semaphore);
+						}
 					}
 				}
 				break;
 			case None:
 				break;
 		}		
-	}
-    
-//    public void enterSipAppHa(SipServletRequestImpl request, SipServletResponseImpl response, boolean startCacheActivity, boolean bindSessions) {		
-//		if(getDistributable() && hasDistributableManager) {
-//			startBatchTransaction();
-//			if(bindSessions) {
-//				ConvergedSessionReplicationContext.enterSipappAndBindSessions(request, response, getSipManager(), startCacheActivity);
-//			} else {
-//				ConvergedSessionReplicationContext.enterSipapp(request, response, startCacheActivity);
-//			}
-//		}
-//	}
-    
-//	public void enterSipAppHa(MobicentsSipApplicationSession sipApplicationSession, boolean startCacheActivity, boolean bindSessions) {
-//		if(getDistributable() && hasDistributableManager) {
-//			startBatchTransaction();
-//			if(bindSessions) {
-//				ConvergedSessionReplicationContext.enterSipappAndBindSessions(sipApplicationSession,
-//				getSipManager(), startCacheActivity);
-//			} else {
-//				ConvergedSessionReplicationContext.enterSipapp(null, null, startCacheActivity);
-//			}
-//		}
-//	}
+	}    
     
     public void enterSipAppHa(boolean startCacheActivity) {
 		if(getDistributable() && hasDistributableManager) {
@@ -1010,23 +1012,25 @@ public class SipStandardContext extends StandardContext implements SipContext {
 					final Semaphore semaphore = sipSession.getSemaphore();
 					if(semaphore != null) {
 						semaphore.release();
-					}
-				} else if (sipApplicationSession != null) {
-					Iterator<MobicentsSipSession> sipSessionIt = (Iterator<MobicentsSipSession>) 
-						sipApplicationSession.getSipSessions().iterator();
-					while (sipSessionIt.hasNext()) {
-						MobicentsSipSession childSipSession = sipSessionIt
-								.next();
-						final Semaphore semaphore = childSipSession.getSemaphore();
-						if(semaphore != null) {
-							semaphore.release();
+						if(logger.isDebugEnabled()) {
+							logger.debug("SipSession: Semaphore released for sipApplicationSession=" + sipApplicationSession +
+									" sipSession=" + sipSession + " semaphore=" + semaphore);
 						}
 					}
-				}
+				} 
 				break;
 			case SipApplicationSession:
 				if(sipApplicationSession != null && sipApplicationSession.getSemaphore() != null) {
 					sipApplicationSession.getSemaphore().release();
+					if(logger.isDebugEnabled()) {
+						logger.debug("SipAppSession: Semaphore released for sipApplicationSession=" + sipApplicationSession +
+								" sipSession=" + sipSession + " semaphore=" + sipApplicationSession.getSemaphore());
+					}
+				} else {
+					if(logger.isDebugEnabled()) {
+						logger.debug("SipSession semaphore: NOT RELEASING semaphore on exit sipApplicationSession=" + sipApplicationSession +
+								" sipSession=" + sipSession + " semaphore=null");
+					}
 				}
 				break;
 			case None:
@@ -1065,6 +1069,15 @@ public class SipStandardContext extends StandardContext implements SipContext {
 				} 
 			} finally {
 				endBatchTransaction();
+				if(logger.isDebugEnabled()) {
+					if(request != null) {
+						logger.debug("We are now after the replication finishCacheActivity for request " + request + ", We replicate no matter what " );
+					} else if (response != null) {
+						logger.debug("We are now after the replication finishCacheActivity for request " + response + ", We replicate no matter what " );
+					} else {
+						logger.debug("We are now after the replication finishCacheActivity, We replicate no matter what " );
+					}
+				}
 			}
 		}
 	}
@@ -1111,7 +1124,10 @@ public class SipStandardContext extends StandardContext implements SipContext {
 		if(event.getEventType() == SipContextEventType.SERVLET_INITIALIZED) {
 			if(!timerService.isStarted()) {
 				timerService.start();
-			}				
+			}
+			if(!proxyTimerService.isStarted()) {
+				proxyTimerService.start();
+			}
 			if(!sasTimerService.isStarted()) {
 				sasTimerService.start();
 			}
@@ -1226,6 +1242,9 @@ public class SipStandardContext extends StandardContext implements SipContext {
 
 	public void setConcurrencyControlMode(ConcurrencyControlMode mode) {
 		this.concurrencyControlMode = mode;
+		if(concurrencyControlMode != null && logger.isInfoEnabled()) {
+			logger.info("Concurrency Control set to " + concurrencyControlMode.toString() + " for application " + applicationName);
+		}
 	}
 	
 	public SipRubyController getSipRubyController() {

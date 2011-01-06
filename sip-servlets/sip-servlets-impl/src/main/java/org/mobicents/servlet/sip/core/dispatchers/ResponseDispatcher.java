@@ -37,8 +37,11 @@ import javax.sip.message.Response;
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.JainSipUtils;
 import org.mobicents.servlet.sip.annotation.ConcurrencyControlMode;
+import org.mobicents.servlet.sip.core.session.DistributableSipManager;
+import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
 import org.mobicents.servlet.sip.core.session.SessionManagerUtil;
+import org.mobicents.servlet.sip.core.session.SipApplicationSessionKey;
 import org.mobicents.servlet.sip.core.session.SipManager;
 import org.mobicents.servlet.sip.core.session.SipSessionKey;
 import org.mobicents.servlet.sip.message.SipFactoryImpl;
@@ -141,9 +144,21 @@ public class ResponseDispatcher extends MessageDispatcher {
 			}
 			final String branch = viaHeader.getBranch();
 			String strippedBranchId = branch.substring(BRANCH_MAGIC_COOKIE.length());
-			final String appId = strippedBranchId.substring(0, strippedBranchId.indexOf("_"));			
-			strippedBranchId = strippedBranchId.substring(strippedBranchId.indexOf("_") + 1);
-			final String appNameHashed = strippedBranchId.substring(0, strippedBranchId.indexOf("_"));			
+			int indexOfUnderscore = strippedBranchId.indexOf("_");
+			if(indexOfUnderscore == -1) {
+				throw new DispatcherException("the via header branch " + branch + " for the response is wrong the response does not reuse the one from the original request");
+			}
+			final String appId = strippedBranchId.substring(0, indexOfUnderscore);
+			indexOfUnderscore = strippedBranchId.indexOf("_");			
+			if(indexOfUnderscore == -1) {
+				throw new DispatcherException("the via header branch " + branch + " for the response is wrong the response does not reuse the one from the original request");
+			}
+			strippedBranchId = strippedBranchId.substring(indexOfUnderscore + 1);
+			indexOfUnderscore = strippedBranchId.indexOf("_");
+			if(indexOfUnderscore == -1) {
+				throw new DispatcherException("the via header branch " + branch + " for the response is wrong the response does not reuse the one from the original request");
+			}
+			final String appNameHashed = strippedBranchId.substring(0, indexOfUnderscore);			
 			final String appName = sipApplicationDispatcher.getApplicationNameFromHash(appNameHashed);
 			if(appName == null) {
 				throw new DispatcherException("the via header branch " + branch + " for the response is missing the appname previsouly set by the container");
@@ -164,17 +179,26 @@ public class ResponseDispatcher extends MessageDispatcher {
 			SipSessionKey sessionKey = SessionManagerUtil.getSipSessionKey(appId, appName, response, inverted);
 			if(logger.isDebugEnabled()) {
 				logger.debug("Trying to find session with following session key " + sessionKey);
-			}			
+			}		
+			final SipApplicationSessionKey sipApplicationSessionKey = SessionManagerUtil.getSipApplicationSessionKey(
+					appName, 
+					appId);
+			
+			MobicentsSipApplicationSession sipApplicationSession = null;
+			// needed only for failover (early) dialog recovery
+			if(sipManager instanceof DistributableSipManager) {
+				sipApplicationSession = sipManager.getSipApplicationSession(sipApplicationSessionKey, false);
+			}
 			MobicentsSipSession tmpSession = null;
 
-			tmpSession = sipManager.getSipSession(sessionKey, false, sipFactoryImpl, null);
+			tmpSession = sipManager.getSipSession(sessionKey, false, sipFactoryImpl, sipApplicationSession);
 			//needed in the case of RE-INVITE by example
 			if(tmpSession == null) {
 				sessionKey = SessionManagerUtil.getSipSessionKey(appId, appName, response, !inverted);
 				if(logger.isDebugEnabled()) {
 					logger.debug("Trying to find session with following session key " + sessionKey);
 				}
-				tmpSession = sipManager.getSipSession(sessionKey, false, sipFactoryImpl, null);				
+				tmpSession = sipManager.getSipSession(sessionKey, false, sipFactoryImpl, sipApplicationSession);				
 			}
 			if(logger.isDebugEnabled()) {
 				logger.debug("session found is " + tmpSession);
@@ -277,7 +301,7 @@ public class ResponseDispatcher extends MessageDispatcher {
 								session.updateStateOnResponse(sipServletResponse, true);
 								proxyBranch.setResponse(sipServletResponse);
 
-								final ProxyImpl proxy = (ProxyImpl) proxyBranch.getProxy();
+								final ProxyImpl proxy = (ProxyImpl) session.getProxy();
 								// Notfiy the servlet
 								if(logger.isDebugEnabled()) {
 									logger.debug("Is Supervised enabled for this proxy branch ? " + proxy.getSupervised());
@@ -345,6 +369,10 @@ public class ResponseDispatcher extends MessageDispatcher {
 							//				JainSipUtils.sendErrorResponse(Response.SERVER_INTERNAL_ERROR, clientTransaction, request, sipProvider);
 						}
 					} finally {
+						// exitSipAppHa completes the replication task. It might block for a while if the state is too big
+						// We should never call exitAipApp before exitSipAppHa, because exitSipApp releases the lock on the
+						// Application of SipSession (concurrency control lock). If this happens a new request might arrive
+						// and modify the state during Serialization or other non-thread safe operation in the serialization
 						sipContext.exitSipAppHa(null, sipServletResponse);
 						sipContext.exitSipApp(session.getSipApplicationSession(), session);						
 					}

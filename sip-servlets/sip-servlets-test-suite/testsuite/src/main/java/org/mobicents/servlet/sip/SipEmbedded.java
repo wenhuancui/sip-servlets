@@ -112,9 +112,10 @@ public class SipEmbedded {
 	/**
 	 * Init the tomcat server
 	 * @param tomcatBasePath the base path of the server
+	 * @param sipStackProperties 
 	 * @throws Exception
 	 */
-	public void initTomcat(String tomcatBasePath) throws Exception {
+	public void initTomcat(String tomcatBasePath, Properties sipStackProperties) throws Exception {
 		setPath(tomcatBasePath);
 		// Set the home directory
 //		System.setProperty("CATALINA_HOME", getPath());
@@ -155,6 +156,7 @@ public class SipEmbedded {
 		// Create an embedded server		
 		sipService = (SipStandardService) Class.forName(serviceFullClassName).newInstance();
 		sipService.setName(serverName);
+		sipService.setSipStackProperties(sipStackProperties);
 		sipService.setSipApplicationDispatcherClassName(SipApplicationDispatcherImpl.class.getName());
 //		sipService.setSipApplicationRouterClassName(DefaultApplicationRouter.class.getName());		
 		sipService.setDarConfigurationFileLocation(darConfigurationFilePath);
@@ -217,16 +219,24 @@ public class SipEmbedded {
 	}
 
 	/**
+	 * This method Starts the Tomcat server.
 	 */
-	public Connector addSipConnector(String connectorName, String ipAddress, int port, String transport, Properties sipStackProperties) throws Exception {
+	public void restartTomcat() throws Exception {
+		// Start the embedded server
+		host.start();
+		sipService.start();		
+	}
+
+	/**
+	 */
+	public Connector addSipConnector(String connectorName, String ipAddress, int port, String transport) throws Exception {
 		Connector udpSipConnector = new Connector(
 				SipProtocolHandler.class.getName());
 		SipProtocolHandler udpProtocolHandler = (SipProtocolHandler) udpSipConnector
 				.getProtocolHandler();
 		udpProtocolHandler.setPort(port);
 		udpProtocolHandler.setIpAddress(ipAddress);
-		udpProtocolHandler.setSignalingTransport(transport);
-		udpProtocolHandler.setSipStackProperties(sipStackProperties);
+		udpProtocolHandler.setSignalingTransport(transport);		
 
 		sipService.addConnector(udpSipConnector);
 		return udpSipConnector;
@@ -273,6 +283,18 @@ public class SipEmbedded {
 		context.setName(name);
 		context.setPath(path);
 		context.setParent(host);
+		context.addLifecycleListener(new SipContextConfig());
+		context.setManager(new SipStandardManager());
+		host.addChild(context);
+		return context.getAvailable();			
+	}
+	public boolean deployContext(String docBase, String name, String path, int appSessionTimeout) {
+		SipStandardContext context = new SipStandardContext();
+		context.setDocBase(docBase);
+		context.setName(name);
+		context.setPath(path);
+		context.setParent(host);
+		context.setSipApplicationSessionTimeout(appSessionTimeout);
 		context.addLifecycleListener(new SipContextConfig());
 		context.setManager(new SipStandardManager());
 		host.addChild(context);

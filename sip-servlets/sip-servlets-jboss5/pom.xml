@@ -3,18 +3,18 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip</groupId>
 		<artifactId>sip-servlets-bootstrap</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.mobicents.servlet.sip</groupId>
 	<artifactId>sip-servlets-jboss5</artifactId>
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 	<packaging>jar</packaging>
 	<name>Sip Servlets Loading Specifics for JBoss 5</name>
 	<url>http://www.mobicents.org/products_sip_servlets.html</url>
 	<properties>
-		<jboss.version>5.1.0.GA</jboss.version>
-		<jboss.ws.version>5.0.1.EAP</jboss.ws.version>		
+		<jboss.version>5.1.0.GA</jboss.version>	
+		<jboss.ws.version>5.1.0.EAP</jboss.ws.version>		
 	</properties>
 	<dependencies>
 		<dependency>
@@ -34,42 +34,42 @@
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-impl</artifactId>
-			<version>5.0.1.GA-JBCP5</version>
+			<version>5.1.0.GA-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-spec</artifactId>
-			<version>1.1.13.2</version>
+			<version>5.1.0.GA-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-annotations</artifactId>
-			<version>5.0.1.GA-JBCP5</version>
+			<version>5.1.0.GA-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-jboss5-metadata</artifactId>
-			<version>5.0.1.GA-JBCP5</version>
+			<version>5.1.0.GA-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>						
 		
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-jboss5-ha-server-cache</artifactId>
-			<version>5.0.1.GA-JBCP5</version>
+			<version>5.1.0.GA-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-jruby</artifactId>
-			<version>5.0.1.GA-JBCP5</version>	
+			<version>5.1.0.GA-JBCP5</version>	
 			<scope>provided</scope>		
 		</dependency>
 		
@@ -161,7 +161,38 @@
 			<version>${mobicents.cluster.version}</version>
 			<scope>provided</scope>
 		</dependency>
-						
+					
+				<dependency>
+					<groupId>org.mobicents.ha.javax.sip</groupId>
+					<artifactId>mobicents-jain-sip-ha-core</artifactId>
+					<version>${mobicents.jain.sip.ha.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.mobicents.ha.javax.sip</groupId>
+					<artifactId>mobicents-jain-sip-jboss5</artifactId>
+					<version>${mobicents.jain.sip.ha.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.mobicents.cluster</groupId>
+					<artifactId>timers</artifactId>										
+					<version>${mobicents.cluster.version}</version>
+				</dependency>				
+				<dependency>
+					<groupId>org.mobicents.cluster</groupId>
+					<artifactId>core</artifactId>										
+					<version>${mobicents.cluster.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.mobicents.cluster</groupId>
+					<artifactId>cache</artifactId>										
+					<version>${mobicents.cluster.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.mobicents.tools</groupId>
+					<artifactId>sip-balancer-jar</artifactId>
+					<version>${mobicents.balancer.version}</version>
+					<scope>provided</scope>
+				</dependency>
 	</dependencies>
 	
 	<repositories>
@@ -209,39 +240,6 @@
 	<profiles>		
 		<profile>		
 			<id>jboss-5</id>
-			<dependencies>
-				<dependency>
-					<groupId>org.mobicents.ha.javax.sip</groupId>
-					<artifactId>mobicents-jain-sip-ha-core</artifactId>
-					<version>${mobicents.jain.sip.ha.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mobicents.ha.javax.sip</groupId>
-					<artifactId>mobicents-jain-sip-jboss5</artifactId>
-					<version>${mobicents.jain.sip.ha.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mobicents.cluster</groupId>
-					<artifactId>timers</artifactId>										
-					<version>${mobicents.cluster.version}</version>
-				</dependency>				
-				<dependency>
-					<groupId>org.mobicents.cluster</groupId>
-					<artifactId>core</artifactId>										
-					<version>${mobicents.cluster.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mobicents.cluster</groupId>
-					<artifactId>cache</artifactId>										
-					<version>${mobicents.cluster.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mobicents.tools</groupId>
-					<artifactId>sip-balancer-jar</artifactId>
-					<version>${mobicents.balancer.version}</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>				
 			<build>								
 				<plugins>
 					<plugin>
@@ -283,40 +281,7 @@
 			</build>
 		</profile>	
 		<profile>		
-			<id>jboss-5-distro</id>
-			<dependencies>
-				<dependency>
-					<groupId>org.mobicents.ha.javax.sip</groupId>
-					<artifactId>mobicents-jain-sip-ha-core</artifactId>
-					<version>${mobicents.jain.sip.ha.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mobicents.ha.javax.sip</groupId>
-					<artifactId>mobicents-jain-sip-jboss5</artifactId>
-					<version>${mobicents.jain.sip.ha.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mobicents.cluster</groupId>
-					<artifactId>timers</artifactId>										
-					<version>${mobicents.cluster.version}</version>
-				</dependency>				
-				<dependency>
-					<groupId>org.mobicents.cluster</groupId>
-					<artifactId>core</artifactId>										
-					<version>${mobicents.cluster.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mobicents.cluster</groupId>
-					<artifactId>cache</artifactId>										
-					<version>${mobicents.cluster.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.mobicents.tools</groupId>
-					<artifactId>sip-balancer-jar</artifactId>
-					<version>${mobicents.balancer.version}</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>				
+			<id>jboss-5-distro</id>						
 			<build>							
 				<plugins>
 					<plugin>

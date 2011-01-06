@@ -123,7 +123,7 @@ public class ShootmePrackSipServletTest extends SipServletTestCase {
 		
 		String[] headerNames = new String[]{"require"};
 		String[] headerValues = new String[]{"100rel"};
-		
+				
 		sender.setSendBye(false);
 		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false, headerNames, headerValues, false);
 		sender.setTimeToWaitBeforeAck(1000);

@@ -25,14 +25,11 @@ import java.util.concurrent.Semaphore;
 
 import javax.servlet.sip.Address;
 import javax.servlet.sip.SipSession;
-import javax.servlet.sip.SipURI;
-import javax.servlet.sip.URI;
 import javax.servlet.sip.ar.SipApplicationRouterInfo;
 import javax.servlet.sip.ar.SipApplicationRoutingRegion;
 import javax.sip.Dialog;
 import javax.sip.SipException;
 import javax.sip.Transaction;
-import javax.sip.message.Request;
 
 import org.mobicents.javax.servlet.sip.SipSessionExt;
 import org.mobicents.servlet.sip.message.B2buaHelperImpl;
@@ -41,6 +38,7 @@ import org.mobicents.servlet.sip.message.SipServletMessageImpl;
 import org.mobicents.servlet.sip.message.SipServletRequestImpl;
 import org.mobicents.servlet.sip.message.SipServletResponseImpl;
 import org.mobicents.servlet.sip.proxy.ProxyImpl;
+import org.mobicents.servlet.sip.security.AuthInfoEntry;
 
 /**
  * 
@@ -149,19 +147,24 @@ public interface MobicentsSipSession extends SipSession, SipSessionExt {
 	MobicentsSipSessionFacade getSession();
 
 	void setNextSipApplicationRouterInfo(SipApplicationRouterInfo routerInfo);
-	SipApplicationRouterInfo getNextSipApplicationRouterInfo();
+	SipApplicationRouterInfo getNextSipApplicationRouterInfo();	
 
 	public boolean isValidInternal();
-	
+
 	public long getCseq();
-
 	public void setCseq(long cseq);
-
 	boolean validateCSeq(SipServletRequestImpl sipServletRequestImpl);
 	
 	String getTransport();
-	
 	void setTransport(String transport);
 	
+	int getRequestsPending();
+	void setRequestsPending(int requests);
+
 	void setAckReceived(long cSeq, boolean ackReceived);
+
+	void notifySipSessionListeners(SipSessionEventType creation);
+	
+	void setSipSessionSecurity(SipSessionSecurity sipSessionSecurity);
+	SipSessionSecurity getSipSessionSecurity();
 }

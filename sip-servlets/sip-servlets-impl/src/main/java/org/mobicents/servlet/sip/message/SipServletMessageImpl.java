@@ -56,6 +56,7 @@ import javax.servlet.sip.SipSession;
 import javax.sip.Dialog;
 import javax.sip.InvalidArgumentException;
 import javax.sip.ListeningPoint;
+import javax.sip.ServerTransaction;
 import javax.sip.SipFactory;
 import javax.sip.Transaction;
 import javax.sip.header.AcceptLanguageHeader;
@@ -77,6 +78,8 @@ import javax.sip.message.Request;
 
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.log4j.Logger;
+import org.mobicents.ha.javax.sip.ClusteredSipStack;
+import org.mobicents.ha.javax.sip.ReplicationStrategy;
 import org.mobicents.servlet.sip.JainSipUtils;
 import org.mobicents.servlet.sip.SipFactories;
 import org.mobicents.servlet.sip.address.AddressImpl;
@@ -89,6 +92,7 @@ import org.mobicents.servlet.sip.core.session.SipApplicationSessionKey;
 import org.mobicents.servlet.sip.core.session.SipManager;
 import org.mobicents.servlet.sip.core.session.SipSessionKey;
 import org.mobicents.servlet.sip.startup.SipContext;
+import org.mobicents.servlet.sip.startup.StaticServiceHolder;
 
 /**
  * Implementation of SipServletMessage
@@ -118,10 +122,13 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	//lazy loaded and not serialized to avoid unecessary replication
 	protected transient MobicentsSipSession sipSession;
 
-	protected Map<String, Object> attributes = new ConcurrentHashMap<String, Object>();
+	protected Map<String, Object> attributes;
 	// Made it transient for Issue 1523 : http://code.google.com/p/mobicents/issues/detail?id=1523
 	// NotSerializableException happens if a message is stored in the sip session during HA
 	private transient Transaction transaction;
+	// used for failover to recover the transaction
+	private String transactionId;
+	private boolean transactionType;
 	
 	// We need this object separate from transaction.getApplicationData, because the actualy transaction
 	// may be create later and we still need to accumulate useful data. Also the transaction might be
@@ -454,6 +461,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 			} else {
 				Parameterable parametrable = createParameterable(first, first.getName());
 				try {
+					logger.debug("parametrable Value " + parametrable.getValue());
 					if(this.isCommitted()) {
 						return new AddressImpl(SipFactories.addressFactory.createAddress(parametrable.getValue()), ((ParameterableHeaderImpl)parametrable).getInternalParameters(), false);
 					} else {
@@ -556,7 +564,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	public Object getAttribute(String name) {
 		if (name == null)
 			throw new NullPointerException("Attribute name can not be null.");
-		return this.attributes.get(name);
+		return this.getAttributeMap().get(name);
 	}
 
 	/*
@@ -564,7 +572,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	 * @see javax.servlet.sip.SipServletMessage#getAttributeNames()
 	 */
 	public Enumeration<String> getAttributeNames() {
-		Vector<String> names = new Vector<String>(this.attributes.keySet());
+		Vector<String> names = new Vector<String>(this.getAttributeMap().keySet());
 		return names.elements();
 	}
 
@@ -623,7 +631,13 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 			}
 			return content;
 		} else if(contentTypeHeader!= null && CONTENT_TYPE_MULTIPART.equals(contentTypeHeader.getContentType())) {
-			return getContentAsMimeMultipart(contentTypeHeader, message.getRawContent());
+			try {
+				return new MimeMultipart(new ByteArrayDataSource(message.getRawContent(), 
+						contentTypeHeader.toString().replaceAll(ContentTypeHeader.NAME+": ", "")));
+			} catch (MessagingException e) {
+				logger.warn("Problem with multipart message.", e);
+				return this.message.getRawContent();
+			}
 		} else {
 			return this.message.getRawContent();
 		}
@@ -763,7 +777,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 		// AddressImpl enforces immutability!!
 		FromHeader from = (FromHeader) this.message
 				.getHeader(getCorrectHeaderName(FromHeader.NAME));
-		AddressImpl address = new AddressImpl(from.getAddress(), AddressImpl.getParameters((Parameters)from), transaction == null ? true : false);
+		AddressImpl address = new AddressImpl(from.getAddress(), AddressImpl.getParameters((Parameters)from), getTransaction() == null ? true : false);
 		return address;
 	}
 	
@@ -1056,7 +1070,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	public Address getTo() {
 		ToHeader to = (ToHeader) this.message
 			.getHeader(getCorrectHeaderName(ToHeader.NAME));
-		return new AddressImpl(to.getAddress(), AddressImpl.getParameters((Parameters)to), transaction == null ? true : false);
+		return new AddressImpl(to.getAddress(), AddressImpl.getParameters((Parameters)to), getTransaction() == null ? true : false);
 	}
 	
 	/*
@@ -1100,7 +1114,9 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	 * @see javax.servlet.sip.SipServletMessage#removeAttribute(java.lang.String)
 	 */
 	public void removeAttribute(String name) {
-		this.attributes.remove(name);
+		if(attributes  != null) {
+			this.attributes.remove(name);
+		}
 	}
 	
 	/*
@@ -1205,7 +1221,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	public void setAttribute(String name, Object o) {
 		if (name == null)
 			throw new NullPointerException("Attribute name can not be null.");
-		this.attributes.put(name, o);
+		this.getAttributeMap().put(name, o);
 	}
 
 	/*
@@ -1524,6 +1540,13 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	}
 
 	public Transaction getTransaction() {
+		if(transaction == null && transactionId != null) {            
+			// used for early dialog failover purposes, lazily load the transaction
+            setTransaction(((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).findTransaction(transactionId, transactionType));
+            if(transaction != null) {
+            	transactionApplicationData = (TransactionApplicationData) transaction.getApplicationData();
+            }
+        }
 		return this.transaction;
 	}
 
@@ -1558,8 +1581,8 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 		if (this.dialog != null) {
 			return dialog;
 		}
-		if (this.transaction != null) {
-			return this.transaction.getDialog();
+		if (this.getTransaction() != null) {
+			return this.getTransaction().getDialog();
 		}
 		return null;
 	}
@@ -1569,6 +1592,8 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	 *            the transaction to set
 	 */
 	public void setTransaction(Transaction transaction) {
+		if (logger.isDebugEnabled())
+			logger.debug("Setting transaction " + transaction + " on message " + this);
 		this.transaction = transaction;
 	}
 
@@ -1589,9 +1614,23 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 		
 		Map<String, String> paramMap = new HashMap<String, String>();
 		String value = stringHeader;
+		String displayName = null;
+		// Issue 2201 : javax.servlet.sip.ServletParseException: Impossible to parse the following header Remote-Party-ID as an address.
+		// Need to handle the display name
+		if(stringHeader.trim().indexOf("\"") == 0) {
+			String displayNameString = stringHeader.substring(1);
+			int nextIndexOfDoubleQuote = displayNameString.indexOf("\"");
+			displayName = stringHeader.substring(0, nextIndexOfDoubleQuote + 2);
+			stringHeader = stringHeader.substring(nextIndexOfDoubleQuote + 2).trim();			
+		}
 		
+		boolean hasLaRaQuotes = false;
 		if(stringHeader.trim().indexOf("<") == 0) {
+			
 			stringHeader = stringHeader.substring(1);
+			if(stringHeader.indexOf(">") != -1) {
+				hasLaRaQuotes = true;
+			}
 			String[] split = stringHeader.split(">");
 			value = split[0];			
 			
@@ -1638,6 +1677,16 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 				}
 			}
 		}		
+		
+		// quotes are parts of the value as well as the display Name
+		if(hasLaRaQuotes) {
+			value = "<" + value + ">";
+		}
+		
+		// if a display name is present then we need add the quote back
+		if(displayName != null) {
+			value = displayName.concat(value);
+		}
 
 		boolean isNotModifiable = JainSipUtils.SYSTEM_HEADERS.contains(header.getName());
 		ParameterableHeaderImpl parameterable = new ParameterableHeaderImpl(
@@ -1721,12 +1770,19 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	
 	public abstract void cleanUp();
 	
+	protected Map<String, Object> getAttributeMap() {
+		if(this.attributes == null) {
+			this.attributes = new ConcurrentHashMap<String, Object>();
+		}
+		return this.attributes;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
 	 */
 	public void readExternal(ObjectInput in) throws IOException,
-			ClassNotFoundException {
+			ClassNotFoundException {		
 		sipFactoryImpl = (SipFactoryImpl) in.readObject();
 		String sessionKeyString = in.readUTF();
 		try {
@@ -1735,12 +1791,14 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 			throw new IllegalArgumentException("SIP Sesion Key " + sessionKeyString + " previously serialized could not be reparsed", e);
 		}
 		int attributesSize = in.readInt();
-		Object[][] attributesArray = (Object[][] )in.readObject();
-		attributes = new ConcurrentHashMap<String, Object>();
-		for (int i = 0; i <attributesSize; i++) {
-			String key = (String) attributesArray[0][i];
-			Object value = attributesArray[1][i];
-			attributes.put(key, value);
+		if(attributesSize > 0) {
+			Object[][] attributesArray = (Object[][] )in.readObject();
+			attributes = new ConcurrentHashMap<String, Object>();
+			for (int i = 0; i < attributesSize; i++) {
+				String key = (String) attributesArray[0][i];
+				Object value = attributesArray[1][i];
+				attributes.put(key, value);
+			}
 		}
 		transactionApplicationData = (TransactionApplicationData) in.readObject();
 		headerForm = HeaderForm.valueOf(in.readUTF());
@@ -1749,6 +1807,16 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 			currentApplicationName = null;
 		}
 		isMessageSent = in.readBoolean();
+		if(((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {
+			transactionId = in.readUTF();
+			if(transactionId != null) {
+				if(transactionId.equals("")) {
+					transactionId = null;
+				} else { 
+					transactionType = in.readBoolean();
+				}
+			}
+		}
 	}
 	
 	/*
@@ -1762,15 +1830,19 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 		} else {
 			out.writeUTF(sipSession.getId());
 		}
-		out.writeInt(attributes.size());
-		Object[][] attributesArray = new Object[2][attributes.size()];
-		int i = 0;
-		for (Entry<String, Object> entry : attributes.entrySet()) {
-			attributesArray [0][i] = entry.getKey(); 
-			attributesArray [1][i] = entry.getValue();
-			i++;
+		if(attributes != null) {
+			out.writeInt(attributes.size());
+			Object[][] attributesArray = new Object[2][attributes.size()];
+			int i = 0;
+			for (Entry<String, Object> entry : attributes.entrySet()) {
+				attributesArray [0][i] = entry.getKey(); 
+				attributesArray [1][i] = entry.getValue();
+				i++;
+			}		
+			out.writeObject(attributesArray);
+		} else {
+			out.writeInt(0);
 		}
-		out.writeObject(attributesArray);
 		out.writeObject(transactionApplicationData);
 		out.writeUTF(headerForm.toString());
 		if(currentApplicationName != null) {
@@ -1779,6 +1851,14 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 			out.writeUTF("");
 		}
 		out.writeBoolean(isMessageSent);
+		if(((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {
+			if(transaction == null) {
+				out.writeUTF("");
+			} else {
+				out.writeUTF(transaction.getBranchId());
+				out.writeBoolean(transaction instanceof ServerTransaction);
+			}
+		}
 		out.writeUTF(message.toString());		
 	}
 //	public void cleanUp() {

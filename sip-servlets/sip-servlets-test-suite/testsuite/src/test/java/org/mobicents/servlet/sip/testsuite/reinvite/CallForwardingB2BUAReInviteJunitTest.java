@@ -108,10 +108,11 @@ public class CallForwardingB2BUAReInviteJunitTest extends SipServletTestCase {
 		// Non Regression test for http://code.google.com/p/mobicents/issues/detail?id=1490
 		// B2buaHelper.createRequest does not decrement Max-forwards
 		assertEquals(69, maxForwardsHeader.getMaxForwards());
-		sender.sendInDialogSipRequest("BYE", null, null, null, null);
+		sender.sendInDialogSipRequest("BYE", null, null, null, null, null);
 		Thread.sleep(TIMEOUT);
 		assertTrue(receiver.getByeReceived());
 		assertTrue(sender.getOkToByeReceived());
+		assertEquals(1,sender.bindings); //http://code.google.com/p/mobicents/issues/detail?id=2100
 		maxForwardsHeader = (MaxForwardsHeader) receiver.getByeRequestReceived().getHeader(MaxForwardsHeader.NAME);
 		assertNotNull(maxForwardsHeader);
 		// Non Regression test for http://code.google.com/p/mobicents/issues/detail?id=1490
@@ -151,7 +152,7 @@ public class CallForwardingB2BUAReInviteJunitTest extends SipServletTestCase {
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isAckSent());		
 		receiver.setWaitForCancel(true);
-		sender.sendInDialogSipRequest("INVITE", null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
 		Thread.sleep(500);
 		sender.sendCancel();		
 		Thread.sleep(TIMEOUT);
@@ -161,14 +162,14 @@ public class CallForwardingB2BUAReInviteJunitTest extends SipServletTestCase {
 		sender.setCancelOkReceived(false);
 		sender.setRequestTerminatedReceived(false);
 		receiver.setCancelReceived(false);
-		sender.sendInDialogSipRequest("INVITE", null, null, null, null);
+		sender.sendInDialogSipRequest("INVITE", null, null, null, null, null);
 		Thread.sleep(500);
 		sender.sendCancel();		
 		Thread.sleep(TIMEOUT);
 		assertTrue(sender.isCancelOkReceived());
 		assertTrue(sender.isRequestTerminatedReceived());
 		assertTrue(receiver.isCancelReceived());
-	}	
+	}
 	
 	/**
 	 * Non Regression test for 
@@ -179,13 +180,14 @@ public class CallForwardingB2BUAReInviteJunitTest extends SipServletTestCase {
 		sender = new TestSipListener(5080, 5070, senderProtocolObjects, false);
 		SipProvider senderProvider = sender.createProvider();
 
-		receiver = new TestSipListener(5090, 5070, receiverProtocolObjects, false);		
+		receiver = new TestSipListener(5090, 5070, receiverProtocolObjects, false);
+		receiver.setDisableSequenceNumberValidation(true);
 		SipProvider receiverProvider = receiver.createProvider();
 
 		receiverProvider.addSipListener(receiver);
 		senderProvider.addSipListener(sender);
-
-		senderProtocolObjects.start();
+		
+		senderProtocolObjects.start();		
 		receiverProtocolObjects.start();
 
 		String fromName = "forward-pending-sender";
@@ -201,10 +203,10 @@ public class CallForwardingB2BUAReInviteJunitTest extends SipServletTestCase {
 		sender.setTimeToWaitBeforeAck(9000);
 		sender.sendSipRequest("INVITE", fromAddress, toAddress, null, null, false);		
 		Thread.sleep(8000);
-		receiver.sendInDialogSipRequest("UPDATE", null, null, null, null);
-		Thread.sleep(5000);
+		receiver.sendInDialogSipRequest("UPDATE", null, null, null, null, null);
+		Thread.sleep(TIMEOUT);
 		assertTrue(receiver.isAckReceived());			
-	}	
+	}		
 	
 	@Override
 	protected void tearDown() throws Exception {	

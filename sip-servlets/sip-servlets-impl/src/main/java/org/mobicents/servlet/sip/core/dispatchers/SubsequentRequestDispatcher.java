@@ -19,6 +19,7 @@ package org.mobicents.servlet.sip.core.dispatchers;
 import gov.nist.javax.sip.header.extensions.JoinHeader;
 import gov.nist.javax.sip.header.extensions.ReplacesHeader;
 import gov.nist.javax.sip.message.MessageExt;
+import gov.nist.javax.sip.stack.SIPServerTransaction;
 import gov.nist.javax.sip.stack.SIPTransaction;
 
 import java.io.IOException;
@@ -57,6 +58,7 @@ import org.mobicents.servlet.sip.message.TransactionApplicationData;
 import org.mobicents.servlet.sip.proxy.ProxyBranchImpl;
 import org.mobicents.servlet.sip.proxy.ProxyImpl;
 import org.mobicents.servlet.sip.startup.SipContext;
+import org.mobicents.servlet.sip.startup.StaticServiceHolder;
 
 /**
  * This class is responsible for routing and dispatching subsequent request to applications according to JSR 289 Section 
@@ -125,7 +127,16 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 				final boolean isAnotherDomain = sipApplicationDispatcher.isExternal(host, port, transport);
 				// Issue 823 (http://code.google.com/p/mobicents/issues/detail?id=823) : 
 				// Container should proxy statelessly subsequent requests not targeted at itself
-				if(isAnotherDomain) {					
+				if(isAnotherDomain) {	
+					if(Request.ACK.equals(method) && sipServletRequest.getTransaction() != null && ((SIPServerTransaction)sipServletRequest.getTransaction()).getLastResponseStatusCode() >= 300) {
+						// Issue 2213 (http://code.google.com/p/mobicents/issues/detail?id=2213) :
+						// ACK for final error response are proxied statelessly for proxy applications
+						//Means that this is an ACK to a container generated error response, so we can drop it
+						if(logger.isDebugEnabled()) {
+							logger.debug("The popped Route, application Id and name are null for an ACK, and this is an ACK for an error response, so it is dropped");
+						}				
+						return ;
+					} 
 					// Some UA are misbehaving and don't follow the non record proxy so they sent subsequent requests to the container (due to oubound proxy set probably) instead of directly to the UA
 					// so we proxy statelessly those requests
 					if(logger.isDebugEnabled()) {
@@ -200,6 +211,13 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 			}
 		}
 		
+		if(StaticServiceHolder.sipStandardService.isHttpFollowsSip()) {
+			String jvmRoute = StaticServiceHolder.sipStandardService.getJvmRoute();
+			if(jvmRoute == null) {
+				sipApplicationSession.setJvmRoute(jvmRoute);
+			}
+		}
+		
 		SipSessionKey key = SessionManagerUtil.getSipSessionKey(sipApplicationSession.getKey().getId(), applicationName, request, inverted);
 		if(logger.isDebugEnabled()) {
 			logger.debug("Trying to find the corresponding sip session with key " + key + " to this subsequent request " + request +
@@ -233,7 +251,24 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 		}			
 		
 		final MobicentsSipSession sipSession = tmpSipSession;
-		sipServletRequest.setSipSession(sipSession);						
+		sipServletRequest.setSipSession(sipSession);
+		if(request.getMethod().equals(Request.ACK)) {
+			sipSession.setRequestsPending(sipSession.getRequestsPending() - 1);
+		} else if(request.getMethod().equals(Request.INVITE)){
+			if(logger.isDebugEnabled()) {
+				logger.debug("INVITE requests pending " + sipSession.getRequestsPending());
+			}
+			if(StaticServiceHolder.sipStandardService.isDialogPendingRequestChecking() && 
+					sipSession.getProxy() == null && sipSession.getRequestsPending() > 0) {
+				try {
+					sipServletRequest.createResponse(491).send();
+					return;
+				} catch (IOException e) {
+					logger.error("Problem sending 491 response to " + sipServletRequest, e);
+				}
+			}
+			sipSession.setRequestsPending(sipSession.getRequestsPending() + 1);
+		}
 		
 		final SubsequentDispatchTask dispatchTask = new SubsequentDispatchTask(sipServletRequest, sipProvider);
 		// we enter the sip app here, thus acuiring the semaphore on the session (if concurrency control is set) before the jain sip tx semaphore is released and ensuring that
@@ -356,7 +391,7 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 						}
 					}
 					// If it's not for a proxy then it's just an AR, so go to the next application
-					else {							
+					else {	
 						// Issue 1401 http://code.google.com/p/mobicents/issues/detail?id=1401
 						// JSR 289 Section 11.2.2 Receiving ACK : 
 						// "Applications are not notified of incoming ACKs for non-2xx final responses to INVITE."
@@ -386,7 +421,7 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 												SipServletRequestImpl correspondingInviteRequest = (SipServletRequestImpl)sipServletMessage;
 												final SipServletResponse lastFinalResponse = correspondingInviteRequest.getLastFinalResponse();
 												if(logger.isDebugEnabled()) {
-					                                logger.debug("last final response " + lastFinalResponse);
+					                                logger.debug("last final response " + lastFinalResponse + " for original request " + correspondingInviteRequest);
 					                            }
 												
 											    if(lastFinalResponse != null && lastFinalResponse.getStatus() >= 300) {
@@ -403,7 +438,7 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 				                                    if(logger.isDebugEnabled()) {
 				                                        logger.debug("not calling the servlet since this is an ACK for a null last final response, which means the ACK was for a sip stack generated error response");
 				                                    }
-				                                    callServlet = false;
+				                                    callServlet = false;				                                    
 											    }							 
 											}										
 										}
@@ -441,6 +476,11 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 						sipSession.removeSubscription(sipServletRequest);
 					}
 				}
+				
+				// exitSipAppHa completes the replication task. It might block for a while if the state is too big
+				// We should never call exitAipApp before exitSipAppHa, because exitSipApp releases the lock on the
+				// Application of SipSession (concurrency control lock). If this happens a new request might arrive
+				// and modify the state during Serialization or other non-thread safe operation in the serialization
 				sipContext.exitSipAppHa(sipServletRequest, null);
 				sipContext.exitSipApp(sipSession.getSipApplicationSession(), sipSession);				
 			}

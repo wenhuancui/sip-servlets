@@ -155,7 +155,7 @@ public class CallForwardingB2BUAPrackTest extends SipServletTestCase {
 	public void testCallForwardingCallerSendByeAnyLocalAddress() throws Exception {
 		tomcat.removeConnector(sipConnector);
 		sipIpAddress = "0.0.0.0";
-		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport, null);
+		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport);
 		tomcat.startTomcat();
 		deployApplication();
 		

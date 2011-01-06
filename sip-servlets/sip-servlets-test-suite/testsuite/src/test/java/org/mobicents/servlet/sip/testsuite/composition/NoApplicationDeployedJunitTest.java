@@ -34,7 +34,7 @@ public class NoApplicationDeployedJunitTest extends SipServletTestCase {
 
 	private static final String TRANSPORT = "udp";
 	private static final boolean AUTODIALOG = true;
-	private static final int TIMEOUT = 5000;	
+	private static final int TIMEOUT = 10000;	
 //	private static final int TIMEOUT = 100000000;
 	
 	TestSipListener sender;
@@ -76,8 +76,8 @@ public class NoApplicationDeployedJunitTest extends SipServletTestCase {
 				+ projectHome
 				+ "/sip-servlets-test-suite/testsuite/src/test/resources/"
 				+ "org/mobicents/servlet/sip/testsuite/composition/dummy-dar.properties");
-		super.tomcat.initTomcat(tomcatBasePath);
-		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport, null);
+		super.tomcat.initTomcat(tomcatBasePath, null);
+		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport);
 		super.tomcat.startTomcat();
 		
 		sender = new TestSipListener(5080, 5090, senderProtocolObjects, true);
@@ -119,8 +119,8 @@ public class NoApplicationDeployedJunitTest extends SipServletTestCase {
 				+ projectHome
 				+ "/sip-servlets-test-suite/testsuite/src/test/resources/"
 				+ "org/mobicents/servlet/sip/testsuite/composition/empty-dar.properties");
-		super.tomcat.initTomcat(tomcatBasePath);
-		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport, null);
+		super.tomcat.initTomcat(tomcatBasePath, null);
+		tomcat.addSipConnector(serverName, sipIpAddress, 5070, listeningPointTransport);
 		super.tomcat.startTomcat();
 		
 		sender = new TestSipListener(5080, 5090, senderProtocolObjects, true);
