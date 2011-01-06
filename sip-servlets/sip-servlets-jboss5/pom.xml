@@ -106,6 +106,28 @@
 			<scope>provided</scope>
 		</dependency>				
 
+		<!-- Specific versions for EAP 5.1.0 to resolve compilation errors -->
+		<dependency>
+            <groupId>org.jboss.ejb3.vfs</groupId>
+            <artifactId>jboss-ejb3-vfs-spi</artifactId>             
+			<version>1.0.0-alpha-1</version>
+			<scope>provided</scope>
+        </dependency>
+
+		<dependency>
+            <groupId>org.jboss.ejb3</groupId>
+            <artifactId>jboss-ejb3-core</artifactId>             
+			<version>1.5.0</version>
+			<scope>provided</scope>
+        </dependency> 
+        
+		<dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-mdr</artifactId>             
+			<version>2.0.2.GA</version>
+			<scope>provided</scope>
+        </dependency>
+
 		<dependency>
 			<groupId>org.jboss.jbossas</groupId>
 			<artifactId>jboss-as-system</artifactId>
