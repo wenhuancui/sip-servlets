@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.servers.diameter</groupId>
@@ -14,7 +14,7 @@
 
 	<name>Mobicents :: Diameter Stack :: ${pom.artifactId}</name>
 
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 
 	<modules>
 		<module>api</module>
@@ -84,9 +84,9 @@
 	</profiles>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/diameter/core/jdiameter/jdiameter-5.0.1.GA-JBCP5</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/diameter/core/jdiameter/jdiameter-5.0.1.GA-JBCP5</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/diameter/core/jdiameter/jdiameter-5.0.1.GA-JBCP5</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/diameter/core/jdiameter/jdiameter-5.1.0.GA-JBCP5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/diameter/core/jdiameter/jdiameter-5.1.0.GA-JBCP5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/diameter/core/jdiameter/jdiameter-5.1.0.GA-JBCP5</url>
 	</scm>
 
 </project>

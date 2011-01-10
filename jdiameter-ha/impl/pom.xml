@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.diameter</groupId>
 		<artifactId>jdiameter-ha-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>jdiameter-ha-impl</artifactId>
