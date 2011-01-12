@@ -40,7 +40,7 @@ import org.jboss.xb.annotations.JBossXmlSchema;
       ignoreUnresolvedFieldOrClass=false,
       namespace=JavaEEMetaDataConstants.JBOSS_NS,
       elementFormDefault=XmlNsForm.QUALIFIED)
-@XmlType(name="jboss-webType", namespace=JavaEEMetaDataConstants.JBOSS_NS, propOrder={"classLoading", "securityDomain",
+@XmlType(name="jboss-webType", namespace=JavaEEMetaDataConstants.JBOSS_NS, propOrder={"classLoading", "securityDomainWeb",
       "jaccAllStoreRole", "contextRoot",
       "virtualHosts", "useSessionCookies", "replicationConfig", "environmentRefsGroup", "securityRoles", "messageDestinations",
       "webserviceDescriptions", "depends", "servlets", "maxActiveSessions", "passivationConfig"})
