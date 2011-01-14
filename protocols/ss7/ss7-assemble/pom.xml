@@ -1,0 +1,162 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>ss7-parent</artifactId>
+		<groupId>org.mobicents.protocols.ss7</groupId>
+		<version>5.1.0.GA-JBCP5</version>
+	</parent>
+
+	<artifactId>ss7-assemble</artifactId>
+	<version>5.1.0.GA-JBCP5</version>
+	<packaging>pom</packaging>
+		
+	<name>SS7 assembly</name>
+	
+	<properties>
+		<isup.version>${pom.version}</isup.version>
+	</properties>
+	
+	
+	<dependencies>
+		<!-- ASN-->
+	
+		<dependency>
+			<groupId>org.mobicents.protocols.asn</groupId>
+			<artifactId>asn</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<!-- SS7 Service-->
+		
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.sccp</groupId>
+			<artifactId>sccp-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.sccp</groupId>
+			<artifactId>sccp-impl</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>mtp</artifactId>
+			<groupId>org.mobicents.protocols.ss7.mtp</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>stream</artifactId>
+			<groupId>org.mobicents.protocols.stream</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<artifactId>linkset</artifactId>
+			<groupId>org.mobicents.protocols.ss7.management</groupId>
+		</dependency>
+		<dependency>
+			<artifactId>m3ua-api</artifactId>
+			<groupId>org.mobicents.protocols.ss7.m3ua</groupId>
+		</dependency>
+		<dependency>
+			<artifactId>m3ua-impl</artifactId>
+			<groupId>org.mobicents.protocols.ss7.m3ua</groupId>
+		</dependency>
+		
+
+		<!-- Hardware Dahdi Java-->
+		<dependency>
+			<artifactId>mobicents-dahdi</artifactId>
+			<groupId>org.mobicents.protocols.ss7.hardware</groupId>
+		</dependency>
+
+		<!-- Hardware Dialogic Java-->
+		<dependency>
+			<artifactId>mobicents-dialogic</artifactId>
+			<groupId>org.mobicents.protocols.ss7.hardware</groupId>
+		</dependency>
+
+		<!-- /hardware m3ua Java-->
+		<dependency>
+			<artifactId>mobicents-m3ua</artifactId>
+			<groupId>org.mobicents.protocols.ss7.hardware</groupId>
+		</dependency>
+
+		<dependency>
+			<groupId>javolution</groupId>
+			<artifactId>javolution</artifactId>
+		</dependency>
+	
+	
+		<!-- Protocols-->
+		
+		
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.map</groupId>
+			<artifactId>map-api</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.map</groupId>
+			<artifactId>map-impl</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.tcap</groupId>
+			<artifactId>tcap-api</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.tcap</groupId>
+			<artifactId>tcap-impl</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.isup</groupId>
+			<artifactId>isup-api</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.isup</groupId>
+			<artifactId>isup-impl</artifactId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		
+		<!-- Shell-->
+		
+		<dependency>
+			<artifactId>shell</artifactId>
+			<groupId>org.mobicents.protocols.ss7.management</groupId>
+			<version>${pom.version}</version>
+		</dependency>
+		
+		
+	</dependencies>
+		
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>
+							src/main/assemble/descriptor.xml
+						</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+							<goal>directory-single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
