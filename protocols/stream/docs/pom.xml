@@ -6,13 +6,13 @@
 	<parent>
 		<groupId>org.mobicents.protocols.stream</groupId>
 		<artifactId>stream-parent</artifactId>
-		<version>1.0.0.BETA1</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>mobicents-stream-docs</artifactId>
 	<groupId>org.mobicents.protocols.stream.docs</groupId>
 	<packaging>pom</packaging>
-
+	<name>Mobicents :: Stream :: Docs :: Parent :: ${pom.artifactId}</name>
 	<properties>
 		<docs.application.name>Stream Library</docs.application.name>
 		<docs.application.dirname>stream</docs.application.dirname>

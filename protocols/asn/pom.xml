@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>2.10</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.protocols.asn</groupId>
 	<artifactId>asn-parent</artifactId>
-	<version>1.0.0.BETA3</version>
+	<version>5.1.0.GA-JBCP5</version>
 	<name>Mobicents :: ASN :: Parent :: ${pom.artifactId}</name>
 	<packaging>pom</packaging>
 	
@@ -19,7 +19,7 @@
 
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
 		<mobicents.tools.mavenplugin.eclipse.version>
-			1.0.0.BETA2
+			5.1.0.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 	
@@ -48,13 +48,13 @@
 	
 	<scm>
 		<connection>
-			scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/asn/asn-1.0.0.BETA3
+			scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/asn/asn-5.1.0.GA-JBCP5
 		</connection>
 		<developerConnection>
-			scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/asn/asn-1.0.0.BETA3
+			scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/asn/asn-5.1.0.GA-JBCP5
 		</developerConnection>
 		<url>
-			http://mobicents.googlecode.com/svn/tags/protocols/asn/asn-1.0.0.BETA3
+			http://mobicents.googlecode.com/svn/tags/protocols/asn/asn-5.1.0.GA-JBCP5
 		</url>
 	</scm>
 

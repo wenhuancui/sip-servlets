@@ -4,13 +4,13 @@
 	<packaging>pom</packaging>
 	
 	<parent>
-		<groupId>org.mobicents.protocols.asn</groupId>
-		<artifactId>asn-parent</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<groupId>org.mobicents.protocols.stream</groupId>
+		<artifactId>stream-parent</artifactId>
+		<version>5.1.0.GA-JBCP5-SNAPSHOT</version>
 	</parent>
 	
-	<artifactId>asn-release</artifactId>
-	<name>Mobicents :: Release :: ${pom.artifactId}</name>
+	<artifactId>stream-release</artifactId>
+	<name>Mobicents :: Stream :: Release :: ${pom.artifactId}</name>
 	<profiles>
 		<profile>
 			<id>release</id>
@@ -29,7 +29,7 @@
 								<configuration>
 									<tasks>
 										<copy overwrite="true" todir="${basedir}/${release.name}">
-											<fileset dir="${basedir}/../asn-impl/target">
+											<fileset dir="${basedir}/../stream-impl/target">
 												<include name="**.jar" />
 											</fileset>
 										</copy>
