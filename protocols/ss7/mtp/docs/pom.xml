@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.mobicents.protocols.ss7.mtp</groupId>
 		<artifactId>mtp-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mobicents-mtp-docs</artifactId>
 	<groupId>org.mobicents.protocols.ss7.mtp.docs</groupId>
-	
+	<name>Mobicents SS7 :: MTP :: Docs :: Parent :: ${pom.artifactId}</name>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -68,9 +68,9 @@
 		</profile>
 	</profiles>
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/ss7/mtp/mtp-1.0.0.BETA3</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/ss7/mtp/mtp-1.0.0.BETA3</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/protocols/ss7/mtp/mtp-1.0.0.BETA3</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/trunk/protocols/ss7/mtp</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/trunk/protocols/ss7/mtp</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/trunk/protocols/ss7/mtp</url>
 	</scm>
 
 </project>

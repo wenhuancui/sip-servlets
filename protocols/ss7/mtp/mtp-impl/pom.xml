@@ -1,17 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<version>5.0.1.GA-JBCP5</version>
 
 	<parent>
 		<groupId>org.mobicents.protocols.ss7.mtp</groupId>
 		<artifactId>mtp-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
-	<groupId>org.mobicents.protocols.ss7.mtp</groupId>
 	<artifactId>mtp</artifactId>
-	<name>Mobicents MTP Impl</name>
-	
+	<name>Mobicents SS7 :: MTP :: Impl :: ${pom.artifactId}</name>
+
 	<developers>
 		<developer>
 			<id>oleg.kulikoff</id>
@@ -58,9 +56,16 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.mobicents.protocols.ss7.m3ua</groupId>
+			<artifactId>m3ua-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mobicents.protocols.ss7.m3ua</groupId>
+			<artifactId>m3ua-impl</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.mobicents.protocols.stream</groupId>
 			<artifactId>stream</artifactId>
-			<version>5.0.1.GA-JBCP5</version>
 		</dependency>
 		<!-- non mobicents -->
 		<dependency>
@@ -73,6 +78,10 @@
 			<artifactId>junit</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>javolution</groupId>
+			<artifactId>javolution</artifactId>
+		</dependency>
 	</dependencies>
-	
+
 </project>
