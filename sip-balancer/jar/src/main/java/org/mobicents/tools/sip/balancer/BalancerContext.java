@@ -1,5 +1,6 @@
 package org.mobicents.tools.sip.balancer;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +16,13 @@ import javax.sip.message.MessageFactory;
 
 public class BalancerContext {
 	public CopyOnWriteArrayList<SIPNode> nodes;
+	/* We will store here all nodes we ever saw because we will need the addresses to determine the
+	 *  direction of requests where a dead node is involved. Otherwise if a node has died its address
+	 *  will be recognized as client address which is wrong. This only affects config with single port SIP LB.
+	 *  If internalPort is set there is no problem because we use other means to determine the direction.
+	 */
+	
+	public HashSet<SIPNode> allNodesEver = new HashSet<SIPNode>();
 	public ConcurrentHashMap<String, SIPNode> jvmRouteToSipNode;
 	
 	public Object parameters;
@@ -71,10 +79,8 @@ public class BalancerContext {
 	final Map<String, AtomicLong> responsesProcessedByStatusCode = new ConcurrentHashMap<String, AtomicLong>();
     
     public boolean isTwoEntrypoints() {
-    	return internalPort>0;
+    	return internalPort>0 && internalHost != null;
     }
-    
-    public static BalancerContext balancerContext = new BalancerContext();
 
     public BalancerContext() {
     	for (String method : METHODS_SUPPORTED) {
@@ -86,5 +92,5 @@ public class BalancerContext {
 	}
 	
     
-    public BalancerAlgorithm balancerAlgorithm = null;
+    public DefaultBalancerAlgorithm balancerAlgorithm = null;
 }

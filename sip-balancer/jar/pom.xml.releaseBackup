@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.tools</groupId>
 		<artifactId>sip-balancer</artifactId>
-		<version>5.1.0.GA-JBCP5</version>		
+		<version>1.2-SNAPSHOT</version>		
 	</parent>
 	
 	<artifactId>sip-balancer-jar</artifactId>
@@ -21,7 +21,6 @@
 		</manifest.implementation.version>
 		<manifest.implementation.vendor>JBoss, a Red Hat division
 		</manifest.implementation.vendor>
-		<maven.test.skip>true</maven.test.skip>
 	</properties>		
 
 	<dependencies>

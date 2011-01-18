@@ -17,8 +17,8 @@
 	<url>http://mobicents.org/</url>
 	
 	<modules>
-		<module>jar</module>		
-		<module>assemble</module>
+		<module>jar</module>
+		<module>assemble</module>		
 	</modules>
 	
 	<profiles>
@@ -112,8 +112,8 @@
 	</repositories>
 
   <scm>
-    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.1</connection>
-    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.1</developerConnection>
-    <url>http://mobicents.googlecode.com/svn/tags/tools/sip-balancer/sip-balancer-1.1</url>
+    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/5.1.0.GA-JBCP5</connection>
+    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/5.1.0.GA-JBCP5</developerConnection>
+    <url>http://mobicents.googlecode.com/svn/tags/tools/sip-balancer/5.1.0.GA-JBCP5</url>
   </scm>
 </project>

@@ -70,6 +70,11 @@ public class Shootist implements SipListener {
     
     public Request inviteRequest;
     
+    boolean started = false;
+    
+    public String peerHostPort ="127.0.0.1:5060";
+    public String transport ="udp";
+    
     public LinkedList<Request> requests = new LinkedList<Request>();
     public LinkedList<Response> responses = new LinkedList<Response>();
 
@@ -122,7 +127,6 @@ public class Shootist implements SipListener {
     	}
     }
     public void processAck(Request request, ServerTransaction stx) {
-    	new Timer().schedule(new ByeTask(dialog), 5000);
     }
 
     public void processRequest(RequestEvent requestReceivedEvent) {
@@ -197,7 +201,6 @@ public class Shootist implements SipListener {
         System.out.println("Response received : Status Code = "
                 + response.getStatusCode() + " " + cseq);
 
-
         if (tid == null) {
 
             // RFC3261: MUST respond to every 2xx
@@ -213,10 +216,7 @@ public class Shootist implements SipListener {
             return;
         }
         // If the caller is supposed to send the bye
-        if ( callerSendsBye && !byeTaskRunning) {
-            byeTaskRunning = true;
-            new Timer().schedule(new ByeTask(dialog), 4000) ;
-        }
+        
         System.out.println("transaction state is " + tid.getState());
         System.out.println("Dialog = " + tid.getDialog());
         System.out.println("Dialog State is " + tid.getDialog().getState());
@@ -270,10 +270,7 @@ public class Shootist implements SipListener {
             ex.printStackTrace();
         }
     }
-    boolean started = false;
-    
-    String peerHostPort ="127.0.0.1:5060";
-    String transport ="udp";
+
     synchronized public void start() {
     	started = true;
         SipFactory sipFactory = null;
@@ -460,6 +457,16 @@ public class Shootist implements SipListener {
             fail("Unxpected exception ");
         }
     }
+    
+    public void sendMessage() throws SipException {
+    	Request r = dialog.createRequest("MESSAGE");
+    	dialog.sendRequest(sipProvider.getNewClientTransaction(r));
+    }
+    
+    public void sendBye() throws SipException {
+    	Request r = dialog.createRequest("BYE");
+    	dialog.sendRequest(sipProvider.getNewClientTransaction(r));
+    }
 
 
 
@@ -473,8 +480,8 @@ public class Shootist implements SipListener {
     public void processTransactionTerminated(
             TransactionTerminatedEvent transactionTerminatedEvent) {
     	
-        System.out.println("Transaction terminated event recieved " + transactionTerminatedEvent.getClientTransaction().getRequest());
-        throw new RuntimeException();
+
+        
     }
 
     public void processDialogTerminated(
