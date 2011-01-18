@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>sip-presence-parent</artifactId>
 		<groupId>org.mobicents.servers.sippresence</groupId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 	
 	<artifactId>load-test-user-provisioning</artifactId>
@@ -28,7 +28,7 @@
       		
 	<dependencies>
 		<dependency>
-			<version>5.0.1.GA-JBCP5</version>
+			<version>5.1.0.GA-JBCP5</version>
 			<artifactId>xcap-client-api</artifactId>
 			<groupId>org.mobicents</groupId>
 		</dependency>

@@ -13,12 +13,12 @@
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 		
 	<artifactId>sip-presence-parent</artifactId>
 	<groupId>org.mobicents.servers.sippresence</groupId>
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 	
 	<!--modules>		
 	
@@ -97,47 +97,47 @@
 			<dependency>
 				<groupId>org.mobicents.servers.jainslee.core</groupId>
 				<artifactId>spi</artifactId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mobicents.servers.jainslee.core</groupId>
 				<artifactId>fault-tolerant-ra-api</artifactId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mobicents.resources</groupId>
 				<artifactId>http-servlet-ratype</artifactId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mobicents.resources</groupId>
 				<artifactId>http-servlet-events</artifactId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mobicents.resources</groupId>
 				<artifactId>sip11-ratype</artifactId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mobicents.resources</groupId>
 				<artifactId>sip11-library</artifactId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 			</dependency>
 			<dependency>
 				<artifactId>xcap-client-api</artifactId>
 				<groupId>org.mobicents</groupId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mobicents.resources</groupId>
 				<artifactId>mobicents-slee-ra-xcap-client-ratype</artifactId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.mobicents.servers.jainslee.enablers</groupId>
 				<artifactId>xdm-client-sbb</artifactId>
-				<version>5.0.1.GA-JBCP5</version>
+				<version>5.1.0.GA-JBCP5</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -163,9 +163,9 @@
 	</build>
 	
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/sip-presence/5.0.1.GA-JBCP5</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/sip-presence/5.0.1.GA-JBCP5</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/sip-presence/5.0.1.GA-JBCP5</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/sip-presence/5.1.0.GA-JBCP5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/sip-presence/5.1.0.GA-JBCP5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/sip-presence/5.1.0.GA-JBCP5</url>
 	</scm>
 	
 	<!-- dupe info from parent, but it's only way to retrieve the parent without user configuration -->
