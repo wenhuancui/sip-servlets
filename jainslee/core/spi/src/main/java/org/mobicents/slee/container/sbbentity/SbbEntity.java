@@ -9,7 +9,6 @@ import javax.slee.ActivityContextInterface;
 import javax.slee.EventTypeID;
 import javax.slee.SbbID;
 import javax.slee.SbbLocalObject;
-import javax.slee.ServiceID;
 import javax.slee.UnrecognizedEventException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionRequiredException;
@@ -30,7 +29,13 @@ public interface SbbEntity {
 	/**
 	 * @return
 	 */
-	public String getSbbEntityId();
+	public SbbEntityID getSbbEntityId();
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public SbbID getSbbId();
 
 	/**
 	 * @return
@@ -80,64 +85,17 @@ public interface SbbEntity {
 	/**
 	 * @return
 	 */
-	public boolean isRootSbbEntity();
-
-	/**
-	 * @return
-	 */
-	public String getRootSbbId();
-
-	/**
-	 * @return
-	 */
 	public int getAttachmentCount();
 
 	/**
 	 * Remove the SbbEntity (Spec. 5.5.4) It detaches the SBB entity from all
 	 * Activity Contexts. It invokes the appropriate life cycle methods (see
-	 * Section 6.3) of an SBB object that caches the SBB entity’s state. It
+	 * Section 6.3) of an SBB object that caches the SBB entity's state. It
 	 * removes the SBB entity from the ChildRelation object that the SBB entity
 	 * belongs to. It removes the persistent representation of the SBB entity.
 	 * 
-	 * @param removeFromParent
-	 *            indicates if the entity should be removed from it's parent or
-	 *            not
-	 * @throws TransactionRequiredException
-	 * @throws SystemException
 	 */
-	public void remove(boolean removeFromParent)
-			throws TransactionRequiredException, SystemException;
-
-	/**
-	 * @return
-	 */
-	public String getServiceConvergenceName();
-
-	/**
-	 * @return
-	 */
-	public ServiceID getServiceId();
-
-	/**
-	 * Retreives the name of the child relation of the parent this sbb entity
-	 * belongs.
-	 * 
-	 * @return
-	 */
-	public String getParentChildRelation();
-	
-	/**
-	 * Retreives the id of the parent sbb entity.
-	 * 
-	 * @return
-	 */
-	public String getParentSbbEntityId();
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public SbbID getSbbId();
+	public void remove();
 	
 	/**
 	 * 

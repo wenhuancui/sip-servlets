@@ -6,7 +6,10 @@
  */
 package org.mobicents.slee.container.management.jmx;
 
+import javax.slee.SbbID;
 import javax.slee.management.ManagementException;
+
+import org.mobicents.slee.container.sbbentity.SbbEntityID;
 
 public interface SbbEntitiesMBeanImplMBean
 {
@@ -16,7 +19,7 @@ public interface SbbEntitiesMBeanImplMBean
     * @param sbbeId
     * @return
     */
-   public Object[] retrieveSbbEntityInfo(String sbbeId);
+   //public Object[] retrieveSbbEntityInfo(SbbEntityID sbbeId);
    
    /**
 	 * Array of the details about all SBB Entities. Retreives the current sbb
@@ -33,13 +36,14 @@ public interface SbbEntitiesMBeanImplMBean
 	 * 
 	 * @param sbbeId
 	 */
-	public void removeSbbEntity(String sbbeId);
+	//public void removeSbbEntity(SbbEntityID sbbeId);
 
 	/**
 	 * SBB Entities associated with SBB.
 	 * 
 	 * @param sbbId
 	 * @return
+	 * @throws ManagementException 
 	 */
-	public Object[] retrieveSbbEntitiesBySbbId(String sbbId);
+	public Object[] retrieveSbbEntitiesBySbbId(SbbID sbbId) throws ManagementException;
 }

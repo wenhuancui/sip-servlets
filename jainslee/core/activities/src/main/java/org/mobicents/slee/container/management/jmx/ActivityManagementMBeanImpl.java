@@ -29,6 +29,7 @@ import org.mobicents.slee.container.resource.ResourceAdaptorActivityContextHandl
 import org.mobicents.slee.container.resource.ResourceAdaptorEntity;
 import org.mobicents.slee.container.sbbentity.SbbEntity;
 import org.mobicents.slee.container.sbbentity.SbbEntityFactory;
+import org.mobicents.slee.container.sbbentity.SbbEntityID;
 import org.mobicents.slee.container.transaction.SleeTransactionManager;
 import org.mobicents.slee.runtime.activity.ActivityContextFactoryImpl;
 import org.mobicents.slee.runtime.activity.ActivityContextImpl;
@@ -359,14 +360,13 @@ public class ActivityManagementMBeanImpl extends MobicentsServiceMBeanSupport
 					break;
 
 				case LIST_BY_SBBENTITY:
-
-					// is this enough ?
-					if (comparisonCriteria.equals("")
-							|| !ac.getSbbAttachmentSet().contains(
-									comparisonCriteria)) {
-						ac = null;
+					
+					for (SbbEntityID sbbEntityID : ac.getSbbAttachmentSet()) {
+						if (sbbEntityID.toString().equals(comparisonCriteria)) {
+							break;
+						}
 					}
-
+					ac = null;
 					break;
 
 				case LIST_BY_SBBID:
@@ -375,17 +375,16 @@ public class ActivityManagementMBeanImpl extends MobicentsServiceMBeanSupport
 					SbbID idBeingLookedUp = (SbbID) propertyEditor.getValue();
 					boolean match = false;
 					SbbID implSbbID = null;
-					for (Object obj : ac.getSbbAttachmentSet()) {
-						String sbbEID = (String) obj;
-						if (sbbEntityIdToSbbID.containsKey(sbbEID)) {
-							implSbbID = (SbbID) sbbEntityIdToSbbID.get(sbbEID);
+					for (SbbEntityID sbbEntityID : ac.getSbbAttachmentSet()) {
+						if (sbbEntityIdToSbbID.containsKey(sbbEntityID)) {
+							implSbbID = (SbbID) sbbEntityIdToSbbID.get(sbbEntityID);
 						} else {
-							SbbEntity sbbe = sbbEntityFactory.getSbbEntity(sbbEID,false);
+							SbbEntity sbbe = sbbEntityFactory.getSbbEntity(sbbEntityID,false);
 							if (sbbe == null) {
 								continue;
 							}
 							implSbbID = sbbe.getSbbId();
-							sbbEntityIdToSbbID.put(sbbEID, implSbbID);
+							sbbEntityIdToSbbID.put(sbbEntityID, implSbbID);
 						}
 
 						if (!implSbbID.equals(idBeingLookedUp)) {
@@ -496,24 +495,27 @@ public class ActivityManagementMBeanImpl extends MobicentsServiceMBeanSupport
 				+ o[LAST_ACCESS_TIME] + "]["
 				+ new Date(Long.parseLong((String) o[LAST_ACCESS_TIME])) + "]");
 		
-		Set set = ac.getSbbAttachmentSet();
-		String[] tmp = new String[set.size()];
-		tmp = (String[]) set.toArray(tmp);
+		Set<SbbEntityID> sbbAttachmentSet = ac.getSbbAttachmentSet();
+		String[] tmp = new String[sbbAttachmentSet.size()];
+		Iterator<?> it = sbbAttachmentSet.iterator();
+		int counter = 0;
+		while (it.hasNext()) {
+			tmp[counter++] = it.next().toString();
+		}
 		o[SBB_ATTACHMENTS] = tmp;
 
-		Set s = ac.getNamingBindings();
-		tmp = new String[s.size()];
-		tmp = (String[]) s.toArray(tmp);
+		Set<String> nameBindindsSet = ac.getNamingBindings();
+		tmp = new String[nameBindindsSet.size()];
+		tmp = nameBindindsSet.toArray(tmp);
 		o[NAMES_BOUND_TO] = tmp;
 
-		s = ac.getAttachedTimers();
-		tmp = new String[s.size()];
-		Iterator it = s.iterator();
-		int counter = 0;
+		Set<TimerID> attachedTimersSet = ac.getAttachedTimers();
+		tmp = new String[attachedTimersSet.size()];
+		it = attachedTimersSet.iterator();
+		counter = 0;
 		while (it.hasNext()) {
 			tmp[counter++] = ((TimerID) it.next()).toString();
 		}
-
 		o[TIMERS_ATTACHED] = tmp;
 
 		Map m = ac.getDataAttributes();
