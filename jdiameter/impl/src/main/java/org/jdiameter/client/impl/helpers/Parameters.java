@@ -35,7 +35,7 @@ public class Parameters extends Ordinal {
     /**
      * Local peer URI property
      */
-    public static final Parameters OwnDiameterURI = new Parameters("OwnDiameterURI", String.class, "aaa://localhost:1812");
+    public static final Parameters OwnDiameterURI = new Parameters("OwnDiameterURI", String.class, "aaa://localhost:3868");
     /**
      * Local peer ip address property
      */
@@ -279,12 +279,12 @@ public class Parameters extends Ordinal {
     /**
      * Statistic logger start pause
      */
-    public static final Parameters StatisticLoggerPause = new Parameters("StatisticLoggerPause", Long.class, 5000L);
+    public static final Parameters StatisticLoggerPause = new Parameters("StatisticLoggerPause", Long.class, 30000L);
 
     /**
      * Statistic logger delay between save statistic information
      */
-    public static final Parameters StatisticLoggerDelay = new Parameters("StatisticLoggerDelay", Long.class, 5000L);
+    public static final Parameters StatisticLoggerDelay = new Parameters("StatisticLoggerDelay", Long.class, 30000L);
 
     /**
      * Concurrent configuration root point
@@ -316,6 +316,31 @@ public class Parameters extends Ordinal {
      */
     public static final Parameters TimerFacility = new Parameters("TimerFacility", String.class, "org.jdiameter.common.impl.timer.LocalTimerFacilityImpl");
 
+    /**
+     * Dictionary root
+     */
+    public static final Parameters Dictionary = new Parameters("Dictionary", Object.class);
+
+    /**
+     * Dictionary Class name
+     */
+    public static final Parameters DictionaryClass = new Parameters("DictionaryClass", String.class, "org.jdiameter.common.impl.validation.DictionaryImpl");
+
+    /**
+     * Dictionary Validation enabled
+     */
+    public static final Parameters DictionaryEnabled = new Parameters("DictionaryEnabled", Boolean.class, false);
+
+    /**
+     * Dictionary Send Level Validation
+     */
+    public static final Parameters DictionarySendLevel = new Parameters("DictionarySendLevel", String.class, "MESSAGE");
+
+    /**
+     * Dictionary Receive Level Validation
+     */
+    public static final Parameters DictionaryReceiveLevel = new Parameters("DictionaryReceiveLevel", String.class, "OFF");
+    
     /**
      * Return all parameters as iterator
      * 
