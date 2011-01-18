@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>mms-user-guide</artifactId>
 		<groupId>org.mobicents.servers.media</groupId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>mms-user-guide-sources-mobicents</artifactId>

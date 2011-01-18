@@ -3,12 +3,12 @@
 	<parent>
         <groupId>org.mobicents</groupId>
         <artifactId>mobicents-parent</artifactId>
-        <version>5.0.1.GA-JBCP5</version>
+        <version>5.1.0.GA-JBCP5</version>
     </parent>
 
 	<groupId>org.mobicents.jsr309</groupId>
 	<artifactId>mobicents-jsr309-impl</artifactId>
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 	<name>Mobicents JSR-309 Impl</name>
 	<url>http://www.mobicents.org/products_media_server.html</url>
 
@@ -20,10 +20,10 @@
 
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
 		<mobicents.tools.mavenplugin.eclipse.version>
-			5.0.1.GA-JBCP5
+			5.1.0.GA-JBCP5
 		</mobicents.tools.mavenplugin.eclipse.version>
 		<mobicents.mgcp.impl.version>
-			5.0.1.GA-JBCP5
+			5.1.0.GA-JBCP5
 		</mobicents.mgcp.impl.version>
 	</properties>
 
