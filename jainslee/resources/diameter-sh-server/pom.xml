@@ -8,12 +8,12 @@
   <parent>
     <groupId>org.mobicents</groupId>
     <artifactId>mobicents-parent</artifactId>
-    <version>5.0.1.GA-JBCP5</version>
+    <version>5.1.0.GA-JBCP5</version>
   </parent>
 
   <groupId>org.mobicents.servers.diameter.resources</groupId>
   <artifactId>sh-server-parent</artifactId>
-  <version>5.0.1.GA-JBCP5</version>
+  <version>5.1.0.GA-JBCP5</version>
 
   <name>Mobicents :: Diameter Resources :: ${pom.artifactId}</name>
 
@@ -26,7 +26,7 @@
 
   <properties>
     <!-- Mobicents Diameter Components Versions -->
-    <mobicents.diameter.resources.sh-common.version>5.0.1.GA-JBCP5</mobicents.diameter.resources.sh-common.version>
+    <mobicents.diameter.resources.sh-common.version>5.1.0.GA-JBCP5</mobicents.diameter.resources.sh-common.version>
 	<!-- Documentation Related Properties -->
     <docs.profile>mobicents</docs.profile>
     <docs.ra.name>Diameter Sh-Server</docs.ra.name>
@@ -67,9 +67,9 @@
   </profiles>
 
   <scm>
-    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-sh-server/5.0.1.GA-JBCP5</connection>
-    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-sh-server/5.0.1.GA-JBCP5</developerConnection>
-    <url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-sh-server/5.0.1.GA-JBCP5</url>
+    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-sh-server/5.1.0.GA-JBCP5</connection>
+    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-sh-server/5.1.0.GA-JBCP5</developerConnection>
+    <url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-sh-server/5.1.0.GA-JBCP5</url>
   </scm>
 
   <build>
@@ -95,23 +95,19 @@
   <!-- dupe info from parent, but it's only way to retrieve the parent without checkout -->
   <repositories>
     <repository>
-      <id>jboss</id>
-      <name>JBoss Repository</name>
-      <url>http://repository.jboss.org/maven2</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>jboss-snapshots</id>
-      <name>JBoss Snapshot Repository</name>
-      <url>http://snapshots.jboss.org/maven2</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
+      <id>jboss-public-repository-group</id>
+        <name>JBoss Public Maven Repository Group</name>
+        <url>https://repository.jboss.org/nexus/content/groups/public</url>
+        <layout>default</layout>
+        <releases>
+          <enabled>true</enabled>
+          <updatePolicy>never</updatePolicy>
+        </releases>
       <snapshots>
         <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
       </snapshots>
     </repository>
   </repositories>
+
 </project>

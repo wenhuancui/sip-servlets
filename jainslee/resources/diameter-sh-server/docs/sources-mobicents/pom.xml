@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.diameter.resources</groupId>
 		<artifactId>mobicents-slee-ra-diameter-sh-server-docs</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 	
 	<artifactId>mobicents-slee-ra-diameter-sh-server-docs-sources-mobicents</artifactId>	

@@ -8,12 +8,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.servers.diameter.resources</groupId>
 	<artifactId>rf-parent</artifactId>
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 
 	<name>Mobicents :: Diameter Resources :: ${pom.artifactId}</name>
 
@@ -26,7 +26,7 @@
 
 	<properties>
 		<!-- Mobicents Diameter Components Versions -->
-		<mobicents.diameter.resources.base-common.version>5.0.1.GA-JBCP5</mobicents.diameter.resources.base-common.version>
+		<mobicents.diameter.resources.base-common.version>5.1.0.GA-JBCP5</mobicents.diameter.resources.base-common.version>
 		<!-- Documentation Related Properties -->
 		<docs.profile>mobicents</docs.profile>
 		<docs.ra.name>Diameter Rf</docs.ra.name>
@@ -67,9 +67,9 @@
 	</profiles>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-rf/5.0.1.GA-JBCP5</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-rf/5.0.1.GA-JBCP5</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-rf/5.0.1.GA-JBCP5</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-rf/5.1.0.GA-JBCP5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-rf/5.1.0.GA-JBCP5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-rf/5.1.0.GA-JBCP5</url>
 	</scm>
 
 	<build>

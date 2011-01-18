@@ -47,8 +47,8 @@ import javax.slee.resource.ReceivableService;
 import javax.slee.resource.ResourceAdaptor;
 import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
-import javax.slee.transaction.SleeTransactionManager;
 
+import net.java.slee.resource.diameter.Validator;
 import net.java.slee.resource.diameter.base.AccountingClientSessionActivity;
 import net.java.slee.resource.diameter.base.AccountingServerSessionActivity;
 import net.java.slee.resource.diameter.base.AuthClientSessionActivity;
@@ -98,7 +98,6 @@ import org.jdiameter.client.api.ISessionFactory;
 import org.jdiameter.client.impl.app.acc.ClientAccSessionImpl;
 import org.jdiameter.client.impl.app.auth.ClientAuthSessionImpl;
 import org.jdiameter.client.impl.parser.MessageParser;
-import org.jdiameter.common.impl.validation.JAvpNotAllowedException;
 import org.jdiameter.server.impl.app.acc.ServerAccSessionImpl;
 import org.jdiameter.server.impl.app.auth.ServerAuthSessionImpl;
 import org.mobicents.diameter.stack.DiameterListener;
@@ -109,6 +108,7 @@ import org.mobicents.slee.resource.cluster.ReplicatedData;
 import org.mobicents.slee.resource.diameter.AbstractClusteredDiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.DiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.LocalDiameterActivityManagement;
+import org.mobicents.slee.resource.diameter.ValidatorImpl;
 import org.mobicents.slee.resource.diameter.base.events.AbortSessionAnswerImpl;
 import org.mobicents.slee.resource.diameter.base.events.AbortSessionRequestImpl;
 import org.mobicents.slee.resource.diameter.base.events.AccountingAnswerImpl;
@@ -718,11 +718,17 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
    * 
    * @param ac the activity that has been created
    */
-  private void addActivity(DiameterActivity ac) {
+  private void addActivity(DiameterActivity ac, boolean suspended) {
     try {
       // Inform SLEE that Activity Started
       DiameterActivityImpl activity = (DiameterActivityImpl) ac;
-      sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+
+      if (suspended) {
+        sleeEndpoint.startActivitySuspended(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      }
+      else {
+        sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      }
 
       // Put it into our activites map
       activities.put(activity.getActivityHandle(), activity);
@@ -770,7 +776,7 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
     // Obtain parser and store it in AvpUtilities
     MessageParser parser = ((IContainer)stack).getAssemblerFacility().getComponentInstance(MessageParser.class);
     AvpUtilities.setParser(parser);
-
+    AvpUtilities.setDictionary(stack.getDictionary());
     if(tracer.isInfoEnabled()) {
       tracer.info("Diameter Base RA :: Successfully initialized stack.");
     }
@@ -871,14 +877,7 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
    * @see org.jdiameter.api.NetworkReqListener#processRequest(org.jdiameter.api.Request)
    */
   public Answer processRequest(Request request) {
-    final SleeTransactionManager txManager = raContext.getSleeTransactionManager();
-
-    boolean terminateTx = false;
-
     try {
-      txManager.begin();
-      terminateTx = true;
-
       DiameterActivityImpl activity = (DiameterActivityImpl) raProvider.createActivity(request);
 
       // Here we have either created activity or got old one, In cass of app activities, 
@@ -909,20 +908,9 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
       else {
         //FIXME: Error?
       }
-
-      terminateTx = false;
-      txManager.commit();     
     }
     catch (Throwable e) {
       tracer.severe("Failed to process request.", e);
-      if (terminateTx) {
-        try {
-          txManager.rollback();
-        }
-        catch (Throwable t) {
-          tracer.severe(t.getMessage(), t);
-        }
-      }
     }
 
     // returning null so we can answer later
@@ -981,7 +969,7 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
 
     //session.addStateChangeNotification(activity);
     activity.setSessionListener(this);
-    addActivity(activity);
+    addActivity(activity, false);
   }
 
   /*
@@ -995,7 +983,7 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
 
     //session.addStateChangeNotification(activity);
     activity.setSessionListener(this);
-    addActivity(activity);
+    addActivity(activity, false);
   }
 
   /*
@@ -1009,7 +997,7 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
 
     //session.addStateChangeNotification(activity);
     activity.setSessionListener(this);
-    addActivity(activity);
+    addActivity(activity, true);
   }
 
   /*
@@ -1023,7 +1011,7 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
 
     activity.setSessionListener(this);
     // session.addStateChangeNotification(activity);
-    addActivity(activity);
+    addActivity(activity, true);
   }
 
   /*
@@ -1038,7 +1026,7 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
     // TODO: Do we need to manage session?
     //session.addStateChangeNotification(activity);
     activity.setSessionListener(this);
-    addActivity(activity);
+    addActivity(activity, true);
   }
 
   //  /*
@@ -1126,6 +1114,7 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
     protected final Tracer tracer = getRaContext().getTracer("DiameterProvider");;
 
     protected DiameterBaseResourceAdaptor ra;
+    protected final Validator validator = new ValidatorImpl();
 
     /**
      * Constructor.
@@ -1286,13 +1275,9 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
      * @return
      */
     DiameterActivity createActivity(Message message) throws CreateActivityException {
-      String sessionId = message.getSessionId();
-      DiameterActivityHandle handle = getActivityHandle(sessionId);
-
-      if (activities.containsKey(handle)) {
-        return activities.get(handle);
-      }
-      else {
+      DiameterActivity activity = activities.get(getActivityHandle(message.getSessionId()));
+      
+      if(activity == null) {
         DiameterIdentity destinationHost = null;
         DiameterIdentity destinationRealm = null;
 
@@ -1328,6 +1313,8 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
           return this.createActivity(destinationHost, destinationRealm, message.getSessionId());
         }
       }
+      
+      return activity;
     }
 
     /*
@@ -1366,16 +1353,15 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
           String sessionId = message.getSessionId();
           DiameterActivityHandle handle = getActivityHandle(sessionId);
 
-          if (!activities.containsKey(handle)) {
-            createActivity(msg.getGenericData());
-          }
-
           DiameterActivityImpl activity = (DiameterActivityImpl) getActivity(handle);
+          if (activity == null) {
+            activity = (DiameterActivityImpl) createActivity(msg.getGenericData());
+          }
 
           return activity.sendSyncMessage(message);
         }
       }
-      catch (JAvpNotAllowedException e) {
+      catch (org.jdiameter.api.validation.AvpNotAllowedException e) {
         throw new AvpNotAllowedException("Message validation failed.", e, e.getAvpCode(), e.getVendorId());
       }
       catch (Exception e) {
@@ -1451,6 +1437,13 @@ public class DiameterBaseResourceAdaptor implements ResourceAdaptor, DiameterLis
 
       return false;
     }
-  }
 
+    /* (non-Javadoc)
+     * @see net.java.slee.resource.diameter.base.DiameterProvider#getValidator()
+     */
+    @Override
+    public Validator getValidator() {
+      return this.validator;
+    }
+  }
 }

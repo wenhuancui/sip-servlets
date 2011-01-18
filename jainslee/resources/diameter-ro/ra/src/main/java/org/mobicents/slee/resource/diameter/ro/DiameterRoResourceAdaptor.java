@@ -44,6 +44,7 @@ import javax.slee.resource.ResourceAdaptor;
 import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
 
+import net.java.slee.resource.diameter.Validator;
 import net.java.slee.resource.diameter.base.CreateActivityException;
 import net.java.slee.resource.diameter.base.DiameterActivity;
 import net.java.slee.resource.diameter.base.DiameterAvpFactory;
@@ -85,6 +86,7 @@ import org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptorContext;
 import org.mobicents.slee.resource.diameter.AbstractClusteredDiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.DiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.LocalDiameterActivityManagement;
+import org.mobicents.slee.resource.diameter.ValidatorImpl;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityHandle;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityImpl;
 import org.mobicents.slee.resource.diameter.base.DiameterAvpFactoryImpl;
@@ -665,11 +667,17 @@ public class DiameterRoResourceAdaptor implements ResourceAdaptor, DiameterListe
    * 
    * @param ac the activity that has been created
    */
-  private void addActivity(DiameterActivity ac) {
+  private void addActivity(DiameterActivity ac, boolean suspended) {
     try {
       // Inform SLEE that Activity Started
       DiameterActivityImpl activity = (DiameterActivityImpl) ac;
-      sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+
+      if (suspended) {
+        sleeEndpoint.startActivitySuspended(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      }
+      else {
+        sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      }
 
       // Set the listener
       activity.setSessionListener(this);
@@ -931,7 +939,7 @@ public class DiameterRoResourceAdaptor implements ResourceAdaptor, DiameterListe
     //FIXME: baranowb: add basic session mgmt for base? or do we relly on responses?
     //session.addStateChangeNotification(activity);
     activity.setSessionListener(this);
-    addActivity(activity);
+    addActivity(activity, true);
   }
 
   public void sessionCreated(ServerRoSession ccServerSession)
@@ -952,11 +960,11 @@ public class DiameterRoResourceAdaptor implements ResourceAdaptor, DiameterListe
     //FIXME: baranowb: add basic session mgmt for base? or do we relly on responses?
     //session.addStateChangeNotification(activity);
     activity.setSessionListener(this);
-    addActivity(activity);
+    addActivity(activity, false);
   }
 
   public boolean sessionExists(String sessionId) {
-    return this.activities.containsKey(new DiameterActivityHandle(sessionId));
+    return this.activities.containsKey(getActivityHandle(sessionId));
   }
 
   public void sessionDestroyed(String sessionId, Object appSession) {
@@ -992,6 +1000,7 @@ public class DiameterRoResourceAdaptor implements ResourceAdaptor, DiameterListe
   private class RoProviderImpl implements RoProvider {
 
     private DiameterRoResourceAdaptor ra;
+    private Validator validator = new ValidatorImpl();
 
     public RoProviderImpl(DiameterRoResourceAdaptor ra) {
       this.ra = ra;
@@ -1032,14 +1041,11 @@ public class DiameterRoResourceAdaptor implements ResourceAdaptor, DiameterListe
 
     public RoCreditControlAnswer sendRoCreditControlRequest(RoCreditControlRequest ccr) throws IOException {
       try {
-        String sessionId = ccr.getSessionId();
-        DiameterActivityHandle handle = new DiameterActivityHandle(sessionId);
+        DiameterActivityImpl activity = (DiameterActivityImpl) getActivity(getActivityHandle(ccr.getSessionId()));
 
-        if (!activities.containsKey(handle)) {
-          createActivity(((DiameterMessageImpl)ccr).getGenericData());
+        if (activity == null) {
+          activity = (DiameterActivityImpl) createActivity(((DiameterMessageImpl)ccr).getGenericData());
         }
-
-        DiameterActivityImpl activity = (DiameterActivityImpl) getActivity(handle);
 
         return (RoCreditControlAnswer) activity.sendSyncMessage(ccr);
       }
@@ -1053,13 +1059,9 @@ public class DiameterRoResourceAdaptor implements ResourceAdaptor, DiameterListe
 
   
     private DiameterActivity createActivity(Message message) throws CreateActivityException {
-      String sessionId = message.getSessionId();
-      DiameterActivityHandle handle = new DiameterActivityHandle(sessionId);
+      DiameterActivity activity = activities.get(getActivityHandle(message.getSessionId()));
 
-      if (activities.containsKey(handle)) {
-        return activities.get(handle);
-      }
-      else {
+      if (activity == null) {
         if (message.isRequest()) {
           return createRoServerSessionActivity((Request) message);
         }
@@ -1091,6 +1093,8 @@ public class DiameterRoResourceAdaptor implements ResourceAdaptor, DiameterListe
           return (DiameterActivity) createRoClientSessionActivity(destinationHost, destinationRealm);
         }
       }
+      
+      return activity;
     }
 
     private DiameterActivity createRoServerSessionActivity(Request message) throws CreateActivityException {
@@ -1115,6 +1119,14 @@ public class DiameterRoResourceAdaptor implements ResourceAdaptor, DiameterListe
 
     public int getPeerCount() {
       return ra.getConnectedPeers().length;
+    }
+
+    /* (non-Javadoc)
+     * @see net.java.slee.resource.diameter.ro.RoProvider#getValidator()
+     */
+    @Override
+    public Validator getValidator() {
+      return this.validator;
     }
   }
 

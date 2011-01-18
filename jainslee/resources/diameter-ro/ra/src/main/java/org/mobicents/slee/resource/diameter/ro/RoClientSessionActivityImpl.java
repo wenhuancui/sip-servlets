@@ -46,9 +46,7 @@ import org.jdiameter.api.ro.ClientRoSession;
 import org.jdiameter.common.api.app.ro.ClientRoSessionState;
 import org.jdiameter.common.impl.app.auth.ReAuthAnswerImpl;
 import org.jdiameter.common.impl.app.ro.RoCreditControlRequestImpl;
-import org.jdiameter.common.impl.validation.JAvpNotAllowedException;
 import org.mobicents.slee.resource.diameter.base.events.DiameterMessageImpl;
-import org.mobicents.slee.resource.diameter.cca.CreditControlClientSessionImpl;
 
 /**
  * Implementation of {@link RoClientSessionActivity}.
@@ -115,7 +113,7 @@ public class RoClientSessionActivityImpl extends RoSessionActivityImpl implement
     try {
       session.sendCreditControlRequest(new RoCreditControlRequestImpl((Request) msg.getGenericData()));
     }
-    catch (JAvpNotAllowedException e) {
+    catch (org.jdiameter.api.validation.AvpNotAllowedException e) {
       throw new AvpNotAllowedException("Message validation failed.", e, e.getAvpCode(), e.getVendorId());
     }
     catch (Exception e) {
@@ -141,7 +139,7 @@ public class RoClientSessionActivityImpl extends RoSessionActivityImpl implement
     try {
       session.sendCreditControlRequest(new RoCreditControlRequestImpl((Request) msg.getGenericData()));
     }
-    catch (JAvpNotAllowedException e) {
+    catch (org.jdiameter.api.validation.AvpNotAllowedException e) {
       throw new AvpNotAllowedException("Message validation failed.", e, e.getAvpCode(), e.getVendorId());
     }
     catch (Exception e) {
@@ -164,7 +162,7 @@ public class RoClientSessionActivityImpl extends RoSessionActivityImpl implement
     try {
       session.sendCreditControlRequest(new RoCreditControlRequestImpl((Request) msg.getGenericData()));
     }
-    catch (JAvpNotAllowedException e) {
+    catch (org.jdiameter.api.validation.AvpNotAllowedException e) {
       throw new AvpNotAllowedException("Message validation failed.", e, e.getAvpCode(), e.getVendorId());
     }
     catch (Exception e) {
@@ -189,7 +187,7 @@ public class RoClientSessionActivityImpl extends RoSessionActivityImpl implement
     try {
       session.sendCreditControlRequest(new RoCreditControlRequestImpl((Request) msg.getGenericData()));
     }
-    catch (JAvpNotAllowedException e) {
+    catch (org.jdiameter.api.validation.AvpNotAllowedException e) {
       throw new AvpNotAllowedException("Message validation failed.", e, e.getAvpCode(), e.getVendorId());
     }
     catch (Exception e) {
@@ -207,7 +205,7 @@ public class RoClientSessionActivityImpl extends RoSessionActivityImpl implement
     try {
       session.sendReAuthAnswer(new ReAuthAnswerImpl((Answer) msg.getGenericData()));
     }
-    catch (JAvpNotAllowedException e) {
+    catch (org.jdiameter.api.validation.AvpNotAllowedException e) {
       throw new AvpNotAllowedException("Message validation failed.", e, e.getAvpCode(), e.getVendorId());
     }
     catch (Exception e) {
@@ -355,7 +353,7 @@ public class RoClientSessionActivityImpl extends RoSessionActivityImpl implement
     if (getClass() != obj.getClass()) {
       return false;
     }
-    CreditControlClientSessionImpl other = (CreditControlClientSessionImpl) obj;
+    RoClientSessionActivityImpl other = (RoClientSessionActivityImpl) obj;
     if (terminateAfterProcessing != other.isTerminateAfterProcessing()) {
       return false;
     }

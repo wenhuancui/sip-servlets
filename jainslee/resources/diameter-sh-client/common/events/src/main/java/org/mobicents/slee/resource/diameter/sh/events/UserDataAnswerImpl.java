@@ -25,10 +25,20 @@
  */
 package org.mobicents.slee.resource.diameter.sh.events;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
 import net.java.slee.resource.diameter.base.events.avp.DiameterAvpCodes;
 import net.java.slee.resource.diameter.base.events.avp.ExperimentalResultAvp;
 import net.java.slee.resource.diameter.sh.events.UserDataAnswer;
 import net.java.slee.resource.diameter.sh.events.avp.DiameterShAvpCodes;
+import net.java.slee.resource.diameter.sh.events.avp.userdata.ShData;
 
 import org.jdiameter.api.Avp;
 import org.jdiameter.api.Message;
@@ -42,6 +52,18 @@ import org.mobicents.slee.resource.diameter.base.events.avp.ExperimentalResultAv
  * @author <a href="mailto:brainslog@gmail.com"> Alexandre Mendonca </a>
  */
 public class UserDataAnswerImpl extends DiameterShMessageImpl implements UserDataAnswer {
+
+  private static JAXBContext jaxbContext = initJAXBContext();
+
+  private static JAXBContext initJAXBContext() {
+    try {
+      return JAXBContext.newInstance(org.mobicents.slee.resource.diameter.sh.events.avp.userdata.TShData.class);
+    }
+    catch (Exception e) {
+      // we can't throw exception
+      return null;
+    }
+  }
 
   /**
    * 
@@ -72,10 +94,46 @@ public class UserDataAnswerImpl extends DiameterShMessageImpl implements UserDat
 
   /*
    * (non-Javadoc)
+   * @see net.java.slee.resource.diameter.sh.events.UserDataAnswer#getUserDataObject()
+   */
+  public ShData getUserDataObject() throws IOException {
+    ShData shDataObject = null;
+    try {
+      Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+
+      byte[] data = getAvpAsRaw(DiameterShAvpCodes.USER_DATA, DiameterShAvpCodes.SH_VENDOR_ID);
+      JAXBElement jaxbElem = (JAXBElement) unmarshaller.unmarshal(new ByteArrayInputStream(data));
+      shDataObject = (ShData) jaxbElem.getValue();
+    }
+    catch (Exception e) {
+      throw new IOException("Failed to unmarshal User-Data AVP into JAXB Object", e);
+    }
+    return shDataObject;
+  }
+
+  /*
+   * (non-Javadoc)
    * @see net.java.slee.resource.diameter.sh.events.UserDataAnswer#setUserData(byte[])
    */
   public void setUserData(String userData) {
     addAvp(DiameterShAvpCodes.USER_DATA, DiameterShAvpCodes.SH_VENDOR_ID, userData);
+  }
+
+  /*
+   * (non-Javadoc)
+   * @see net.java.slee.resource.diameter.sh.events.UserDataAnswer#setUserData(byte[])
+   */
+  public void setUserDataObject(ShData userData) throws IOException {
+    try {
+      Marshaller marshaller = jaxbContext.createMarshaller();
+
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      marshaller.marshal(userData, baos);
+      addAvp(DiameterShAvpCodes.USER_DATA, DiameterShAvpCodes.SH_VENDOR_ID, baos.toByteArray());
+    }
+    catch (Exception e) {
+      throw new IOException("Failed to marshal JAXB Object to User-Data AVP", e);
+    }
   }
 
   /*

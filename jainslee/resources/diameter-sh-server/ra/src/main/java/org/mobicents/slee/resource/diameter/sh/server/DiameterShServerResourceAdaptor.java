@@ -47,6 +47,7 @@ import javax.slee.resource.ResourceAdaptor;
 import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
 
+import net.java.slee.resource.diameter.Validator;
 import net.java.slee.resource.diameter.base.CreateActivityException;
 import net.java.slee.resource.diameter.base.DiameterActivity;
 import net.java.slee.resource.diameter.base.DiameterAvpFactory;
@@ -85,6 +86,7 @@ import org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptorContext;
 import org.mobicents.slee.resource.diameter.AbstractClusteredDiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.DiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.LocalDiameterActivityManagement;
+import org.mobicents.slee.resource.diameter.ValidatorImpl;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityHandle;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityImpl;
 import org.mobicents.slee.resource.diameter.base.DiameterAvpFactoryImpl;
@@ -654,14 +656,14 @@ public class DiameterShServerResourceAdaptor  implements ResourceAdaptor, Diamet
       ShServerSubscriptionActivityImpl _activity = new ShServerSubscriptionActivityImpl(shServerMsgFactory, this.shAvpFactory, session, null, null);
       _activity.setSessionListener(this);
       activity = _activity;
+      activityCreated(activity, true);
     }
     else {
       ShServerActivityImpl _activity = new ShServerActivityImpl(shServerMsgFactory, this.shAvpFactory, session, null, null);
       _activity.setSessionListener(this);
       activity = _activity;
+      activityCreated(activity, false);
     }
-
-    activityCreated(activity);
   }
 
   /*
@@ -682,11 +684,17 @@ public class DiameterShServerResourceAdaptor  implements ResourceAdaptor, Diamet
    * 
    * @param ac the activity that has been created
    */
-  private void activityCreated(DiameterActivity ac) {
+  private void activityCreated(DiameterActivity ac, boolean suspended) {
     try {
       // Inform SLEE that Activity Started
       DiameterActivityImpl activity = (DiameterActivityImpl) ac;
-      sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+
+      if (suspended) {
+        sleeEndpoint.startActivitySuspended(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      }
+      else {
+        sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      }
 
       // Put it into our activities map
       activities.put(activity.getActivityHandle(), activity);
@@ -833,29 +841,11 @@ public class DiameterShServerResourceAdaptor  implements ResourceAdaptor, Diamet
   // NetworkReqListener Implementation -----------------------------------
 
   public Answer processRequest(Request request) {
-    //final SleeTransactionManager txManager = raContext.getSleeTransactionManager();
-
-    // boolean terminateTx = false;
-
     try {
-      //txManager.begin();
-      //terminateTx = true;
-
       raProvider.createActivity(request);
-      // do nothing here, if its valid it should be processed, if not we will get exception
-      //terminateTx = false;
-      //txManager.commit();     
     }
     catch (Throwable e) {
       tracer.severe(e.getMessage(), e);
-      //if (terminateTx) {
-      //  try {
-      //    txManager.rollback();
-      //  }
-      //  catch (Throwable t) {
-      //    tracer.severe(t.getMessage(), t);
-      //  }
-      //}
     }
 
     // returning null so we can answer later
@@ -895,6 +885,7 @@ public class DiameterShServerResourceAdaptor  implements ResourceAdaptor, Diamet
 
   class ShServerProviderImpl implements ShServerProvider {
     private DiameterShServerResourceAdaptor ra = null;
+    private Validator validator = new ValidatorImpl();
 
     private ArrayList<Integer> requestCodes = new ArrayList<Integer>();
 
@@ -968,6 +959,14 @@ public class DiameterShServerResourceAdaptor  implements ResourceAdaptor, Diamet
 
     public int getPeerCount() {
       return ra.getConnectedPeers().length;
+    }
+
+    /* (non-Javadoc)
+     * @see net.java.slee.resource.diameter.sh.server.ShServerProvider#getValidator()
+     */
+    @Override
+    public Validator getValidator() {
+      return this.validator;
     }
 
   }

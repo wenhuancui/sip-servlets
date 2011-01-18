@@ -8,12 +8,12 @@
   <parent>
     <groupId>org.mobicents</groupId>
     <artifactId>mobicents-parent</artifactId>
-    <version>5.0.1.GA-JBCP5</version>
+    <version>5.1.0.GA-JBCP5</version>
   </parent>
 
   <groupId>org.mobicents.servers.diameter.resources</groupId>
   <artifactId>base-parent</artifactId>
-  <version>5.0.1.GA-JBCP5</version>
+  <version>5.1.0.GA-JBCP5</version>
 
   <name>Mobicents :: Diameter Resources :: ${pom.artifactId}</name>
 
@@ -27,10 +27,10 @@
 
   <properties>
     <!-- Mobicents Diameter Components Versions -->
-    <mobicents.diameter.jdiameter.version>${pom.version}</mobicents.diameter.jdiameter.version>
-    <mobicents.diameter.mux.version>${pom.version}</mobicents.diameter.mux.version>
-    <mobicents.slee.version>${pom.version}</mobicents.slee.version>
-	<!-- Documentation Related Properties -->
+    <mobicents.diameter.jdiameter.version>1.5.4.1-build415</mobicents.diameter.jdiameter.version>
+    <mobicents.diameter.mux.version>1.3.3.FINAL</mobicents.diameter.mux.version>
+    <mobicents.slee.version>2.2.1.FINAL</mobicents.slee.version>
+    <!-- Documentation Related Properties -->
     <docs.profile>mobicents</docs.profile>
     <docs.ra.name>Diameter Base</docs.ra.name>
     <docs.ra.dirname>diameter-base</docs.ra.dirname>
@@ -70,9 +70,9 @@
   </profiles>
 
   <scm>
-    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/5.0.1.GA-JBCP5</connection>
-    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/5.0.1.GA-JBCP5</developerConnection>
-    <url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/5.0.1.GA-JBCP5</url>
+    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/5.1.0.GA-JBCP5</connection>
+    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/5.1.0.GA-JBCP5</developerConnection>
+    <url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/diameter-base/5.1.0.GA-JBCP5</url>
   </scm>
 
   <build>

@@ -48,6 +48,7 @@ import javax.transaction.InvalidTransactionException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
+import net.java.slee.resource.diameter.Validator;
 import net.java.slee.resource.diameter.base.CreateActivityException;
 import net.java.slee.resource.diameter.base.DiameterActivity;
 import net.java.slee.resource.diameter.base.DiameterAvpFactory;
@@ -85,6 +86,7 @@ import org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptorContext;
 import org.mobicents.slee.resource.diameter.AbstractClusteredDiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.DiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.LocalDiameterActivityManagement;
+import org.mobicents.slee.resource.diameter.ValidatorImpl;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityHandle;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityImpl;
 import org.mobicents.slee.resource.diameter.base.DiameterAvpFactoryImpl;
@@ -664,11 +666,16 @@ public class DiameterCCAResourceAdaptor implements ResourceAdaptor, DiameterList
    * 
    * @param ac the activity that has been created
    */
-  private void activityCreated(DiameterActivity ac) {
+  private void activityCreated(DiameterActivity ac, boolean suspended) {
     try {
       // Inform SLEE that Activity Started
       DiameterActivityImpl activity = (DiameterActivityImpl) ac;
-      sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      if (suspended) {
+        sleeEndpoint.startActivitySuspended(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);        
+      }
+      else {
+        sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      }
 
       // Put it into our activites map
       activities.put(activity.getActivityHandle(), activity);
@@ -811,14 +818,6 @@ public class DiameterCCAResourceAdaptor implements ResourceAdaptor, DiameterList
   // NetworkReqListener Implementation -----------------------------------
 
   public Answer processRequest(Request request) {
-    //final SleeTransactionManager txManager = raContext.getSleeTransactionManager();
-
-    //boolean terminateTx = false;
-    //
-    //try {
-    //  txManager.begin();
-    //  terminateTx = true;
-
     // Here we receive initial request for which session does not exist!
     // Valid messages are:
     // * CCR - if we act as server, this is the message we receive
@@ -848,22 +847,6 @@ public class DiameterCCAResourceAdaptor implements ResourceAdaptor, DiameterList
     else {
       tracer.severe("Diameter CCA RA :: Received unexpected Request. Either its not CCR or session should exist to handle this, Command-Code: "+request.getCommandCode()+", Session-Id: "+request.getSessionId());
     }
-
-    //  terminateTx = false;
-    //  txManager.commit();     
-    //}
-    //catch (Throwable e) {
-    //  tracer.severe(e.getMessage(), e);
-    //
-    //  if (terminateTx) {
-    //    try {
-    //      txManager.rollback();
-    //    }
-    //    catch (Throwable t) {
-    //      tracer.severe(t.getMessage(), t);
-    //    }
-    //  }
-    //}
 
     // Returning null so we can answer later
     return null;
@@ -897,7 +880,7 @@ public class DiameterCCAResourceAdaptor implements ResourceAdaptor, DiameterList
 
     //session.addStateChangeNotification(activity);
     activity.setSessionListener(this);
-    activityCreated(activity);
+    activityCreated(activity, true);
   }
 
   private void sessionCreated(ServerCCASession ccServerSession) {
@@ -915,7 +898,7 @@ public class DiameterCCAResourceAdaptor implements ResourceAdaptor, DiameterList
     CreditControlServerSessionImpl activity = new CreditControlServerSessionImpl(ccaMsgFactory,this.ccaAvpFactory,ccServerSession,null,null);
 
     activity.setSessionListener(this);
-    activityCreated(activity);
+    activityCreated(activity, false);
   }
 
   // Credit Control Provider Implementation ------------------------------------
@@ -923,7 +906,7 @@ public class DiameterCCAResourceAdaptor implements ResourceAdaptor, DiameterList
   private class CreditControlProviderImpl implements CreditControlProvider {
 
     protected DiameterCCAResourceAdaptor ra = null;
-
+    protected Validator validator = new ValidatorImpl();
     public CreditControlProviderImpl(DiameterCCAResourceAdaptor ra) {
       super();
       this.ra = ra;
@@ -1037,6 +1020,14 @@ public class DiameterCCAResourceAdaptor implements ResourceAdaptor, DiameterList
     public int getPeerCount() {
       DiameterIdentity[] connectedPeers = getConnectedPeers();
       return connectedPeers != null ? getConnectedPeers().length : -1;
+    }
+
+    /* (non-Javadoc)
+     * @see net.java.slee.resource.diameter.cca.CreditControlProvider#getValidator()
+     */
+    @Override
+    public Validator getValidator() {
+      return this.validator;
     }
   }
 

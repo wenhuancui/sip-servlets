@@ -49,8 +49,8 @@ import javax.slee.resource.ReceivableService;
 import javax.slee.resource.ResourceAdaptor;
 import javax.slee.resource.ResourceAdaptorContext;
 import javax.slee.resource.SleeEndpoint;
-import javax.slee.transaction.SleeTransactionManager;
 
+import net.java.slee.resource.diameter.Validator;
 import net.java.slee.resource.diameter.base.CreateActivityException;
 import net.java.slee.resource.diameter.base.DiameterActivity;
 import net.java.slee.resource.diameter.base.DiameterAvpFactory;
@@ -101,6 +101,7 @@ import org.mobicents.slee.resource.cluster.FaultTolerantResourceAdaptorContext;
 import org.mobicents.slee.resource.diameter.AbstractClusteredDiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.DiameterActivityManagement;
 import org.mobicents.slee.resource.diameter.LocalDiameterActivityManagement;
+import org.mobicents.slee.resource.diameter.ValidatorImpl;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityHandle;
 import org.mobicents.slee.resource.diameter.base.DiameterActivityImpl;
 import org.mobicents.slee.resource.diameter.base.DiameterAvpFactoryImpl;
@@ -660,11 +661,17 @@ public class DiameterShClientResourceAdaptor implements ResourceAdaptor, Diamete
    * 
    * @param ac the activity that has been created
    */
-  private void activityCreated(DiameterActivity ac) {
+  private void activityCreated(DiameterActivity ac, boolean suspended) {
     try {
       // Inform SLEE that Activity Started
       DiameterActivityImpl activity = (DiameterActivityImpl) ac;
-      sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+
+      if (suspended) {
+        sleeEndpoint.startActivitySuspended(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      }
+      else {
+        sleeEndpoint.startActivity(activity.getActivityHandle(), activity, MARSHALABLE_ACTIVITY_FLAGS);
+      }
 
       // Put it into our activites map
       activities.put(activity.getActivityHandle(), activity);
@@ -821,29 +828,11 @@ public class DiameterShClientResourceAdaptor implements ResourceAdaptor, Diamete
   // NetworkReqListener Implementation -----------------------------------
 
   public Answer processRequest(Request request) {
-    final SleeTransactionManager txManager = raContext.getSleeTransactionManager();
-
-    boolean terminateTx = false;
-
     try {
-      txManager.begin();
-      terminateTx = true;
-
       raProvider.createActivity(request);
-      // do nothing here, if its valid it should be processed, if not we will get exception
-      terminateTx = false;
-      txManager.commit();     
     }
     catch (Throwable e) {
       tracer.severe(e.getMessage(), e);
-      if (terminateTx) {
-        try {
-          txManager.rollback();
-        }
-        catch (Throwable t) {
-          tracer.severe(t.getMessage(), t);
-        }
-      }
     }
 
     // returning null so we can answer later
@@ -1029,7 +1018,8 @@ public class DiameterShClientResourceAdaptor implements ResourceAdaptor, Diamete
 
   private class ShClientProviderImpl implements ShClientProvider
   {
-    DiameterShClientResourceAdaptor ra = null;
+    protected DiameterShClientResourceAdaptor ra = null;
+    protected Validator validator = new ValidatorImpl();
 
     public ShClientProviderImpl(DiameterShClientResourceAdaptor ra) {
       super();
@@ -1046,22 +1036,18 @@ public class DiameterShClientResourceAdaptor implements ResourceAdaptor, Diamete
      * @return
      */
     DiameterActivity createActivity(Message message) throws CreateActivityException {
-      String sessionId = message.getSessionId();
-      DiameterActivityHandle handle = getActivityHandle(sessionId);
+      DiameterActivity activity = activities.get(getActivityHandle(message.getSessionId()));
 
-      if (activities.containsKey(handle)) {
-        return activities.get(handle);
-      }
-      else {
+      if (activity == null) {
         //FIXME: baranowb: here we can receive only (valid) PNR, other message are errors?
         if(message.getCommandCode() != PushNotificationRequestImpl.commandCode) {
           throw new CreateActivityException("Cant create activity for unexpected message:\r\n" + message);
         }
 
-        ShClientSubscriptionActivityImpl activity = (ShClientSubscriptionActivityImpl) this.createShClientSubscriptionActivity(new PushNotificationRequestImpl( message));
-
-        return activity;
+        return (ShClientSubscriptionActivityImpl) this.createShClientSubscriptionActivity(new PushNotificationRequestImpl( message));
       }
+
+      return activity;
     }
 
     private ShClientSubscriptionActivity createShClientSubscriptionActivity(net.java.slee.resource.diameter.sh.events.PushNotificationRequest pushNotificationRequest) {
@@ -1083,7 +1069,7 @@ public class DiameterShClientResourceAdaptor implements ResourceAdaptor, Diamete
       ShClientSubscriptionActivityImpl activity = new ShClientSubscriptionActivityImpl(getSessionShMessageFactory(session), shAvpFactory, session, null, null);
       activity.fetchSessionData(pushNotificationRequest,true);
       activity.setSessionListener(ra);
-      activityCreated(activity);
+      activityCreated(activity, false);
 
       //FIXME: baranowb: this is akward, jdiam has weird api
       //This is trick to trigger fire and state machine
@@ -1111,7 +1097,7 @@ public class DiameterShClientResourceAdaptor implements ResourceAdaptor, Diamete
       ShClientActivityImpl activity = new ShClientActivityImpl(getSessionShMessageFactory(session), shAvpFactory, session, null, null);
 
       activity.setSessionListener(ra);
-      activityCreated(activity);
+      activityCreated(activity, true);
 
       return activity;
     }
@@ -1212,7 +1198,7 @@ public class DiameterShClientResourceAdaptor implements ResourceAdaptor, Diamete
 
       ShClientSubscriptionActivityImpl activity = new ShClientSubscriptionActivityImpl(getSessionShMessageFactory(session), shAvpFactory, session, null, null);
       activity.setSessionListener(ra);
-      activityCreated(activity);
+      activityCreated(activity, true);
 
       return activity;
     }
@@ -1253,6 +1239,14 @@ public class DiameterShClientResourceAdaptor implements ResourceAdaptor, Diamete
 
     public int getPeerCount() {
       return getConnectedPeers().length;
+    }
+
+    /* (non-Javadoc)
+     * @see net.java.slee.resource.diameter.sh.client.ShClientProvider#getValidator()
+     */
+    @Override
+    public Validator getValidator() {
+      return this.validator;
     }
   }
 

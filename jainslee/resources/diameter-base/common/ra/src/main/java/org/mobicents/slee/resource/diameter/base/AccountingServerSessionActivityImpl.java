@@ -30,6 +30,7 @@ import net.java.slee.resource.diameter.base.DiameterAvpFactory;
 import net.java.slee.resource.diameter.base.DiameterMessageFactory;
 import net.java.slee.resource.diameter.base.events.AccountingAnswer;
 import net.java.slee.resource.diameter.base.events.AccountingRequest;
+import net.java.slee.resource.diameter.base.events.avp.AccountingRecordType;
 import net.java.slee.resource.diameter.base.events.avp.AvpNotAllowedException;
 import net.java.slee.resource.diameter.base.events.avp.DiameterAvp;
 import net.java.slee.resource.diameter.base.events.avp.DiameterIdentity;
@@ -44,7 +45,6 @@ import org.jdiameter.api.acc.ServerAccSession;
 import org.jdiameter.api.app.AppSession;
 import org.jdiameter.common.api.app.acc.ServerAccSessionState;
 import org.jdiameter.common.impl.app.acc.AccountAnswerImpl;
-import org.jdiameter.common.impl.validation.JAvpNotAllowedException;
 import org.mobicents.slee.resource.diameter.base.events.AccountingAnswerImpl;
 import org.mobicents.slee.resource.diameter.base.events.DiameterMessageImpl;
 
@@ -136,17 +136,14 @@ public class AccountingServerSessionActivityImpl extends AccountingSessionActivi
       this.serverSession.sendAccountAnswer(new AccountAnswerImpl((Answer) aca.getGenericData()));
 
       // FIXME: check this?
-      if (isTerminateAfterProcessing()) {
+      if (this.serverSession.isStateless()) {
         endActivity();
-        //        this.serverSession.release();
-        //      
-        //      if(!serverSession.isValid()) {
-        //        String sessionId = this.serverSession.getSessions().get(0).getSessionId();
-        //        this.baseListener.sessionDestroyed(sessionId, this.serverSession);
-        //      }
+      }
+      else if(aca.getAccountingRecordType() == AccountingRecordType.STOP_RECORD) {
+        endActivity();
       }
     }
-    catch (JAvpNotAllowedException e) {
+    catch (org.jdiameter.api.validation.AvpNotAllowedException e) {
       throw new AvpNotAllowedException("Message validation failed.", e, e.getAvpCode(), e.getVendorId());
     }
     catch (Exception e) {
