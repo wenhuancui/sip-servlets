@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>smpp5-parent</artifactId>
 		<groupId>org.mobicents.resources</groupId>
-		<version>1.0.0.FINAL</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 	
 	<artifactId>smpp5-ra-DU</artifactId>
@@ -79,6 +79,24 @@
 								<delete file="${jboss.home}/server/${node}/deploy/${project.build.finalName}.jar" />
 							</tasks>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assemble/descriptor.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+							<goal>directory-single</goal>							
+						</goals>
 					</execution>
 				</executions>
 			</plugin>

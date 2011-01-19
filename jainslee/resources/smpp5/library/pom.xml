@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>smpp5-parent</artifactId>
 		<groupId>org.mobicents.resources</groupId>
-		<version>1.0.0.FINAL</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>smpp5-library</artifactId>
@@ -26,14 +26,14 @@
 				<groupId>org.mobicents.tools</groupId>
 				<artifactId>maven-library-plugin</artifactId>
 				<extensions>true</extensions>
-				<executions>
+				<!-- >executions>
 					<execution>
 						<phase>generate-resources</phase>
 						<goals>
 							<goal>create</goal>
 						</goals>
 					</execution>
-				</executions>
+				</executions-->
 				<configuration>
 					<library-name>library-smpp5</library-name>
 					<library-vendor>library-smpp5</library-vendor>

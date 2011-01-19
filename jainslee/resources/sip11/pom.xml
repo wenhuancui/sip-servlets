@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 	
 	<artifactId>mobicents-slee-ra-sip11</artifactId>
 	<groupId>org.mobicents.resources</groupId>
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 	
 	<name>Mobicents :: Resources :: ${pom.artifactId}</name>
 
@@ -24,10 +24,10 @@
 	</modules>
 	
 	<properties>
-		<mobicents.slee.version>5.0.1.GA-JBCP5</mobicents.slee.version>
-		<jsip.ha.version>5.0.1.GA-JBCP5</jsip.ha.version>
-		<jsip.sip.ext.version>5.0.1.GA-JBCP5</jsip.sip.ext.version>
-		<loadbalancer.version>5.0.1.GA-JBCP5</loadbalancer.version>
+		<mobicents.slee.version>5.1.0.GA-JBCP5</mobicents.slee.version>
+		<jsip.ha.version>5.1.0.GA-JBCP5</jsip.ha.version>
+		<jsip.sip.ext.version>5.1.0.GA-JBCP5</jsip.sip.ext.version>
+		<loadbalancer.version>5.1.0.GA-JBCP5</loadbalancer.version>
 		<docs.profile>mobicents</docs.profile>
 		<docs.ra.name>SIP11</docs.ra.name>
 		<docs.ra.dirname>sip11</docs.ra.dirname>
@@ -108,9 +108,9 @@
 	</profiles>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11/5.0.1.GA-JBCP5</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11/5.0.1.GA-JBCP5</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11/5.0.1.GA-JBCP5</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11/5.1.0.GA-JBCP5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11/5.1.0.GA-JBCP5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/sip11/5.1.0.GA-JBCP5</url>
 	</scm>
 	
 <build>

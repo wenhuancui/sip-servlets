@@ -2,12 +2,10 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<packaging>jainslee-library</packaging>
-
 	<parent>
 		<artifactId>mobicents-slee-ra-jcc</artifactId>
 		<groupId>org.mobicents.resources.jcc</groupId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>jcc-library</artifactId>
@@ -21,20 +19,15 @@
 			<activation>
 				<activeByDefault>true</activeByDefault>
 				<!-- For some reason this does not work properly.. -->
-				<!--
-					<property> <name>platform</name> <value>win32</value> </property>
-				-->
+				<!-- <property> <name>platform</name> <value>win32</value> </property> -->
 			</activation>
 			<dependencies>
 				<dependency>
 					<groupId>javax.csapi.cc</groupId>
 					<artifactId>jcc</artifactId>
 				</dependency>
-				<!--
-					<dependency> <artifactId>jcc-native-win</artifactId>
-					<groupId>org.mobicents.resources.jcc</groupId>
-					<version>${pom.version}</version> </dependency>
-				-->
+				<!-- <dependency> <artifactId>jcc-native-win</artifactId> <groupId>org.mobicents.resources.jcc</groupId> 
+					<version>${pom.version}</version> </dependency> -->
 				<!-- INAP -->
 				<dependency>
 					<artifactId>jcc-camel</artifactId>
@@ -42,7 +35,7 @@
 					<version>${pom.version}</version>
 				</dependency>
 
-				<!-- PROTOCOLS -->
+				<!-- PROTOCOLS
 				<dependency>
 					<artifactId>stream</artifactId>
 					<groupId>org.mobicents.protocols.stream</groupId>
@@ -55,6 +48,25 @@
 					<artifactId>sccp-impl</artifactId>
 					<groupId>org.mobicents.protocols.ss7.sccp</groupId>
 				</dependency>
+				
+				<dependency>
+					<artifactId>mtp</artifactId>
+					<groupId>org.mobicents.protocols.ss7.mtp</groupId>
+				</dependency>
+				
+				<dependency>
+					<artifactId>m3ua-api</artifactId>
+					<groupId>org.mobicents.protocols.ss7.m3ua</groupId>
+				</dependency>
+				<dependency>
+					<artifactId>m3ua-impl</artifactId>
+					<groupId>org.mobicents.protocols.ss7.m3ua</groupId>
+				</dependency>
+				-->
+				<dependency>
+					<artifactId>asn</artifactId>
+					<groupId>org.mobicents.protocols.asn</groupId>
+				</dependency>
 				<dependency>
 					<artifactId>tcap-api</artifactId>
 					<groupId>org.mobicents.protocols.ss7.tcap</groupId>
@@ -62,14 +74,6 @@
 				<dependency>
 					<artifactId>tcap-impl</artifactId>
 					<groupId>org.mobicents.protocols.ss7.tcap</groupId>
-				</dependency>
-				<dependency>
-					<artifactId>mtp</artifactId>
-					<groupId>org.mobicents.protocols.ss7.mtp</groupId>
-				</dependency>
-				<dependency>
-					<artifactId>asn</artifactId>
-					<groupId>org.mobicents.protocols.asn</groupId>
 				</dependency>
 			</dependencies>
 
@@ -135,8 +139,15 @@
 			<plugin>
 				<groupId>org.mobicents.tools</groupId>
 				<artifactId>maven-library-plugin</artifactId>
-				<version>${mobicents.tools.mavenplugin.library.version}</version>
 				<extensions>true</extensions>
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
 					<library-name>jcc-provider-library</library-name>
 					<library-vendor>org.mobicents.resources.jcc</library-vendor>
