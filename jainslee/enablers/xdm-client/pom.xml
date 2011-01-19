@@ -6,12 +6,12 @@
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 	
 	<groupId>org.mobicents.servers.jainslee.enablers</groupId>
 	<artifactId>xdm-client</artifactId>
-	<version>5.0.1.GA-JBCP5</version>
+	<version>5.1.0.GA-JBCP5</version>
 		
 	<modules>
 		<module>sbb</module>
@@ -23,12 +23,12 @@
 	    <dependency>
 	      <groupId>org.mobicents.resources</groupId>
 	      <artifactId>mobicents-slee-ra-xcap-client-ratype</artifactId>
-	      <version>5.0.1.GA-JBCP5</version>
+	      <version>5.1.0.GA-JBCP5</version>
 	    </dependency>
 	    <dependency>
 		  <artifactId>xcap-client-api</artifactId>
 		  <groupId>org.mobicents</groupId>
-	      <version>5.0.1.GA-JBCP5</version>
+	      <version>5.1.0.GA-JBCP5</version>
 	    </dependency>
 	  </dependencies>
 	</dependencyManagement>
@@ -65,9 +65,9 @@
 	</profiles>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/enablers/xdm-client/5.0.1.GA-JBCP5</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/enablers/xdm-client/5.0.1.GA-JBCP5</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/enablers/xdm-client/5.0.1.GA-JBCP5</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/enablers/xdm-client/5.1.0.GA-JBCP5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/enablers/xdm-client/5.1.0.GA-JBCP5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/enablers/xdm-client/5.1.0.GA-JBCP5</url>
 	</scm>
 
 	<build>

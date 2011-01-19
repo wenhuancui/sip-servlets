@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>mobicents-slee-example-sip-wake-up</artifactId>
 		<groupId>org.mobicents.examples</groupId>
-		<version>5.0.1.GA-JBCP5</version>
+		<version>5.1.0.GA-JBCP5</version>
 	</parent>
 	
 	<artifactId>sip-wake-up-sbb</artifactId>
@@ -14,7 +14,7 @@
 		<dependency>
 			<artifactId>sip-services-location-sbb</artifactId>
 			<groupId>org.mobicents.examples</groupId>
-			<version>5.0.1.GA-JBCP5</version>
+			<version>5.1.0.GA-JBCP5</version>
 		</dependency>
 	</dependencies>
 	
