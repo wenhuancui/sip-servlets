@@ -12,6 +12,8 @@
 	<packaging>jar</packaging>
 	<name>Sip Servlets Loading Specifics for Tomcat and JBoss 4.2.x</name>
 	<url>http://www.mobicents.org/products_sip_servlets.html</url>
+	
+	
 	<dependencies>
 		<dependency>
 			<groupId>javax.sip</groupId>
@@ -87,7 +89,7 @@
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jbossweb-service</artifactId>
-			<version>${jboss.version}</version>
+			<version>4.2.3.GA</version>
 			<scope>system</scope>
 			<systemPath>${basedir}/lib/jbossweb-service-4.2.3.GA.jar</systemPath>
 			<optional>true</optional>
@@ -96,21 +98,21 @@
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jboss</artifactId>
-			<version>${jboss.version}</version>
+			<version>4.2.3.GA</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jboss-system</artifactId>
-			<version>${jboss.version}</version>
+			<version>4.2.3.GA</version>
 			<scope>provided</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jboss-jmx</artifactId>
-			<version>${jboss.version}</version>
+			<version>4.2.3.GA</version>
 			<scope>provided</scope>
 		</dependency>
 	
@@ -125,7 +127,7 @@
 		<dependency>
 			<groupId>jboss</groupId>
 			<artifactId>jbosssx</artifactId>
-			<version>${jboss.version}</version>
+			<version>4.2.3.GA</version>
 			<scope>provided</scope>
 		</dependency>
 		  
