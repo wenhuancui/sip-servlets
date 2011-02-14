@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="Diameter" default="">
+
+	<property name="home" value="${ant.file.Diameter}/../" />
+	<property environment="env"/>
+	<property name="jboss.home" value="${home}/../jboss-eap-5.1/jboss-as/" />
+	<property name="jboss.config" value="slee-default" />
+	
+
+	<target name="deploy" description="deploys the diameter service">
+		<copy overwrite="true" todir="${jboss.home}/server/${jboss.config}/deploy/mobicents-diameter-mux-sar-jboss-5.sar">
+            <fileset dir="${home}/mobicents-diameter-mux-sar-jboss-5.sar" />
+        </copy>
+	</target>
+
+	<target name="undeploy" description="undeploys the diameter service">
+		<delete dir="${jboss.home}/server/${jboss.config}/deploy/mobicents-diameter-mux-sar-jboss-5.sar" />
+	</target>
+
+</project>
