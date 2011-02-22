@@ -12,13 +12,20 @@
 	<artifactId>mms-user-guide-sources-jbcp</artifactId>
 			
 	<properties>
-		<THIS.PLATFORM>JBoss Communications</THIS.PLATFORM>
+		<THIS.PLATFORM>JBoss Communications Platform</THIS.PLATFORM>
 		<JEE.PLATFORM>JBoss Enterprise Application Platform</JEE.PLATFORM>
 		<MANAGEMENT.PLATFORM>JBoss Operations Network</MANAGEMENT.PLATFORM>
 		<THIS.PLATFORM.INSTALL_SECTION>Section-Install_JBCP.xml</THIS.PLATFORM.INSTALL_SECTION>
-		<author.email.ivelin>iivanov@redhat.com</author.email.ivelin>
-		<author.email.alex>amendonca@redhat.com</author.email.alex>
+		
+		<author.email.tom>twells (at) redhat.com</author.email.tom>
+		<author.email.amit>abhayani (at) redhat.com</author.email.amit>
+		<author.email.bartosz>bbaranow (at) redhat.com</author.email.bartosz>	
+		<author.email.oleg>okulikov (at) redhat.com</author.email.oleg>
+		<author.email.jared>jmorgan (at) redhat.com</author.email.jared>
+		<author.email.silas>dhensley (at) redhat.com</author.email.silas>
+		
 	</properties>
+	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -65,6 +72,17 @@
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
+        <execution>
+          <phase>install</phase>
+          <goals>
+            <goal>run</goal>
+          </goals>
+          <configuration>
+            <tasks>
+              <copy file="publican.cfg" todir="src/main/resources/" />
+            </tasks>
+          </configuration>
+        </execution>        
 					<execution>
 						<id>clean-resources</id>
 						<phase>clean</phase>
