@@ -1,5 +1,5 @@
 <?xml version='1.0'?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [<!ENTITY % BOOK_ENTITIES SYSTEM "User_Guide.ent">%BOOK_ENTITIES;]>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [<!ENTITY % BOOK_ENTITIES SYSTEM "JAIN_SLEE_User_Guide.ent">%BOOK_ENTITIES;]>
 
 <section id="event_router_configuration">
 	
@@ -64,6 +64,11 @@
 					        <entry>collectStats</entry>
 					        <entry>boolean</entry>
 					        <entry>defines if performance and load statistics should be collected, turning this feature off will increase performance</entry>
+					      </row>
+					      <row>
+					      	<entry>confirmSbbEntityAttachement</entry>
+					      	<entry>boolean</entry>
+					        <entry>defines if the event router should reconfirm that sbb entities are attached to activity context, before delivering event, this will avoid that a sbb entity handles concurrent events after it detachs, turning this feature off will increase performance</entry>
 					      </row>
 				    	  <row>
 				  		    <entry>executorMapperClassName</entry>
