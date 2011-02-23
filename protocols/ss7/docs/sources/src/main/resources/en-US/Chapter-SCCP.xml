@@ -27,8 +27,9 @@
 		Routing rules are persisted within the routing file, which is 
     <filename>sccp-routing.txt</filename> by default.	This file is managed by 
     the	<literal>SCCP</literal>	stack and	<literal>SS7 Service</literal>.
+    </para>
     <important>
-      <para>
+    <para>
       It is not encouraged practice to edit this file by hand. However, for 
       complete reference, you can find the structure of this file below:
       </para>
