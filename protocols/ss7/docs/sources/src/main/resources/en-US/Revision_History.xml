@@ -4,26 +4,13 @@
 	id="revision_history">
 	<title>Revision History</title>
 	<simpara>
-		<revhistory>
+		<revhistory>		
 			<revision>
-				<revnumber>3.0</revnumber>
-				<date>Tue Feb 22 2011</date>
+				<revnumber>1.0</revnumber>
+				<date>Wed June 2 2010</date>
 				<author>
-					<firstname>Tom</firstname>
-					<surname>Wells</surname>
-				</author>
-				<revdescription>
-					<simplelist>
-						<member>First publican valid version of the &THIS.APPLICATION; User Guide.</member>
-					</simplelist>
-				</revdescription>
-			</revision>
-			<revision>
-				<revnumber>2.0</revnumber>
-				<date>Tue Dec 21 2010</date>
-				<author>
-					<firstname>Amit</firstname>
-					<surname>Bhayani</surname>
+					<firstname>Bartosz</firstname>
+					<surname>Baranowski</surname>
 				</author>
 				<revdescription>
 					<simplelist>
@@ -32,11 +19,11 @@
 				</revdescription>
 			</revision>
 			<revision>
-				<revnumber>1.0</revnumber>
-				<date>Wed June 2 2010</date>
+				<revnumber>1.1</revnumber>
+				<date>Tue Dec 21 2010</date>
 				<author>
-					<firstname>Bartosz</firstname>
-					<surname>Baranowski</surname>
+					<firstname>Amit</firstname>
+					<surname>Bhayani</surname>
 				</author>
 				<revdescription>
 					<simplelist>
