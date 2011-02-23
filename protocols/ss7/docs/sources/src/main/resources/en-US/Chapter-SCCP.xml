@@ -2,97 +2,72 @@
 
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [<!ENTITY % BOOK_ENTITIES SYSTEM "SS7_Stack_User_Guide.ent">%BOOK_ENTITIES;]>
 
-<chapter
-	id="sccp">
-
+<chapter id="sccp">
 	<title>SCCP</title>
-	<para>The Signaling Connection Control Part (SCCP) is defined in ITU-T Recommendations Q.711-Q.716.
-	SCCP sits on top of Message Transfer Part 3 (MTP3) in the SS7 protocol stack. 
-	The SCCP provides additional network layer functions to provide transfer of noncircuit-related (NCR) signaling information, 
-	application management procedures and alternative and more flexible methods of routing. 
+	<para>
+  The Signaling Connection Control Part (SCCP) sits on top of the Message 
+  Transfer Part 3 (MTP3) in the SS7 protocol stack. The SCCP provides 
+  additional network layer functions for the transfer of noncircuit-related 
+  (NCR) signaling information, application management procedures and 
+  alternative and more flexible methods of routing.
+  </para>
+  <para>
+  SCCP is defined in ITU-T Recommendations Q.711-Q.716.
 	</para>
-	<section
-		id="sccp_routing">
+	<section id="sccp_routing">
 		<title>Routing Management</title>
 		<para>
-			Currently
-			<literal>Shell</literal>
-			does not support commands to manage
-			<literal>SCCP</literal>
-			routes.
+    Shell does not currently support commands to manage 
+    <literal>SCCP</literal> routes.
 		</para>
-
-
 	</section>
-	<section
-		id="sccp_routing_configuration">
+	<section id="sccp_routing_configuration">
 		<title>Routing Configuration</title>
 		<para>
-			Routing rules are persisted within file. By default its
-			<filename>sccp-routing.txt</filename>. 
-			This file is managed by
-			<literal>SCCP</literal>
-			stack and
-			<literal>SS7 Service</literal>
-			, it is not encouraged practice to edit this file by hand. However for complete rerefence, you can find structure of this file below:
-		</para>
-
-		<programlisting
-			language="XML"
-			role="XML"><![CDATA[
+		Routing rules are persisted within the routing file, which is 
+    <filename>sccp-routing.txt</filename> by default.	This file is managed by 
+    the	<literal>SCCP</literal>	stack and	<literal>SS7 Service</literal>.
+    <important>
+      <para>
+      It is not encouraged practice to edit this file by hand. However, for 
+      complete reference, you can find the structure of this file below:
+      </para>
+    </important>
+		<programlisting language="XML" role="XML"><![CDATA[
 sequence;pattern;translation;mtpinfo
 ]]>
-				</programlisting>
+    </programlisting>
 		<note>
 			<para>
-				Fields within
-				<literal>pattern</literal>
-				,
-				<literal>translation</literal>
-				and
-				<literal>mtp</literal>
-				,
-				separated by
-				<literal>#</literal>
-				, empty value is indicated by single
-				<literal>space</literal>
-				. Each part of routing entry is separated by
-				<literal>;</literal>
-				.
+			Fields within <literal>pattern</literal>, <literal>translation</literal> 
+      and <literal>mtp</literal> are separated by <literal>#</literal>. Empty 
+      values are indicated by a single <literal>space</literal>. Each part of 
+      the routing entry is separated by a <literal>;</literal>.
 			</para>
 		</note>
 		<variablelist>
 			<varlistentry>
 				<term>sequence</term>
 				<listitem>
-					<para>is simple sequence number, each entry increases it by 1.</para>
+					<para>
+          A simple sequence number. Each entry increases it by 1.
+          </para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
 				<term>pattern</term>
 				<listitem>
 					<para>
-						is simply
-						<literal>SCCP</literal>
-						like regular expresion. Destination address of message is matched against this to check which rule should be triggered.
+					An <literal>SCCP</literal> like regular expression. The destination 
+          address of a message is matched against this to check which rule 
+          should be triggered.
 					</para>
-
-					<table
-						frame="all"
-						pgwide="1">
+					<table frame="all" pgwide="1">
 						<title>pattern content</title>
-						<tgroup
-							colsep="1"
-							cols="3">
-							<colspec
-								colnum="1"
-								colname="c0" />
-							<colspec
-								colnum="2"
-								colname="c1" />
-							<colspec
-								colnum="3"
-								colname="c2" />
+						<tgroup	colsep="1" cols="3">
+              <colspec colnum="1" colname="c0" />
+              <colspec colnum="2" colname="c1" />
+              <colspec colnum="3" colname="c2" />
 							<thead>
 								<row>
 									<entry>Name</entry>
@@ -104,30 +79,42 @@ sequence;pattern;translation;mtpinfo
 								<row>
 									<entry>translation type</entry>
 									<entry>java.lang.Integer</entry>
-									<entry>Network specific ID which determines how global title analysis is performed.</entry>
+									<entry>
+                  Network specific ID that determines how the global title 
+                  analysis is performed.
+                  </entry>
 								</row>
 								<row>
 									<entry>numbering plan</entry>
 									<entry>enum</entry>
-									<entry>Determines which numbering plan is used for global title. It can have one of following values:
-										UNKNOWN, ISDN_TELEPHONY, DATA,
-										TELEX, MERITIME_MOBILE, LAND_MOBILE, ISDN_MOBILE</entry>
+									<entry>
+                  Determines which numbering plan is used for the global title. 
+                  It can have one of following values: UNKNOWN, ISDN_TELEPHONY, 
+                  DATA, TELEX, MERITIME_MOBILE, LAND_MOBILE, ISDN_MOBILE.
+                  </entry>
 								</row>
 								<row>
 									<entry>nature of address</entry>
 									<entry>enum</entry>
-									<entry>Determines type of address. It can have one of following values:
-										SPARE, SUBSCRIBER, UNKNOWN, NATIONAL, INTERNATIONAL</entry>
+									<entry>
+                  Determines the type of address. It can have one of following 
+                  values: SPARE, SUBSCRIBER, UNKNOWN, NATIONAL, INTERNATIONAL.
+                  </entry>
 								</row>
 								<row>
 									<entry>digits</entry>
 									<entry>java.lang.String</entry>
-									<entry>Simply digits of number, ie: +91 417688345892</entry>
+									<entry>
+                  The digits of the number, for example, +91 417688345892.
+                  </entry>
 								</row>
 								<row>
 									<entry>sub-system number</entry>
 									<entry>java.lang.Integer</entry>
-									<entry>local subsystem number, used to route between local services in SS7, ie. between HLR and VLR.</entry>
+									<entry>
+                  Local subsystem number used to route between local services 
+                  in SS7 (for example, between HLR and VLR).
+                  </entry>
 								</row>
 							</tbody>
 						</tgroup>
@@ -138,13 +125,9 @@ sequence;pattern;translation;mtpinfo
 				<term>translation</term>
 				<listitem>
 					<para>
-						has the same structure as
-						<literal>pattern</literal>
-						. If
-						<literal>pattern</literal>
-						matches, destintion address is changed to
-						<literal>translation</literal>
-						.
+          Has the same structure as <literal>pattern</literal>. If the 
+          <literal>pattern</literal> matches, the destination address is 
+          changed to <literal>translation</literal>.
 					</para>
 				</listitem>
 			</varlistentry>
@@ -152,25 +135,16 @@ sequence;pattern;translation;mtpinfo
 				<term>mtpinfo</term>
 				<listitem>
 					<para>
-						<literal>mtpinfo</literal>
-						indicates which link should be chosen when routing to remote location. In case routing is performed localy, its not present.
+          <literal>mtpinfo</literal> indicates which link should be chose when 
+          routing to a remote location. If routing is performed locally, 
+          <literal>mtpinfo</literal> is not present.
 					</para>
-					<table
-						frame="all"
-						pgwide="1">
+					<table frame="all" pgwide="1">
 						<title>mtpinfo content</title>
-						<tgroup
-							colsep="1"
-							cols="3">
-							<colspec
-								colnum="1"
-								colname="c0" />
-							<colspec
-								colnum="2"
-								colname="c1" />
-							<colspec
-								colnum="3"
-								colname="c2" />
+						<tgroup colsep="1" cols="3">
+							<colspec colnum="1" colname="c0" />
+							<colspec colnum="2" colname="c1" />
+							<colspec colnum="3" colname="c2" />
 							<thead>
 								<row>
 									<entry>Name</entry>
@@ -187,76 +161,94 @@ sequence;pattern;translation;mtpinfo
 								<row>
 									<entry>adjacent point code</entry>
 									<entry>java.lang.Integer</entry>
-									<entry>point code of remote, mtp link.</entry>
+									<entry>Point code of remote mtp link.</entry>
 								</row>
 								<row>
 									<entry>origin point code</entry>
 									<entry>java.lang.Integer</entry>
-									<entry>polint code of local, mtp link.</entry>
+									<entry>Point code of local mtp link.</entry>
 								</row>
 								<row>
 									<entry>signaling link selector</entry>
 									<entry>java.lang.Integer</entry>
-									<entry>number indicating TDM multiplexed link.</entry>
+									<entry>Number indicating TDM multiplexed link.</entry>
 								</row>
-
-
 							</tbody>
 						</tgroup>
 					</table>
 				</listitem>
 			</varlistentry>
 		</variablelist>
-		<para>Example file entry looks as follows:</para>
-		<!-- bad xml? -->
+		<para>
+    The example file entry looks as follows:
+    </para>
 		<example>
 			<title>sccp-routing.txt example entry</title>
-			<programlisting
-				language="XML"
-				role="XML"><![CDATA[
+			<programlisting language="XML" role="XML"><![CDATA[
 0; #ISDN_MOBILE#NATIONAL#9023629581# ; #ISDN_MOBILE#INTERNATIONAL#79023629581# ;linkset#14083#14155#0
 ]]>
-				</programlisting>
+      </programlisting>
 		</example>
-		
 		<variablelist>
+      <title>Example Entry Values</title>
 			<varlistentry>
 				<term>sequence</term>
 				<listitem>
-					<para> is set to 0, since its only rule in a file(or first).</para>
+					<para>
+          This is set to 0, as it is the only rule in a file (or first).
+          </para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
 				<term>pattern</term>
 				<listitem>
-					<para>matches natioan mobile number with following digits: <literal>9023629581</literal> </para>
+					<para>
+          Matches the national mobile number with the following digits: 
+          <literal>9023629581</literal>.
+          </para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
 				<term>translation</term>
 				<listitem>
-					<para>changes destination to international mobile with following digits: <literal>79023629581</literal>. Since no sub-system number is present, this rule requires <literal>mtpinfo</literal> 
-					to indicate target.</para>
+					<para>
+          Changes the destination to the international mobile with the 
+          following digits: <literal>79023629581</literal>. Since no sub-system 
+          number is present, this rule requires <literal>mtpinfo</literal> to 
+          indicate the target.
+          </para>
 				</listitem>
 			</varlistentry>
 			<varlistentry>
 				<term>mtpinfo</term>
 				<listitem>
-					<para>indicates link through which message will be sent to next hop. Link:</para>
+					<para>
+          Indicates the link through which the message will be sent to the next 
+          hop. The link:
+          </para>
 					<itemizedlist>
 						<listitem>
-							<para>Belongs to linkset with name equal to <literal>linkset</literal>. </para>
+							<para>
+              belongs to the linkset with the name equal to 
+              <literal>linkset</literal>.
+              </para>
 						</listitem>
 						<listitem>
-							<para>Adjacent point code is equal to <literal>14083</literal>. </para>
+							<para>
+              has an adjacent point code equal to <literal>14083</literal>.
+              </para>
 						</listitem>
 						<listitem>
-							<para>Origin point code is equal to <literal>14155</literal>. </para>
+							<para>
+              has an origin point code equal to <literal>14155</literal>.
+              </para>
 						</listitem>
 						<listitem>
-							<para>Signaling link selector is equal to <literal>0</literal>. Note that this value may be overriden by transport layer.  </para>
+							<para>
+              has a signaling link selector is equal to <literal>0</literal>. 
+              Note that this value may be overriden by the transport layer.
+              </para>
 						</listitem>
-						
 					</itemizedlist>
 				</listitem>
 			</varlistentry>
@@ -265,67 +257,73 @@ sequence;pattern;translation;mtpinfo
 	<section id="sccp_design">
 		<title>&THIS.PLATFORM; &THIS.APPLICATION; SCCP Usage</title>
 		<para>
-			The <classname>org.mobicents.protocols.ss7.sccp.SccpStack</classname> is responsible for taking the 
-			config file and turning it into <classname>org.mobicents.protocols.ss7.sccp.Router</classname>. 
-			All the sccp messages sent bu SCCP User Part are routed as per the rule configured in Router
+    <classname>org.mobicents.protocols.ss7.sccp.SccpStack</classname> is 
+    responsible for taking the configuration file and turning it into 
+    <classname>org.mobicents.protocols.ss7.sccp.Router</classname>. All the 
+    sccp messages sent by the SCCP User Part are routed as per the rule 
+    configured in the Routing file.
 		</para>
 		<para>
-			The SCCP User Part gets handle to <classname>SccpStack</classname> by doing JNDI look-up as
-			explained in <xref linkend="sccp_access_point"/> 
+    The SCCP User Part gets a handle to <classname>SccpStack</classname> by 
+    doing the JNDI look-up, explained in <xref linkend="sccp_access_point"/>.
 		</para>
-		
 		<para>
-			<classname>SccpStack</classname> exposes <classname>org.mobicents.protocols.ss7.sccp.SccpProvider</classname> 
-			that interacts directly with SccpStack. This interface defines the methods that will be used by SCCP User Part to send 
-			<classname>org.mobicents.protocols.ss7.sccp.message.SccpMessage</classname> and register 
-			<classname>org.mobicents.protocols.ss7.sccp.SccpListener</classname>'s to listen for incoming SCCP messages. 
+		<classname>SccpStack</classname> exposes the 
+    <classname>org.mobicents.protocols.ss7.sccp.SccpProvider</classname>, which 
+    interacts directly with the SccpStack. This interface defines the methods 
+    that will be used by the SCCP User Part to send 
+    <classname>org.mobicents.protocols.ss7.sccp.message.SccpMessage</classname>s 
+    and register 
+    <classname>org.mobicents.protocols.ss7.sccp.SccpListener</classname>s to 
+    listen for incoming SCCP messages. 
 		</para>
-		
 		<para>
-			SCCP User Part registers SccpListener for specific local <classname>org.mobicents.protocols.ss7.sccp.parameter.SccpAddress</classname>.
-			For every incoming SccpMessage, if the called party address matches with this local SccpAddress, the corresponding SccpListner is called.
+		The SCCP User Part registers an SccpListener for a specific local 
+    <classname>org.mobicents.protocols.ss7.sccp.parameter.SccpAddress</classname>. 
+    For every incoming SccpMessage, the corresponding SccpListener is called 
+    if the called party address matches the local SccpAddress.
 		</para>
-		
 		<para>
-			SccpProvider also exposes <classname>org.mobicents.protocols.ss7.sccp.message.MessageFactory</classname> and
-			<classname>org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory</classname> to create new concrete SccpMessage viz.,
-			<classname>org.mobicents.protocols.ss7.sccp.message.UnitData</classname> or 
-			<classname>org.mobicents.protocols.ss7.sccp.message.XUnitData</classname> passing the corresponding parameters created by leveraging 
-			ParameterFactory.
+    SccpProvider also exposes the 
+    <classname>org.mobicents.protocols.ss7.sccp.message.MessageFactory</classname> 
+    and 
+    <classname>org.mobicents.protocols.ss7.sccp.parameter.ParameterFactory</classname> 
+    to create a new concrete SccpMessage viz., with 
+    <classname>org.mobicents.protocols.ss7.sccp.message.UnitData</classname> 
+    or 
+    <classname>org.mobicents.protocols.ss7.sccp.message.XUnitData</classname> 
+    passing the corresponding parameters created by leveraging 
+    ParameterFactory.
 		</para>
-		
 		<para>
-			The UML class diagram looks like
+		The UML class diagram is shown below.
 		</para>
-		
-		<mediaobject
-			id="sccp_classdia">
-			<imageobject>
-				<imagedata
-					width="300px"
-					align="center"
-					fileref="images/SCCPClassDiagram.png"
-					format="PNG" />
-			</imageobject>
-			<caption>
-				<para>&THIS.PLATFORM; &THIS.APPLICATION; SCCP Class Diagram
-				</para>
-			</caption>
-		</mediaobject>			
+    <figure>
+      <title>&THIS.PLATFORM; &THIS.APPLICATION; SCCP Class Diagram</title>
+      <mediaobject
+        id="sccp_classdia">
+        <imageobject>
+          <imagedata
+            width="300px"
+            align="center"
+            fileref="images/SCCPClassDiagram.png"
+            format="PNG" />
+        </imageobject>
+      </mediaobject>
+    </figure>
 	</section>
-	<section
-		id="sccp_access_point">
+	<section id="sccp_access_point">
 		<title>Access Point</title>
 		<para>
-			<literal>SS7 Service</literal> provides user with access point to <literal>SCCP</literal> protocol/stack.		
+    <literal>SS7 Service</literal> provides the user with an access point to 
+    the <literal>SCCP</literal> protocol/stack.
 		</para>
 		<para>
-			To get handle to <classname>SccpStack</classname> do the JNDI look-up passing the 
-			JNDI name configured in SS7 service as explained in <xref linkend="configuring_SS7Service"/> 
+		To get a handle to <classname>SccpStack</classname>, do the JNDI look-up, 
+    passing the JNDI name configured in the SS7 service, explained in <xref 
+    linkend="configuring_SS7Service"/>.
 		</para>			
-		<programlisting
-			language="Java"
-			role="JAVA"><![CDATA[	
+		<programlisting language="Java" role="JAVA"><![CDATA[	
 	    private static SccpProvider getSccpProvider() throws NamingException {
 	
 	        // no arg is ok, if we run in JBoss
@@ -341,11 +339,11 @@ sequence;pattern;translation;mtpinfo
 			]]>
 		</programlisting>		
 	</section>	
-	<section
-		id="sccp_complete_example">
+	<section id="sccp_complete_example">
 		<title>SCCP User Part Example</title>
 		<para>
-			Below is SCCP User Part example listening for incoming SCCP message and sending back new message		
+    Below is the SCCP User Part example. It listens for an incoming SCCP 
+    message and sends back a new message.
 		</para>		
 		<programlisting language="java" role="JAVA">
 public class Test implements SccpListener {

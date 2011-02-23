@@ -2,102 +2,76 @@
 
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [<!ENTITY % BOOK_ENTITIES SYSTEM "SS7_Stack_User_Guide.ent">%BOOK_ENTITIES;]>
 
-<chapter
-	id="map">
-
+<chapter id="map">
 	<title>MAP</title>
-
 	<para>
-		Mobile application part (
-		<acronym>MAP</acronym>
-		) is the protocol that is used to allow the
-		<acronym>GSM</acronym>
-		network nodes
-		within the Network Switching Subsystem (
-		<acronym>NSS</acronym>
-		) to communicate with each other to provide services, such as roaming capability,
-		text messaging (
-		<acronym>SMS</acronym>
-		), Unstructured Supplementary Service Data (
-		<acronym>USSD</acronym>
-		) and subscriber authentication.
-		<acronym>MAP</acronym>
-		provides an application layer on which to build the services that support a
-		<acronym>GSM</acronym>
-		network.
-		This application layer provides a standardized set of services.
-		<acronym>MAP</acronym>
-		uses the services of the
-		<acronym>SS7</acronym>
-		network,
-		specifically the Signaling Connection Control Part (
-		<acronym>SCCP</acronym>
-		) and the Transaction Capabilities Application Part (
-		<acronym>TCAP</acronym>
-		)
+  The Mobile Application Part (MAP) is the protocol that is used to allow the 
+  GSM network nodes within the Network Switching Subsystem (NSS) to communicate 
+  with each other, and provide services such as roaming capability, text 
+  messaging (SMS), Unstructured Supplementary Service Data (USSD) and 
+  subscriber authentication. MAP provides an application layer on which to 
+  build the services that support a GSM network. This application layer 
+  provides a standardized set of services.
+  </para>
+  <para>
+  MAP uses the services of the SS7 network, specifically the Signaling 
+  Connection Control Part (SCCP) and the Transaction Capabilities Application 
+  Part (TCAP).
 	</para>
 	<important>
-		<para>For better understanding of this chapter please read GSM 09.02.</para>
+		<para>
+    For a better understanding of this chapter, please read GSM 09.02.
+    </para>
 	</important>
-	<section
-		id="map_usage">
-		<title>&THIS.APPLICATION;
-			MAP Usage
-		</title>
+	<section id="map_usage">
+		<title>&THIS.APPLICATION;	MAP Usage</title>
 		<para>
-			<classname>org.mobicents.protocols.ss7.map.api.MAPStack</classname>
-			interface defines the methods required to represent MAP Protocol Stack.
-			MAPStack exposes
-			<classname>org.mobicents.protocols.ss7.map.api.MAPProvider</classname>
-			that interacts directly with MAPStack. This interface
-			defines the methods that will be used by any registered MAP User application implementing the
-			<classname>org.mobicents.protocols.ss7.map.api.MAPDialogListener</classname>
-			and
-			<classname>org.mobicents.protocols.ss7.map.api.MAPServiceListener</classname>
-			interface to listen MAP messages and dialogue handling primitives. The class diagram looks like
-		</para>
-
-		<mediaobject
-			id="map_classdia">
-			<imageobject>
-				<imagedata
-					width="300px"
-					align="center"
-					fileref="images/MapClassDiagram.png"
-					format="PNG" />
-			</imageobject>
-			<caption>
-				<para>&THIS.PLATFORM; &THIS.APPLICATION;
-					MAP Class Diagram
-				</para>
-			</caption>
-		</mediaobject>
-
+    The <classname>org.mobicents.protocols.ss7.map.api.MAPStack</classname> 
+    interface defines the methods required to represent the MAP Protocol Stack. 
+    MAPStack exposes the 
+    <classname>org.mobicents.protocols.ss7.map.api.MAPProvider</classname> 
+    interface, which interacts directly with MAPStack. This interface defines 
+    the methods that will be used by any registered MAP User application 
+    implementing the 
+    <classname>org.mobicents.protocols.ss7.map.api.MAPDialogListener</classname> 
+    and 
+    <classname>org.mobicents.protocols.ss7.map.api.MAPServiceListener</classname> 
+    interfaces to listen to MAP messages and dialogue handling primitives.
+    </para>
+    <para>
+    The class diagram is shown below.
+    </para>
+    <figure id="map_classdia">
+      <title>&THIS.PLATFORM; &THIS.APPLICATION; MAP Class Diagram</title>
+      <mediaobject>
+        <imageobject>
+          <imagedata
+            width="300px"
+            align="center"
+            fileref="images/MapClassDiagram.png"
+            format="PNG" />
+        </imageobject>
+      </mediaobject>
+    </figure>
 		<note>
-			<para>&THIS.PLATFORM; &THIS.APPLICATION;
-				MAP has implementation for USSD Message only. Any contribution to implement
-				message specific to SMS or other are welcome. We will provide you all the help that you may need initially.
-			</para>
+			<para>
+      &THIS.PLATFORM; &THIS.APPLICATION; MAP only has an implementation for 
+      USSD Messages. Any contribution to implement message specific to SMS or 
+      other are welcome. We will provide you all the help that you may need 
+      initially.
+      </para>
 		</note>
-
 		<para>
-			<classname>org.mobicents.protocols.ss7.map.MAPStackImpl</classname>
-			is concrete implementation of
-			<classname>MAPStack</classname>
-			.
-			The MAP User application creates instance of
-			<classname>MAPStackImpl</classname>
-			passing the reference of
-			<classname>SccpProvider</classname>
-			and
-			new instance of
-			<classname>SccpAddress</classname>
-			representing address to which bind listener. This addess will be used to match against destination address in <literal>SCCP</literal> messages.
+    <classname>org.mobicents.protocols.ss7.map.MAPStackImpl</classname> is a 
+    concrete implementation of the <classname>MAPStack</classname>. The MAP 
+    User application creates an instance of 
+    <classname>MAPStackImpl</classname>, passing the reference of 
+    <classname>SccpProvider</classname> and the new instance of the 
+    <classname>SccpAddress</classname>, representing the address to bind the 
+    listener to. This addess will be used to match against the destination 
+    address in <literal>SCCP</literal> messages.
 		</para>
-
-		<programlisting
-			language="Java"
-			role="JAVA"><![CDATA[	
+		<programlisting language="Java"	role="JAVA"><![CDATA[	
 		SccpProvider sccpProvider = getSccpProvider(); //JNDI lookup of SCCP Stack and get Provider
 		SccpAddress localAddress createLocalAddress();		
 
@@ -122,35 +96,22 @@
         
 
 		]]>
-	</programlisting>
-
+    </programlisting>
 		<para>
-			The reference to
-			<classname>SccpProvider</classname>
-			is received from
-			<classname>SccpStack</classname>
-			.
-			To get handle to
-			<classname>SccpStack</classname>
-			do the JNDI look-up passing the
-			JNDI name configured in SS7 service as explained in
-			<xref
-				linkend="sccp_access_point" />
+    The reference to <classname>SccpProvider</classname> is received from 
+    <classname>SccpStack</classname>. To get a handle to 
+    <classname>SccpStack</classname>,  do the JNDI look-up passing the JNDI 
+    name configured in the SS7 service, as explained in <xref 
+    linkend="sccp_access_point" />.
 		</para>
-
 		<para>
-			The MAP User application should register the concrete implementation of
-			<classname>MAPDialogListener</classname>
-			and
-			<classname>MAPServiceListener</classname>
-			with
-			<classname>MAPProvider</classname>
-			to listen for incoming MAP Dialog and MAP Primitive messages.
+    The MAP User Application should register the concrete implementation of 
+    <classname>MAPDialogListener</classname> and 
+    <classname>MAPServiceListener</classname>, with 
+    <classname>MAPProvider</classname> to listen for incoming MAP Dialog and 
+    MAP Primitive messages.
 		</para>
-
-		<programlisting
-			language="Java"
-			role="JAVA"><![CDATA[
+		<programlisting language="Java"	role="JAVA"><![CDATA[
 public class MAPExample implements MAPDialogListener, MAPServiceListener {
 		.....		
 		mapProvider = mapStack.getMAPProvider();
@@ -159,20 +120,13 @@ public class MAPExample implements MAPDialogListener, MAPServiceListener {
         ....
 }        		
 		]]>
-	</programlisting>
-
+    </programlisting>
 		<para>
-			The MAP User Application leverages
-			<classname>MapServiceFactory</classname>
-			to create instance of
-			<classname>USSDString</classname>
-			and
-			<classname>AddressString</classname>
+    The MAP User Application leverages <classname>MapServiceFactory</classname> 
+    to create an instance of <classname>USSDString</classname> and 
+    <classname>AddressString</classname>.
 		</para>
-
-		<programlisting
-			language="Java"
-			role="JAVA"><![CDATA[
+		<programlisting language="Java"	role="JAVA"><![CDATA[
 		MapServiceFactory servFact = mapProvider.getMapServiceFactory();
         USSDString ussdString = servFact.createUSSDString("*125*+31628839999#",
                 null);
@@ -181,19 +135,12 @@ public class MAPExample implements MAPDialogListener, MAPServiceListener {
                 AddressNature.international_number, NumberingPlan.ISDN,
                 "31628838002");       		
 		]]>
-	</programlisting>
-
+    </programlisting>
 		<para>
-			The MAP User Application leverages
-			<classname>MAPProvider</classname>
-			to create new
-			<classname>MAPDialog</classname>
-			and send USSD message
-		</para>
-
-		<programlisting
-			language="Java"
-			role="JAVA"><![CDATA[
+    The MAP User Application leverages <classname>MAPProvider</classname> to 
+    create a new <classname>MAPDialog</classname> and send a USSD message.
+    </para>
+		<programlisting	language="Java"	role="JAVA"><![CDATA[
         // First create Dialog
         MAPDialog mapDialog = mapProvider.createNewDialog(
                 MAPApplicationContext.networkUnstructuredSsContextV2,
@@ -218,19 +165,14 @@ public class MAPExample implements MAPDialogListener, MAPServiceListener {
         // This will initiate the TC-BEGIN with INVOKE component
         mapDialog.send();     		
 		]]>
-	</programlisting>
-
+    </programlisting>
 	</section>
-	<section
-		id="map_usage_example">
-		<title>&THIS.APPLICATION;
-			MAP Usage
-		</title>
-		<para>The complete example looks like</para>
-
-		<programlisting
-			language="Java"
-			role="JAVA"><![CDATA[
+	<section id="map_usage_example">
+    <title>&THIS.APPLICATION; MAP Usage</title>
+		<para>
+    Below is the complete example:
+    </para>
+		<programlisting	language="Java"	role="JAVA"><![CDATA[
 public class MAPExample implements MAPDialogListener, MAPServiceListener {
 
     private MAPStack mapStack;
