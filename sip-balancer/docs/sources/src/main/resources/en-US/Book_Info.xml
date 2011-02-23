@@ -3,8 +3,8 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Balancer_User_Guide.ent">
 %BOOK_ENTITIES;
 ]><!-- chapter id nickname: sssug -->
-<bookinfo id="SIP_Balancer_User_Guide">
-	<title>SIP Load Balancer User Guide</title>
+<bookinfo id="SIP_Load_Balancer_User_Guide">
+	<title>SIP Balancer User Guide</title>
 	<subtitle>The Guide to the &PLATFORM_NAME; SIP Load Balancer</subtitle>
     <productname>&PLATFORM_NAME; Platform</productname>
 	<productnumber>&VERSION;</productnumber>
