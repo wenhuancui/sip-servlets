@@ -61,6 +61,7 @@ import javax.servlet.sip.ar.SipApplicationRoutingRegion;
 import javax.sip.ClientTransaction;
 import javax.sip.Dialog;
 import javax.sip.DialogState;
+import javax.sip.ListeningPoint;
 import javax.sip.ServerTransaction;
 import javax.sip.SipException;
 import javax.sip.SipProvider;
@@ -275,11 +276,14 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		if(RoutingState.CANCELLED.equals(routingState)) {
 			throw new IllegalStateException("Cannot create a response for the invite, a CANCEL has been received and the INVITE was replied with a 487!");
 		}
-		if (transaction == null
-				|| transaction instanceof ClientTransaction) {
-			if(validate) {
+		if(validate) {
+			if (transaction == null) {
 				throw new IllegalStateException(
-					"Cannot create a response - not a server transaction " + transaction);
+					"Cannot create a response for request " + message + " transaction is null, a final error response has probably already been sent");
+			}
+			if(transaction instanceof ClientTransaction) {
+				throw new IllegalStateException(
+					"Cannot create a response for request " + message + " not a server transaction " + transaction);
 			}
 		}
 		try {
@@ -1180,11 +1184,16 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 							
 						}
 						// http://code.google.com/p/mobicents/issues/detail?id=1150 only set transport if not udp
-						if(!"udp".equalsIgnoreCase(transport)) {
+						if(!ListeningPoint.UDP.equalsIgnoreCase(transport)) {
 							sipUri.setTransportParam(transport);
-						}
-						if("tls".equalsIgnoreCase(transport)) {
-							sipUri.setSecure(true);
+						}						
+						if(ListeningPoint.TLS.equalsIgnoreCase(transport)) {
+							final javax.sip.address.URI requestURI = request.getRequestURI();
+							// make the contact uri secure only if the request uri is secure to cope with issue http://code.google.com/p/mobicents/issues/detail?id=2269
+							// Wrong Contact header scheme URI in case TLS call with 'sip:' scheme
+							if(requestURI.isSipURI() && ((javax.sip.address.SipURI)requestURI).isSecure()) {
+								sipUri.setSecure(true);
+							}
 						}
 					} 
 				} 
