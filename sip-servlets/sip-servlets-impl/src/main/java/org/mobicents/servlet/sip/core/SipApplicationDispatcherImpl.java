@@ -354,32 +354,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 		 		logger.info("No Congestion control background task started since the checking interval is equals to " + congestionControlCheckingInterval + " milliseconds.");
 		 	}
 		}
-		if(logger.isInfoEnabled()) {
-			Properties releaseProperties = new Properties();
-			try {
-				InputStream in = SipApplicationDispatcherImpl.class.getResourceAsStream("release.properties");
-				if(in != null) {
-					releaseProperties.load(in);
-					in.close();
-					String releaseVersion = releaseProperties.getProperty("release.version");
-					String releaseName = releaseProperties.getProperty("release.name");
-					String releaseDate = releaseProperties.getProperty("release.date");
-					String releaseRevision = releaseProperties.getProperty("release.revision");
-					if(releaseVersion != null) {
-						// Follow the EAP Convention 
-						// Release ID: JBoss [EAP] 5.0.1 (build: SVNTag=JBPAPP_5_0_1 date=201003301050)
-						logger.info("Release ID: (" + releaseName + ") Sip Servlets " + releaseVersion + " (build: SVNTag=" + releaseRevision + " date=" + releaseDate + ")");
-						logger.info(releaseName + " Sip Servlets " + releaseVersion + " (build: revision=" + releaseRevision + " date=" + releaseDate + ") Started.");
-					} else {
-						logger.warn("Unable to extract the version of Mobicents Sip Servlets currently running");
-					}
-				} else {
-					logger.warn("Unable to extract the version of Mobicents Sip Servlets currently running");
-				}
-			} catch (IOException e) {
-				logger.warn("Unable to extract the version of Mobicents Sip Servlets currently running", e);
-			}		
-		}
+		Version.printVersion();
 		// outbound interfaces set here and not in sipstandardcontext because
 		// depending on jboss or tomcat context can be started before or after
 		// connectors
@@ -522,7 +497,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	 * @see javax.sip.SipListener#processIOException(javax.sip.IOExceptionEvent)
 	 */
 	public void processIOException(IOExceptionEvent event) {
-		logger.error("An IOException occured on " + event.getHost() + ":" + event.getPort() + "/" + event.getTransport() + " for provider " + event.getSource());
+		logger.error("An IOException occured on " + event.getHost() + ":" + event.getPort() + "/" + event.getTransport() + " for source " + event.getSource());
 	}
 	
 	/*
@@ -853,28 +828,32 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 		}
 		
 		getAsynchronousExecutor().execute(new Runnable() {
-			public void run() {				
-				boolean appDataFound = false;
-				TransactionApplicationData dialogAppData = (TransactionApplicationData) dialog.getApplicationData();
-				TransactionApplicationData txAppData = null; 
-				if(dialogAppData != null) {						
-					if(dialogAppData.getSipServletMessage() == null) {
-						Transaction transaction = dialogAppData.getTransaction();
-						if(transaction != null && transaction.getApplicationData() != null) {
-							txAppData = (TransactionApplicationData) transaction.getApplicationData();
-							txAppData.cleanUp();
+			public void run() {			
+				try {
+					boolean appDataFound = false;
+					TransactionApplicationData dialogAppData = (TransactionApplicationData) dialog.getApplicationData();
+					TransactionApplicationData txAppData = null; 
+					if(dialogAppData != null) {						
+						if(dialogAppData.getSipServletMessage() == null) {
+							Transaction transaction = dialogAppData.getTransaction();
+							if(transaction != null && transaction.getApplicationData() != null) {
+								txAppData = (TransactionApplicationData) transaction.getApplicationData();
+								txAppData.cleanUp();
+							}
+						} else {
+							SipServletMessageImpl sipServletMessageImpl = dialogAppData.getSipServletMessage();
+							SipSessionKey sipSessionKey = sipServletMessageImpl.getSipSessionKey();
+							tryToInvalidateSession(sipSessionKey, false);				
 						}
-					} else {
-						SipServletMessageImpl sipServletMessageImpl = dialogAppData.getSipServletMessage();
-						SipSessionKey sipSessionKey = sipServletMessageImpl.getSipSessionKey();
-						tryToInvalidateSession(sipSessionKey, false);				
+						dialogAppData.cleanUp();
+						// since the stack doesn't nullify the app data, we need to do it to let go of the refs					
+						dialog.setApplicationData(null);
+					}		
+					if(!appDataFound && logger.isDebugEnabled()) {
+						logger.debug("no application data for this dialog " + dialog.getDialogId());
 					}
-					dialogAppData.cleanUp();
-					// since the stack doesn't nullify the app data, we need to do it to let go of the refs					
-					dialog.setApplicationData(null);
-				}		
-				if(!appDataFound && logger.isDebugEnabled()) {
-					logger.debug("no application data for this dialog " + dialog.getDialogId());
+				} catch (Exception e) {
+					logger.error("Problem handling dialog termination", e);
 				}
 			}
 		});
@@ -915,51 +894,51 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 					}									
 															
 					if(sipSessionImpl != null) {
-						sipContext.enterSipApp(sipApplicationSession, sipSessionImpl);
-						sipContext.enterSipAppHa(true);
-						try {
-							final ProxyImpl proxy = sipSessionImpl.getProxy();
-							if(!invalidateProxySession && (proxy == null || (proxy != null && proxy.getFinalBranchForSubsequentRequests() != null && !proxy.getFinalBranchForSubsequentRequests().getRecordRoute()))) {
-								if(logger.isDebugEnabled()) {
-									logger.debug("try to Invalidate Proxy session if it is non record routing " + sipSessionKey);
-								}
-								invalidateProxySession = true;
+						final ProxyImpl proxy = sipSessionImpl.getProxy();
+						if(!invalidateProxySession && (proxy == null || (proxy != null && proxy.getFinalBranchForSubsequentRequests() != null && !proxy.getFinalBranchForSubsequentRequests().getRecordRoute()))) {
+							if(logger.isDebugEnabled()) {
+								logger.debug("try to Invalidate Proxy session if it is non record routing " + sipSessionKey);
 							}
-							// If this is a client transaction no need to invalidate proxy session http://code.google.com/p/mobicents/issues/detail?id=1024
-							if(!invalidateProxySession) {
-								if(logger.isDebugEnabled()) {
-									logger.debug("don't Invalidate Proxy session");
-								}
-								return;
-							} 
+							invalidateProxySession = true;
+						}
+						// If this is a client transaction no need to invalidate proxy session http://code.google.com/p/mobicents/issues/detail?id=1024
+						if(!invalidateProxySession) {
+							if(logger.isDebugEnabled()) {
+								logger.debug("don't Invalidate Proxy session");
+							}
+							return;
+						} 												
+						try {
+							sipContext.enterSipApp(sipApplicationSession, sipSessionImpl);
+							sipContext.enterSipAppHa(true);
 							if(logger.isDebugEnabled()) {
 								logger.debug("sip session " + sipSessionKey + " is valid ? :" + sipSessionImpl.isValidInternal());
 								if(sipSessionImpl.isValidInternal()) {
 									logger.debug("Sip session " + sipSessionKey + " is ready to be invalidated ? :" + sipSessionImpl.isReadyToInvalidate());
 								}
-							}						
-							if(sipSessionImpl.isValidInternal() && sipSessionImpl.isReadyToInvalidate()) {							
-									sipSessionImpl.onTerminatedState();
-							} 
+							}
+							if(sipSessionImpl.isValidInternal() && sipSessionImpl.isReadyToInvalidate()) {														
+								sipSessionImpl.onTerminatedState();							
+							}
 						} finally {
 							sipContext.exitSipAppHa(null, null);
 							sipContext.exitSipApp(sipApplicationSession, sipSessionImpl);
-						}							
+						}
 					} else {
 						if(logger.isDebugEnabled()) {
 							logger.debug("sip session already invalidated" + sipSessionKey);
 						}
 					}															
-					if(sipApplicationSession != null) {
-						sipContext.enterSipApp(sipApplicationSession, null);
+					if(sipApplicationSession != null) {												
 						try {
+							sipContext.enterSipApp(sipApplicationSession, null);
 							if(logger.isDebugEnabled()) {
 								logger.debug("sip app session " + sipApplicationSession.getKey() + " is valid ? :" + sipApplicationSession.isValidInternal());
 								if(sipApplicationSession.isValidInternal()) {
 									logger.debug("Sip app session " + sipApplicationSession.getKey() + " is ready to be invalidated ? :" + sipApplicationSession.isReadyToInvalidate());
 								}
 							}												
-							if(sipApplicationSession.isValidInternal() && sipApplicationSession.isReadyToInvalidate()) {							
+							if(sipApplicationSession.isValidInternal() && sipApplicationSession.isReadyToInvalidate()) {								
 								sipApplicationSession.tryToInvalidate();
 							}
 						} finally {
@@ -988,28 +967,33 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 			if(tad != null && tad.getSipServletMessage() != null) {
 				getAsynchronousExecutor().execute(new Runnable() {
 					public void run() {					
-						final SipServletMessageImpl sipServletMessage = tad.getSipServletMessage();
-						final SipSessionKey sipSessionKey = sipServletMessage.getSipSessionKey();
-						final MobicentsSipSession sipSession = sipServletMessage.getSipSession();
-						if(sipSession != null) {
-							SipContext sipContext = findSipApplication(sipSessionKey.getApplicationName());					
-							//the context can be null if the server is being shutdown
-							if(sipContext != null) {
-								try {
-									sipContext.enterSipApp(sipSession.getSipApplicationSession(), sipSession);
-									checkForAckNotReceived(sipServletMessage);
-									checkForPrackNotReceived(sipServletMessage);
-								} finally {
-									sipContext.exitSipApp(sipSession.getSipApplicationSession(), sipSession);
-								}
-								// Issue 1822 http://code.google.com/p/mobicents/issues/detail?id=1822
-								// don't delete the dialog so that the app can send the BYE even after the noAckReceived has been called
-//								dialog.delete();
-								tryToInvalidateSession(sipSessionKey, false);						
-							}					
+						try {
+							final SipServletMessageImpl sipServletMessage = tad.getSipServletMessage();
+							final SipSessionKey sipSessionKey = sipServletMessage.getSipSessionKey();
+							final MobicentsSipSession sipSession = sipServletMessage.getSipSession();
+							if(sipSession != null) {
+								SipContext sipContext = findSipApplication(sipSessionKey.getApplicationName());					
+								//the context can be null if the server is being shutdown
+								if(sipContext != null) {
+									MobicentsSipApplicationSession sipApplicationSession = sipSession.getSipApplicationSession();
+									try {
+										sipContext.enterSipApp(sipApplicationSession, sipSession);
+										checkForAckNotReceived(sipServletMessage);
+										checkForPrackNotReceived(sipServletMessage);
+									} finally {
+										sipContext.exitSipApp(sipApplicationSession, sipSession);
+									}
+									// Issue 1822 http://code.google.com/p/mobicents/issues/detail?id=1822
+									// don't delete the dialog so that the app can send the BYE even after the noAckReceived has been called
+									//								dialog.delete();
+									tryToInvalidateSession(sipSessionKey, false);						
+								}					
+							}
+							tad.cleanUp();	
+							dialog.setApplicationData(null);
+						} catch (Exception e) {
+							logger.error("Problem handling dialog timeout", e);
 						}
-						tad.cleanUp();	
-						dialog.setApplicationData(null);
 					}
 				});
 			} else{
@@ -1035,71 +1019,81 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 		if(logger.isDebugEnabled()) {
 			logger.debug("transaction " + transaction + " timed out => " + transaction.getRequest().toString());
 		}
-		
+
 		final TransactionApplicationData tad = (TransactionApplicationData) transaction.getApplicationData();
 		if(tad != null && tad.getSipServletMessage() != null) {
-			
+
 			getAsynchronousExecutor().execute(new Runnable() {
 				public void run() {
-					SipServletMessageImpl sipServletMessage = tad.getSipServletMessage();
-					SipSessionKey sipSessionKey = sipServletMessage.getSipSessionKey();
-					MobicentsSipSession sipSession = sipServletMessage.getSipSession();					
-					boolean appNotifiedOfPrackNotReceived = false;
-					if(sipSession != null) {
-						SipContext sipContext = findSipApplication(sipSessionKey.getApplicationName());					
-						//the context can be null if the server is being shutdown
-						if(sipContext != null) {
-							try {
-								sipContext.enterSipApp(sipSession.getSipApplicationSession(), sipSession);
-								// session can be null if a message was sent outside of the container by the container itself during Initial request dispatching
-								// but the external host doesn't send any response so we call out to the applicationonly if the session is not null
-								// naoki : Fix for Issue 1618 http://code.google.com/p/mobicents/issues/detail?id=1618 on Timeout don't do the 408 processing for Server Transactions
-								if(sipServletMessage instanceof SipServletRequestImpl && !timeoutEvent.isServerTransaction()) {
-									try {
-										boolean finalizedProxy = false;
-										ProxyBranchImpl proxyBranchImpl = tad.getProxyBranch();
-										if(proxyBranchImpl != null) {
-											ProxyImpl proxy = (ProxyImpl) proxyBranchImpl.getProxy();
-											if(proxy.getFinalBranchForSubsequentRequests() != null) {
-												tad.cleanUp();				
-												transaction.setApplicationData(null);
-												return;
+					try {
+						SipServletMessageImpl sipServletMessage = tad.getSipServletMessage();
+						SipSessionKey sipSessionKey = sipServletMessage.getSipSessionKey();
+						MobicentsSipSession sipSession = sipServletMessage.getSipSession();					
+						boolean appNotifiedOfPrackNotReceived = false;
+						// session can be null if a message was sent outside of the container by the container itself during Initial request dispatching
+						// but the external host doesn't send any response so we call out to the application only if the session is not null					
+						if(sipSession != null) {
+							SipContext sipContext = findSipApplication(sipSessionKey.getApplicationName());					
+							//the context can be null if the server is being shutdown
+							if(sipContext != null) {
+								MobicentsSipApplicationSession sipApplicationSession = sipSession.getSipApplicationSession();
+								try {
+									sipContext.enterSipApp(sipApplicationSession, sipSession);
+									// naoki : Fix for Issue 1618 http://code.google.com/p/mobicents/issues/detail?id=1618 on Timeout don't do the 408 processing for Server Transactions
+									if(sipServletMessage instanceof SipServletRequestImpl && !timeoutEvent.isServerTransaction()) {
+										try {
+											ProxyBranchImpl proxyBranchImpl = tad.getProxyBranch();
+											if(proxyBranchImpl != null) {
+												ProxyImpl proxy = (ProxyImpl) proxyBranchImpl.getProxy();
+												if(proxy.getFinalBranchForSubsequentRequests() != null) {
+													tad.cleanUp();				
+													transaction.setApplicationData(null);
+													return;
+												}
 											}
+											SipServletRequestImpl sipServletRequestImpl = (SipServletRequestImpl) sipServletMessage;
+//PS											if(sipServletRequestImpl.visitNextHop()) {
+//												return;
+//											}
+											sipServletMessage.setTransaction(transaction);
+											SipServletResponseImpl response = (SipServletResponseImpl) sipServletRequestImpl.createResponse(408, null, false);
+											// Fix for Issue 1734
+											sipServletRequestImpl.setResponse(response);
+
+											MessageDispatcher.callServlet(response);
+											if(tad.getProxyBranch() != null) {
+												tad.getProxyBranch().setResponse(response);
+												tad.getProxyBranch().onResponse(response, response.getStatus());
+											}
+											sipSession.updateStateOnResponse(response, true);
+										} catch (Throwable t) {
+											logger.error("Failed to deliver 408 response on transaction timeout" + transaction, t);
 										}
-										SipServletRequestImpl sipServletRequestImpl = (SipServletRequestImpl) sipServletMessage;
-										sipServletMessage.setTransaction(transaction);
-										SipServletResponseImpl response = (SipServletResponseImpl) sipServletRequestImpl.createResponse(408, null, false);
-										// Fix for Issue 1734
-										sipServletRequestImpl.setResponse(response);
-										
-										MessageDispatcher.callServlet(response);
-										if(tad.getProxyBranch() != null) {
-											tad.getProxyBranch().setResponse(response);
-											tad.getProxyBranch().onResponse(response, response.getStatus());
-										}
-										sipSession.updateStateOnResponse(response, true);
-									} catch (Throwable t) {
-										logger.error("Failed to deliver 408 response on transaction timeout" + transaction, t);
 									}
+									// Guard only invite tx should check that, otherwise proxy might become null http://code.google.com/p/mobicents/issues/detail?id=2350
+									if(Request.INVITE.equals(sipServletMessage.getMethod())) {
+										checkForAckNotReceived(sipServletMessage);
+										appNotifiedOfPrackNotReceived = checkForPrackNotReceived(sipServletMessage);
+									}
+								} finally {
+									sipSession.removeOngoingTransaction(transaction);
+									sipSession.setRequestsPending(0);
+									sipContext.exitSipApp(sipApplicationSession, sipSession);
 								}
-								checkForAckNotReceived(sipServletMessage);
-								appNotifiedOfPrackNotReceived = checkForPrackNotReceived(sipServletMessage);
-							} finally {
-								sipSession.removeOngoingTransaction(transaction);
-								sipSession.setRequestsPending(0);
-								sipContext.exitSipApp(sipSession.getSipApplicationSession(), sipSession);
-							}
-							// don't invalidate here because if the application sends a final response on the noPrack received
-							// the ACK to this final response won't be able to get routed since the sip session would have been invalidated
-							if(!appNotifiedOfPrackNotReceived) {
-								tryToInvalidateSession(sipSessionKey, false);
+								// don't invalidate here because if the application sends a final response on the noPrack received
+								// the ACK to this final response won't be able to get routed since the sip session would have been invalidated
+								if(!appNotifiedOfPrackNotReceived) {
+									tryToInvalidateSession(sipSessionKey, false);
+								}
 							}
 						}
+						// don't clean up for the same reason we don't invalidate the sip session right above
+						tad.cleanUp();				
+						transaction.setApplicationData(null);
+					} catch (Exception e) {
+						logger.error("Problem handling timeout", e);
 					}
-					// don't clean up for the same reason we don't invalidate the sip session right above
-					tad.cleanUp();				
-					transaction.setApplicationData(null);
-				}						
+				}
 			});
 		}
 	}
@@ -1221,63 +1215,68 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 		if(tad != null && tad.getSipServletMessage() != null) {
 			getAsynchronousExecutor().execute(new Runnable() {
 				public void run() {
-					SipServletMessageImpl sipServletMessageImpl = tad.getSipServletMessage();
-					SipSessionKey sipSessionKey = sipServletMessageImpl.getSipSessionKey();
-					MobicentsSipSession sipSession = sipServletMessageImpl.getSipSession();
-					B2buaHelperImpl b2buaHelperImpl = null;
-					if(sipSession != null) {
-						b2buaHelperImpl = sipSession.getB2buaHelper();
-					}
-					if(sipSessionKey == null) {
-						if(logger.isDebugEnabled()) {
-							logger.debug("no sip session were returned for this key " + sipServletMessageImpl.getSipSessionKey() + " and message " + sipServletMessageImpl);
+					try {
+						SipServletMessageImpl sipServletMessageImpl = tad.getSipServletMessage();
+						SipSessionKey sipSessionKey = sipServletMessageImpl.getSipSessionKey();
+						MobicentsSipSession sipSession = sipServletMessageImpl.getSipSession();
+						B2buaHelperImpl b2buaHelperImpl = null;
+						if(sipSession != null) {
+							b2buaHelperImpl = sipSession.getB2buaHelper();
 						}
-					}
-					
-					if(tad.getProxyBranch() != null) {
-						tad.getProxyBranch().removeTransaction(transaction.getBranchId());
-					}
-					
-					// Issue 1333 : B2buaHelper.getPendingMessages(linkedSession, UAMode.UAC) returns empty list
-					// don't remove the transaction on terminated state for INVITE Tx because it won't be possible
-					// to create the ACK on second leg for B2BUA apps
-					if(sipSession != null) {
-						boolean removeTx = true;
-						if(b2buaHelperImpl != null && transaction instanceof ClientTransaction && Request.INVITE.equals(sipServletMessageImpl.getMethod())) {
-							removeTx = false;
+						if(sipSessionKey == null) {
+							if(logger.isDebugEnabled()) {
+								logger.debug("no sip session were returned for this key " + sipServletMessageImpl.getSipSessionKey() + " and message " + sipServletMessageImpl);
+							}
 						}
-						if(removeTx) {
-							SipContext sipContext = findSipApplication(sipSessionKey.getApplicationName());					
-							//the context can be null if the server is being shutdown
-							if(sipContext != null) {
-								try {
-									sipContext.enterSipApp(sipSession.getSipApplicationSession(), sipSession);
-									if(b2buaHelperImpl != null && tad.getSipServletMessage() instanceof SipServletRequestImpl) {
-										b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage());
+
+						if(tad.getProxyBranch() != null) {
+							tad.getProxyBranch().removeTransaction(transaction.getBranchId());
+						}
+
+						// Issue 1333 : B2buaHelper.getPendingMessages(linkedSession, UAMode.UAC) returns empty list
+						// don't remove the transaction on terminated state for INVITE Tx because it won't be possible
+						// to create the ACK on second leg for B2BUA apps
+						if(sipSession != null) {
+							boolean removeTx = true;
+							if(b2buaHelperImpl != null && transaction instanceof ClientTransaction && Request.INVITE.equals(sipServletMessageImpl.getMethod())) {
+								removeTx = false;
+							}
+							if(removeTx) {
+								SipContext sipContext = findSipApplication(sipSessionKey.getApplicationName());					
+								//the context can be null if the server is being shutdown
+								if(sipContext != null) {
+									MobicentsSipApplicationSession sipApplicationSession = sipSession.getSipApplicationSession();
+									try {
+										sipContext.enterSipApp(sipApplicationSession, sipSession);
+										if(b2buaHelperImpl != null && tad.getSipServletMessage() instanceof SipServletRequestImpl) {
+											b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage());
+										}
+										sipSession.removeOngoingTransaction(transaction);
+										tad.cleanUp();
+										// Issue 1468 : to handle forking, we shouldn't cleanup the app data since it is needed for the forked responses
+										boolean nullifyAppData = true;					
+										if(((SipStackImpl)((SipProvider)transactionTerminatedEvent.getSource()).getSipStack()).getMaxForkTime() > 0 && Request.INVITE.equals(sipServletMessageImpl.getMethod())) {
+											nullifyAppData = false;
+										}
+										if(nullifyAppData) {
+											transaction.setApplicationData(null);
+										}
+									} finally {
+										sipContext.exitSipApp(sipApplicationSession, sipSession);
 									}
-									sipSession.removeOngoingTransaction(transaction);
-									tad.cleanUp();
-									// Issue 1468 : to handle forking, we shouldn't cleanup the app data since it is needed for the forked responses
-									boolean nullifyAppData = true;					
-									if(((SipStackImpl)((SipProvider)transactionTerminatedEvent.getSource()).getSipStack()).getMaxForkTime() > 0 && Request.INVITE.equals(sipServletMessageImpl.getMethod())) {
-										nullifyAppData = false;
-									}
-									if(nullifyAppData) {
-										transaction.setApplicationData(null);
-									}
-								} finally {
-									sipContext.exitSipApp(sipSession.getSipApplicationSession(), sipSession);
+								}
+							} else {
+								if(logger.isDebugEnabled()) {
+									logger.debug("Transaction " + transaction + " not removed from session " + sipSessionKey + " because the B2BUA might still need it to create the ACK");
 								}
 							}
-						} else {
-							if(logger.isDebugEnabled()) {
-								logger.debug("Transaction " + transaction + " not removed from session " + sipSessionKey + " because the B2BUA might still need it to create the ACK");
-							}
+							// If it is a client transaction, do not kill the proxy session http://code.google.com/p/mobicents/issues/detail?id=1024
+							tryToInvalidateSession(sipSessionKey, transactionTerminatedEvent.isServerTransaction());				
+
 						}
-						// If it is a client transaction, do not kill the proxy session http://code.google.com/p/mobicents/issues/detail?id=1024
-						tryToInvalidateSession(sipSessionKey, transactionTerminatedEvent.isServerTransaction());				
-	
-					}							
+					} catch (Exception e) {
+						logger.error("Problem handling transaction termination", e);
+					}
 				}
 			});
 		} else {
@@ -1565,12 +1564,11 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	public SipContext findSipApplication(String applicationName) {
 		return applicationDeployed.get(applicationName);
 	}
-
 	
 	// -------------------- JMX and Registration  --------------------
     protected String domain;
     protected ObjectName oname;
-    protected MBeanServer mserver;	
+    protected MBeanServer mserver;		
 
     public ObjectName getObjectName() {
         return oname;
@@ -2085,5 +2083,9 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 				logger.info("SIP stack stopped");
 			}
 		}
+	}
+
+	public String getVersion() {
+		return Version.getVersion();
 	}
 }

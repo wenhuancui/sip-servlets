@@ -205,4 +205,6 @@ public interface SipApplicationDispatcher extends SipListenerExt {
 
 	void setSipStack(SipStack sipStack);
 	SipStack getSipStack();
+	
+	String getVersion();	
 }
