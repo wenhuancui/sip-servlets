@@ -1,5 +1,5 @@
 /*
-r * This is free software; you can redistribute it and/or modify it
+ * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
  * the License, or (at your option) any later version.
@@ -1146,9 +1146,16 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				Thread.currentThread().setContextClassLoader(oldClassLoader);
 			}
 		} catch (Exception ex) {			
-			JainSipUtils.terminateTransaction(getTransaction());
-			if(ex.getCause() != null && ex.getCause() instanceof IOException) {
-				throw (IOException) ex.getCause();
+			// The second condition for SipExcpetion is to cover com.bea.sipservlet.tck.agents.spec.ProxyBranchTest.testCreatingBranchParallel() where they send a request twice, the second
+			// time it does a "Request already sent" jsip exception but the tx is going on and must not be destryed
+			if(getTransaction() instanceof ClientTransaction && !(ex instanceof SipException)) {
+				JainSipUtils.terminateTransaction(getTransaction());
+				request.removeFirst(ViaHeader.NAME);
+				setTransaction(null);
+				message = (Request) request.clone();
+				if(ex.getCause() != null && ex.getCause() instanceof IOException) {				
+					throw (IOException) ex.getCause();
+				}
 			}
 			throw new IllegalStateException("Error sending request " + request,ex);
 		} 
