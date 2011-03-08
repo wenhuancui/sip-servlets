@@ -17,6 +17,7 @@
 package org.mobicents.servlet.sip.core.session;
 
 import gov.nist.javax.sip.ServerTransactionExt;
+import gov.nist.javax.sip.address.SipUri;
 import gov.nist.javax.sip.message.MessageExt;
 import gov.nist.javax.sip.message.SIPMessage;
 import gov.nist.javax.sip.message.SIPRequest;
@@ -333,24 +334,39 @@ public class SipSessionImpl implements MobicentsSipSession {
 					"Can not create ACK, PRACK or CANCEL requests with this method");
 		}
 		if(!isValid()) {
-			throw new IllegalStateException("cannot create a subsequent request because the session " + key + " is invalid");
+			throw new IllegalStateException("cannot create a subsequent request " + method + " because the session " + key + " is invalid");
 		}
 		if(State.TERMINATED.equals(state)) {
-			throw new IllegalStateException("cannot create a subsequent request because the session " + key + " is in TERMINATED state");
+			throw new IllegalStateException("cannot create a subsequent request " + method + " because the session " + key + " is in TERMINATED state");
 		}
 //		if((State.INITIAL.equals(state) && hasOngoingTransaction())) {
 //			throw new IllegalStateException("cannot create a request because the session is in INITIAL state with ongoing transactions");
 //		}
 		if(logger.isDebugEnabled()) {
-			logger.debug("dialog associated with this session to create the new request within that dialog "+
+			logger.debug("dialog associated with this session to create the new request " + method + " within that dialog "+
 					sessionCreatingDialog);
+			if(sessionCreatingDialog != null) {
+				logger.debug("dialog state " + sessionCreatingDialog.getState() + " for that dialog "+ sessionCreatingDialog);
+			}
 		}
 		SipServletRequestImpl sipServletRequest = null;
-		if(this.sessionCreatingDialog != null) {			
-			if(!DialogState.TERMINATED.equals(sessionCreatingDialog.getState())) {
-				// Fix for Issue http://code.google.com/p/mobicents/issues/detail?id=2230 BYE is routed to unexpected IP
-				// MSS should throw an IllegalStateException when a subsequent request is being created on a TERMINATED dialog
-				throw new IllegalStateException("cannot create a subsequent request because the dialog " + sessionCreatingDialog + " for session " + key + " is in TERMINATED state");
+		// Fix for Issue http://code.google.com/p/mobicents/issues/detail?id=2230 BYE is routed to unexpected IP
+		// MSS should throw an IllegalStateException when a subsequent request is being created on a TERMINATED dialog
+		// don't do it on the BYE method as a 408 within a dialog could have make the dialog TERMINATED and MSS should allow the app to create the subsequent BYE from any thread
+		if(sessionCreatingDialog != null && DialogState.TERMINATED.equals(sessionCreatingDialog.getState()) && !method.equalsIgnoreCase(Request.BYE)) {
+			// don't do it for authentication as the dialog will go back to TERMINATED state, so we should allow to create challenge requests
+			if(sessionCreatingTransactionRequest == null || sessionCreatingTransactionRequest.getLastFinalResponse() == null ||
+					(sessionCreatingTransactionRequest.getLastFinalResponse().getStatus() != 401 && sessionCreatingTransactionRequest.getLastFinalResponse().getStatus() != 407)) {				
+				throw new IllegalStateException("cannot create a subsequent request " + method + " because the dialog " + sessionCreatingDialog + " for session " + key + " is in TERMINATED state");
+			}
+		}
+		// Issue http://code.google.com/p/mobicents/issues/detail?id=2230 BYE is routed to unexpected IP BYE can be sent on a TERMINATED Dialog
+		if(this.sessionCreatingDialog != null && 
+				(!DialogState.TERMINATED.equals(sessionCreatingDialog.getState()) || 
+						(DialogState.TERMINATED.equals(sessionCreatingDialog.getState()) && method.equalsIgnoreCase(Request.BYE)))) {
+			
+			if(logger.isDebugEnabled()) {
+				logger.debug("dialog " + sessionCreatingDialog + " used to create the new request " + method);			
 			}
 			try {
 				final Request methodRequest = this.sessionCreatingDialog.createRequest(method);
@@ -454,6 +470,16 @@ public class SipSessionImpl implements MobicentsSipSession {
 					sipServletRequest = new SipServletRequestImpl(
 							request, this.sipFactory, this, null, sessionCreatingDialog,
 							true);
+					
+					// Fix for Issue http://code.google.com/p/mobicents/issues/detail?id=2230 BYE is routed to unexpected IP
+					if(sessionCreatingDialog != null && sessionCreatingDialog.getRemoteTarget() != null) {
+						SipUri sipUri = (SipUri) sessionCreatingDialog.getRemoteTarget().getURI().clone();
+						sipUri.clearUriParms();
+						if(logger.isDebugEnabled()) {
+							logger.debug("setting request uri to " + sipUri);
+						}
+						request.setRequestURI(sipUri);
+					}
 				} else {
 					if(logger.isDebugEnabled()) {
 						logger.debug("orignal tx for creating susbequent request " + method + " on session " + key +" was a Server Tx");
@@ -482,7 +508,7 @@ public class SipSessionImpl implements MobicentsSipSession {
 						final Iterator<String> fromParameterNames = fromHeader.getParameterNames();
 						while (fromParameterNames.hasNext()) {
 							String parameterName = (String) fromParameterNames.next();
-							if(!SipFactoryImpl.FORBIDDEN_PARAMS.contains(parameterName)) {
+							if(sessionCreatingDialog != null || !SipFactoryImpl.FORBIDDEN_PARAMS.contains(parameterName)) {
 								fromParameters.put(parameterName, fromHeader.getParameter(parameterName));
 							}
 						}
@@ -490,7 +516,7 @@ public class SipSessionImpl implements MobicentsSipSession {
 						final Iterator<String> toParameterNames = toHeader.getParameterNames();
 						while (toParameterNames.hasNext()) {
 							String parameterName = (String) toParameterNames.next();
-							if(!SipFactoryImpl.FORBIDDEN_PARAMS.contains(parameterName)) {
+							if(sessionCreatingDialog != null || !SipFactoryImpl.FORBIDDEN_PARAMS.contains(parameterName)) {
 								toParameters.put(parameterName, toHeader.getParameter(parameterName));
 							}
 						}			
@@ -511,6 +537,15 @@ public class SipSessionImpl implements MobicentsSipSession {
 							}
 							newFrom.setParameter(toParameter.getKey(),  value);
 						}	
+						// Fix for Issue http://code.google.com/p/mobicents/issues/detail?id=2230 BYE is routed to unexpected IP
+						if(sessionCreatingDialog != null && sessionCreatingDialog.getRemoteTarget() != null) {
+							SipUri sipUri = (SipUri) sessionCreatingDialog.getRemoteTarget().getURI().clone();
+							sipUri.clearUriParms();
+							if(logger.isDebugEnabled()) {
+								logger.debug("setting request uri to " + sipUri);
+							}
+							request.setRequestURI(sipUri);
+						}
 					} catch (ParseException e) {
 						throw new IllegalArgumentException("Problem setting param on the newly created susbequent request " + sipServletRequest,e);
 					}					
