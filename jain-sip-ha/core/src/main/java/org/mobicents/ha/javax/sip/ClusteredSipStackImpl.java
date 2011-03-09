@@ -667,6 +667,9 @@ public abstract class ClusteredSipStackImpl extends gov.nist.javax.sip.SipStackI
 	
 	public SipProvider createSipProvider(ListeningPoint listeningPoint)
 			throws ObjectInUseException {
-		return sipProviderFactory.createSipProvider(listeningPoint);
+		if(sipProviderFactory != null) {
+			return sipProviderFactory.createSipProvider(listeningPoint);
+		}
+		return super.createSipProvider(listeningPoint);
 	 }  
 }	
