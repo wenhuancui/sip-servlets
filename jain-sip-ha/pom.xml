@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.ha.javax.sip</groupId>
 	<artifactId>mobicents-jain-sip-ha</artifactId>
-	<version>5.1.0.GA-JBCP5</version>
+	<version>5.1.1.GA-JBCP5</version>
 
 	<packaging>pom</packaging>
 
@@ -42,7 +42,7 @@
 			<dependency>
 				<groupId>org.mobicents.tools</groupId>
 				<artifactId>sip-balancer-jar</artifactId>
-				<version>5.1.0.GA-JBCP5</version>
+				<version>5.1.1.GA-JBCP5</version>
 				<scope>provided</scope>
 			</dependency>			
 		</dependencies>
@@ -60,7 +60,7 @@
 		<dependency>
 			<groupId>org.mobicents.javax.sip</groupId>
 			<artifactId>mobicents-jain-sip-ext</artifactId>
-			<version>5.1.0.GA-JBCP5</version>
+			<version>5.1.1.GA-JBCP5</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

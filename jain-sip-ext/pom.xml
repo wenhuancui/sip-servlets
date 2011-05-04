@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.javax.sip</groupId>
 	<artifactId>mobicents-jain-sip-ext</artifactId>
-	<version>5.1.0.GA-JBCP5</version>
+	<version>5.1.1.GA-JBCP5</version>
 
 	<dependencies>
 		<dependency>
