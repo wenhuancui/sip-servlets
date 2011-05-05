@@ -4,7 +4,7 @@
   <description>Maven plugin to build JAIN SLEE deployable units.</description>
   <groupId>org.mobicents.tools</groupId>
   <artifactId>maven-du-plugin</artifactId>
-  <version>2.0.0.FINAL</version>
+  <version>5.1.1.GA-JBCP5</version>
   <goalPrefix>du</goalPrefix>
   <isolatedRealm>false</isolatedRealm>
   <inheritedByDefault>true</inheritedByDefault>
