@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<groupId>org.mobicents.servers.jainslee.tools</groupId>
 	<artifactId>mobicents-slee-jopr-as-5-plugin-parent</artifactId>
-	<version>5.1.0.GA-JBCP5</version>
+	<version>5.1.1.GA-JBCP5</version>
 
 	<name>Jopr Mobicents JAIN SLEE Plugin For JBoss 5</name>
 	<description>A plugin for managing Mobicents JAIN SLEE on JBoss 5 servers</description>
@@ -40,7 +40,7 @@
 		<jbossas.version>5.1.0.GA</jbossas.version>
 		<jopr-version>2.2.0.GA</jopr-version>
 		<rhq-version>3.0.0.B06</rhq-version>
-		<mobicents.jslee.version>5.1.0.GA-JBCP5</mobicents.jslee.version>
+		<mobicents.jslee.version>5.1.1.GA-JBCP5</mobicents.jslee.version>
 		<getopt.version>1.0.13</getopt.version>
 	</properties>
 

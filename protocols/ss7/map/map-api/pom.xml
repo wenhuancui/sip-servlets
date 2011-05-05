@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>map-parent</artifactId>
 		<groupId>org.mobicents.protocols.ss7.map</groupId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>map-api</artifactId>

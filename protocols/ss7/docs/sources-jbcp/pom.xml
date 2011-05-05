@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>mobicents-ss7-docs</artifactId>
 		<groupId>org.mobicents.protocols.ss7.docs</groupId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>mobicents-ss7-docs-sources-jbcp</artifactId>

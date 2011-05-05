@@ -6,12 +6,12 @@
   <parent>
     <groupId>org.mobicents</groupId>
     <artifactId>mobicents-parent</artifactId>
-    <version>5.1.0.GA-JBCP5</version>
+    <version>5.1.1.GA-JBCP5</version>
   </parent>
 
   <groupId>org.mobicents.servers.diameter.examples</groupId>
   <artifactId>base-parent</artifactId>
-  <version>5.1.0.GA-JBCP5</version>
+  <version>5.1.1.GA-JBCP5</version>
 
   <name>Mobicents :: Diameter Examples :: ${pom.artifactId}</name>
         
@@ -93,9 +93,9 @@
   </profiles>
 
   <scm>
-    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/diameter-base/5.1.0.GA-JBCP5</connection>
-    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/diameter-base/5.1.0.GA-JBCP5</developerConnection>
-    <url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/diameter-base/5.1.0.GA-JBCP5</url>
+    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/diameter-base/5.1.1.GA-JBCP5</connection>
+    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/diameter-base/5.1.1.GA-JBCP5</developerConnection>
+    <url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/examples/diameter-base/5.1.1.GA-JBCP5</url>
   </scm>
 
   <build>

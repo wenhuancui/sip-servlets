@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.xdm</groupId>
 		<artifactId>xdms-appusages</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>xdms-appusages-oma-locked-user-profile</artifactId>

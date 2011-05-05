@@ -4,12 +4,12 @@
         <parent>
                 <groupId>org.mobicents</groupId>
                 <artifactId>mobicents-parent</artifactId>
-                <version>5.1.0.GA-JBCP5</version>
+                <version>5.1.1.GA-JBCP5</version>
         </parent>
 
         <artifactId>ss7-parent</artifactId>
         <groupId>org.mobicents.protocols.ss7</groupId>
-        <version>5.1.0.GA-JBCP5</version>
+        <version>5.1.1.GA-JBCP5</version>
 
         <packaging>pom</packaging>
 
@@ -20,7 +20,7 @@
         <properties>
                 <!-- maven.test.skip>false</maven.test.skip -->
                 <mobicents.tools.mavenplugin.eclipse.version>
-                        5.1.0.GA-JBCP5
+                        5.1.1.GA-JBCP5
                 </mobicents.tools.mavenplugin.eclipse.version>
                 <concurrent.version>1.3.4</concurrent.version>
                 <log4j.version>1.2.14</log4j.version>
@@ -29,8 +29,8 @@
                 <compiler.plugin.version>2.0.2</compiler.plugin.version>
                 <compile.source>1.5</compile.source>
                 <!-- mobicents but not strictly ss7 -->
-                <asn.version>5.1.0.GA-JBCP5</asn.version>
-                <stream.version>5.1.0.GA-JBCP5</stream.version>
+                <asn.version>5.1.1.GA-JBCP5</asn.version>
+                <stream.version>5.1.1.GA-JBCP5</stream.version>
                 <jboss.version>5.1.0.GA</jboss.version>
                 
 
@@ -382,13 +382,13 @@
 
         <scm>
                 <connection>
-                        scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/ss7/mobicents-ss7-5.1.0.GA-JBCP5
+                        scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/ss7/mobicents-ss7-5.1.1.GA-JBCP5
                 </connection>
                 <developerConnection>
-                        scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/ss7/mobicents-ss7-5.1.0.GA-JBCP5
+                        scm:svn:https://mobicents.googlecode.com/svn/tags/protocols/ss7/mobicents-ss7-5.1.1.GA-JBCP5
                 </developerConnection>
                 <url>
-                        http://mobicents.googlecode.com/svn/tags/protocols/ss7/mobicents-ss7-5.1.0.GA-JBCP5
+                        http://mobicents.googlecode.com/svn/tags/protocols/ss7/mobicents-ss7-5.1.1.GA-JBCP5
                 </url>
         </scm>
 

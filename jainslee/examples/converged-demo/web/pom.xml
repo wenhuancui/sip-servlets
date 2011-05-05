@@ -4,12 +4,12 @@
 	<parent>
 		<artifactId>converged-demo-parent</artifactId>
 		<groupId>org.mobicents.examples.converged</groupId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>converged-demo-web-parent</artifactId>
 	<groupId>org.mobicents.examples.converged</groupId>
-	<version>5.1.0.GA-JBCP5</version>
+	<version>5.1.1.GA-JBCP5</version>
 	
 	
 	<packaging>pom</packaging>

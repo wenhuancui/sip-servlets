@@ -5,13 +5,13 @@
         <parent>
                 <artifactId>ss7-parent</artifactId>
                 <groupId>org.mobicents.protocols.ss7</groupId>
-                <version>5.1.0.GA-JBCP5</version>
+                <version>5.1.1.GA-JBCP5</version>
         </parent>
 
 
         <artifactId>sccp-parent</artifactId>
         <groupId>org.mobicents.protocols.ss7.sccp</groupId>
-        <version>5.1.0.GA-JBCP5</version>
+        <version>5.1.1.GA-JBCP5</version>
 
         <packaging>pom</packaging>
 

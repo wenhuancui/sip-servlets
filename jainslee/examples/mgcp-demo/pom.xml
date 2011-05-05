@@ -4,12 +4,12 @@
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
     
 	<artifactId>mgcp-demo-parent</artifactId>
 	<groupId>org.mobicents.examples</groupId>
-	<version>5.1.0.GA-JBCP5</version>    
+	<version>5.1.1.GA-JBCP5</version>    
     <name>MGCP Demo Parent</name>
     
     <packaging>pom</packaging>

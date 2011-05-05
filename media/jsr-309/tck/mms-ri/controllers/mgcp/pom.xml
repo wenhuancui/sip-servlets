@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.jsr309.mms-ri</groupId>
 		<artifactId>mms-ri-controllers</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>mms-ri-controllers-mgcp</artifactId>
@@ -36,7 +36,7 @@
 		<dependency>
 			<groupId>org.mobicents.protocols.mgcp</groupId>
 			<artifactId>mgcp-impl</artifactId>
-			<version>5.1.0.GA-JBCP5</version>
+			<version>5.1.1.GA-JBCP5</version>
 		</dependency>
 
 		<dependency>

@@ -3,13 +3,13 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip.example</groupId>
 		<artifactId>sip-servlets-examples-parent</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.mobicents.servlet.sip.example</groupId>
 	<artifactId>call-blocking-presence</artifactId>
 	<packaging>war</packaging>
-	<version>5.1.0.GA-JBCP5</version>
+	<version>5.1.1.GA-JBCP5</version>
 	<name>Call Blocking Presence Sip Servlet Example</name>
 	<url>http://www.mobicents.org/call_blocking.html</url>
 

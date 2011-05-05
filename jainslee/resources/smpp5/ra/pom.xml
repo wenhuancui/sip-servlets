@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>smpp5-parent</artifactId>
 		<groupId>org.mobicents.resources</groupId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>smpp5-ra</artifactId>

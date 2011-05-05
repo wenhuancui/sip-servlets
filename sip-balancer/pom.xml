@@ -112,8 +112,8 @@
 	</repositories>
 
   <scm>
-    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/5.1.0.GA-JBCP5</connection>
-    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/5.1.0.GA-JBCP5</developerConnection>
-    <url>http://mobicents.googlecode.com/svn/tags/tools/sip-balancer/5.1.0.GA-JBCP5</url>
+    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/5.1.1.GA-JBCP5</connection>
+    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/5.1.1.GA-JBCP5</developerConnection>
+    <url>http://mobicents.googlecode.com/svn/tags/tools/sip-balancer/5.1.1.GA-JBCP5</url>
   </scm>
 </project>

@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>example-internal-subscriber-parent</artifactId>
 		<groupId>org.mobicents.servers.sippresence</groupId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 		
 	<artifactId>example-internal-subscriber-du</artifactId>

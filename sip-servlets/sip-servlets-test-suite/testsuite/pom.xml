@@ -3,10 +3,10 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip</groupId>
 		<artifactId>sip-servlets-test-suite-parent</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 	<artifactId>sip-servlets-test-suite</artifactId>
-  <version>5.1.0.GA-JBCP5</version>
+  <version>5.1.1.GA-JBCP5</version>
 	<packaging>jar</packaging>
 	<name>Mobicents Sip Servlets Test Suite</name>
 	<dependencies>
@@ -19,22 +19,22 @@
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-spec</artifactId>
-			<version>5.1.0.GA-JBCP5</version>
+			<version>5.1.1.GA-JBCP5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-impl</artifactId>
-			<version>5.1.0.GA-JBCP5</version>
+			<version>5.1.1.GA-JBCP5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-application-router</artifactId>
-			<version>5.1.0.GA-JBCP5</version>
+			<version>5.1.1.GA-JBCP5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-tomcat-jboss4</artifactId>
-			<version>5.1.0.GA-JBCP5</version>
+			<version>5.1.1.GA-JBCP5</version>
 		</dependency>
 		
 		<!-- j2ee dependencies -->

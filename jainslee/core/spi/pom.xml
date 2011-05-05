@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.servers.jainslee.core</groupId>
 		<artifactId>mobicents-slee-core</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>spi</artifactId>
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>org.mobicents.servers.jainslee.api</groupId>
 			<artifactId>jain-slee-11-ext</artifactId>
-			<version>5.1.0.GA-JBCP5</version>
+			<version>5.1.1.GA-JBCP5</version>
 		</dependency>
 		
 		<dependency>

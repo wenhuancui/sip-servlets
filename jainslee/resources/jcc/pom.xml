@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.mobicents</groupId>
 		<artifactId>mobicents-parent</artifactId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>mobicents-slee-ra-jcc</artifactId>
 	<groupId>org.mobicents.resources.jcc</groupId>
-	<version>5.1.0.GA-JBCP5</version>
+	<version>5.1.1.GA-JBCP5</version>
 
 	<name>Mobicents :: Resources :: ${pom.artifactId}</name>
 
@@ -28,12 +28,12 @@
 		<docs.ra.dirname>jcc</docs.ra.dirname>
 		<docs.bookid>JCC</docs.bookid>
 		<docs.profile>mobicents</docs.profile>
-		<tcap.version>5.1.0.GA-JBCP5</tcap.version>
-		<sccp.version>5.1.0.GA-JBCP5</sccp.version>
-		<asn.version>5.1.0.GA-JBCP5</asn.version>
-		<mtp.version>5.1.0.GA-JBCP5</mtp.version>
-		<stream.version>5.1.0.GA-JBCP5</stream.version>
-		<m3ua.version>5.1.0.GA-JBCP5</m3ua.version>
+		<tcap.version>5.1.1.GA-JBCP5</tcap.version>
+		<sccp.version>5.1.1.GA-JBCP5</sccp.version>
+		<asn.version>5.1.1.GA-JBCP5</asn.version>
+		<mtp.version>5.1.1.GA-JBCP5</mtp.version>
+		<stream.version>5.1.1.GA-JBCP5</stream.version>
+		<m3ua.version>5.1.1.GA-JBCP5</m3ua.version>
 		<version.jcc>1.1</version.jcc>
 		<version.concurrent>1.3.4</version.concurrent>
 		<!-- <version.junit>3.8.2</version.junit> <version.log4j>1.2.14</version.log4j> 
@@ -174,9 +174,9 @@
 	</profiles>
 
 	<scm>
-		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/jcc/5.1.0.GA-JBCP5</connection>
-		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/jcc/5.1.0.GA-JBCP5</developerConnection>
-		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/jcc/5.1.0.GA-JBCP5</url>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/jcc/5.1.1.GA-JBCP5</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/jcc/5.1.1.GA-JBCP5</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/jcc/5.1.1.GA-JBCP5</url>
 	</scm>
 	
 	<!-- dupe info from parent, but it's only way to retrieve the parent without checkout -->

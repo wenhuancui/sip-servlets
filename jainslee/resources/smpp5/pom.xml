@@ -4,12 +4,12 @@
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
 		<groupId>org.mobicents</groupId>
-		<version>5.1.0.GA-JBCP5</version>
+		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 
 	<artifactId>smpp5-parent</artifactId>
 	<groupId>org.mobicents.resources</groupId>
-	<version>5.1.0.GA-JBCP5</version>
+	<version>5.1.1.GA-JBCP5</version>
 
 	<name>Mobicents :: Resources :: ${pom.artifactId}</name>
 	<packaging>pom</packaging>
@@ -23,7 +23,7 @@
 	</modules>
 	<properties>
 		<mobicents.smppapi.version>
-			5.1.0.GA-JBCP5
+			5.1.1.GA-JBCP5
 		</mobicents.smppapi.version>
 	</properties>
 
@@ -68,13 +68,13 @@
 
 	<scm>
 		<connection>
-			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/smpp5/5.1.0.GA-JBCP5
+			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/smpp5/5.1.1.GA-JBCP5
 		</connection>
 		<developerConnection>
-			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/smpp5/5.1.0.GA-JBCP5
+			scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/smpp5/5.1.1.GA-JBCP5
 		</developerConnection>
 		<url>
-			http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/smpp5/5.1.0.GA-JBCP5
+			http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/resources/smpp5/5.1.1.GA-JBCP5
 		</url>
 	</scm>
 
