@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011, Red Hat, Inc. and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.slee.runtime.sbb;
 
 import javax.slee.ActivityContextInterface;
@@ -31,7 +53,7 @@ import org.mobicents.slee.runtime.sbbentity.SbbEntityImpl;
  * have an SBB local interface. If the SBB Developer does not provide an SBB
  * local interface for an SBB, then the SBB local interface of the SBB is the
  * generic SbbLocalObject interface. The names of the SBB specific local
- * interface methods must not begin with “sbb” or “ejb”. The SLEE provides the
+ * interface methods must not begin with ï¿½sbbï¿½ or ï¿½ejbï¿½. The SLEE provides the
  * implementation of the methods defined in the SBB local interface. More
  * precisely, the SLEE provides a concrete class that implements each SBB local
  * interface. An SBB local object is an instance of this class. The SLEE

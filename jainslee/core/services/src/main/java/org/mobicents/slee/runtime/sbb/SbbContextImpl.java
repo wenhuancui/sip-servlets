@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011, Red Hat, Inc. and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.slee.runtime.sbb;
 
 import java.util.ArrayList;
@@ -43,11 +65,11 @@ import org.mobicents.slee.container.transaction.SleeTransactionManager;
  * SBB Context Implementation.
  * 
  * The SLEE provides each SBB object with an SbbContext object. The SbbContext
- * object gives the SBB object access to the SBB object’s context maintained by
+ * object gives the SBB object access to the SBB objectï¿½s context maintained by
  * the SLEE, allows the SBB object to invoke functions provided by the SLEE, and
  * obtain information about the SBB entity assigned to the SBB object. The
  * SbbContext object implements the SbbContext interface. The SbbContext
- * interface declares the following methods: · Methods to access information
+ * interface declares the following methods: ï¿½ Methods to access information
  * determined at runtime. o A getSbbLocalObject method to get an SBB local
  * object that represents the SBB entity assigned to the SBB object of the
  * SbbContext object. o A getService method to get a ServiceID object that
@@ -55,19 +77,19 @@ import org.mobicents.slee.container.transaction.SleeTransactionManager;
  * descendent of, i.e. the SBB entity is in an SBB entity tree whose root SBB
  * entity is instantiated by the SLEE for the child relation (from SLEE as
  * parent to the root SBB) specified by the Service. o A getSbb method to get an
- * SbbID object that encapsulates the component identity of the SBB. · Activity
+ * SbbID object that encapsulates the component identity of the SBB. ï¿½ Activity
  * Context methods. These methods are discussed in greater detail in Section
  * 7.7.1. o A getActivities method. This method returns all the Activity
  * Contexts that the SBB entity assigned to the SBB object of the SbbContext
  * object is attached to. More precisely, it returns an Activity Context
  * Interface object for each Activity Context attached to the SBB entity
- * assigned to the SBB object of the SbbContext object. · Event mask methods.
+ * assigned to the SBB object of the SbbContext object. ï¿½ Event mask methods.
  * These methods are described in Section 8.4.3. o A maskEvent method. This
  * method masks event types that the SBB entity assigned to the SBB object of
  * the SbbContext object no longer wishes to receive from an Activity Context. o
  * A getEventMask method. This returns the set of masked event types for an
  * Activity Context that SBB entity assigned to the SBB object of the SbbContext
- * object is attached to. · Transaction methods. These methods are described in
+ * object is attached to. ï¿½ Transaction methods. These methods are described in
  * Section 6.10. o A setRollbackOnly method. The SBB Developer uses this method
  * to mark the transaction of the current method invocation for rollback. o A
  * getRollbackOnly method. The SBB Developer uses this method to determine if

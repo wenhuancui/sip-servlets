@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011, Red Hat, Inc. and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.slee.container.service;
 
 import javax.slee.SbbID;
@@ -119,9 +141,9 @@ public class ServiceImpl implements Service {
 	 * Activate the Service and send out ServiceStartedEvent on the Service
 	 * Activity associated with the Service.
 	 * 
-	 * The following steps describe the life cycle of a Service: · A Service
+	 * The following steps describe the life cycle of a Service: ï¿½ A Service
 	 * enters the Inactive state when the Service is installed successfully into
-	 * the SLEE. · A Service enters the Active state from the Inactive state
+	 * the SLEE. ï¿½ A Service enters the Active state from the Inactive state
 	 * when the Service is activated. At this point, the SLEE may start a
 	 * Service Activity for the Service, and fire a Service Started Event on
 	 * this Activity, as described in Section 8.7. The operational state of a
@@ -162,7 +184,7 @@ public class ServiceImpl implements Service {
 	 * listen to this event and terminate their processing quickly but
 	 * gracefully when this event is received. Optionally, after some SLEE
 	 * implementation determined time, the SLEE may also forcefully remove the
-	 * outstanding SBB entity trees of the Service. · The SLEE moves a Service
+	 * outstanding SBB entity trees of the Service. ï¿½ The SLEE moves a Service
 	 * to the Inactive state from the Stopping state spontaneously when all
 	 * outstanding SBB entity trees of the Service complete their processing.
 	 * The operational state of a Service is persistent, i.e. the SLEE remembers
