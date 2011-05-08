@@ -8,9 +8,6 @@
 		<version>5.1.1.GA-JBCP5</version>
 	</parent>
 	
-	<packaging>jainslee-library</packaging>
-	
-	
 	<artifactId>sip11-library</artifactId>
 	
 	<name>Mobicents :: Resources :: ${pom.artifactId}</name>
@@ -53,7 +50,14 @@
 			<plugin>
 				<groupId>org.mobicents.tools</groupId>
 				<artifactId>maven-library-plugin</artifactId>
-				<extensions>true</extensions>
+				<executions>
+					<execution>
+						<goals>
+							<goal>copy-dependencies</goal>
+							<goal>generate-descriptor</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
 					<library-name>jain-sip</library-name>
 					<library-vendor>javax.sip</library-vendor>
