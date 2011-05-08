@@ -20,12 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/**
- * Start time:11:29:01 2009-08-10<br>
- * Project: mobicents-jainslee-server-core<br>
- * 
- * @author <a href="mailto:baranowb@gmail.com">Bartosz Baranowski </a>
- */
 package org.mobicents.cluster.test;
 
 import java.io.Serializable;
