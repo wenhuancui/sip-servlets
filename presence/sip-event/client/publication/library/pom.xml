@@ -27,7 +27,8 @@
 					<execution>
 						<phase>generate-resources</phase>
 						<goals>
-							<goal>create</goal>
+							<goal>copy-dependencies</goal>
+							<goal>generate-descriptor</goal>
 						</goals>
 					</execution>
 				</executions>

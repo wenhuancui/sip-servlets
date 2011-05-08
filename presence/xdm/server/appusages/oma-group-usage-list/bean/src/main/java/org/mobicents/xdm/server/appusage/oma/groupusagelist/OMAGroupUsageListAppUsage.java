@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011, Red Hat, Inc. and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.mobicents.xdm.server.appusage.oma.groupusagelist;
 
 import javax.xml.validation.Validator;
@@ -46,14 +68,14 @@ public class OMAGroupUsageListAppUsage extends ResourceListsAppUsage {
 		/*
 		 * In addition to the XML schema, the additional validation constraints
 		 * on a Group Usage List SHALL conform to those described in [RFC4826]
-		 * Section 3.4.5, with the following clarifications: The ÒnameÓ
+		 * Section 3.4.5, with the following clarifications: The ï¿½nameï¿½
 		 * attribute of the <list> element SHALL be present. If this constraint
-		 * is violated, an HTTP Ò409 ConflictÓ response SHALL be returned with
+		 * is violated, an HTTP ï¿½409 Conflictï¿½ response SHALL be returned with
 		 * the error condition identified by the <constraint-failure> element.
-		 * If included, the ÒphraseÓ attribute of this element SHOULD be set to
-		 * ÒName attribute is required.Ó If the XDMC uses or adds an <entry-ref>
+		 * If included, the ï¿½phraseï¿½ attribute of this element SHOULD be set to
+		 * ï¿½Name attribute is required.ï¿½ If the XDMC uses or adds an <entry-ref>
 		 * or an <external> child element (specified in [RFC4826]) to the <list>
-		 * element, the Shared XDMS SHALL return an error code Ò409 ConflictÓ
+		 * element, the Shared XDMS SHALL return an error code ï¿½409 Conflictï¿½
 		 * response which includes the XCAP error element <constraint- failure>.
 		 * If included, the "phrase" attribute SHOULD be set to "Not allowed".
 		 */
