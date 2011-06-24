@@ -62,5 +62,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/sip-servlets-tomcat-jboss-4.2.x"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jain-sip-ha-core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sip-balancer"/>
+	<classpathentry kind="var" path="M2_REPO/javax/faces/jsf-api/1.2_08/jsf-api-1.2_08.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jain-sip-ext"/>
 	<classpathentry kind="output" path="testsuite/target/test-classes"/>
 </classpath>
