@@ -724,23 +724,8 @@ public class SipFactoryImpl implements Externalizable {
 	 */
 	public SipApplicationSession createApplicationSessionByKey(
 			String sipApplicationKey) {
-		if (logger.isDebugEnabled()) {
-			logger.debug("Creating new application session by following key " + sipApplicationKey);
-		}
-		SipApplicationSessionKey sipApplicationSessionKey = null;
-		try {
-			sipApplicationSessionKey = SessionManagerUtil.parseSipApplicationSessionKey(
-					sipApplicationKey);
-		} catch (ParseException e) {
-			throw new IllegalArgumentException(sipApplicationKey + " is not a valid sip application session key", e);
-		}		
-		SipContext sipContext = sipApplicationDispatcher.findSipApplication(sipApplicationSessionKey.getApplicationName());
-		if(sipContext == null) {
-			throw new IllegalArgumentException("The specified application "+sipApplicationSessionKey.getApplicationName()+" is not currently deployed");
-		}
-		MobicentsSipApplicationSession sipApplicationSession = ((SipManager)sipContext.getManager()).getSipApplicationSession(
-				sipApplicationSessionKey, true);		
-		return sipApplicationSession.getSession();
+		// should not be called directly, should be called through the facade object only
+		return null;
 	}
 
 	/*

@@ -249,8 +249,7 @@ public class SipFactoryFacade implements SipFactory, Serializable {
 			sipApplicationSessionImpl = convergedSession.getApplicationSession(false);
 		}
 		if(sipApplicationSessionImpl == null) {
-			sipApplicationSessionImpl = (MobicentsSipApplicationSession)
-				sipFactoryImpl.createApplicationSessionByKey(sipApplicationKey);
+			sipApplicationSessionImpl = (MobicentsSipApplicationSession) sipContext.getSipSessionsUtil().getApplicationSessionByKey(sipApplicationKey, true);
 			associateHttpSession(sipApplicationSessionImpl);
 		}
 		return sipApplicationSessionImpl;
