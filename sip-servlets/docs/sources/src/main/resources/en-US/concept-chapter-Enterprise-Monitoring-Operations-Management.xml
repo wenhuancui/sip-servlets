@@ -34,25 +34,22 @@
         Servlets Server.</para>
       </section>
       <section>
-        <title>Jopr for Production</title>
+        <title>JON for Production</title>
 <!--Ticket #709 - Editor Comment - this list should be a procedure, and expanded to explain the process a bit more thoroughly.-->        <itemizedlist>
           <listitem>
-            <para>Follow the <ulink url="http://jboss.org/community/docs/DOC-12828">Jopr installation instructions</ulink> to install the latest version of Jopr.</para>
+            <para>Follow the JON installation instructions to install the latest version of JON <ulink url="http://docs.redhat.com/docs/en-US/JBoss_Operations_Network/2.4.1/html/Release_Notes/Installing-jon.html">.</para>
           </listitem>
           <listitem>
-            <para>Stop the Jopr server and agent if they are running.</para>
+            <para>Stop the JON server and agent if they are running.</para>
           </listitem>
           <listitem>
-            <para>Get the &PLATFORM_NAME; SIP Servlets Jopr Plug in from <ulink url="http://repository.jboss.com/maven2/org/mobicents/servlet/sip/jopr-mobicents-sip-servlets-plugin/1.3/jopr-mobicents-sip-servlets-plugin-1.3.jar">jboss.com</ulink>.</para>
+            <para>Get the &PLATFORM_NAME; SIP Servlets JON Plug in from <literal>$JBCP_HOME/jboss-eap-5.1/jboss-as/server/sipservlets-default/deploy/admin-console.war/plugins/jopr-mobicents-sip-servlets-as-5-plugin-5.1.0.GA-JBCP5.jar</literal>.</para>
           </listitem>
           <listitem>
-            <para>Copy the jopr-mobicents-sip-servlets-plugin-1.3.jar just
-            downloaded to the
-            <filename>jopr-server/jbossas/server/default/deploy/rhq.ear/rhq-downloads/rhq-plugins/</filename>
-            directory</para>
+            <para>Copy the downloaded jar file to the <literal>jopr-server/jbossas/server/default/deploy/rhq.ear/rhq-downloads/rhq-plugins/</literal> directory</para>
           </listitem>
           <listitem>
-            <para>Start the Jopr server then the agent.</para>
+            <para>Start the JON server then the agent.</para>
           </listitem>
           <listitem>
             <para>Start the &PLATFORM_NAME; SIP Servlets Server on JBoss, and ensure the binding address is specified.</para>
