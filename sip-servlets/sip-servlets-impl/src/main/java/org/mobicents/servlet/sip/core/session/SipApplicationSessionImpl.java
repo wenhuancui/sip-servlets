@@ -704,7 +704,10 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 	}
 
 	private void cancelExpirationTimer() {
-		sipContext.getSipApplicationSessionTimerService().cancel(expirationTimerTask);
+		if(expirationTimerTask != null) {
+			// http://code.google.com/p/mobicents/issues/detail?id=2322 : Race condition can occur so making sure the expiration timer task is not null
+			sipContext.getSipApplicationSessionTimerService().cancel(expirationTimerTask);
+		}
 		if(expirationTimerTask != null) {
 			expirationTimerTask.setSipApplicationSession(null);
 			expirationTimerTask = null;
