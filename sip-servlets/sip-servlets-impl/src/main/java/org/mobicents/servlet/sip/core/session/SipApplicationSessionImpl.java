@@ -402,6 +402,7 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 		if(sipApplicationSessionTimeout > 0) {
 			expirationTime = lastAccessedTime + sipApplicationSessionTimeout;
 			if(logger.isDebugEnabled()) {
+				logger.debug("Setting expirationTime to "+ expirationTime + " on sip application session " + key);
 				logger.debug("Re-Scheduling sip application session "+ key +" to expire in " + sipApplicationSessionTimeout / 60 / 1000L + " minutes");
 				Calendar calendar = Calendar.getInstance();
 				calendar.setTimeInMillis(expirationTime);
@@ -905,6 +906,7 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 			sipApplicationSessionTimeout = deltaMilliseconds;
 			expirationTime = System.currentTimeMillis() + deltaMilliseconds;				
 			if(logger.isDebugEnabled()) {
+				logger.debug("Setting expirationTime to "+ expirationTime + " on sip application session " + key);
 				logger.debug("Re-Scheduling sip application session "+ key +" to expire in " + deltaMinutes + " minutes");
 				Calendar calendar = Calendar.getInstance();
 				calendar.setTimeInMillis(expirationTime);
