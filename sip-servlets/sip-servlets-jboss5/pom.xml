@@ -14,7 +14,7 @@
 	<url>http://www.mobicents.org/products_sip_servlets.html</url>
 	<properties>
 		<jboss.version>5.1.0.GA</jboss.version>	
-		<jboss.ws.version>5.1.0.EAP</jboss.ws.version>		
+		<jboss.ws.version>5.1.1.EAP</jboss.ws.version>		
 	</properties>
 	<dependencies>
 		<dependency>
