@@ -1061,6 +1061,11 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 								MobicentsSipApplicationSession sipApplicationSession = sipSession.getSipApplicationSession();
 								try {
 									sipContext.enterSipApp(sipApplicationSession, sipSession);
+									B2buaHelperImpl b2buaHelperImpl = sipSession.getB2buaHelper();
+
+									if(b2buaHelperImpl != null && tad.getSipServletMessage() instanceof SipServletRequestImpl) {
+										b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage(), false);
+									}
 									// naoki : Fix for Issue 1618 http://code.google.com/p/mobicents/issues/detail?id=1618 on Timeout don't do the 408 processing for Server Transactions
 									if(sipServletMessage instanceof SipServletRequestImpl && !timeoutEvent.isServerTransaction()) {
 										try {
@@ -1271,7 +1276,7 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 									try {
 										sipContext.enterSipApp(sipApplicationSession, sipSession);
 										if(b2buaHelperImpl != null && tad.getSipServletMessage() instanceof SipServletRequestImpl) {
-											b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage());
+											b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage(), false);
 										}
 										sipSession.removeOngoingTransaction(transaction);
 										tad.cleanUp();

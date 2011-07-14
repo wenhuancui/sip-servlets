@@ -69,6 +69,7 @@ import javax.sip.InvalidArgumentException;
 import javax.sip.ListeningPoint;
 import javax.sip.ServerTransaction;
 import javax.sip.Transaction;
+import javax.sip.TransactionState;
 import javax.sip.address.SipURI;
 import javax.sip.address.URI;
 import javax.sip.header.CSeqHeader;
@@ -575,7 +576,16 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 		if ( req == null) { 
 			throw new NullPointerException("the argument is null");
 		}
-		return originalRequestMap.get(req);
+		SipServletRequest sipServletRequest = originalRequestMap.get(req);
+		if(logger.isDebugEnabled()) {
+			if(sipServletRequest == null) {
+				logger.debug("originalrequest Map size " + originalRequestMap.size());
+				for (Entry<SipServletRequestImpl, SipServletRequestImpl> entry : originalRequestMap.entrySet()) {
+					logger.debug("originalrequest " + entry.getKey() + " linked to " + entry.getValue());
+				}
+			} 
+		}
+		return sipServletRequest;
 	}
 	
 	/*
@@ -694,12 +704,16 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 				throw new IllegalArgumentException("the session is not currently linked to another session or it has been terminated");
 			}		
 		}
-		final SipSessionKey value  = this.sessionMap.get(sipSessionKey);
+		final SipSessionKey value  = this.sessionMap.remove(sipSessionKey);
 		if (value != null) {
 			this.sessionMap.remove(value);
+			if(logger.isDebugEnabled()) {
+				logger.debug("sipsession " + sipSessionKey + " unlinked from sip session " + value);
+			}
+		} else if(logger.isDebugEnabled()) {
+			logger.debug("no sipsession for " + sipSessionKey + " to unlink");			
 		}
-		this.sessionMap.remove(sipSessionKey);
-		unlinkOriginalRequestInternal(sipSessionKey);
+		unlinkOriginalRequestInternal(sipSessionKey, !checkSession);
 		dumpLinkedSessions();
 	}
 	
@@ -708,7 +722,7 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 	 * @param session
 	 * @param checkSession
 	 */
-	public void unlinkOriginalRequestInternal(SipSessionKey sipSessionKey) {
+	public void unlinkOriginalRequestInternal(SipSessionKey sipSessionKey, boolean force) {
 		for (Entry<SipServletRequestImpl, SipServletRequestImpl> linkedRequests : originalRequestMap.entrySet()) {
 			SipServletRequestImpl request1 = linkedRequests.getKey();
 			SipServletRequestImpl request2 = linkedRequests.getValue();
@@ -716,8 +730,8 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 				SipSessionKey key1 = request1.getSipSessionKey();
 				SipSessionKey key2 = request2.getSipSessionKey();
 				if((key1!=null&&key1.equals(sipSessionKey)) || (key2!=null&&key2.equals(sipSessionKey))) {
-					unlinkOriginalRequestInternal(linkedRequests.getKey());
-					unlinkOriginalRequestInternal(linkedRequests.getValue());
+					unlinkOriginalRequestInternal(linkedRequests.getKey(), force);
+					unlinkOriginalRequestInternal(linkedRequests.getValue(), force);
 				}
 			}
 		}				
@@ -728,14 +742,32 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 	 * @param session
 	 * @param checkSession
 	 */
-	public void unlinkOriginalRequestInternal(SipServletRequestImpl sipServletRequestImpl) {
+	public void unlinkOriginalRequestInternal(SipServletRequestImpl sipServletRequestImpl, boolean force) {
 		if(sipServletRequestImpl != null) {
-			SipServletRequestImpl linkedRequest = this.originalRequestMap.remove(sipServletRequestImpl);		
+			SipServletRequestImpl linkedRequest = this.originalRequestMap.get(sipServletRequestImpl);			
 			if(sipServletRequestImpl != null) {
 				if(linkedRequest != null) {
-					this.originalRequestMap.remove(linkedRequest);
+					// Issue 2419 we unlink only if both tx are in terminated state or transaction is null (which means it has already been cleaned up)
+					Transaction transaction = sipServletRequestImpl.getTransaction();
+					Transaction linkedTransaction = linkedRequest.getTransaction();
 					if(logger.isDebugEnabled()) {
-						logger.debug("following linked request " + linkedRequest + " unlinked from " + sipServletRequestImpl);
+						logger.debug("force " + force);
+						logger.debug("transaction " + transaction);
+						logger.debug("Linkedtransaction " + linkedTransaction);
+						if(transaction != null) {
+							logger.debug("transaction state " + transaction.getState());
+						}
+						if(linkedTransaction != null) {
+							logger.debug("linked transaction state " + linkedTransaction.getState());
+						}
+					}
+					if(force || ((transaction == null || TransactionState.TERMINATED.equals(transaction.getState())) &&
+							(linkedTransaction == null || TransactionState.TERMINATED.equals(linkedTransaction.getState())))) {
+						this.originalRequestMap.remove(sipServletRequestImpl);	
+						this.originalRequestMap.remove(linkedRequest);
+						if(logger.isDebugEnabled()) {
+							logger.debug("following linked request " + linkedRequest + " unlinked from " + sipServletRequestImpl);
+						}
 					}
 				}
 			}
@@ -839,5 +871,19 @@ public class B2buaHelperImpl implements B2buaHelper, Serializable {
 	 */
 	public Map<SipSessionKey, SipSessionKey> getSessionMap() {
 		return sessionMap;
+	}
+	
+	/**
+	 * @return the originalRequestMap
+	 */
+	public Map<SipServletRequestImpl, SipServletRequestImpl> getOriginalRequestMap() {
+		return originalRequestMap;
+	}
+	
+	/**
+	 * @param originalRequestsMap the originalRequests to set
+	 */
+	public void setOriginalRequestMap(Map<SipServletRequestImpl, SipServletRequestImpl> originalRequestsMap) {
+		this.originalRequestMap =  originalRequestsMap;
 	}
 }

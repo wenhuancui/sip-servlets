@@ -336,12 +336,19 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 						// make sure not to generate a new tag
 						synchronized (this) {
 							String toTag = sipSessionKey.getToTag();
+							if(logger.isDebugEnabled()) {
+						    	logger.debug("sipSessionKey ToTag : " + toTag);
+						    }
 							if(toTag == null) {
 								toTag = ApplicationRoutingHeaderComposer.getHash(sipFactoryImpl.getSipApplicationDispatcher(),sipSessionKey.getApplicationName(), sipAppSessionKey.getId());
-								session.getKey().setToTag(toTag);
-							}											
+								//need to stay false for TCK Test com.bea.sipservlet.tck.agents.api.javax_servlet_sip.SipSessionListenerTest.testSessionDestroyed001
+								session.getKey().setToTag(toTag, false);
+							}
+							if(logger.isDebugEnabled()) {
+						    	logger.debug("setting ToTag: " + toTag);
+						    }
 							toHeader.setTag(toTag);	
-						}						
+						}									
 					} else {							
 						//if the sessions are null, it means it is a cancel response
 						toHeader.setTag(Integer.toString(new Random().nextInt(10000000)));
@@ -1442,7 +1449,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				final B2buaHelperImpl b2buaHelperImpl = sipSession.getB2buaHelper();
 				if(b2buaHelperImpl != null && tad != null) {
 					// we unlink the originalRequest early to avoid keeping the messages in mem for too long
-					b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage());
+					b2buaHelperImpl.unlinkOriginalRequestInternal((SipServletRequestImpl)tad.getSipServletMessage(), false);
 				}				
 				session.removeOngoingTransaction(transaction);					
 				if(tad != null) {

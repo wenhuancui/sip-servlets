@@ -1431,7 +1431,7 @@ public class SipSessionImpl implements MobicentsSipSession {
 				if(logger.isDebugEnabled()) {
 					logger.debug("resetting the to tag since a response to a non dialog creating and terminating method has been received for non proxy session with no dialog in state " + state);
 				}
-				key.setToTag(null);
+				key.setToTag(null, false);
 			}
 			return;
 		}
@@ -1479,7 +1479,7 @@ public class SipSessionImpl implements MobicentsSipSession {
 					if(logger.isDebugEnabled()) {
 						logger.debug("resetting the to tag since a non 2xx response has been received for non proxy session in state " + state);
 					}
-					key.setToTag(null);
+					key.setToTag(null, false);
 				}
 				setState(State.INITIAL);				
 //				readyToInvalidate = true; 
