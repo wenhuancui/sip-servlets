@@ -889,8 +889,17 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	}
 
 	public String getRemoteHost() {
-		// TODO Auto-generated method stub
-		return null;
+		if(getTransaction() != null) {
+			if(((SIPTransaction)getTransaction()).getPeerPacketSourceAddress() != null &&
+					((SIPTransaction)getTransaction()).getPeerPacketSourceAddress().getHostAddress() != null) {
+				return ((SIPTransaction)getTransaction()).getPeerPacketSourceAddress().getHostAddress();
+			} else {
+				return ((SIPTransaction)getTransaction()).getPeerAddress();
+			}
+		} else {
+			ViaHeader via = (ViaHeader) message.getHeader(ViaHeader.NAME);
+			return via.getHost();
+		}
 	}
 
 	/**
@@ -949,6 +958,11 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		    }
 			((MessageExt)message).setApplicationData(sessionTransport);									
 						
+			// Because proxy decides transport in different way, it allows inbound and outbound transport to be different.
+			if(session != null && session.getProxy() == null) {
+				((MessageExt)message).setApplicationData(session.getTransport());			
+			}		
+			
 			if(Request.CANCEL.equals(requestMethod)) {
 				getSipSession().setRequestsPending(0);
 	    		Transaction tx = inviteTransactionToCancel;
@@ -978,14 +992,16 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 			if(sessionTransport == null) {
 				session.setTransport(transport);
 			}
-		    if(logger.isDebugEnabled()) {
-		    	logger.debug("The found transport for sending request is '" + transport + "'");
-		    }
-		    		    
-		    SipConnector sipConnector = StaticServiceHolder.sipStandardService.findSipConnector(transport);		    		    		   
+			if(logger.isDebugEnabled()) {
+				logger.debug("The found transport for sending request is '" + transport + "'");
+			}
+
+			SipConnector sipConnector = StaticServiceHolder.sipStandardService.findSipConnector(transport);	
 			ExtendedListeningPoint matchingListeningPoint = sipNetworkInterfaceManager.findMatchingListeningPoint(
-					transport, false);					
-			
+					transport, false);
+			final SipProvider sipProvider = matchingListeningPoint.getSipProvider();
+
+
 			//we update the via header after the sip connector has been found for the correct transport
 			checkViaHeaderUpdateForStaticExternalAddressUsage(sipConnector);
 			
@@ -1024,7 +1040,6 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				getSipSession().getSipApplicationSession().getSipContext().getSipManager().dumpSipSessions();
 			}
 			if (super.getTransaction() == null) {				
-				final SipProvider sipProvider = matchingListeningPoint.getSipProvider();
 				setSystemContactHeader(sipConnector, matchingListeningPoint, transport); 
 				/* 
 				 * If we the next hop is in this container we optimize the traffic by directing it here instead of going through load balancers.
@@ -1044,23 +1059,32 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 					// take care of the RRH
 					if(isInitial()) {
 						if(session.getProxy().getRecordRoute()) {
-							RecordRouteHeader rrh = (RecordRouteHeader) request.getHeader(RecordRouteHeader.NAME);
-							if(rrh == null) {
-								if(logger.isDebugEnabled()) {
-									logger.debug("Unexpected RRH = null for this request" + request);
-								}
-							} else {
-								javax.sip.address.URI uri = rrh.getAddress().getURI();
-								if(uri.isSipURI()) {
-									javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
-									if(sipConnector != null && sipConnector.isUseStaticAddress()) {
-										sipUri.setHost(sipConnector.getStaticServerAddress());
-										sipUri.setPort(sipConnector.getStaticServerPort());
-										sipUri.setTransportParam(transport);
-										if(logger.isDebugEnabled()) {
-											logger.debug("Updated the RRH with static server address " + sipUri);
+							ListIterator li = request.getHeaders(RecordRouteHeader.NAME);
+							while(li.hasNext()) {
+								RecordRouteHeader rrh = (RecordRouteHeader) li.next();
+								if(rrh == null) {
+									if(logger.isDebugEnabled()) {
+										logger.debug("Unexpected RRH = null for this request" + request);
+									}
+								} else {
+									javax.sip.address.URI uri = rrh.getAddress().getURI();
+									if(uri.isSipURI()) {
+										
+										javax.sip.address.SipURI sipUri = (javax.sip.address.SipURI) uri;
+										String nextApp = sipUri.getParameter(MessageDispatcher.RR_PARAM_APPLICATION_NAME);
+										final SipApplicationSessionKey sipAppKey = getSipSession().getSipApplicationSession().getKey();
+										final String thisApp = sipFactoryImpl.getSipApplicationDispatcher().getHashFromApplicationName(sipAppKey.getApplicationName());
+										if(thisApp.equals(nextApp)) {
+											if(sipConnector != null && sipConnector.isUseStaticAddress()) {
+												sipUri.setHost(sipConnector.getStaticServerAddress());
+												sipUri.setPort(sipConnector.getStaticServerPort());
+											}
+											//sipUri.setTransportParam(transport);
+											if(logger.isDebugEnabled()) {
+												logger.debug("Updated the RRH with static server address " + sipUri);
+											}
 										}
-									}																		
+									}
 								}
 							}
 						}
@@ -1096,8 +1120,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				super.setTransaction(ctx);
 				session.setSessionCreatingTransactionRequest(this);
 
-			} else if (Request.PRACK.equals(request.getMethod())) {
-				final SipProvider sipProvider = matchingListeningPoint.getSipProvider();				
+			} else if (Request.PRACK.equals(request.getMethod())) {			
 				final ClientTransaction ctx = sipProvider.getNewClientTransaction(request);
 				JainSipUtils.setTransactionTimers((TransactionExt) ctx, sipFactoryImpl.getSipApplicationDispatcher());
 				
@@ -1346,6 +1369,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 				if(sipConnector != null && sipConnector.isUseStaticAddress()) {
 					contactSipUri.setHost(sipConnector.getStaticServerAddress());
 					contactSipUri.setPort(sipConnector.getStaticServerPort());
+					contactSipUri.setUser(null);
 				} else {
 					boolean usePublicAddress = JainSipUtils.findUsePublicAddress(
 							sipNetworkInterfaceManager, request, matchingListeningPoint);
@@ -1964,11 +1988,16 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	/**
 	 * {@inheritDoc}
 	 */
-	public String getInitialRemoteAddr() {		
-		if(((SIPTransaction)getTransaction()).getPeerPacketSourceAddress() != null) {
-			return ((SIPTransaction)getTransaction()).getPeerPacketSourceAddress().getHostAddress();
+	public String getInitialRemoteAddr() {	
+		if(getTransaction() != null) {
+			if(((SIPTransaction)getTransaction()).getPeerPacketSourceAddress() != null) {
+				return ((SIPTransaction)getTransaction()).getPeerPacketSourceAddress().getHostAddress();
+			} else {
+				return ((SIPTransaction)getTransaction()).getPeerAddress();
+			}
 		} else {
-			return ((SIPTransaction)getTransaction()).getPeerAddress();
+			ViaHeader via = (ViaHeader) message.getHeader(ViaHeader.NAME);
+			return via.getHost();
 		}
 	}
 
@@ -1976,18 +2005,29 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	 * {@inheritDoc}
 	 */
 	public int getInitialRemotePort() {		
-		if(((SIPTransaction)getTransaction()).getPeerPacketSourceAddress() != null) {
-			return ((SIPTransaction)getTransaction()).getPeerPacketSourcePort();
-		} else {
-			return ((SIPTransaction)getTransaction()).getPeerPort();
+		if(getTransaction() != null) {
+			if(((SIPTransaction)getTransaction()).getPeerPacketSourceAddress() != null) {
+				return ((SIPTransaction)getTransaction()).getPeerPacketSourcePort();
+			} else {
+				return ((SIPTransaction)getTransaction()).getPeerPort();
+			}
+		}else {
+			ViaHeader via = (ViaHeader) message.getHeader(ViaHeader.NAME);
+			return via.getPort()<=0 ? 5060 : via.getPort();
 		}
+		
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public String getInitialTransport() {		
-		return ((SIPTransaction)getTransaction()).getTransport();
+		if(getTransaction() != null) {
+			return ((SIPTransaction)getTransaction()).getTransport();
+		} else {
+			ViaHeader via = (ViaHeader) message.getHeader(ViaHeader.NAME);
+			return via.getTransport();
+		}
 	}
 	
 	public void cleanUp() {

@@ -20,28 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/*
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
 package org.mobicents.servlet.sip.proxy;
 
 import gov.nist.javax.sip.header.HeaderFactoryExt;
+import gov.nist.javax.sip.header.Via;
 import gov.nist.javax.sip.header.ims.PathHeader;
 import gov.nist.javax.sip.message.MessageExt;
-import gov.nist.javax.sip.message.SIPMessage;
 import gov.nist.javax.sip.stack.SIPTransaction;
 
 import java.util.Iterator;
@@ -50,10 +34,12 @@ import javax.servlet.sip.SipURI;
 import javax.servlet.sip.URI;
 import javax.sip.ListeningPoint;
 import javax.sip.Transaction;
+import javax.sip.TransactionState;
 import javax.sip.address.Address;
 import javax.sip.header.Header;
 import javax.sip.header.MaxForwardsHeader;
 import javax.sip.header.RecordRouteHeader;
+import javax.sip.header.RouteHeader;
 import javax.sip.header.ViaHeader;
 import javax.sip.message.Request;
 import javax.sip.message.Response;
@@ -85,23 +71,42 @@ public class ProxyUtils {
 			final String method = clonedRequest.getMethod();
 			final ProxyImpl proxy = (ProxyImpl) proxyBranch.getProxy(); 
 			final SipFactoryImpl sipFactoryImpl = proxy.getSipFactoryImpl();
-			((SIPMessage)clonedRequest).setApplicationData(null);
+			((MessageExt)clonedRequest).setApplicationData(null);
 
+
+			String outboundTransport = null;
+
+			RouteHeader rHeader = (RouteHeader) clonedRequest.getHeader(RouteHeader.NAME);
+			if(rHeader != null) {
+				String nextApp = ((javax.sip.address.SipURI)rHeader.getAddress().getURI()).getParameter(MessageDispatcher.RR_PARAM_APPLICATION_NAME);
+				if(nextApp != null) {
+					final SipApplicationSessionKey sipAppKey = originalRequest.getSipSession().getSipApplicationSession().getKey();
+					final String thisApp = sipFactoryImpl.getSipApplicationDispatcher().getHashFromApplicationName(sipAppKey.getApplicationName());
+					outboundTransport = ((javax.sip.address.SipURI)rHeader.getAddress().getURI()).getTransportParam();
+					if(outboundTransport == null) {
+						outboundTransport = ListeningPoint.UDP;
+					}
+					if(nextApp.equals(thisApp)) {
+						clonedRequest.removeHeader(RouteHeader.NAME);
+					}
+				}
+			}
 			
-			String outboundTransport = JainSipUtils.findTransport(clonedRequest);
-			
+			String inboundTransport = ((ViaHeader)clonedRequest.getHeader(Via.NAME)).getTransport();
+			if(inboundTransport == null) inboundTransport = ListeningPoint.UDP;
+
+			/*
+			 * The outbound transport has nothing to do with outbound interface
 			if(proxy.getOutboundInterface() != null) {
 				outboundTransport = proxy.getOutboundInterface().getTransportParam();
 				if(outboundTransport == null) {
 					if(proxy.getOutboundInterface().isSecure()) {
-						outboundTransport =  ListeningPoint.TCP;
+						outboundTransport =  ListeningPoint.TLS;
 					} else {
 						outboundTransport =  ListeningPoint.UDP;
 					}
 				}
-			}
-			if(outboundTransport == null) outboundTransport = originalRequest.getSipSession().getTransport();
-			if(outboundTransport == null) outboundTransport = ListeningPoint.UDP;
+			}*/
 			
 			// The target is null when proxying subsequent requests (the Route header is already there)
 			if(destination != null)
@@ -188,70 +193,120 @@ public class ProxyUtils {
 			} 
 			final SipApplicationSessionKey sipAppKey = originalRequest.getSipSession().getSipApplicationSession().getKey();
 			final String appName = sipFactoryImpl.getSipApplicationDispatcher().getHashFromApplicationName(sipAppKey.getApplicationName());
-			final SipServletRequestImpl proxyBranchRequest = (SipServletRequestImpl) proxyBranch.getRequest();
+			final SipServletRequestImpl proxyBranchMatchingRequest = (SipServletRequestImpl) proxyBranch.getMatchingRequest(originalRequest);
 			//Add via header
-			ViaHeader viaHeader = null;//proxyBranch.viaHeader;
-			if(viaHeader == null) {
-				if(proxy.getOutboundInterface() == null) {
-					String branchId = null;
-
-					if(Request.ACK.equals(method) && proxyBranchRequest != null && proxyBranchRequest.getTransaction() != null) {
-						branchId = proxyBranchRequest.getTransaction().getBranchId();
-						logger.debug("reusing original branch id " + branchId);
-					}
-					// Issue 					
-					viaHeader = JainSipUtils.createViaHeader(
-							sipFactoryImpl.getSipNetworkInterfaceManager(), clonedRequest, branchId, null);
-				} else { 
-					//If outbound interface is specified use it
-					
-					String branchId = null;
-
-					if(Request.ACK.equals(method) && proxyBranchRequest != null && proxyBranchRequest.getTransaction() != null) {
-						branchId = proxyBranchRequest.getTransaction().getBranchId();
-						logger.debug("reusing original branch id " + branchId);
-					}
-
-					viaHeader = SipFactories.headerFactory.createViaHeader(
-							proxy.getOutboundInterface().getHost(),
-							proxy.getOutboundInterface().getPort(),
-							outboundTransport,
-							branchId);
-				}
-				proxyBranch.viaHeader = viaHeader;
-			} else {
+			if(outboundTransport == null && destination != null) {
+				outboundTransport = destination.getParameter("transport");
+			}
+			if(proxy.getOutboundInterface() == null) {
 				String branchId = null;
-				viaHeader = (ViaHeader) viaHeader.clone();
-				if(Request.ACK.equals(method) && proxyBranchRequest != null && proxyBranchRequest.getTransaction() != null) {
-					branchId = proxyBranchRequest.getTransaction().getBranchId();
+				
+				// http://code.google.com/p/mobicents/issues/detail?id=2359
+				// ivan dubrov : TERMINATED state checking to avoid reusing the branchid for ACK to 200 
+				if(Request.ACK.equals(method) && proxyBranchMatchingRequest != null && proxyBranchMatchingRequest.getTransaction() != null
+						&& proxyBranchMatchingRequest.getTransaction().getState() != TransactionState.TERMINATED) {
+					branchId = proxyBranchMatchingRequest.getTransaction().getBranchId();
 					logger.debug("reusing original branch id " + branchId);
 				} else {
-					branchId = JainSipUtils.createBranch(sipAppKey.getId(), appName);
+					branchId = JainSipUtils.createBranch(sipAppKey.getId(),  appName);
 				}
-				viaHeader.setBranch(branchId);
+				// Issue 					
+				proxyBranch.viaHeader = JainSipUtils.createViaHeader(
+						sipFactoryImpl.getSipNetworkInterfaceManager(), clonedRequest, branchId, null);
+			} else { 
+				//If outbound interface is specified use it
+				String branchId = null;
+				
+				if(outboundTransport == null) {
+					outboundTransport = proxy.getOutboundInterface().getTransportParam();
+					if(outboundTransport == null) {
+						if(proxy.getOutboundInterface().isSecure()) {
+							outboundTransport =  ListeningPoint.TLS;
+						} else {
+							outboundTransport =  ListeningPoint.UDP;
+						}
+					}
+				}
+
+				// http://code.google.com/p/mobicents/issues/detail?id=2359
+				// ivan dubrov : TERMINATED state checking to avoid reusing the branchid for ACK to 200
+				if(Request.ACK.equals(method) && proxyBranchMatchingRequest != null && proxyBranchMatchingRequest.getTransaction() != null
+						&& proxyBranchMatchingRequest.getTransaction().getState() != TransactionState.TERMINATED) {
+					branchId = proxyBranchMatchingRequest.getTransaction().getBranchId();
+					logger.debug("reusing original branch id " + branchId);
+				} else {
+					branchId = JainSipUtils.createBranch(sipAppKey.getId(),  appName);
+				}
+
+				proxyBranch.viaHeader = SipFactories.headerFactory.createViaHeader(
+						proxy.getOutboundInterface().getHost(),
+						proxy.getOutboundInterface().getPort(),
+						outboundTransport,
+						branchId);
 			}
 
-			clonedRequest.addHeader(viaHeader);				
+			clonedRequest.addHeader(proxyBranch.viaHeader);		
+			
+			if(outboundTransport == null) outboundTransport = ListeningPoint.UDP;
+			
+			// Correction for misbehaving clients and unit testing
+			if(clonedRequest.getHeader(RouteHeader.NAME) == null) {
+				if(clonedRequest.getRequestURI().isSipURI()) {
+					javax.sip.address.SipURI sipURI = ((javax.sip.address.SipURI)clonedRequest.getRequestURI());
+					String transportFromURI = sipURI.getTransportParam();
+					if(transportFromURI == null) transportFromURI = ListeningPoint.UDP;
+					if(!transportFromURI.equalsIgnoreCase(outboundTransport)) 
+						sipURI.setTransportParam(outboundTransport);
+				}
+			}
 			
 			
 			//Add route-record header, if enabled and if needed (if not null)
 			if(routeRecord != null && !Request.REGISTER.equalsIgnoreCase(method)) {
+				if(!inboundTransport.equalsIgnoreCase(outboundTransport)) {
+					javax.sip.address.SipURI inboundRURI = JainSipUtils.createRecordRouteURI(sipFactoryImpl.getSipNetworkInterfaceManager(), clonedRequest, inboundTransport);
+					if(originalRequest.getTransport() != null) inboundRURI.setTransportParam(originalRequest.getTransport());
+					final Iterator<String> paramNames = routeRecord.getParameterNames();
+					// Copy the parameters set by the user
+					while(paramNames.hasNext()) {
+						String paramName = paramNames.next();
+						if(!paramName.equalsIgnoreCase("transport")) {
+							inboundRURI.setParameter(paramName,
+									routeRecord.getParameter(paramName));
+						}
+					}
+
+					inboundRURI.setParameter(MessageDispatcher.RR_PARAM_APPLICATION_NAME,
+							appName);
+					inboundRURI.setParameter(MessageDispatcher.RR_PARAM_PROXY_APP,
+					"true");				
+					inboundRURI.setParameter(MessageDispatcher.APP_ID, sipAppKey.getId());
+					inboundRURI.setLrParam();
+
+					final Address rraddress = SipFactories.addressFactory
+					.createAddress(null, inboundRURI);
+					final RecordRouteHeader recordRouteHeader = SipFactories.headerFactory
+					.createRecordRouteHeader(rraddress);
+
+					clonedRequest.addFirst(recordRouteHeader);
+				}
 				javax.sip.address.SipURI rrURI = null;
 				if(proxy.getOutboundInterface() == null) {
-					rrURI = JainSipUtils.createRecordRouteURI(sipFactoryImpl.getSipNetworkInterfaceManager(), clonedRequest);
+					rrURI = JainSipUtils.createRecordRouteURI(sipFactoryImpl.getSipNetworkInterfaceManager(), clonedRequest, outboundTransport);
 				} else {
 					rrURI = ((SipURIImpl) proxy.getOutboundInterface()).getSipURI();
+					rrURI.setTransportParam(outboundTransport);
 				}
-				
-				if(originalRequest.getTransport() != null) rrURI.setTransportParam(originalRequest.getTransport());
 				
 				final Iterator<String> paramNames = routeRecord.getParameterNames();
 				
 				// Copy the parameters set by the user
 				while(paramNames.hasNext()) {
 					String paramName = paramNames.next();
-					rrURI.setParameter(paramName,
-							routeRecord.getParameter(paramName));
+					if(!paramName.equalsIgnoreCase("transport")) {
+						rrURI.setParameter(paramName,
+								routeRecord.getParameter(paramName));
+					}
 				}
 								
 				rrURI.setParameter(MessageDispatcher.RR_PARAM_APPLICATION_NAME,

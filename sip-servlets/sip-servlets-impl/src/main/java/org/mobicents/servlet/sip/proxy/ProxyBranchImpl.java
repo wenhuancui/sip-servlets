@@ -20,27 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/*
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
 package org.mobicents.servlet.sip.proxy;
 
 import gov.nist.javax.sip.TransactionExt;
 import gov.nist.javax.sip.header.Via;
-import gov.nist.javax.sip.message.SIPMessage;
+import gov.nist.javax.sip.message.MessageExt;
 import gov.nist.javax.sip.stack.SIPClientTransaction;
 
 import java.io.Externalizable;
@@ -51,6 +35,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -80,9 +65,11 @@ import org.mobicents.servlet.sip.address.SipURIImpl;
 import org.mobicents.servlet.sip.core.RoutingState;
 import org.mobicents.servlet.sip.core.SipApplicationDispatcher;
 import org.mobicents.servlet.sip.core.SipNetworkInterfaceManager;
+import org.mobicents.servlet.sip.core.dispatchers.DispatcherException;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
 import org.mobicents.servlet.sip.message.SipFactoryImpl;
+import org.mobicents.servlet.sip.message.SipServletMessageImpl;
 import org.mobicents.servlet.sip.message.SipServletRequestImpl;
 import org.mobicents.servlet.sip.message.SipServletResponseImpl;
 import org.mobicents.servlet.sip.message.TransactionApplicationData;
@@ -99,6 +86,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	private transient ProxyImpl proxy;
 	private transient SipServletRequestImpl originalRequest;
 	private transient SipServletRequestImpl prackOriginalRequest;
+	// From javadoc : object representing the request that is or to be proxied.
 	private transient SipServletRequestImpl outgoingRequest;
 	private transient SipServletResponseImpl lastResponse;
 	private URI targetURI;
@@ -167,7 +155,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		// will clone this request (with it's custome headers and routes), but we will override
 		// the modified RR and Path parameters (as defined in the spec).
 		Request cloned = (Request)originalRequest.getMessage().clone();
-		((SIPMessage)cloned).setApplicationData(null);
+		((MessageExt)cloned).setApplicationData(null);
 		this.outgoingRequest = new SipServletRequestImpl(
 				cloned,
 				proxy.getSipFactoryImpl(),
@@ -285,6 +273,38 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		recursedBranches.add(branch);
 	}
 
+	/**
+	 * from the given request in param, find the current corresponding matching forwarded orginal request
+	 * For a given ACK by example, there might be an UPDATE in between which make the outgoing requet not the INVITE one and can mess up
+	 * the branch id generation for the ACK (200 OK would have had the same branch id as UPDATE) 
+	 */
+	public SipServletRequestImpl getMatchingRequest(
+			SipServletRequestImpl request) {
+		if(request.getMethod().equals(Request.ACK)) {
+			Iterator<TransactionApplicationData> ongoingTransactions = proxy.getTransactionMap().values().iterator();
+			// Issue 1837 http://code.google.com/p/mobicents/issues/detail?id=1837
+			// ACK was received by JAIN-SIP but was not routed to application
+			// we need to go through the set of all ongoing tx since and INFO request can be received before a reINVITE tx has been completed
+			if(ongoingTransactions != null) {
+				if(logger.isDebugEnabled()) {
+                    logger.debug("going through all tx to check if we have the matching request to the ACK for branchId");
+                }
+				while (ongoingTransactions.hasNext()) {
+					TransactionApplicationData transactionApplicationData = ongoingTransactions.next();					
+					final SipServletMessageImpl sipServletMessage = transactionApplicationData.getSipServletMessage();
+					if(sipServletMessage != null && sipServletMessage instanceof SipServletRequestImpl && 
+							((MessageExt)request.getMessage()).getCSeqHeader().getSeqNumber() == ((MessageExt)sipServletMessage.getMessage()).getCSeqHeader().getSeqNumber() && 
+							((MessageExt)request.getMessage()).getCallIdHeader().getCallId().equals(((MessageExt)sipServletMessage.getMessage()).getCallIdHeader().getCallId())) {
+						return (SipServletRequestImpl)sipServletMessage;
+					}
+				}
+			}
+			return outgoingRequest;
+		} else {
+			return outgoingRequest;
+		}		
+	}
+	
 	/* (non-Javadoc)
 	 * @see javax.servlet.sip.ProxyBranch#getRequest()
 	 */
@@ -450,8 +470,9 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	 * A callback. Here we receive all responses from the proxied requests we have sent.
 	 * 
 	 * @param response
+	 * @throws DispatcherException 
 	 */
-	public void onResponse(final SipServletResponseImpl response, final int status)
+	public void onResponse(final SipServletResponseImpl response, final int status) throws DispatcherException
 	{
 		// If we are canceled but still receiving provisional responses try to cancel them
 		if(canceled && status < 200) {
@@ -476,7 +497,8 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		}
 		
 		// Send informational responses back immediately
-		if((status > 100 && status < 200) || (status == 200 && Request.PRACK.equals(response.getMethod())))
+		if((status > 100 && status < 200) || (status == 200 &&
+				(Request.PRACK.equals(response.getMethod()) || Request.UPDATE.equals(response.getMethod()))))
 		{
 			// Deterimine if the response is reliable. We just look at RSeq, because
 			// every such response is required to have it.
@@ -510,6 +532,10 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 					logger.debug("Proxy response sent out sucessfully");
 			} catch (Exception e) {
 				logger.error("A problem occured while proxying a response", e);
+			}
+			if(status == 200 &&
+				(Request.PRACK.equals(response.getMethod()) || Request.UPDATE.equals(response.getMethod()))) {
+				updateTimer(true);
 			}
 			
 			if(logger.isDebugEnabled())
@@ -550,7 +576,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 					throw new IllegalArgumentException("Can not parse contact header", e);
 				}
 			}
-		}
+		}		
 		if(status >= 200 && !recursed)
 		{
 			
@@ -561,7 +587,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 				this.proxy.onFinalResponse(this);
 			} else {
 				if(logger.isDebugEnabled())
-					logger.debug("Handling final response for non-initial request");
+					logger.debug("Handling final response for non-initial request");				
 				this.proxy.sendFinalResponse(response, this);
 			}
 		}
@@ -764,6 +790,18 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 			appData.setProxyBranch(this);
 			ctx.setApplicationData(appData);
 			
+			final SipServletRequestImpl clonedSipServletRequest = new SipServletRequestImpl(
+					clonedRequest,
+					proxy.getSipFactoryImpl(),
+					sipSession,
+					ctx, null, false);
+			appData.setSipServletMessage(clonedSipServletRequest);
+					 			
+			clonedSipServletRequest.setRoutingState(RoutingState.SUBSEQUENT);
+			// make sure to store the outgoing request to make sure the branchid for a ACK to a future reINVITE if this one is INFO
+			// by example will have the correct branchid and not the one from the INFO
+			this.outgoingRequest = clonedSipServletRequest;
+			
 			ctx.sendRequest();
 		} catch (Exception e) {
 			logger.error("A problem occured while proxying a request " + request + " in a dialog-stateless transaction", e);
@@ -774,9 +812,10 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	/**
 	 * This callback is called when the remote side has been idle too long while
 	 * establishing the dialog.
+	 * @throws DispatcherException 
 	 *
 	 */
-	public void onTimeout(ResponseType responseType)
+	public void onTimeout(ResponseType responseType) throws DispatcherException
 	{
 		if(!proxy.getAckReceived()) {
 			this.cancel();
@@ -792,6 +831,7 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 			}
 			// Just do a timeout response
 			proxy.onBranchTimeOut(this);
+			logger.warn("Proxy branch has timed out");
 		} else {
 			logger.debug("ACKed proxybranch has timeout");
 		}
@@ -1073,13 +1113,6 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	}
 
 	/**
-	 * @return the outgoingRequest
-	 */
-	public SipServletRequestImpl getOutgoingRequest() {
-		return outgoingRequest;
-	}
-
-	/**
 	 * @param originalRequest the originalRequest to set
 	 */
 	public void setOriginalRequest(SipServletRequestImpl originalRequest) {
@@ -1106,5 +1139,5 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 	public URI getTargetURI() {
 		return targetURI;
 	}
-	
+
 }
