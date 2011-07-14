@@ -23,6 +23,7 @@
 package org.mobicents.tools.sip.balancer;
 
 import gov.nist.javax.sip.SipStackImpl;
+import gov.nist.javax.sip.header.HeaderFactoryImpl;
 import gov.nist.javax.sip.header.SIPHeader;
 
 import java.text.ParseException;
@@ -194,6 +195,10 @@ public class SIPBalancerForwarder implements SipListener {
 
         try {
         	balancerRunner.balancerContext.headerFactory = sipFactory.createHeaderFactory();
+        	boolean usePrettyEncoding = Boolean.valueOf(balancerRunner.balancerContext.properties.getProperty("usePrettyEncoding", "false"));
+        	if(usePrettyEncoding) {
+				((HeaderFactoryImpl)balancerRunner.balancerContext.headerFactory).setPrettyEncoding(true);
+			}
         	balancerRunner.balancerContext.addressFactory = sipFactory.createAddressFactory();
         	balancerRunner.balancerContext.messageFactory = sipFactory.createMessageFactory();
 
@@ -677,14 +682,16 @@ public class SIPBalancerForwarder implements SipListener {
 						originalRouteHeaderUri = (SipURI) assignedUri.clone();
 						request.removeFirst(RouteHeader.NAME);
 					} else {
-						SipURI sipUri =(SipURI) request.getRequestURI();
-						//nextNodeInRequestUri = true;
-						assignedNode = getAliveNode(sipUri.getHost(), sipUri.getPort(), transport);
+						if(request.getRequestURI() instanceof SipURI) {
+							SipURI sipUri =(SipURI) request.getRequestURI();
+							//nextNodeInRequestUri = true;
+							assignedNode = getAliveNode(sipUri.getHost(), sipUri.getPort(), transport);
+						}
 					}
 					if(logger.isLoggable(Level.FINEST)) {
 			    		logger.finest("Subsequent request -> Found Route Header " + header + " |Next node is " + assignedNode);
 			    	}
-				} else {
+				} else if(request.getRequestURI() instanceof SipURI) {
 					SipURI sipUri =(SipURI) request.getRequestURI();
 					//nextNodeInRequestUri = true;
 					assignedNode = getAliveNode(sipUri.getHost(), sipUri.getPort(), transport);
@@ -961,6 +968,14 @@ public class SIPBalancerForwarder implements SipListener {
 		        }
 		    }	                
 		}
+		
+		if(node == null) {
+			if(request.getRequestURI().isSipURI()) {
+				node = checkRouteHeaderForSipNode((SipURI) request.getRequestURI());
+			}
+		}
+		
+		//logger.info(request.ge + " has this hint " + node);
 
 		return new RouteHeaderHints(node, subsequent);
 	}
