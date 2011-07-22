@@ -235,9 +235,6 @@ public class ResourceAdaptorObjectImpl implements ResourceAdaptorObject {
 			logger.trace("raActive()");
 		}
 		
-		Marshaler realMarshaler = object.getMarshaler();
-		this.marshaler = realMarshaler == null ? null : new MarshallerWrapper(realMarshaler, raEntity);
-		
 		if (state == ResourceAdaptorObjectState.INACTIVE) {
 			state = ResourceAdaptorObjectState.ACTIVE;
 			object.raActive();			
@@ -368,6 +365,12 @@ public class ResourceAdaptorObjectImpl implements ResourceAdaptorObject {
 			logger.trace("getMarshaler()");
 		}
 		
+		if (marshaler == null) {
+			Marshaler realMarshaler = object.getMarshaler();
+			marshaler = realMarshaler == null ? null : new MarshallerWrapper(
+					realMarshaler, raEntity);
+		}
+
 		return marshaler;
 	}
 

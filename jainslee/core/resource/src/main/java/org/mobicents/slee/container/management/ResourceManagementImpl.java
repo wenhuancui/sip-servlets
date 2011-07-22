@@ -1042,7 +1042,10 @@ public final class ResourceManagementImpl extends AbstractSleeContainerModule im
 	@Override
 	public void sleeStarting() {
 		super.sleeStarting();
-		
+		if (!sleeContainer.getCluster().getMobicentsCache().isLocalMode()) {
+			handleReferenceFactory = new ActivityHandleReferenceFactory(this);
+			handleReferenceFactory.init();
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -1050,11 +1053,7 @@ public final class ResourceManagementImpl extends AbstractSleeContainerModule im
 	 */
 	@Override
 	public void afterSleeRunning() {
-		super.afterSleeRunning();
-		if (!sleeContainer.getCluster().getMobicentsCache().isLocalMode()) {
-			handleReferenceFactory = new ActivityHandleReferenceFactory(this);
-			handleReferenceFactory.init();
-		}
+		super.afterSleeRunning();		
 		for (ResourceAdaptorEntity raEntity : resourceAdaptorEntities.values()) {
 			try {
 				raEntity.sleeRunning();
