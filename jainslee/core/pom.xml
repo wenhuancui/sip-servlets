@@ -52,6 +52,9 @@
 		<slee.version>${pom.version}</slee.version>
 		<!-- OTHER MOBICENTS COMPONENTS VERSIONS -->
 		<mobicents.cluster.version>5.0.1.GA-JBCP5</mobicents.cluster.version>
+		<mobicents.tools.mavenplugin.du.version>5.1.0.GA-JBCP5</mobicents.tools.mavenplugin.du.version>
+		<mobicents.tools.mavenplugin.library.version>5.1.0.GA-JBCP5</mobicents.tools.mavenplugin.library.version>
+		<mobicents.tools.mavenplugin.eclipse.version>5.1.0.GA-JBCP5</mobicents.tools.mavenplugin.eclipse.version>
 	</properties>
 	
 	<dependencyManagement>

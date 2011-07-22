@@ -44,9 +44,7 @@
 					<execution>
 						<phase>generate-resources</phase>
 						<goals>
-							<goal>copy-dependencies</goal>
-							<goal>generate-descriptor</goal>
-							<goal>generate-ant-management-script</goal>
+							<goal>create</goal>
 						</goals>
 					</execution>
 				</executions>
