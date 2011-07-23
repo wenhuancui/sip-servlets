@@ -1077,10 +1077,6 @@ public final class ResourceManagementImpl extends AbstractSleeContainerModule im
 	@Override
 	public void sleeStopped() {
 		super.sleeStopped();
-		if (handleReferenceFactory != null) {
-			handleReferenceFactory.remove();
-			handleReferenceFactory = null;
-		}
 	}
 	
 	private void stopResourceAdaptors() {
