@@ -1833,10 +1833,12 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 			ClassNotFoundException {		
 		sipFactoryImpl = (SipFactoryImpl) in.readObject();
 		String sessionKeyString = in.readUTF();
-		try {
-			sessionKey = SessionManagerUtil.parseSipSessionKey(sessionKeyString);
-		} catch (ParseException e) {
-			throw new IllegalArgumentException("SIP Sesion Key " + sessionKeyString + " previously serialized could not be reparsed", e);
+		if (sessionKeyString.length() > 0) {
+			try {
+				sessionKey = SessionManagerUtil.parseSipSessionKey(sessionKeyString);
+			} catch (ParseException e) {
+				throw new IllegalArgumentException("SIP Sesion Key " + sessionKeyString + " previously serialized could not be reparsed", e);
+			}
 		}
 		int attributesSize = in.readInt();
 		if(attributesSize > 0) {
@@ -1848,14 +1850,17 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 				attributes.put(key, value);
 			}
 		}
-		transactionApplicationData = (TransactionApplicationData) in.readObject();
+		if(in.readBoolean()) {
+			transactionApplicationData = (TransactionApplicationData) in.readObject();
+		}
 		headerForm = HeaderForm.valueOf(in.readUTF());
 		currentApplicationName = in.readUTF();
 		if(currentApplicationName.equals("")) {
 			currentApplicationName = null;
 		}
 		isMessageSent = in.readBoolean();
-		if(((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {
+		if(StaticServiceHolder.sipStandardService.getSipStack() instanceof ClusteredSipStack && 
+				((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {		
 			transactionId = in.readUTF();
 			if(transactionId != null) {
 				if(transactionId.equals("")) {
@@ -1876,9 +1881,13 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 		if(sessionKey != null) {
 			out.writeUTF(sessionKey.toString());
 		} else {
-			out.writeUTF(sipSession.getId());
+			if (null == sipSession) {
+				out.writeUTF("");
+			} else {
+				out.writeUTF(sipSession.getId());
+			}
 		}
-		if(attributes != null) {
+		if(attributes != null && attributes.size() > 0) {
 			out.writeInt(attributes.size());
 			Object[][] attributesArray = new Object[2][attributes.size()];
 			int i = 0;
@@ -1891,7 +1900,12 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 		} else {
 			out.writeInt(0);
 		}
-		out.writeObject(transactionApplicationData);
+		if(transactionApplicationData != null) {
+			out.writeBoolean(true);
+			out.writeObject(transactionApplicationData);
+		} else {
+			out.writeBoolean(false);
+		}
 		out.writeUTF(headerForm.toString());
 		if(currentApplicationName != null) {
 			out.writeUTF(currentApplicationName);
@@ -1899,7 +1913,8 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 			out.writeUTF("");
 		}
 		out.writeBoolean(isMessageSent);
-		if(((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {
+		if(StaticServiceHolder.sipStandardService.getSipStack() instanceof ClusteredSipStack && 
+				((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {
 			if(transaction == null) {
 				out.writeUTF("");
 			} else {
@@ -1907,7 +1922,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 				out.writeBoolean(transaction instanceof ServerTransaction);
 			}
 		}
-		out.writeUTF(message.toString());		
+		out.writeUTF(message.toString());
 	}
 
 	@Override
