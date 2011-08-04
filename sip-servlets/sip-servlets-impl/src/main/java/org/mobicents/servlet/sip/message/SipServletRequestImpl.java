@@ -1034,11 +1034,19 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 								"since no more apps are interested.");
 					}
 					//Adding Route Header for LB if we are in a HA configuration
-					if(sipFactoryImpl.isUseLoadBalancer() && isInitial) {
-						sipFactoryImpl.addLoadBalancerRouteHeader(request);
-						if(logger.isDebugEnabled()) {
-							logger.debug("adding route to Load Balancer since we are in a HA configuration " +
-									" and no more apps are interested.");
+					if(isInitial) {
+						if(sipFactoryImpl.isUseLoadBalancer()) {
+							sipFactoryImpl.addLoadBalancerRouteHeader(request);
+							if(logger.isDebugEnabled()) {
+								logger.debug("adding route to Load Balancer since we are in a HA configuration " +
+								" and no more apps are interested.");
+							}
+						} else if(StaticServiceHolder.sipStandardService.getOutboundProxy() != null) {
+							sipFactoryImpl.addLoadBalancerRouteHeader(request);
+							if(logger.isDebugEnabled()) {
+								logger.debug("adding route to outbound proxy (no load balancer set) since we have outboundProxy configured " +
+								" and no more apps are interested.");
+							}
 						}
 					}
 				}
