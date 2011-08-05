@@ -240,16 +240,17 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 	protected void doBye(SipServletRequest request) throws ServletException,
 			IOException {
 
-		logger.info("Got BYE request:\n" + request);
-		SipServletResponse sipServletResponse = request.createResponse(200);
+		logger.info("Got BYE request:\n" + request);				
+		SipURI fromURI = ((SipURI)request.getFrom().getURI());
 		
 		// If the branchResponse callback was called we are good otherwise fail by
 		// not delivering OK to BYE
 		String doBranchRespValue = (String) request.getApplicationSession().getAttribute("branchResponseReceived");
-		if("true".equals(doBranchRespValue))
+		if("true".equals(doBranchRespValue) && !fromURI.toString().contains("proxy-tcp") && !fromURI.toString().contains("proxy-udp")) {
+			SipServletResponse sipServletResponse = request.createResponse(200);
 			sipServletResponse.send();
-		
-		SipURI fromURI = ((SipURI)request.getFrom().getURI());
+		}
+				
 		logger.info("invalidate when ready "
 				+ request.getApplicationSession().getInvalidateWhenReady());
 		if(fromURI.getUser().equals(CHECK_READY_TO_INVALIDATE)) {
