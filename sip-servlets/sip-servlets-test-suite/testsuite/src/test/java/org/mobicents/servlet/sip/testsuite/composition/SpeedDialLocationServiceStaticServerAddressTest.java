@@ -265,7 +265,8 @@ public class SpeedDialLocationServiceStaticServerAddressTest extends SipServletT
 		
 
 		assertEquals(3, count); // must see exactly 3 via headers in the callee->caller direction
-		assertTrue(ipBalancer.sipMessageWithoutRetrans.size()<=27); // More than 26 messages means the something that should be bypassing is going through it
+		assertTrue(ipBalancer.sipMessageWithoutRetrans.size()<=37); // More than 37 messages means the something that should be bypassing is going through it
+		assertTrue(ipBalancer.sipMessageWithoutRetrans.size()>0);
 		assertTrue(receiver.isAckReceived()); // is the ACK working in the callee->caller direction
 		assertTrue(sender.isAckReceived()); // is the ACK working in the caller->callee direction
 	
@@ -359,7 +360,7 @@ public class SpeedDialLocationServiceStaticServerAddressTest extends SipServletT
 	protected void tearDown() throws Exception {	
 		senderProtocolObjects.destroy();
 		receiverProtocolObjects.destroy();	
-		ipBalancer.stop();
+		if(ipBalancer != null) ipBalancer.stop();
 		logger.info("Test completed");
 		super.tearDown();
 	}
