@@ -80,6 +80,7 @@ import javax.sip.message.Request;
 import javax.sip.message.Response;
 
 import org.apache.log4j.Logger;
+import org.mobicents.javax.servlet.sip.SipServletResponseExt;
 import org.mobicents.servlet.sip.JainSipUtils;
 import org.mobicents.servlet.sip.SipFactories;
 import org.mobicents.servlet.sip.core.RoutingState;
@@ -95,7 +96,7 @@ import org.mobicents.servlet.sip.proxy.ProxyImpl;
  *
  */
 public class SipServletResponseImpl extends SipServletMessageImpl implements
-		SipServletResponse {
+		SipServletResponseExt {
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(SipServletResponseImpl.class);
@@ -110,6 +111,7 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 	//Added for TCK test SipServletResponseTest.testSend101
 	private boolean hasBeenReceived;
 	private boolean isRetransmission;
+	private boolean orphanRequest;
 	
 	// needed for externalizable
 	public SipServletResponseImpl () {}
@@ -846,5 +848,14 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 
 	public boolean isRetransmission() {		
 		return isRetransmission;
+	}
+
+	public boolean isOrphan() {
+		return this.orphanRequest;
+	}
+
+	public void setOrphan(boolean orphan) {
+		this.orphanRequest = orphan;
+		
 	}
 }

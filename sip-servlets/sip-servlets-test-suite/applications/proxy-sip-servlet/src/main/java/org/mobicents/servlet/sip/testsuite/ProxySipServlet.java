@@ -45,6 +45,9 @@ import org.apache.log4j.Logger;
 import org.mobicents.javax.servlet.sip.ProxyBranchListener;
 import org.mobicents.javax.servlet.sip.ProxyExt;
 import org.mobicents.javax.servlet.sip.ResponseType;
+import org.mobicents.javax.servlet.sip.SipFactoryExt;
+import org.mobicents.javax.servlet.sip.SipServletRequestExt;
+import org.mobicents.javax.servlet.sip.SipServletResponseExt;
 
 public class ProxySipServlet extends SipServlet implements SipErrorListener, ProxyBranchListener, SipSessionListener, SipApplicationSessionListener {
 	private static final String ERROR = "ERROR";
@@ -64,7 +67,12 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 		logger.info("the proxy sip servlet has been started");
 		super.init(servletConfig);
 	}
-
+	protected void doAck(SipServletRequest request) {
+		if(request.getFrom().toString().contains("proxy-orphan")) {
+			request.getSession().invalidate();
+			request.getApplicationSession().invalidate();
+		}
+	}
 	/**
 	 * {@inheritDoc}
 	 */
@@ -73,6 +81,17 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 			IOException {
 
 		logger.info("Got request:\n" + request.getMethod());
+		SipServletRequestExt req = (SipServletRequestExt)request;
+		if(req.isOrphan()) return;
+		if(request.getFrom().toString().contains("proxy-orphan")) {
+			SipFactory sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
+			SipFactoryExt sipFactoryExt = (SipFactoryExt) sipFactory;
+			sipFactoryExt.setRouteOrphanRequests(true);
+			Object o = getServletContext().getAttribute(javax.servlet.sip.SipServlet. OUTBOUND_INTERFACES);
+			request.getProxy().setRecordRoute(true);
+			request.getProxy().proxyTo(sipFactory.createURI("sip:a@127.0.0.1:5090;transport=udp"));
+			return;
+		}
 		if(request.getFrom().toString().contains("proxy-tcp")) {
 			SipFactory sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
 			Object o = getServletContext().getAttribute(javax.servlet.sip.SipServlet. OUTBOUND_INTERFACES);
@@ -242,9 +261,13 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 
 		logger.info("Got BYE request:\n" + request);				
 		SipURI fromURI = ((SipURI)request.getFrom().getURI());
+		SipServletRequestExt sipServletRequestExt = (SipServletRequestExt) request;
+		if(sipServletRequestExt.isOrphan()) return;
 		
 		// If the branchResponse callback was called we are good otherwise fail by
 		// not delivering OK to BYE
+		
+		request.getSession(true);
 		String doBranchRespValue = (String) request.getApplicationSession().getAttribute("branchResponseReceived");
 		if("true".equals(doBranchRespValue) && !fromURI.toString().contains("proxy-tcp") && !fromURI.toString().contains("proxy-udp")) {
 			SipServletResponse sipServletResponse = request.createResponse(200);
@@ -266,6 +289,10 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 
 		logger.info("Got response: " + response);
 		logger.info("Sip Session is :" + response.getSession(false));
+		
+		SipServletResponseExt sipServletResponseExt = (SipServletResponseExt) response;
+		if(sipServletResponseExt.isOrphan()) return;
+		
 		if(!"PRACK".equals(response.getMethod()) && response.getProxy() != null && response.getProxy().getOriginalRequest() != null) {
 			logger.info("Original Sip Session is :" + response.getProxy().getOriginalRequest().getSession(false));
 		}

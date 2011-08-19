@@ -545,7 +545,11 @@ public final class JainSipUtils {
 	 * @return
 	 */
 	public static String createBranch(String appSessionId, String appname) {
-		return MessageDispatcher.BRANCH_MAGIC_COOKIE + appSessionId + "_" + appname + "_" + ApplicationRoutingHeaderComposer.randomString();		
+		return createBranch(appSessionId, appname, Long.toString(System.nanoTime()));
+    }
+	
+	public static String createBranch(String appSessionId, String appname, String random) {
+		return MessageDispatcher.BRANCH_MAGIC_COOKIE + appSessionId + "_" + appname + "_" + random;		
     }
 	 
 	/**

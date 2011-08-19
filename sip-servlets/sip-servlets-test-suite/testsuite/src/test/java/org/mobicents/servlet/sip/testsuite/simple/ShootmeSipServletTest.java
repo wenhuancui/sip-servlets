@@ -602,6 +602,19 @@ public class ShootmeSipServletTest extends SipServletTestCase {
 		assertTrue(serverHeader.toString().contains("MobicentsSipServletsServer"));
 	}
 	
+	// test for http://code.google.com/p/mobicents/issues/detail?id=676
+	public void testShootmeOrphanRequests() throws Exception {
+		String fromName = "testOrphanRequest";
+		String fromSipAddress = "sip-servlets.com";
+		SipURI fromAddress = senderProtocolObjects.addressFactory.createSipURI(
+				fromName, fromSipAddress);
+		
+		sender.sendSipRequest("INVITE", fromAddress, fromAddress, null, null, false);		
+		Thread.sleep(TIMEOUT);
+		assertEquals( 500, sender.getFinalResponseStatus());
+		assertTrue(sender.isAckSent());
+	}
+	
 	@Override
 	protected void tearDown() throws Exception {					
 		senderProtocolObjects.destroy();	

@@ -567,7 +567,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 				return sipApplicationSession;
 			}
 		}
-		String applicationName = null;
+		String applicationName = getCurrentApplicationName();
 		if(sessionKey != null) {
 			applicationName = sessionKey.getApplicationName();
 		}

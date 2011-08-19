@@ -53,6 +53,7 @@ import javax.servlet.sip.SipURI;
 import javax.servlet.sip.URI;
 
 import org.apache.log4j.Logger;
+import org.mobicents.javax.servlet.sip.SipFactoryExt;
 import org.mobicents.servlet.sip.core.session.ConvergedSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.core.session.MobicentsSipSession;
@@ -65,7 +66,7 @@ import org.mobicents.servlet.sip.startup.SipContext;
  * @author Jean Deruelle
  *
  */
-public class SipFactoryFacade implements SipFactory, Serializable {
+public class SipFactoryFacade implements SipFactoryExt, Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	private static final Logger logger = Logger.getLogger(SipFactoryFacade.class
@@ -268,5 +269,21 @@ public class SipFactoryFacade implements SipFactory, Serializable {
 	public SipApplicationSession createApplicationSessionByAppName(String arg0) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.javax.servlet.sip.SipFactoryExt#isRouteOrphanRequests()
+	 */
+	public boolean isRouteOrphanRequests() {
+		return sipFactoryImpl.isRouteOrphanRequests();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mobicents.javax.servlet.sip.SipFactoryExt#setRouteOrphanRequest(boolean)
+	 */
+	public void setRouteOrphanRequests(boolean routeOrphanRequets) {
+		sipFactoryImpl.setRouteOrphanRequests(routeOrphanRequets);
 	}
 }
