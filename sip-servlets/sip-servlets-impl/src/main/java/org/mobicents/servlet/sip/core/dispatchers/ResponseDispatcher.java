@@ -39,7 +39,9 @@
 package org.mobicents.servlet.sip.core.dispatchers;
 
 import gov.nist.javax.sip.message.SIPMessage;
+import gov.nist.javax.sip.stack.SIPServerTransaction;
 import gov.nist.javax.sip.stack.SIPTransaction;
+import gov.nist.javax.sip.stack.SIPTransactionStack;
 
 import java.io.IOException;
 import java.util.ListIterator;
@@ -228,12 +230,25 @@ public class ResponseDispatcher extends MessageDispatcher {
 					sipManager.dumpSipSessions();
 				}
 			}	
-			
+
 			if(tmpSession == null) {
-				if(logger.isDebugEnabled()) {
-					logger.debug("Dropping the response since no active sip session has been found for it : " + response + ", it may already have been invalidated");
+				if(sipFactoryImpl.isRouteOrphanRequests()) {
+					try {
+						response.removeFirst(ViaHeader.NAME);
+						callServletForOrphanResponse(sipContext, new SipServletResponseImpl(response, sipFactoryImpl, null, null, dialog, true, false));
+						//sipProvider.sendResponse(response);
+						SIPServerTransaction stx = (SIPServerTransaction) ((SIPTransactionStack)sipProvider.getSipStack()).findTransaction((SIPMessage) response, true);
+						stx.sendMessage((SIPMessage) response);
+					} catch (Exception e) {
+						logger.error("Problem routing orphaned response", e);
+					}
+				} else {
+					if(logger.isDebugEnabled()) {
+						logger.debug("Dropping the response since no active sip session has been found for it : " + response + ", it may already have been invalidated");
+					}
 				}
 				return ;
+				
 			} else {
 				// This piece of code move here due to Proxy-B2bua case for http://code.google.com/p/mobicents/issues/detail?id=1986
 				if(tmpSession.getProxy() == null && sipServletResponse.isRetransmission()) {
