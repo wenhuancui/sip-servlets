@@ -703,20 +703,6 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 		if(proxyBranch.isTimedOut()) {
 			try {
 				SipServletResponseImpl timeoutResponse = (SipServletResponseImpl) originalRequest.createResponse(Response.REQUEST_TIMEOUT);
-				if(logger.isDebugEnabled())
-					logger.debug("Proxy branch has timed out");
-				// Issue 2474 & 2475
-				if(logger.isDebugEnabled())
-					logger.debug("All responses have arrived, sending final response for parallel proxy" );
-				try {
-					MessageDispatcher.callServlet(timeoutResponse);
-				} catch (ServletException e) {				
-					throw new DispatcherException("Unexpected servlet exception while processing the response : " + response, e);					
-				} catch (IOException e) {				
-					throw new DispatcherException("Unexpected io exception while processing the response : " + response, e);
-				} catch (Throwable e) {				
-					throw new DispatcherException("Unexpected exception while processing response : " + response, e);
-				}
 				timeoutResponse.send();
 				return;
 			} catch (IOException e) {
@@ -726,18 +712,6 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 			
 		if(logger.isDebugEnabled())
 					logger.debug("Proxy branch has NOT timed out");
-
-		if(supervised) {
-			try {
-				MessageDispatcher.callServlet(response);
-			} catch (ServletException e) {				
-				throw new DispatcherException("Unexpected servlet exception while processing the response : " + response, e);					
-			} catch (IOException e) {				
-				throw new DispatcherException("Unexpected io exception while processing the response : " + response, e);
-			} catch (Throwable e) {				
-				throw new DispatcherException("Unexpected exception while processing response : " + response, e);
-			}
-		}
 		
 		if(parallel) {
 			if(!allResponsesHaveArrived()) {
