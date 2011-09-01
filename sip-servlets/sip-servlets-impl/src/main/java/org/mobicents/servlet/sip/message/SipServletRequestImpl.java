@@ -964,12 +964,11 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		try {
 			if(logger.isDebugEnabled()) {
 		    	logger.debug("session transport is " + sessionTransport);
-		    }
-			((MessageExt)message).setApplicationData(sessionTransport);									
+		    }								
 						
 			// Because proxy decides transport in different way, it allows inbound and outbound transport to be different.
 			if(session != null && session.getProxy() == null) {
-				((MessageExt)message).setApplicationData(session.getTransport());			
+				((MessageExt)message).setApplicationData(sessionTransport);			
 			}		
 			
 			if(Request.CANCEL.equals(requestMethod)) {

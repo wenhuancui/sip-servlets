@@ -211,6 +211,9 @@ public class ProxyUtils {
 			if(outboundTransport == null && destination != null) {
 				outboundTransport = destination.getParameter("transport");
 			}
+			
+			((MessageExt)clonedRequest).setApplicationData(outboundTransport);
+			
 			if(proxy.getOutboundInterface() == null) {
 				String branchId = null;
 				
