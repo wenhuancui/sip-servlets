@@ -880,7 +880,7 @@ public class SipFactoryImpl implements Externalizable {
 		if(useLoadBalancer) {
 			loadBalancerToUse = (SipLoadBalancer) in.readObject();
 		}
-		sipApplicationDispatcher = StaticServiceHolder.sipStandardService.getSipApplicationDispatcher();
+		sipApplicationDispatcher = StaticServiceHolder.getSipStandardServiceBlocking().getSipApplicationDispatcher();
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {

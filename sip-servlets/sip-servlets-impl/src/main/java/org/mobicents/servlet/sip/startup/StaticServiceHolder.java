@@ -39,6 +39,18 @@ import org.apache.log4j.Logger;
  */
 public class StaticServiceHolder {
 	public static SipStandardService sipStandardService;
+	public static SipStandardService getSipStandardServiceBlocking() {
+		int attempts = 300;
+		while((sipStandardService == null || sipStandardService.getSipStack() == null) && attempts-->0) {
+			try {
+				Thread.sleep(500);
+				logger.debug("Waiting for sip service initialization " + attempts);
+			} catch (InterruptedException e) {
+				
+			}
+		}
+		return sipStandardService;
+	}
 	public static Method disableRetransmissionTimer; 
 	private static final Logger logger = Logger.getLogger(StaticServiceHolder.class);
 	static {

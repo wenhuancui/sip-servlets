@@ -935,8 +935,8 @@ public class ProxyImpl implements Proxy, ProxyExt, Externalizable {
 
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException {
-		if(StaticServiceHolder.sipStandardService.getSipStack() instanceof ClusteredSipStack && 
-				((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {
+		if(StaticServiceHolder.getSipStandardServiceBlocking().getSipStack() instanceof ClusteredSipStack && 
+				((ClusteredSipStack)StaticServiceHolder.getSipStandardServiceBlocking().getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {
 			// Issue 2587 : read only if not null.
 			if(in.readBoolean()) {
 				originalRequest = (SipServletRequestImpl) in.readObject();

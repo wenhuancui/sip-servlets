@@ -1859,7 +1859,7 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 			currentApplicationName = null;
 		}
 		isMessageSent = in.readBoolean();
-		if(StaticServiceHolder.sipStandardService.getSipStack() instanceof ClusteredSipStack && 
+		if(StaticServiceHolder.getSipStandardServiceBlocking().getSipStack() instanceof ClusteredSipStack && 
 				((ClusteredSipStack)StaticServiceHolder.sipStandardService.getSipStack()).getReplicationStrategy() == ReplicationStrategy.EarlyDialog) {		
 			transactionId = in.readUTF();
 			if(transactionId != null) {
