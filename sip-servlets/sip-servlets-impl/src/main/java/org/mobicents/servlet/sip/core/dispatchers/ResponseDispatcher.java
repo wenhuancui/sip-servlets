@@ -146,6 +146,20 @@ public class ResponseDispatcher extends MessageDispatcher {
 					}
 				}
 			} 
+			
+			if(tmpOriginalRequest == null) {
+				// our backup plan
+				SIPTransaction tx = null;
+				if(clientTransaction != null) {
+					tx = (SIPTransaction) clientTransaction;
+				} else {
+					tx = (SIPTransaction) ((SIPTransactionStack)sipProvider.getSipStack()).findTransaction((SIPMessage) response, true);
+				}
+				if(tx != null) {
+					tmpOriginalRequest = new SipServletRequestImpl(tx.getRequest(), sipFactoryImpl, null, null, null, false);
+				}	
+			}
+
 			final SipServletRequestImpl originalRequest = tmpOriginalRequest;
 			sipServletResponse.setOriginalRequest(originalRequest);
 			
@@ -235,7 +249,7 @@ public class ResponseDispatcher extends MessageDispatcher {
 				if(sipFactoryImpl.isRouteOrphanRequests()) {
 					try {
 						response.removeFirst(ViaHeader.NAME);
-						SIPServerTransaction stx = (SIPServerTransaction) ((SIPTransactionStack)sipProvider.getSipStack()).findTransaction((SIPMessage) response, true);
+						SIPTransaction stx = (SIPTransaction) ((SIPTransactionStack)sipProvider.getSipStack()).findTransaction((SIPMessage) response, true);
 						SipServletRequestImpl request = new SipServletRequestImpl(stx.getRequest(), sipFactoryImpl, null, null, null, false);
 						SipServletResponseImpl orphanResponse = new SipServletResponseImpl(response, sipFactoryImpl, null, null, dialog, true, false);
 						orphanResponse.setOriginalRequest(request);
