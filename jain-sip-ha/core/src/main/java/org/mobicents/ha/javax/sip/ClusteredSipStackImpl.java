@@ -85,8 +85,11 @@ public abstract class ClusteredSipStackImpl extends gov.nist.javax.sip.SipStackI
 		
 		super(configurationProperties);
 		
-		String lbHbServiceClassName = configurationProperties.getProperty(LoadBalancerHeartBeatingService.LB_HB_SERVICE_CLASS_NAME);
+		String lbHbServiceClassName = configurationProperties.getProperty(LoadBalancerHeartBeatingService.LB_HB_SERVICE_CLASS_NAME);		
 		if(lbHbServiceClassName != null) {
+			if(getStackLogger().isLoggingEnabled(StackLogger.TRACE_INFO)) {
+				getStackLogger().logInfo(LoadBalancerHeartBeatingService.LB_HB_SERVICE_CLASS_NAME + " is " + lbHbServiceClassName);
+			}
 			try {
 	            loadBalancerHeartBeatingService = (LoadBalancerHeartBeatingService) Class.forName(lbHbServiceClassName).newInstance();	            
 	        } catch (Exception e) {
@@ -98,6 +101,9 @@ public abstract class ClusteredSipStackImpl extends gov.nist.javax.sip.SipStackI
 	        // create the load balancer elector if specified
 	        String lbElectorClassName = configurationProperties.getProperty(LoadBalancerElector.IMPLEMENTATION_CLASS_NAME_PROPERTY);
 			if(lbElectorClassName != null) {
+		        if(getStackLogger().isLoggingEnabled(StackLogger.TRACE_INFO)) {
+					getStackLogger().logInfo(LoadBalancerElector.IMPLEMENTATION_CLASS_NAME_PROPERTY + " is " + lbElectorClassName);
+		        }
 				try {
 		            loadBalancerElector = (LoadBalancerElector) Class.forName(lbElectorClassName).newInstance();	            
 		        } catch (Exception e) {
@@ -115,6 +121,9 @@ public abstract class ClusteredSipStackImpl extends gov.nist.javax.sip.SipStackI
 		// allow the stack to provide its own SIPServerTransaction/SIPClientTransaction extension instances
 		String transactionFactoryClassName = configurationProperties.getProperty(TRANSACTION_FACTORY_CLASS_NAME);
 		if(transactionFactoryClassName != null) {
+			if(getStackLogger().isLoggingEnabled(StackLogger.TRACE_INFO)) {
+				getStackLogger().logInfo(TRANSACTION_FACTORY_CLASS_NAME + " is " + transactionFactoryClassName);
+			}
 			try {
 	            transactionFactory = (TransactionFactory) Class.forName(transactionFactoryClassName).newInstance();
 	            transactionFactory.setSipStack(this);	            
@@ -128,6 +137,9 @@ public abstract class ClusteredSipStackImpl extends gov.nist.javax.sip.SipStackI
 		// allow the stack to provide its own SipProviderImpl extension instances
 	    String sipProviderFactoryClassName = configurationProperties.getProperty(SIP_PROVIDER_FACTORY_CLASS_NAME);
 		if(sipProviderFactoryClassName != null) {
+			if(getStackLogger().isLoggingEnabled(StackLogger.TRACE_INFO)) {
+				getStackLogger().logInfo(SIP_PROVIDER_FACTORY_CLASS_NAME + " is " + sipProviderFactoryClassName);
+			}
 			try {
 	            sipProviderFactory = (SipProviderFactory) Class.forName(sipProviderFactoryClassName).newInstance();
 	            sipProviderFactory.setSipStack(this);	            
@@ -142,6 +154,21 @@ public abstract class ClusteredSipStackImpl extends gov.nist.javax.sip.SipStackI
 		this.sendTryingRightAway = Boolean.valueOf(
 			configurationProperties.getProperty(SEND_TRYING_RIGHT_AWAY,"false")).booleanValue();
 		
+		if(getStackLogger().isLoggingEnabled(StackLogger.TRACE_INFO)) {
+			getStackLogger().logInfo(SEND_TRYING_RIGHT_AWAY + " is " + sendTryingRightAway);
+		}
+		String replicationStrategyProperty = configurationProperties.getProperty(ClusteredSipStack.REPLICATION_STRATEGY_PROPERTY);
+		if(replicationStrategyProperty != null) {
+			if(getStackLogger().isLoggingEnabled(StackLogger.TRACE_INFO)) {
+				getStackLogger().logInfo(ClusteredSipStack.REPLICATION_STRATEGY_PROPERTY + " is " + replicationStrategyProperty);
+			}
+			replicationStrategy = ReplicationStrategy.valueOf(replicationStrategyProperty);
+			if(replicationStrategy == ReplicationStrategy.EarlyDialog && transactionFactory == null) {
+				// when using EarlyDialog replication strategy we need to have an HA transaction factory to replicate transactions
+				transactionFactory = new MobicentsHATransactionFactory();
+				transactionFactory.setSipStack(this);
+			}
+		}
 		// get/create the jboss cache instance to store all sip stack related data into it
 		sipCache = SipCacheFactory.createSipCache(this, configurationProperties);
 		try {
@@ -151,18 +178,12 @@ public abstract class ClusteredSipStackImpl extends gov.nist.javax.sip.SipStackI
 		}
 		if(loadBalancerHeartBeatingService != null) {
 			loadBalancerHeartBeatingService.init(this, configurationProperties);
-		}
-		String replicationStrategyProperty = configurationProperties.getProperty(ClusteredSipStack.REPLICATION_STRATEGY_PROPERTY);
-		if(replicationStrategyProperty != null) {
-			replicationStrategy = ReplicationStrategy.valueOf(replicationStrategyProperty);
-			if(replicationStrategy == ReplicationStrategy.EarlyDialog && transactionFactory == null) {
-				// when using EarlyDialog replication strategy we need to have an HA transaction factory to replicate transactions
-				transactionFactory = new MobicentsHATransactionFactory();
-				transactionFactory.setSipStack(this);
-			}
-		}
+		}		
 		String replicateApplicationDataProperty = configurationProperties.getProperty(ClusteredSipStack.REPLICATE_APPLICATION_DATA);
-		if(replicateApplicationDataProperty != null) {			
+		if(replicateApplicationDataProperty != null) {
+			if(getStackLogger().isLoggingEnabled(StackLogger.TRACE_INFO)) {
+				getStackLogger().logInfo(ClusteredSipStack.REPLICATE_APPLICATION_DATA + " is " + replicateApplicationDataProperty);
+			}
 			replicateApplicationData = Boolean.valueOf(replicateApplicationDataProperty);
 		}
 		// backward compatible hack to make sure old applications still replicate the app data if they don't use the new property
