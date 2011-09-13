@@ -741,6 +741,9 @@ public class SipFactoryImpl implements Externalizable {
 	 * @return the sipApplicationDispatcher
 	 */
 	public SipApplicationDispatcher getSipApplicationDispatcher() {
+		if(sipApplicationDispatcher == null) {
+			sipApplicationDispatcher = StaticServiceHolder.sipStandardService.getSipApplicationDispatcher();
+		}
 		return sipApplicationDispatcher;
 	}
 
@@ -879,8 +882,7 @@ public class SipFactoryImpl implements Externalizable {
 		useLoadBalancer = in.readBoolean();
 		if(useLoadBalancer) {
 			loadBalancerToUse = (SipLoadBalancer) in.readObject();
-		}
-		sipApplicationDispatcher = StaticServiceHolder.getSipStandardServiceBlocking().getSipApplicationDispatcher();
+		}		
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {

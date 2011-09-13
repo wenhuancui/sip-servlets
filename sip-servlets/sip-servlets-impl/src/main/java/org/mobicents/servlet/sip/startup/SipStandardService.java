@@ -147,6 +147,7 @@ public class SipStandardService extends StandardService implements SipService {
 	protected boolean httpFollowsSip = false;
 	
 	protected String jvmRoute;
+	protected ReplicationStrategy replicationStrategy;
 	
 	/**
 	 * the sip stack path name. Since the sip factory is per classloader it should be set here for all underlying stacks
@@ -482,15 +483,18 @@ public class SipStandardService extends StandardService implements SipService {
 					sipStackProperties.put(LoadBalancerHeartBeatingService.BALANCERS, balancers);
 				}
 			}		
-			String replicationStrategy = sipStackProperties.getProperty(ClusteredSipStack.REPLICATION_STRATEGY_PROPERTY);
-			if(replicationStrategy == null) {				
-				replicationStrategy = ReplicationStrategy.ConfirmedDialog.toString();
+			String replicationStrategyString = sipStackProperties.getProperty(ClusteredSipStack.REPLICATION_STRATEGY_PROPERTY);
+			if(replicationStrategyString == null) {				
+				replicationStrategyString = ReplicationStrategy.ConfirmedDialog.toString();
 			}			
 			boolean replicateApplicationData = false;
-			if(replicationStrategy.equals(ReplicationStrategy.EarlyDialog.toString())) {
+			if(replicationStrategyString.equals(ReplicationStrategy.EarlyDialog.toString())) {
 				replicateApplicationData = true;
 			}			
-			sipStackProperties.put(ClusteredSipStack.REPLICATION_STRATEGY_PROPERTY, replicationStrategy);
+			if(replicationStrategy != null) {
+				replicationStrategy = ReplicationStrategy.valueOf(replicationStrategyString);
+			}
+			sipStackProperties.put(ClusteredSipStack.REPLICATION_STRATEGY_PROPERTY, replicationStrategyString);
 			sipStackProperties.put(ClusteredSipStack.REPLICATE_APPLICATION_DATA, Boolean.valueOf(replicateApplicationData).toString());
 			if(logger.isInfoEnabled()) {
 				logger.info("Mobicents Sip Servlets sip stack properties : " + sipStackProperties);
@@ -1139,5 +1143,9 @@ public class SipStandardService extends StandardService implements SipService {
 	 */
 	public SipStack getSipStack() {
 		return sipStack;
+	}
+	
+	public ReplicationStrategy getReplicationStrategy() {
+		return replicationStrategy;
 	}
 }

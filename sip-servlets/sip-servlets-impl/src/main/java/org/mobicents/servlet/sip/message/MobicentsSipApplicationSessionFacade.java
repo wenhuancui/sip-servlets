@@ -262,8 +262,7 @@ public class MobicentsSipApplicationSessionFacade implements
 			logger.error("Couldn't parse the following sip application session key " + sipApplicationSessionId, e);
 			throw new IllegalArgumentException("Couldn't parse the following sip application session key " + sipApplicationSessionId, e);
 		}
-		SipContext sipContext = StaticServiceHolder.getSipStandardServiceBlocking()
-				.getSipApplicationDispatcher().findSipApplication(key.getApplicationName());
+		SipContext sipContext = StaticServiceHolder.sipStandardService.getSipApplicationDispatcher().findSipApplication(key.getApplicationName());
 		
 		this.sipApplicationSession = ((SipManager) sipContext.getManager()).getSipApplicationSession(
 				key, false);
