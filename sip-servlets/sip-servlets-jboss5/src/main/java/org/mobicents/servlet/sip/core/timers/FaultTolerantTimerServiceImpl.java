@@ -95,7 +95,7 @@ public class FaultTolerantTimerServiceImpl implements ClusteredSipServletTimerSe
 		if (!sipApplicationSessionImpl.hasTimerListener()) {
 			throw new IllegalStateException("No Timer listeners have been configured for this application ");
 		}
-		ServletTimerImpl servletTimer = createTimerLocaly(delay, isPersistent, info, sipApplicationSessionImpl);				
+		TimerServiceTask servletTimer = createTimerLocaly(delay, isPersistent, info, sipApplicationSessionImpl);				
 		
 		return servletTimer;
 	}
@@ -120,7 +120,7 @@ public class FaultTolerantTimerServiceImpl implements ClusteredSipServletTimerSe
 		if (!sipApplicationSessionImpl.hasTimerListener()) {
 			throw new IllegalStateException("No Timer listeners have been configured for this application ");
 		}		
-		ServletTimerImpl servletTimer = createTimerLocaly(delay, period, fixedDelay,isPersistent, info,sipApplicationSessionImpl);			
+		TimerServiceTask servletTimer = createTimerLocaly(delay, period, fixedDelay,isPersistent, info,sipApplicationSessionImpl);			
 		
 		return servletTimer;
 	}
@@ -134,7 +134,7 @@ public class FaultTolerantTimerServiceImpl implements ClusteredSipServletTimerSe
 	 * @param sipApplicationSession
 	 * @return
 	 */
-	private ServletTimerImpl createTimerLocaly(long delay,
+	private TimerServiceTask createTimerLocaly(long delay,
 			boolean isPersistent, Serializable info, MobicentsSipApplicationSession sipApplicationSession) {
 		
 		final TimerListener listener = sipApplicationSession.getSipContext().getListeners().getTimerListener();
@@ -147,7 +147,7 @@ public class FaultTolerantTimerServiceImpl implements ClusteredSipServletTimerSe
 		if (isPersistent) {
 			persist(servletTimer);
 		} 
-		return servletTimer;
+		return timerServiceTask;
 	}
 	/**
 	 * 
@@ -160,7 +160,7 @@ public class FaultTolerantTimerServiceImpl implements ClusteredSipServletTimerSe
 	 * @param sipApplicationSession
 	 * @return
 	 */
-	private ServletTimerImpl createTimerLocaly(long delay, 
+	private TimerServiceTask createTimerLocaly(long delay, 
 			long period, boolean fixedDelay, boolean isPersistent,
 			Serializable info, MobicentsSipApplicationSession sipApplicationSession) {
 		final TimerListener listener = sipApplicationSession.getSipContext().getListeners().getTimerListener();
@@ -178,7 +178,7 @@ public class FaultTolerantTimerServiceImpl implements ClusteredSipServletTimerSe
 		if (isPersistent) {			
 			persist(servletTimer);
 		} 
-		return servletTimer;
+		return timerServiceTask;
 	}
 
 	/**
@@ -226,6 +226,13 @@ public class FaultTolerantTimerServiceImpl implements ClusteredSipServletTimerSe
 	public boolean isStarted() {
 		return started.get();
 	}
+	
+	public void cancel(String timerId) {
+		if(logger.isDebugEnabled()) {
+			logger.debug("Cancelling ServletTimer " + timerId);
+		}
+		getScheduler().cancel(timerId);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -235,31 +242,44 @@ public class FaultTolerantTimerServiceImpl implements ClusteredSipServletTimerSe
 		TimerTask timerTask = getScheduler().getLocalRunningTask(timerId);
 		if(timerTask == null) {
 			TimerServiceTaskData timerTaskData = (TimerServiceTaskData) getScheduler().getTimerTaskData(timerId);
-			// we recreate the task locally 
-			ServletTimerImpl servletTimerImpl = new ServletTimerImpl(timerTaskData.getData(), timerTaskData.getDelay(), sipApplicationSession.getSipContext().getListeners().getTimerListener(), sipApplicationSession);
-			TimerServiceTask timerServiceTask = new TimerServiceTask(sipManager, servletTimerImpl, timerTaskData);
 			
 			if(timerTaskData != null) {
+				// we recreate the task locally
+				PeriodicScheduleStrategy periodicScheduleStrategy = timerTaskData.getPeriodicScheduleStrategy();
 				if(logger.isDebugEnabled()) {
-					logger.debug("Task " + timerId + " is not present locally, but on another node, cancelling the remote one and rescheduling it locally.");
+					logger.debug("Timer Task " + timerId + " is not present locally, but on another node, cancelling the remote one and rescheduling it locally with strategy " + periodicScheduleStrategy + ", delay " + timerTaskData.getDelay() + ", period " + timerTaskData.getPeriod());
 				}
-				// we cancel it, this will cause the remote owner node to remove it and cancel its local task 
-				getScheduler().cancel(timerId);				
+				// we cancel it, this will cause the remote owner node to remove it and cancel its local task
+				cancel(timerId);				
+				boolean fixedDelay = false;
+				ServletTimerImpl servletTimerImpl = null;
+				if(periodicScheduleStrategy != null) {
+					if(periodicScheduleStrategy == PeriodicScheduleStrategy.withFixedDelay) {
+						fixedDelay = true;
+					}
+					servletTimerImpl = new ServletTimerImpl(timerTaskData.getData(), timerTaskData.getDelay(), fixedDelay, timerTaskData.getPeriod(), sipApplicationSession.getSipContext().getListeners().getTimerListener(), sipApplicationSession);
+				} else {
+					servletTimerImpl = new ServletTimerImpl(timerTaskData.getData(), timerTaskData.getDelay(), sipApplicationSession.getSipContext().getListeners().getTimerListener(), sipApplicationSession);
+				}
+				TimerServiceTask timerServiceTask = new TimerServiceTask(sipManager, servletTimerImpl, timerTaskData);
+				
 				// and reset its start time to the correct one
 				timerServiceTask.beforeRecover();				
 				// and reschedule it locally
-				getScheduler().schedule(timerServiceTask);
+				getScheduler().schedule(timerServiceTask, false);
+				return timerServiceTask;
 			} else {
-				if(logger.isDebugEnabled()) {
-					logger.debug("Task " + timerId + " is not present locally, nor on another node, rescheduling it.");
-				}
+//				if(logger.isWarningEnabled()) {
+					logger.warn("Timer Task " + timerId + " is not present locally, nor on another node, not possible to reschedule it.");
+//				}
+				return null;
 				// and reschedule it locally
-				getScheduler().schedule(timerServiceTask);
+//				getScheduler().schedule(timerServiceTask);
 			}
-			return timerServiceTask;
+//			return timerServiceTask;
 		} else {
 			if(logger.isInfoEnabled()) {
-				logger.info("Task " + timerId + " is already present locally no need to reschedule it.");
+				logger.info("Timer Task " + timerId + " is already present locally no need to reschedule it.");
 			}
 			return null;
 		}

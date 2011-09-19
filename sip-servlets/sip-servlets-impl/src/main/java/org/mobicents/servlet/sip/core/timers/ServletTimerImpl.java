@@ -107,13 +107,13 @@ public class ServletTimerImpl implements MobicentsServletTimer, Runnable {
 	/**
 	 * Whether this timer is persistent.
 	 */
-	private boolean persistent = true;
+	private boolean persistent = false;
 
 	/**
 	 * Whether this timer has been successfully cancelled. Used for debugging.
 	 */
 	@SuppressWarnings("unused")
-	private Boolean isCanceled = null;
+	private boolean isCanceled = false;
 
 	/**
 	 * Timer unique id
@@ -200,11 +200,11 @@ public class ServletTimerImpl implements MobicentsServletTimer, Runnable {
 			if (future != null) {
 				// need to force cancel to get rid of
 				// the task which is currently scheduled
-				boolean res = future.cancel(mayInterruptIfRunning);
+				future.cancel(mayInterruptIfRunning);
+				isCanceled = true;
 				// used for debugging/optimizeIt purpose
 				// kan be kept in production code since object should
 				// be due for gc anyway....
-				isCanceled = Boolean.valueOf(res);
 				appSessionToCancelThisTimersFrom = getApplicationSession();
 				future = null;
 				// Issue 2367 removing the reference to the Serializable info so that it doesn't linger into memory
@@ -212,6 +212,9 @@ public class ServletTimerImpl implements MobicentsServletTimer, Runnable {
 			}
 		}
 		if (appSessionToCancelThisTimersFrom != null && updateAppSessionReadyToInvalidateState) {
+			if(logger.isDebugEnabled()) {
+				logger.debug("removing servlet timer " + id + " from sip application session " + appSessionToCancelThisTimersFrom + " and updating its ready to invalidate state " + updateAppSessionReadyToInvalidateState);
+			}
 			appSessionToCancelThisTimersFrom.removeServletTimer(this, updateAppSessionReadyToInvalidateState);			
 		}
 	}
@@ -301,6 +304,10 @@ public class ServletTimerImpl implements MobicentsServletTimer, Runnable {
 		final MobicentsSipApplicationSession sipApplicationSession = getApplicationSession();
 		SipContext sipContext = sipApplicationSession.getSipContext();
 		
+		if(logger.isDebugEnabled()) {
+			logger.debug("running Servlet Timer " + id + " for sip application session " + sipApplicationSession);
+		}
+		
 		ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
 			ClassLoader cl = sipContext.getLoader().getClassLoader();
@@ -311,16 +318,22 @@ public class ServletTimerImpl implements MobicentsServletTimer, Runnable {
 		} catch(Throwable t) {
 			logger.error("An unexpected exception happened in the timer callback!",t);
 		} finally {
-			sipContext.exitSipAppHa(null, null);
-			sipContext.exitSipApp(sipApplicationSession, null);
-			Thread.currentThread().setContextClassLoader(oldClassLoader);
-			if (isRepeatingTimer) {
-				estimateNextExecution();
-			} else {
-				// this non-repeating timer is now "ready"
-				// and should not be included in the list of active timers
-				// The application may already have canceled() the timer though
-				cancel(); // dont bother about return value....
+			try {
+				Thread.currentThread().setContextClassLoader(oldClassLoader);
+				if (isRepeatingTimer) {
+					estimateNextExecution();
+				} else {
+					// this non-repeating timer is now "ready"
+					// and should not be included in the list of active timers
+					// The application may already have canceled() the timer though
+					cancel(); // dont bother about return value....
+				}
+				if(logger.isDebugEnabled()) {
+					logger.debug("Servlet Timer " + id + " for sip application session " + sipApplicationSession + " ended");
+				}
+			} finally {
+				sipContext.exitSipAppHa(null, null);
+				sipContext.exitSipApp(sipApplicationSession, null);
 			}
 		}
 
@@ -369,4 +382,10 @@ public class ServletTimerImpl implements MobicentsServletTimer, Runnable {
 		}
 	}
 
+	/**
+	 * @return the isCanceled
+	 */
+	public boolean isCanceled() {
+		return isCanceled;
+	}
 }
