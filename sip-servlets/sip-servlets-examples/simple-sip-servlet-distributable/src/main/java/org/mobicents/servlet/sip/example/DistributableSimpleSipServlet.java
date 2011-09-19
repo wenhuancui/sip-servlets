@@ -87,6 +87,7 @@ public class DistributableSimpleSipServlet
 	private int byeDelay = DEFAULT_BYE_DELAY;
 	
 	ServletTimer servletTimer = null;
+	@Resource TimerService injectedTimerService;
 	
 	/** Creates a new instance of SimpleProxyServlet */
 	public DistributableSimpleSipServlet() {
