@@ -41,6 +41,7 @@ package org.mobicents.servlet.sip.example;
 import java.io.IOException;
 import java.util.Iterator;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.sip.ServletTimer;
