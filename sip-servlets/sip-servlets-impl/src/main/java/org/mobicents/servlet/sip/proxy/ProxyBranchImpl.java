@@ -49,6 +49,7 @@ import javax.servlet.sip.SipURI;
 import javax.servlet.sip.URI;
 import javax.servlet.sip.ar.SipApplicationRoutingDirective;
 import javax.sip.ClientTransaction;
+import javax.sip.InvalidArgumentException;
 import javax.sip.SipException;
 import javax.sip.SipProvider;
 import javax.sip.header.RouteHeader;
@@ -688,6 +689,11 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 				if(sipConnector.isUseStaticAddress()) {
 					JainSipUtils.optimizeRouteHeaderAddressForInternalRoutingrequest(
 							sipConnector, clonedRequest, sipSession, sipFactoryImpl, transport);
+					try {
+						JainSipUtils.optimizeViaHeaderAddressForStaticAddress(sipConnector, clonedRequest, sipFactoryImpl, transport);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
 				sipProvider.sendRequest(clonedRequest);
 			}
