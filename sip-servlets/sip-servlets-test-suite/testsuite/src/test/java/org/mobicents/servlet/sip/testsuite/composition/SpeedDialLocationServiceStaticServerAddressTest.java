@@ -43,6 +43,7 @@ import java.util.ListIterator;
 import javax.sip.SipProvider;
 import javax.sip.address.SipURI;
 import javax.sip.header.ViaHeader;
+import javax.sip.message.Request;
 import javax.sip.message.Response;
 
 import org.apache.catalina.connector.Connector;
@@ -269,7 +270,14 @@ public class SpeedDialLocationServiceStaticServerAddressTest extends SipServletT
 		assertTrue(ipBalancer.sipMessageWithoutRetrans.size()>0);
 		assertTrue(receiver.isAckReceived()); // is the ACK working in the callee->caller direction
 		assertTrue(sender.isAckReceived()); // is the ACK working in the caller->callee direction
-	
+		for(Request r : receiver.allRequests) {
+				ViaHeader via = (ViaHeader) r.getHeader(ViaHeader.NAME);
+				assertEquals(IPLB_ADDRESS, via.getPort());
+		}
+		for(Request r : sender.allRequests) {
+				ViaHeader via = (ViaHeader) r.getHeader(ViaHeader.NAME);
+				assertEquals(IPLB_ADDRESS, via.getPort());
+		}
 		assertTrue(receiver.getOkToByeReceived());
 		assertTrue(sender.getByeReceived());	
 		
