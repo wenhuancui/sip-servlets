@@ -560,7 +560,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	 * {@inheritDoc}
 	 */
 	public boolean isInitial() {
-		return isInitial; 
+		return isInitial && !isOrphan(); 
 	}
 	
 	/*
