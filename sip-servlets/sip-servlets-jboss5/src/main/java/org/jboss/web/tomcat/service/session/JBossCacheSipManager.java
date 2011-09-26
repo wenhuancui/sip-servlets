@@ -2183,12 +2183,16 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 		boolean stored = false;
 		if (session != null && started_) {			
 
-			synchronized (session) {
+			synchronized (session) {				
 				if (logger.isDebugEnabled()) {
-					logger.debug("check to see if needs to store and replicate "
-							+ "session with id " + session.getId() + " isValid " + session.isValidInternal() +
-							" getMustReplicateTimestamp " + session.getMustReplicateTimestamp() + 
-							" session state " + session.getState());
+					boolean isValid = session.isValidInternal();
+					String message = "check to see if needs to store and replicate "
+						+ "session with id " + session.getId() + " isValid " + isValid; 
+					if(isValid) {
+						message = message + " getMustReplicateTimestamp " + session.getMustReplicateTimestamp() + 
+						" session state " + session.getState();
+					}
+					logger.debug(message);
 				}
 
 				if (session.isValidInternal()

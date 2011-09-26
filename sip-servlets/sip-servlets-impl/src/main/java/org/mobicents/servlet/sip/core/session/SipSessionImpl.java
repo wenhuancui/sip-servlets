@@ -858,25 +858,22 @@ public class SipSessionImpl implements MobicentsSipSession {
 				removeAttribute(key, true);
 			}
 		}
-		notifySipSessionListeners(SipSessionEventType.DELETION);			
 		
-		isValid = false;
-		
-		if(derivedSipSessions != null) {
-			for (MobicentsSipSession derivedMobicentsSipSession : derivedSipSessions.values()) {
-				derivedMobicentsSipSession.invalidate();
-			}		
-			derivedSipSessions.clear();
-		}	
-		
+		final MobicentsSipApplicationSession sipApplicationSession = getSipApplicationSession();
+        SipManager manager = sipApplicationSession.getSipContext().getSipManager();
+		// http://code.google.com/p/mobicents/issues/detail?id=2885
+        // FQN Memory Leak in HA mode with PESSIMISTIC locking
+        // remove it before the notification to avoid the sip application session to be destroyed before 
+        // and leaking in the JBoss Cache 
+		manager.removeSipSession(key);
+		sipApplicationSession.getSipContext().getSipSessionsUtil().removeCorrespondingSipSession(key);
+
 		/*
          * Compute how long this session has been alive, and update
          * session manager's related properties accordingly
          */
         long timeNow = System.currentTimeMillis();
         int timeAlive = (int) ((timeNow - creationTime)/1000);
-        final MobicentsSipApplicationSession sipApplicationSession = getSipApplicationSession();
-        SipManager manager = sipApplicationSession.getSipContext().getSipManager();
         synchronized (manager) {
             if (timeAlive > manager.getSipSessionMaxAliveTime()) {
                 manager.setSipSessionMaxAliveTime(timeAlive);
@@ -889,8 +886,17 @@ public class SipSessionImpl implements MobicentsSipSession {
             manager.setSipSessionAverageAliveTime(average);
         }
 		
-		manager.removeSipSession(key);		
-		sipApplicationSession.getSipContext().getSipSessionsUtil().removeCorrespondingSipSession(key);
+		notifySipSessionListeners(SipSessionEventType.DELETION);			
+		
+		isValid = false;
+		
+		if(derivedSipSessions != null) {
+			for (MobicentsSipSession derivedMobicentsSipSession : derivedSipSessions.values()) {
+				derivedMobicentsSipSession.invalidate();
+			}		
+			derivedSipSessions.clear();
+		}	
+		
 		sipApplicationSession.onSipSessionReadyToInvalidate(this);
 		if(ongoingTransactions != null) {
 			if(logger.isDebugEnabled()) {
