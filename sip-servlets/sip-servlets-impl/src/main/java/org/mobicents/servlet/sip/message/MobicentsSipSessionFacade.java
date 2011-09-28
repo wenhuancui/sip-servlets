@@ -501,4 +501,11 @@ public class MobicentsSipSessionFacade implements MobicentsSipSession, Serializa
 		sipSession.setSipSessionSecurity(sipSessionSecurity);
 	}
 
+	public void setOrphan(boolean orphan) {
+	}
+
+	public boolean isOrphan() {
+		return false;
+	}
+
 }

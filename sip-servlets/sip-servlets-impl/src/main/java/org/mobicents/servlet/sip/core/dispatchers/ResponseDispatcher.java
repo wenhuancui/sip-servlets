@@ -197,6 +197,7 @@ public class ResponseDispatcher extends MessageDispatcher {
 			String strippedBranchId = branch.substring(BRANCH_MAGIC_COOKIE.length());
 			int indexOfUnderscore = strippedBranchId.indexOf("_");
 			if(indexOfUnderscore == -1) {
+				if(sipServletResponse.getStatus() == 100) return;
 				throw new DispatcherException("the via header branch " + branch + " for the response is wrong the response does not reuse the one from the original request");
 			}
 			final String appId = strippedBranchId.substring(0, indexOfUnderscore);
@@ -265,6 +266,7 @@ public class ResponseDispatcher extends MessageDispatcher {
 						SIPTransaction stx = (SIPTransaction) ((SIPTransactionStack)sipProvider.getSipStack()).findTransaction((SIPMessage) response, true);
 						if(stx != null) {
 							SipServletRequestImpl request = new SipServletRequestImpl(stx.getRequest(), sipFactoryImpl, null, null, null, false);
+							request.setOrphan(true);
 							SipServletResponseImpl orphanResponse = new SipServletResponseImpl(response, sipFactoryImpl, null, null, dialog, true, false);
 							orphanResponse.setOriginalRequest(request);
 							callServletForOrphanResponse(sipContext, orphanResponse);
@@ -283,7 +285,9 @@ public class ResponseDispatcher extends MessageDispatcher {
 								ContentTypeHeader cth = SipFactories.headerFactory.createContentTypeHeader("orphan", "orphan");
 								try {
 									Request r = SipFactories.messageFactory.createRequest(uri, cseq.getMethod(), callid, cseq, fromHeader, toHeader, vialist, mf, cth, new byte[]{});
-									sipServletResponse.setOriginalRequest(new SipServletRequestImpl(r, sipFactoryImpl, null, null, dialog, false));
+									SipServletRequestImpl req = new SipServletRequestImpl(r, sipFactoryImpl, null, null, dialog, false);
+									req.setOrphan(true);
+									sipServletResponse.setOriginalRequest(req);
 									callServletForOrphanResponse(sipContext, sipServletResponse);
 									sipProvider.sendResponse(response);
 								} catch (ParseException e) {

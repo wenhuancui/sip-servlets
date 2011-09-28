@@ -173,6 +173,8 @@ public class SipSessionImpl implements MobicentsSipSession {
 	
 	protected long cseq = -1;
 	
+	protected boolean orphan = false;
+	
 	protected String transport;
 	
 //	protected transient ThreadPoolExecutor executorService = new ThreadPoolExecutor(1, 1, 90, TimeUnit.SECONDS,
@@ -304,6 +306,14 @@ public class SipSessionImpl implements MobicentsSipSession {
 		if(mobicentsSipApplicationSession.getSipContext() != null && ConcurrencyControlMode.SipSession.equals(mobicentsSipApplicationSession.getSipContext().getConcurrencyControlMode())) {
 			semaphore = new Semaphore(1);		
 		}		
+	}
+	
+	public boolean isOrphan() {
+		return orphan;
+	}
+	
+	public void setOrphan(boolean orphan) {
+		this.orphan = orphan;
 	}
 	/**
 	 * Notifies the listeners that a lifecycle event occured on that sip session 

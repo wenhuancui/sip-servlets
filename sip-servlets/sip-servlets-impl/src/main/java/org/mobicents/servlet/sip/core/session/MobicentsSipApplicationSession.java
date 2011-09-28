@@ -110,4 +110,8 @@ public interface MobicentsSipApplicationSession extends SipApplicationSession, S
 	Set<MobicentsSipSession> getSipSessions();
 
 	void invalidate(boolean bypassCheck);
+
+	public void setOrphan(boolean orphan);
+
+	public boolean isOrphan();
 }

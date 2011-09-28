@@ -317,7 +317,9 @@ public abstract class MessageDispatcher {
 					if(logger.isDebugEnabled()) {
 						logger.debug("Invoking instance " + servlet);
 					}
-					servlet.service(null, response);
+					if(response.getStatus()>100) {
+						servlet.service(null, response);
+					}
 				} finally {								
 					sipServletImpl.deallocate(servlet);					
 				}

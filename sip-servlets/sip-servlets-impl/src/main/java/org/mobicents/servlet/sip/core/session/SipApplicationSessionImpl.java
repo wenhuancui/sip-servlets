@@ -140,6 +140,16 @@ public class SipApplicationSessionImpl implements MobicentsSipApplicationSession
 	
 	protected long sipApplicationSessionTimeout = -1;
 	
+	protected boolean orphan = false;
+	
+	public boolean isOrphan() {
+		return orphan;
+	}
+	
+	public void setOrphan(boolean orphan) {
+		this.orphan = orphan;
+	}
+	
 	// Does it need to be synchronized?
 	protected Map<String,Object> getAttributeMap() {
 		if(sipApplicationSessionAttributeMap == null) {

@@ -196,6 +196,16 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	
 	private boolean orphanRequest;
 	
+	private String appSid;
+	
+	public String getAppSessionId() {
+		return appSid;
+	}
+	
+	public void setAppSessionId(String appSid) {
+		this.appSid = appSid;
+	}
+	
 	// needed for externalizable
 	public SipServletRequestImpl () {}
 	
