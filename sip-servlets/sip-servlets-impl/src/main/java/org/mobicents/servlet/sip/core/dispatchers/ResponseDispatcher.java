@@ -332,6 +332,29 @@ public class ResponseDispatcher extends MessageDispatcher {
 				}
 			}
 			
+			if(sipServletResponse.getRequest() == null) {
+				ToHeader toHeader = ((ToHeader)response.getHeader(ToHeader.NAME));
+				FromHeader fromHeader = ((FromHeader)response.getHeader(FromHeader.NAME));
+				URI uri = ((ToHeader)response.getHeader(ToHeader.NAME)).getAddress().getURI();
+				CSeqHeader cseq = (CSeqHeader) response.getHeader(CSeqHeader.NAME);
+				CallIdHeader callid = (CallIdHeader) response.getHeader(CallIdHeader.NAME);
+				ViaHeader via = (ViaHeader) response.getHeader(ViaHeader.NAME);
+				LinkedList<ViaHeader> vialist = new LinkedList<ViaHeader>();
+				vialist.add(via);
+				try {
+					MaxForwardsHeader mf = SipFactories.headerFactory.createMaxForwardsHeader(80);
+					ContentTypeHeader cth = SipFactories.headerFactory.createContentTypeHeader("orphan", "orphan");
+					Request r = SipFactories.messageFactory.createRequest(uri, cseq.getMethod(), callid, cseq, fromHeader, toHeader, vialist, mf, cth, new byte[]{});
+					SipServletRequestImpl req = new SipServletRequestImpl(r, sipFactoryImpl, null, null, dialog, false);
+					req.setOrphan(tmpSession.isOrphan());
+					sipServletResponse.setOriginalRequest(req);
+				} catch (Exception e) {
+					if(logger.isDebugEnabled()) {
+						logger.debug("failed sending artificial request for response ");
+					}
+				}
+			}
+			
 			if(logger.isDebugEnabled()) {
 				logger.debug("route response on following session " + tmpSession.getId());
 			}
