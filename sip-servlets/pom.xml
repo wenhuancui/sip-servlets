@@ -89,6 +89,7 @@
 		<mobicents.jain.sip.ha.version>5.1.1.GA-JBCP5</mobicents.jain.sip.ha.version>
 		<mobicents.jain.sip.ext.version>5.1.1.GA-JBCP5</mobicents.jain.sip.ext.version>
 		<tomcat.version>6.0.29</tomcat.version>	
+		<jain-sip-ri.version>1.2.166</jain-sip-ri.version>
 	</properties>
 	
 	<dependencies>
