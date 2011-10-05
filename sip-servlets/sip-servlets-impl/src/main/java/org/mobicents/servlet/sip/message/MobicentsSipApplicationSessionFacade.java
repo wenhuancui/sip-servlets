@@ -334,11 +334,12 @@ public class MobicentsSipApplicationSessionFacade implements
 		sipApplicationSession.invalidate(true);
 	}
 
-	public void setOrphan(boolean orphan) {
+	public boolean isOrphan() {
+		return sipApplicationSession.isOrphan();
 	}
 
-	public boolean isOrphan() {
-		return false;
+	public void setOrphan(boolean orphan) {
+		sipApplicationSession.setOrphan(orphan);
 	}
 
 }

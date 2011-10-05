@@ -111,7 +111,6 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 	//Added for TCK test SipServletResponseTest.testSend101
 	private boolean hasBeenReceived;
 	private boolean isRetransmission;
-	private boolean orphanRequest;
 	
 	// needed for externalizable
 	public SipServletResponseImpl () {}
@@ -848,14 +847,5 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 
 	public boolean isRetransmission() {		
 		return isRetransmission;
-	}
-
-	public boolean isOrphan() {
-		return this.orphanRequest;
-	}
-
-	public void setOrphan(boolean orphan) {
-		this.orphanRequest = orphan;
-		
 	}
 }

@@ -194,8 +194,6 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	// This field is only used in CANCEL requests where we need the INVITe transaction
 	private transient Transaction inviteTransactionToCancel;
 	
-	private boolean orphanRequest;
-	
 	private String appSid;
 	
 	public String getAppSessionId() {
@@ -2220,18 +2218,5 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 		}
 	}
 
-	/**
-	 * @param orphanRequest the orphanRequest to set
-	 */
-	public void setOrphan(boolean orphanRequest) {
-		this.orphanRequest = orphanRequest;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.mobicents.javax.servlet.sip.SipServletRequestExt#isOrphan()
-	 */
-	public boolean isOrphan() {
-		return orphanRequest;
-	}		
+	
 }

@@ -564,33 +564,31 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 		if(sipSession != null) {
 			MobicentsSipApplicationSession sipApplicationSession = sipSession.getSipApplicationSession();
 			if(sipApplicationSession != null) {
+				sipApplicationSession.setOrphan(isOrphan());
 				return sipApplicationSession;
 			}
 		}
 		String applicationName = getCurrentApplicationName();
 		if(sessionKey != null) {
 			applicationName = sessionKey.getApplicationName();
-		} else if(this instanceof SipServletRequestImpl) {
-			SipServletRequestImpl r = (SipServletRequestImpl)this;
-			if(r.isOrphan()) {
+		} else {
+			if(isOrphan()) {
+				if(logger.isDebugEnabled()) {
+					logger.debug("Orphans session " + applicationName + " " + sessionKey);
+				}
 				sessionKey = SessionManagerUtil.getSipSessionKey(
-						SessionManagerUtil.getSipApplicationSessionKey(applicationName, r.getAppSessionId()).getId(),
-						applicationName, r.message, false);
+						SessionManagerUtil.getSipApplicationSessionKey(applicationName, ((SipServletRequestImpl)this).getAppSessionId()).getId(),
+						applicationName, message, false);
 			}
 		}
-		
-		// Only orphans reach here
 		if(applicationName != null && sessionKey != null) {
-			if(logger.isDebugEnabled()) {
-				logger.debug("Orphans session " + applicationName + " " + sessionKey);
-			}
 			final SipContext sipContext = sipFactoryImpl.getSipApplicationDispatcher().findSipApplication(applicationName);
 			//call id not needed anymore since the sipappsessionkey is not a callid anymore but a random uuid
 			final SipApplicationSessionKey sipApplicationSessionKey = SessionManagerUtil.getSipApplicationSessionKey(
 					applicationName, 
 					sessionKey.getApplicationSessionId());
 			MobicentsSipApplicationSession applicationSession =  sipContext.getSipManager().getSipApplicationSession(sipApplicationSessionKey, create);
-			applicationSession.setOrphan(true);
+			applicationSession.setOrphan(isOrphan());
 			return applicationSession;
 		}
 		return null;
@@ -1069,18 +1067,9 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 			session = ((SipManager)sipApplicationSessionImpl.getSipContext().getManager()).getSipSession(sessionKey, create,
 					sipFactoryImpl, sipApplicationSessionImpl);
 			session.setSessionCreatingTransactionRequest(this);
+			session.setOrphan(isOrphan());
 			sessionKey = session.getKey();
 		} 
-		if(create && this instanceof SipServletRequestImpl) {
-			if(((SipServletRequestImpl) this ).isOrphan()) {
-				if(sipSession == null) {
-					MobicentsSipApplicationSession sipApplicationSessionImpl = (MobicentsSipApplicationSession) getApplicationSession(true);
-					session = sipSession = ((SipManager)sipApplicationSessionImpl.getSipContext().getManager()).getSipSession(sessionKey, true,
-							sipFactoryImpl, sipApplicationSessionImpl);
-				}
-				sipSession.setOrphan(true);
-			}
-		}
 		if(session != null) {
 			return session.getSession();
 		}
@@ -1999,5 +1988,14 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 //		transport= null;
 //		userPrincipal= null;
 //	}
+	
+	public void setOrphan(boolean orphan) {
+		this.orphan = orphan;
+	}
+
+	public boolean isOrphan() {
+		return orphan;
+	}	
+	boolean orphan;
 
 }
