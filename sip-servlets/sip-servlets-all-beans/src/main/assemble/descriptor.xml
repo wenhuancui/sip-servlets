@@ -80,7 +80,7 @@
 	    <file>
 	      <source>${basedir}/../sip-servlets-bootstrap/release/profileservice-jboss-beans.xml</source>
 	      <destName>profileservice-jboss-beans.xml</destName>
-	      <outputDirectory>/jbossweb.sar</outputDirectory>
+	      <outputDirectory>/</outputDirectory>
 	    </file>
 	  </files>
 	  

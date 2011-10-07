@@ -44,7 +44,7 @@
         </uninstall>
         <property name="managementViewProxy"><inject bean="ProfileServiceProxyFactory" property="managementViewProxy"/></property>
         <property name="deployMgrProxy"><inject bean="ProfileServiceProxyFactory" property="deployMgrProxy"/></property>
-        <property name="securityDomain">profileservice</property>
+        <property name="securityDomain">jmx-console</property>
         <property name="securityManagement"><inject bean="JNDIBasedSecurityManagement"/></property>
     </bean>
     
@@ -63,6 +63,8 @@
         <property name="deployer"><inject bean="ProfileServiceDeployer"/></property>
         <property name="profileService"><inject bean="ProfileService"/></property>
         <property name="profileRepository"><inject bean="ProfileRepositoryFactory" /></property>
+        <property name="securityDomain">jmx-console</property>
+        <property name="securityManagement"><inject bean="JNDIBasedSecurityManagement"/></property>
         <depends>TransientDeploymentsProfileManager</depends>
     </bean>
 
@@ -161,10 +163,40 @@
     <bean name="ProfileServiceProxyFactory" class="org.jboss.profileservice.remoting.ProxyFactory">
         <property name="dispatchName">ProfileService</property>
         <property name="jndiName">ProfileService</property>
+        <property name="mgtViewJndiName">ManagementView</property>
+        <property name="deployMgrJndiName">DeploymentManager</property>
         <property name="locator"><inject bean="ConnectorMBean" property="invokerLocator"/></property>
         <property name="profileService"><inject bean="ProfileService"/></property>
         <property name="viewManager"><inject bean="ManagementView"/></property>
         <property name="deploymentManager"><inject bean="DeploymentManager"/></property>
+        <!-- Create links from secured proxies back to old secured ejb3 facades -->
+        <property name="createEjb3Links">true</property>
+        <!-- Server side security interceptor stack -->
+        <property name="serverProxyInterceptors">
+            <list>
+            <!-- comment this list to disable auth checks for the profileservice -->
+                <bean class="org.jboss.aspects.security.AuthenticationInterceptor">
+                    <constructor>
+                        <parameter>
+                            <value-factory bean="JNDIBasedSecurityManagement" method="getAuthenticationManager"
+                            parameter="jmx-console"/>
+                        </parameter>
+                    </constructor>
+                </bean>
+                <bean class="org.jboss.aspects.security.RoleBasedAuthorizationInterceptor">
+                    <constructor>
+                        <parameter>
+                            <value-factory bean="JNDIBasedSecurityManagement" method="getAuthenticationManager"
+                                parameter="jmx-console"/>
+                        </parameter>
+                        <parameter>
+                            <value-factory bean="JNDIBasedSecurityManagement" method="getAuthenticationManager"
+                                parameter="jmx-console"/>
+                        </parameter>
+                    </constructor>
+                </bean>
+            </list>
+        </property>
         <depends>ConnectorMBean</depends>
     </bean>
     <bean name="PlatformMBeanKernelRegistryPlugin" class="org.jboss.profileservice.management.PlatformMBeanKernelRegistryPlugin">
@@ -197,6 +229,10 @@
         class="org.jboss.profileservice.management.mbean.SimpleMBeanDeploymentNameBuilder">
         <property name="keyName">name</property>
     </bean>
+    <bean name="JNDINameKeyMBeanDeploymentNameBuilder"
+        class="org.jboss.profileservice.management.mbean.SimpleMBeanDeploymentNameBuilder">
+        <property name="keyName">jndiName</property>
+    </bean>
     <bean name="HostMBeanDeploymentNameBuilder"
         class="org.jboss.profileservice.management.mbean.SimpleMBeanDeploymentNameBuilder">
         <property name="keyName">host</property>
@@ -228,7 +264,7 @@
                 <bean class="org.jboss.profileservice.management.ProxyDeploymentInfo">
                     <property name="compType">MBean</property>
                     <property name="compSubtype">WebApplicationManager</property>
-                    <property name="pattern">jboss.web:host=localhost,type=Manager,*</property>
+                    <property name="pattern">jboss.web:host=*,type=Manager,*</property>
                     <property name="nameBuilder">
                         <inject bean="WarManagerMBeanDeploymentNameBuilder"/>
                     </property>
@@ -237,7 +273,7 @@
                 <bean class="org.jboss.profileservice.management.ProxyDeploymentInfo">
                     <property name="compType">MBean</property>
                     <property name="compSubtype">ConvergedSipWebApplicationManager</property>
-                    <property name="pattern">jboss.web:host=localhost,type=SipManager,*</property>
+                    <property name="pattern">jboss.web:host=*,type=SipManager,*</property>
                     <property name="nameBuilder">
                         <inject bean="WarManagerMBeanDeploymentNameBuilder"/>
                     </property>
@@ -306,6 +342,38 @@
                     <property name="pattern">jboss.web:type=ThreadPool,*</property>
                     <property name="nameBuilder">
                         <inject bean="NameKeyMBeanDeploymentNameBuilder"/>
+                    </property>
+                </bean>
+            </set>
+        </property>
+    </bean>
+    <bean name="EJBMetricsManagedDeploymentFactory"
+        class="org.jboss.profileservice.management.ProxyManagedDeploymentFactory">
+        <property name="factoryName">EJBMetrics</property>
+        <property name="defaultViewUse">STATISTIC</property>
+        <property name="propertyMetaMappings">
+            <map keyClass="java.lang.String" valueClass="java.lang.String">
+                <entry>
+                     <key>DetypedInvocationStatistics</key>
+                     <value>org.jboss.profileservice.management.mbean.EJBInvocationStatsMapper</value>
+                </entry>
+            </map>
+        </property>
+        <property name="rootMOPatterns">
+            <set elementClass="org.jboss.profileservice.management.ProxyDeploymentInfo">
+                <!-- Manager -->
+                <bean class="org.jboss.profileservice.management.ProxyDeploymentInfo">
+                    <property name="compType">EJB</property>
+                    <property name="compSubtype">Unknown</property>
+                    <property name="subtypeAttribute">BeanTypeName</property>
+                    <property name="pattern">jboss.j2ee:service=EJB,*</property>
+                    <property name="excludedKeys">
+                       <set elementClass="java.lang.String">
+                           <value>plugin</value>
+                       </set>
+                    </property>
+                    <property name="nameBuilder">
+                        <inject bean="JNDINameKeyMBeanDeploymentNameBuilder"/>
                     </property>
                 </bean>
             </set>
