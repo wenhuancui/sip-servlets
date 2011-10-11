@@ -192,17 +192,7 @@ public class SipServletRequestImpl extends SipServletMessageImpl implements
 	private transient boolean isReadOnly;		
 	
 	// This field is only used in CANCEL requests where we need the INVITe transaction
-	private transient Transaction inviteTransactionToCancel;
-	
-	private String appSid;
-	
-	public String getAppSessionId() {
-		return appSid;
-	}
-	
-	public void setAppSessionId(String appSid) {
-		this.appSid = appSid;
-	}
+	private transient Transaction inviteTransactionToCancel;	
 	
 	// needed for externalizable
 	public SipServletRequestImpl () {}

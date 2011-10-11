@@ -86,6 +86,7 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 		if(request.getFrom().toString().contains("proxy-orphan")) {
 			SipFactory sipFactory = (SipFactory) getServletContext().getAttribute(SIP_FACTORY);
 			SipFactoryExt sipFactoryExt = (SipFactoryExt) sipFactory;
+			request.getApplicationSession(false);
 			sipFactoryExt.setRouteOrphanRequests(true);
 			Object o = getServletContext().getAttribute(javax.servlet.sip.SipServlet. OUTBOUND_INTERFACES);
 			request.getProxy().setRecordRoute(true);
@@ -291,7 +292,10 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 		logger.info("Sip Session is :" + response.getSession(false));
 		
 		SipServletResponseExt sipServletResponseExt = (SipServletResponseExt) response;
-		if(sipServletResponseExt.isOrphan()) return;
+		if(sipServletResponseExt.isOrphan()) {
+			sipServletResponseExt.getApplicationSession(false);
+			return;
+		}
 		
 		if(!"PRACK".equals(response.getMethod()) && response.getProxy() != null && response.getProxy().getOriginalRequest() != null) {
 			logger.info("Original Sip Session is :" + response.getProxy().getOriginalRequest().getSession(false));
@@ -440,12 +444,12 @@ public class ProxySipServlet extends SipServlet implements SipErrorListener, Pro
 	}
 
 	public void sessionCreated(SipSessionEvent se) {
-		// TODO Auto-generated method stub
+		logger.info("sessionCreated " +  se.getSession().getId());
 		
 	}
 
 	public void sessionDestroyed(SipSessionEvent se) {
-		// TODO Auto-generated method stub
+		logger.info("sessionDestroyed " +  se.getSession().getId());
 		
 	}
 
