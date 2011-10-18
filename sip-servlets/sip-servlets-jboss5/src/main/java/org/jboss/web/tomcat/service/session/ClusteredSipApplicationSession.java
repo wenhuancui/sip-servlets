@@ -1280,8 +1280,9 @@ public abstract class ClusteredSipApplicationSession<O extends OutgoingDistribut
 	}
 
 	protected final void sessionAttributesDirty() {
-		if (!sessionAttributesDirty && log.isTraceEnabled())
-			log.trace("Marking session attributes dirty " + key);
+		if (!sessionAttributesDirty && log.isDebugEnabled()) {
+			log.debug("Marking session attributes dirty " + key);
+		}
 
 		sessionAttributesDirty = true;
 		ConvergedSessionReplicationContext.bindSipApplicationSession(this, manager.getSnapshotSipManager());

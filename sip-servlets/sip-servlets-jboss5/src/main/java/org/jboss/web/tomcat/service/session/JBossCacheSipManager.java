@@ -65,6 +65,7 @@ import javax.servlet.sip.SipApplicationSession;
 import javax.servlet.sip.SipSession;
 import javax.servlet.sip.SipSession.State;
 import javax.sip.SipStack;
+import javax.sip.message.Request;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
@@ -382,9 +383,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          {
             try
             {
-               if (trace_)
+               if (log_.isDebugEnabled())
                {
-                  log_.trace("Creating an empty ClusteredSession");
+                  log_.debug("Creating an empty ClusteredSession");
                }
                session = createEmptyConvergedClusteredSession();
             }
@@ -396,9 +397,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
                }
             }
          }
-         else if (trace_)
+         else if (log_.isDebugEnabled())
          {
-            log_.trace("createEmptySession(): Manager is not handling requests; returning null");
+            log_.debug("createEmptySession(): Manager is not handling requests; returning null");
          }
       }
       catch (InterruptedException e)
@@ -472,9 +473,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
                }
             }
          }
-         else if (trace_)
+         else if (log_.isDebugEnabled())
          {
-            log_.trace("createEmptySession(): Manager is not handling requests; returning null");
+            log_.debug("createEmptySession(): Manager is not handling requests; returning null");
          }
       }
       catch (InterruptedException e)
@@ -499,9 +500,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 
       if(maxActiveAllowed_ != -1 && calcActiveSessions() >= maxActiveAllowed_)
       {
-         if (trace_)
+         if (log_.isDebugEnabled())
          {
-            log_.trace("createSession(): active sessions = " + calcActiveSessions() +
+            log_.debug("createSession(): active sessions = " + calcActiveSessions() +
                        " and max allowed sessions = " + maxActiveAllowed_);
          }
          
@@ -538,9 +539,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 	          // We are using mod_jk for load balancing. Append the JvmRoute.
 	          if (getUseJK())
 	          {
-	              if (trace_)
+	              if (log_.isDebugEnabled())
 	              {
-	                  log_.trace("createSession(): useJK is true. Will append JvmRoute: " + this.getJvmRoute());
+	                  log_.debug("createSession(): useJK is true. Will append JvmRoute: " + this.getJvmRoute());
 	              }
 	              sessionId += "." + this.getJvmRoute();
 	          }
@@ -556,9 +557,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 	      
 	      session.tellNew(ClusteredSessionNotificationCause.CREATE);
 	
-	      if (trace_)
+	      if (log_.isDebugEnabled())
 	      {
-	         log_.trace("Created a ClusteredSession with id: " + sessionId);
+	         log_.debug("Created a ClusteredSession with id: " + sessionId);
 	      }
 	
 	      createdCounter_.incrementAndGet(); // the call to add() handles the other counters 
@@ -835,9 +836,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
                }
             }
          }
-         else if (trace_)
+         else if (log_.isDebugEnabled())
          {
-            log_.trace("add(): ignoring add -- Manager is not actively handling requests");
+            log_.debug("add(): ignoring add -- Manager is not actively handling requests");
          }
       }
       catch (InterruptedException e)
@@ -882,9 +883,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          // Update counters
          calcActiveSessions();
          
-         if (trace_)
+         if (log_.isDebugEnabled())
          {
-            log_.trace("Session with id=" + session.getIdInternal() + " added. " +
+            log_.debug("Session with id=" + session.getIdInternal() + " added. " +
                        "Current active sessions " + localActiveCounter_.get());
          }
       }
@@ -923,8 +924,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
                   // Make a thread-safe copy of the new id list to work with
                   Set<String> ids = new HashSet<String>(unloadedSessions_.keySet());
   
-                  if(trace_) {
-                     log_.trace("findSessions: loading sessions from distributed cache: " + ids);
+                  if(log_.isDebugEnabled()) {
+                     log_.debug("findSessions: loading sessions from distributed cache: " + ids);
                   }
   
                   for(String id :  ids) {
@@ -1160,9 +1161,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
                   if (passivationMax >= 0 
                         && elapsed > passivationMax)
                   {
-                     if (trace_)
+                     if (log_.isDebugEnabled())
                      {
-                        log_.trace("Elapsed time of " + elapsed + " for session "+ 
+                        log_.debug("Elapsed time of " + elapsed + " for session "+ 
                               realId + " exceeds max of " + passivationMax + "; passivating");
                      }
                      processUnloadedSessionPassivation(realId, osu);
@@ -1175,9 +1176,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
                               && calcActiveSessions() > maxActiveAllowed_ 
                               && elapsed >= passivationMin)
                   {
-                     if (trace_)
+                     if (log_.isDebugEnabled())
                      {
-                        log_.trace("Elapsed time of " + elapsed + " for session "+ 
+                        log_.debug("Elapsed time of " + elapsed + " for session "+ 
                               realId + " exceeds min of " + passivationMin + "; passivating");
                      }
                      processUnloadedSessionPassivation(realId, osu);
@@ -1243,8 +1244,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          // from the list of cached sessions we haven't loaded
          if (unloadedSessions_.remove(realId) != null)
          {
-            if (trace_)
-               log_.trace("Removed entry for session " + realId + " from unloaded session map");
+            if (log_.isDebugEnabled())
+               log_.debug("Removed entry for session " + realId + " from unloaded session map");
          }
          
          // If session has failed over and has been passivated here,
@@ -1313,14 +1314,14 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
       long passivationMax = passivationMaxIdleTime_ * 1000L;
       long passivationMin = passivationMinIdleTime_ * 1000L;
 
-      if (trace_)
+      if (log_.isDebugEnabled())
       { 
-         log_.trace("processExpirationPassivation(): Looking for sessions that have expired ...");
-         log_.trace("processExpirationPassivation(): active sessions = " + calcActiveSessions());
-         log_.trace("processExpirationPassivation(): expired sessions = " + expiredCounter_);
+         log_.debug("processExpirationPassivation(): Looking for sessions that have expired ...");
+         log_.debug("processExpirationPassivation(): active sessions = " + calcActiveSessions());
+         log_.debug("processExpirationPassivation(): expired sessions = " + expiredCounter_);
          if (passivate)
          {
-            log_.trace("processExpirationPassivation(): passivated count = " + getPassivatedSessionCount());
+            log_.debug("processExpirationPassivation(): passivated count = " + getPassivatedSessionCount());
          }
       }
       
@@ -1513,14 +1514,14 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          SessionInvalidationTracker.resume();
       }
       
-      if (trace_)
+      if (log_.isDebugEnabled())
       { 
-         log_.trace("processExpirationPassivation(): Completed ...");
-         log_.trace("processExpirationPassivation(): active sessions = " + calcActiveSessions());
-         log_.trace("processExpirationPassivation(): expired sessions = " + expiredCounter_);
+         log_.debug("processExpirationPassivation(): Completed ...");
+         log_.debug("processExpirationPassivation(): active sessions = " + calcActiveSessions());
+         log_.debug("processExpirationPassivation(): expired sessions = " + expiredCounter_);
          if (passivate)
          {
-            log_.trace("processExpirationPassivation(): passivated count = " + getPassivatedSessionCount());
+            log_.debug("processExpirationPassivation(): passivated count = " + getPassivatedSessionCount());
          }
       }
    }
@@ -1535,14 +1536,14 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
       long passivationMax = passivationMaxIdleTime_ * 1000L;
       long passivationMin = passivationMinIdleTime_ * 1000L;
 
-      if (trace_) { 
-         log_.trace("processSipSessionExpirationPassivation(): Looking for sip sessions that have expired ...");
-         log_.trace("processSipSessionExpirationPassivation(): passivation Max = " + passivationMax);
-         log_.trace("processSipSessionExpirationPassivation(): passivation Min = " + passivationMin);
-         log_.trace("processSipSessionExpirationPassivation(): active sip sessions = " + calcActiveSipSessions());
-         log_.trace("processSipSessionExpirationPassivation(): expired sip sessions = " + expiredSipSessionCounter_);
+      if (log_.isDebugEnabled()) { 
+         log_.debug("processSipSessionExpirationPassivation(): Looking for sip sessions that have expired ...");
+         log_.debug("processSipSessionExpirationPassivation(): passivation Max = " + passivationMax);
+         log_.debug("processSipSessionExpirationPassivation(): passivation Min = " + passivationMin);
+         log_.debug("processSipSessionExpirationPassivation(): active sip sessions = " + calcActiveSipSessions());
+         log_.debug("processSipSessionExpirationPassivation(): expired sip sessions = " + expiredSipSessionCounter_);
          if (passivate) {
-            log_.trace("processSipSessionExpirationPassivation(): passivated count = " + getPassivatedSipSessionCount());
+            log_.debug("processSipSessionExpirationPassivation(): passivated count = " + getPassivatedSipSessionCount());
          }
       }
       
@@ -1611,8 +1612,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
                try {
                   long timeNow = System.currentTimeMillis();
                   long timeIdle = timeNow - passivationCheck.getLastUpdate();
-                  if(trace_) {
-                	  log_.trace("Time now " + timeNow + ", Time Idle " + timeIdle);
+                  if(log_.isDebugEnabled()) {
+                	  log_.debug("Time now " + timeNow + ", Time Idle " + timeIdle);
                   }
                   // if maxIdle time configured, means that we need to passivate sessions that have
                   // exceeded the max allowed idle time
@@ -1647,12 +1648,12 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          ConvergedSessionInvalidationTracker.resume();
       }
       
-      if (trace_) { 
-         log_.trace("processSipSessionExpirationPassivation(): Completed ...");
-         log_.trace("processSipSessionExpirationPassivation(): active sip sessions = " + calcActiveSipSessions());
-         log_.trace("processSipSessionExpirationPassivation(): expired sip sessions = " + expiredSipSessionCounter_);
+      if (log_.isDebugEnabled()) { 
+         log_.debug("processSipSessionExpirationPassivation(): Completed ...");
+         log_.debug("processSipSessionExpirationPassivation(): active sip sessions = " + calcActiveSipSessions());
+         log_.debug("processSipSessionExpirationPassivation(): expired sip sessions = " + expiredSipSessionCounter_);
          if (passivate) {
-            log_.trace("processSipSessionExpirationPassivation(): passivated count = " + getPassivatedSipSessionCount());
+            log_.debug("processSipSessionExpirationPassivation(): passivated count = " + getPassivatedSipSessionCount());
          }
       }
    }
@@ -1668,14 +1669,14 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
       long passivationMax = passivationMaxIdleTime_ * 1000L;
       long passivationMin = passivationMinIdleTime_ * 1000L;
 
-      if (trace_)
+      if (log_.isDebugEnabled())
       { 
-         log_.trace("processSipApplicationSessionExpirationPassivation(): Looking for sip application sessions that have expired ...");
-         log_.trace("processSipApplicationSessionExpirationPassivation(): active sip application sessions = " + calcActiveSipApplicationSessions());
-         log_.trace("processSipApplicationSessionExpirationPassivation(): expired sip application sessions = " + expiredSipApplicationSessionCounter_);
+         log_.debug("processSipApplicationSessionExpirationPassivation(): Looking for sip application sessions that have expired ...");
+         log_.debug("processSipApplicationSessionExpirationPassivation(): active sip application sessions = " + calcActiveSipApplicationSessions());
+         log_.debug("processSipApplicationSessionExpirationPassivation(): expired sip application sessions = " + expiredSipApplicationSessionCounter_);
          if (passivate)
          {
-            log_.trace("processSipApplicationSessionExpirationPassivation(): passivated count = " + getPassivatedSipApplicationSessionCount());
+            log_.debug("processSipApplicationSessionExpirationPassivation(): passivated count = " + getPassivatedSipApplicationSessionCount());
          }
       }
       
@@ -1801,14 +1802,14 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          ConvergedSessionInvalidationTracker.resume();
       }
       
-      if (trace_)
+      if (log_.isDebugEnabled())
       { 
-         log_.trace("processSipApplicationSessionExpirationPassivation(): Completed ...");
-         log_.trace("processSipApplicationSessionExpirationPassivation(): active sessions = " + calcActiveSipApplicationSessions());
-         log_.trace("processSipApplicationSessionExpirationPassivation(): expired sessions = " + expiredSipApplicationSessionCounter_);
+         log_.debug("processSipApplicationSessionExpirationPassivation(): Completed ...");
+         log_.debug("processSipApplicationSessionExpirationPassivation(): active sessions = " + calcActiveSipApplicationSessions());
+         log_.debug("processSipApplicationSessionExpirationPassivation(): expired sessions = " + expiredSipApplicationSessionCounter_);
          if (passivate)
          {
-            log_.trace("processSipApplicationSessionExpirationPassivation(): passivated count = " + getPassivatedSipApplicationSessionCount());
+            log_.debug("processSipApplicationSessionExpirationPassivation(): passivated count = " + getPassivatedSipApplicationSessionCount());
          }
       }
    }
@@ -1828,9 +1829,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
       {
          synchronized (session)
          {
-            if (trace_)
+            if (log_.isDebugEnabled())
             {
-               log_.trace("Passivating session with id: " + realId);
+               log_.debug("Passivating session with id: " + realId);
             }
             
             session.notifyWillPassivate(ClusteredSessionNotificationCause.PASSIVATION);
@@ -1841,23 +1842,23 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
             // expose the session to regular invalidation.
             Object obj = unloadedSessions_.put(realId, 
                   new OwnedSessionUpdate(null, session.getLastAccessedTimeInternal(), session.getMaxInactiveInterval(), true));
-            if (trace_)
+            if (log_.isDebugEnabled())
             {
                if (obj == null)
                {
-                  log_.trace("New session " + realId + " added to unloaded session map");
+                  log_.debug("New session " + realId + " added to unloaded session map");
                }
                else
                {
-                  log_.trace("Updated timestamp for unloaded session " + realId);
+                  log_.debug("Updated timestamp for unloaded session " + realId);
                }
             }
             sessions_.remove(realId);
          }
       }
-      else if (trace_)
+      else if (log_.isDebugEnabled())
       {
-         log_.trace("processSessionPassivation():  could not find session " + realId);
+         log_.debug("processSessionPassivation():  could not find session " + realId);
       }
    }
    
@@ -1868,9 +1869,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
     */
    private void processUnloadedSessionPassivation(String realId, OwnedSessionUpdate osu)
    {
-      if (trace_)
+      if (log_.isDebugEnabled())
       {
-         log_.trace("Passivating session with id: " + realId);
+         log_.debug("Passivating session with id: " + realId);
       }
 
       getDistributedCacheManager().evictSession(realId, osu.getOwner());
@@ -1917,9 +1918,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
       {
          ClusteredSession<? extends OutgoingDistributableSessionData> ses = sessions[i];
          
-         if (trace_)
+         if (log_.isDebugEnabled())
          {
-             log_.trace("clearSessions(): clear session by expiring or passivating: " + ses);
+             log_.debug("clearSessions(): clear session by expiring or passivating: " + ses);
          }
          try
          {
@@ -2010,9 +2011,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          // Need to invalidate the loaded session. We get back whether
          // this an actual version increment
          updated = session.setVersionFromDistributedCache(distributedVersion);
-         if (updated && trace_)      
+         if (updated && log_.isDebugEnabled())      
          {            
-            log_.trace("session in-memory data is invalidated for id: " + realId + 
+            log_.debug("session in-memory data is invalidated for id: " + realId + 
                        " new version: " + distributedVersion);
          }         
       }
@@ -2024,14 +2025,14 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          if (existing == null)
          {
             calcActiveSessions();
-            if (trace_)
+            if (log_.isDebugEnabled())
             {
-               log_.trace("New session " + realId + " added to unloaded session map");
+               log_.debug("New session " + realId + " added to unloaded session map");
             }
          }
-         else if (trace_)
+         else if (log_.isDebugEnabled())
          {
-            log_.trace("Updated timestamp for unloaded session " + realId);
+            log_.debug("Updated timestamp for unloaded session " + realId);
          }
       }
       
@@ -2058,9 +2059,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          if (realId == null)
             return;
 
-         if (trace_)
+         if (log_.isDebugEnabled())
          {
-            log_.trace("Removing session from store with id: " + realId);
+            log_.debug("Removing session from store with id: " + realId);
          }
 
          try {
@@ -2103,9 +2104,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          SipSessionKey key = clusterSess.getKey();
          if (key == null) return;
 
-         if (trace_)
+         if (log_.isDebugEnabled())
          {
-            log_.trace("Removing sip session from local store with id: " + key);
+            log_.debug("Removing sip session from local store with id: " + key);
          }
 
          try {
@@ -2149,9 +2150,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
     	  SipApplicationSessionKey key = clusterSess.getKey();
          if (key == null) return;
 
-         if (trace_)
+         if (log_.isDebugEnabled())
          {
-            log_.trace("Removing sip application session from local store with id: " + key);
+            log_.debug("Removing sip application session from local store with id: " + key);
          }
 
          try {
@@ -2327,9 +2328,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          // Update counters
 //         calcActiveSipSessions();
          
-         if (trace_)
+         if (log_.isDebugEnabled())
          {
-            log_.trace("Session with id=" + session.getKey() + " added. " +
+            log_.debug("Session with id=" + session.getKey() + " added. " +
                        "Current active sessions " + localActiveCounter_.get());
          }
       }
@@ -2369,9 +2370,9 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
          // Update counters
 //         calcActiveSipApplicationSessions();
          
-         if (trace_)
+         if (log_.isDebugEnabled())
          {
-            log_.trace("Session with id=" + session.getKey() + " added. " +
+            log_.debug("Session with id=" + session.getKey() + " added. " +
                        "Current active sessions " + localActiveCounter_.get());
          }
       }
@@ -2628,6 +2629,10 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			return null;
 		}
 
+		if(logger.isDebugEnabled()) {
+			logger.debug("load sip application session " + key + ", create = " + create);
+		}
+		
 		long begin = System.currentTimeMillis();
 		boolean mustAdd = false;
 		boolean passivated = false;
@@ -2733,12 +2738,12 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			stats_.updateLoadStats(key.toString(), elapsed);
 
 			if (log_.isDebugEnabled()) {
-				log_.debug("loadSession(): id= " + key.toString()
+				log_.debug("loadSipApplicationSession(): id= " + key.toString()
 						+ ", session=" + session);
 			}
 			return session;
 		} else if (log_.isDebugEnabled()) {
-			log_.debug("loadSession(): session " + key.toString()
+			log_.debug("loadSipApplicationSession(): session " + key.toString()
 					+ " not found in distributed cache");
 		}
 		if(session != null) {
@@ -2917,8 +2922,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 	 */
 	private void processUnloadedSipSessionPassivation(ClusteredSipSessionKey key,
 			OwnedSessionUpdate osu) {
-		if (trace_) {
-			log_.trace("Passivating session with id: " + key);
+		if (log_.isDebugEnabled()) {
+			log_.debug("Passivating session with id: " + key);
 		}
 
 		getDistributedCacheConvergedSipManager().evictSipSession(key.getSipApplicationSessionKey().getId(), SessionManagerUtil.getSipSessionHaKey(key.getSipSessionKey()), osu.owner);
@@ -2934,8 +2939,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 	 */
 	private void processUnloadedSipApplicationSessionPassivation(String key,
 			OwnedSessionUpdate osu) {
-		if (trace_) {
-			log_.trace("Passivating session with id: " + key);
+		if (log_.isDebugEnabled()) {
+			log_.debug("Passivating session with id: " + key);
 		}
 
 		getDistributedCacheConvergedSipManager().evictSipApplicationSession(key, osu.owner);
@@ -3093,8 +3098,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 						// passivate sessions that have
 						// exceeded the max allowed idle time
 						if (passivationMax >= 0 && elapsed > passivationMax) {
-							if (trace_) {
-								log_.trace("Elapsed time of " + elapsed
+							if (log_.isDebugEnabled()) {
+								log_.debug("Elapsed time of " + elapsed
 										+ " for session " + sipApplicationSessionKey
 										+ " exceeds max of " + passivationMax
 										+ "; passivating");
@@ -3110,8 +3115,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 						else if (maxActiveAllowed_ > 0 && passivationMin >= 0
 								&& calcActiveSessions() > maxActiveAllowed_
 								&& elapsed >= passivationMin) {
-							if (trace_) {
-								log_.trace("Elapsed time of " + elapsed
+							if (log_.isDebugEnabled()) {
+								log_.debug("Elapsed time of " + elapsed
 										+ " for session " + sipApplicationSessionKey
 										+ " exceeds min of " + passivationMin
 										+ "; passivating");
@@ -3522,8 +3527,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			// We weren't managing the session anyway. But remove it
 			// from the list of cached sessions we haven't loaded
 			if (unloadedSipApplicationSessions_.remove(key) != null) {
-				if (trace_)
-					log_.trace("Removed entry for session " + key
+				if (log_.isDebugEnabled())
+					log_.debug("Removed entry for session " + key
 							+ " from unloaded session map");
 			}
 
@@ -3598,8 +3603,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			// We weren't managing the session anyway. But remove it
 			// from the list of cached sessions we haven't loaded
 			if (unloadedSipSessions_.remove(key) != null) {
-				if (trace_)
-					log_.trace("Removed entry for session " + key
+				if (log_.isDebugEnabled())
+					log_.debug("Removed entry for session " + key
 							+ " from unloaded session map");
 			}
 
@@ -3844,8 +3849,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 			// this an actual version increment
 			updated = session
 					.setVersionFromDistributedCache(distributedVersion);
-			if (updated && trace_) {
-				log_.trace("session in-memory data is invalidated for id: "
+			if (updated && log_.isDebugEnabled()) {
+				log_.debug("session in-memory data is invalidated for id: "
 						+ key.toString() + " new version: " + distributedVersion);
 			}
 		} else {
@@ -4862,8 +4867,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 	public void checkSipApplicationSessionPassivation(SipApplicationSessionKey key) {
 		if (maxActiveAllowed_ > 0
 				&& calcActiveSipApplicationSessions() >= maxActiveAllowed_) {
-			if (trace_) {
-				log_.trace("checkSipApplicationSessionPassivation(): active sip application sessions = "
+			if (log_.isDebugEnabled()) {
+				log_.debug("checkSipApplicationSessionPassivation(): active sip application sessions = "
 						+ calcActiveSipApplicationSessions() + " and max allowed sessions = "
 						+ maxActiveAllowed_);
 			}
@@ -4886,8 +4891,8 @@ public class JBossCacheSipManager<O extends OutgoingDistributableSessionData> ex
 	public void checkSipSessionPassivation(SipSessionKey key) {
 		if (maxActiveAllowed_ > 0
 				&& calcActiveSipSessions() >= maxActiveAllowed_) {
-			if (trace_) {
-				log_.trace("checkSipSessionPassivation(): active sip sessions = "
+			if (log_.isDebugEnabled()) {
+				log_.debug("checkSipSessionPassivation(): active sip sessions = "
 						+ calcActiveSipSessions() + " and max allowed sessions = "
 						+ maxActiveAllowed_);
 			}

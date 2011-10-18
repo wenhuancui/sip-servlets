@@ -31,8 +31,8 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.jboss.logging.Logger;
 import org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistributableSessionData;
-import org.mobicents.servlet.sip.core.session.SipApplicationSessionKey;
-import org.mobicents.servlet.sip.core.session.SipSessionKey;
+import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSessionKey;
+import org.mobicents.servlet.sip.core.session.MobicentsSipSessionKey;
 import org.mobicents.servlet.sip.message.SipServletRequestImpl;
 import org.mobicents.servlet.sip.message.SipServletResponseImpl;
 
@@ -267,6 +267,9 @@ public final class ConvergedSessionReplicationContext
    public static void bindSession(ClusteredSession<? extends OutgoingDistributableSessionData> session, SnapshotManager manager)
    {
       ConvergedSessionReplicationContext ctx = getCurrentContext();
+      if(logger.isDebugEnabled()) {
+			logger.debug("binding session= " + session + " in mgr " + manager + " ctx = " + ctx);
+	  }
       if (ctx != null && ctx.webappCount > 0)
       {
          ctx.addReplicatableSession(session, manager);
@@ -279,7 +282,10 @@ public final class ConvergedSessionReplicationContext
    
    public static void bindSipSession(ClusteredSipSession<? extends OutgoingDistributableSessionData> session, SnapshotSipManager manager)
    {
-      ConvergedSessionReplicationContext ctx = getCurrentSipContext();      
+      ConvergedSessionReplicationContext ctx = getCurrentSipContext();  
+      if(logger.isDebugEnabled()) {
+			logger.debug("binding sip session= " + session + " in mgr " + manager + " ctx = " + ctx);
+	  }
       if (ctx != null && ctx.sipappCount > 0)
       {
          ctx.addReplicatableSipSession(session, manager);
@@ -292,7 +298,11 @@ public final class ConvergedSessionReplicationContext
    
    public static void bindSipApplicationSession(ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> session, SnapshotSipManager manager)
    {
-      ConvergedSessionReplicationContext ctx = getCurrentSipContext();      
+	   
+      ConvergedSessionReplicationContext ctx = getCurrentSipContext(); 
+      if(logger.isDebugEnabled()) {
+			logger.debug("binding app session= " + session + " in mgr " + manager + " ctx = " + ctx);
+	  }
       if (ctx != null && ctx.sipappCount > 0)
       {
          ctx.addReplicatableSipApplicationSession(session, manager);
@@ -306,24 +316,33 @@ public final class ConvergedSessionReplicationContext
    public static void sessionExpired(ClusteredSession<? extends OutgoingDistributableSessionData> session, String realId, SnapshotManager manager)
    {
       ConvergedSessionReplicationContext ctx = getCurrentContext();
+      if(logger.isDebugEnabled()) {
+			logger.debug("session expired session= " + session + " in mgr " + manager + " ctx = " + ctx);
+	  }
       if (ctx != null && ctx.webappCount > 0)
       {
          ctx.sessionExpired(session, manager);
       }      
    }
    
-   public static void sipSessionExpired(ClusteredSipSession<? extends OutgoingDistributableSessionData> session, SipSessionKey key, SnapshotSipManager manager)
+   public static void sipSessionExpired(ClusteredSipSession<? extends OutgoingDistributableSessionData> session, MobicentsSipSessionKey key, SnapshotSipManager manager)
    {
       ConvergedSessionReplicationContext ctx = getCurrentSipContext();
+      if(logger.isDebugEnabled()) {
+			logger.debug("sipsession expired session= " + session + " in mgr " + manager + " ctx = " + ctx);
+	  }
       if (ctx != null && ctx.sipappCount > 0)
       {
          ctx.sipSessionExpired(session, manager);
       }      
    }
    
-   public static void sipApplicationSessionExpired(ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> session, SipApplicationSessionKey key, SnapshotSipManager manager)
+   public static void sipApplicationSessionExpired(ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> session, MobicentsSipApplicationSessionKey key, SnapshotSipManager manager)
    {
       ConvergedSessionReplicationContext ctx = getCurrentSipContext();
+      if(logger.isDebugEnabled()) {
+			logger.debug("appsession expired session= " + session + " in mgr " + manager + " ctx = " + ctx);
+	  }
       if (ctx != null && ctx.sipappCount > 0)
       {
          ctx.sipApplicationSessionExpired(session, manager);
