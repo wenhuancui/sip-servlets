@@ -40,20 +40,18 @@ package org.mobicents.servlet.sip.core;
 
 import gov.nist.javax.sip.ClientTransactionExt;
 import gov.nist.javax.sip.DialogTimeoutEvent;
+import gov.nist.javax.sip.DialogTimeoutEvent.Reason;
 import gov.nist.javax.sip.ResponseEventExt;
 import gov.nist.javax.sip.SipStackImpl;
 import gov.nist.javax.sip.TransactionExt;
-import gov.nist.javax.sip.DialogTimeoutEvent.Reason;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -563,6 +561,9 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	
 	private void analyzeQueueCongestionState() {
 		this.numberOfMessagesInQueue = getNumberOfPendingMessages();
+		if(logger.isTraceEnabled()) {
+			logger.trace("numberOfMessagesInQueue " + numberOfMessagesInQueue + " queueSize " + queueSize + " backToNormalQueueSize " + backToNormalQueueSize);
+		}	
 		if(rejectSipMessages) {
 			if(numberOfMessagesInQueue  < backToNormalQueueSize) {
 				logger.warn("number of pending messages in the queues : " + numberOfMessagesInQueue + " < to the back to normal queue Size : " + backToNormalQueueSize + " => stopping to reject requests");
@@ -602,20 +603,32 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 	 * (non-Javadoc)
 	 * @see javax.sip.SipListener#processRequest(javax.sip.RequestEvent)
 	 */
-	public void processRequest(RequestEvent requestEvent) {
-		if((rejectSipMessages || memoryToHigh) && CongestionControlPolicy.DropMessage.equals(congestionControlPolicy)) {
-			String method = requestEvent.getRequest().getMethod();
-			boolean goodMethod = method.equals(Request.ACK) || method.equals(Request.PRACK) || method.equals(Request.BYE) || method.equals(Request.CANCEL);
-			if(!goodMethod) {
-				logger.error("dropping request, memory is too high or too many messages present in queues");
-				return;
-			}
-		}	
+	public void processRequest(RequestEvent requestEvent) {		
 		final SipProvider sipProvider = (SipProvider)requestEvent.getSource();
 		ServerTransaction requestTransaction =  requestEvent.getServerTransaction();
 		final Dialog dialog = requestEvent.getDialog();
 		final Request request = requestEvent.getRequest();
 		final String requestMethod = request.getMethod();
+		
+		// Check if the request is meant for me. If so, strip the topmost
+		// Route header.
+		final RouteHeader routeHeader = (RouteHeader) request
+				.getHeader(RouteHeader.NAME);
+		
+		if((rejectSipMessages || memoryToHigh) && CongestionControlPolicy.DropMessage.equals(congestionControlPolicy)) {
+			String method = requestEvent.getRequest().getMethod();
+			boolean goodMethod = method.equals(Request.ACK) || method.equals(Request.PRACK) || method.equals(Request.BYE) || method.equals(Request.CANCEL) || method.equals(Request.UPDATE) || method.equals(Request.INFO);
+			if(logger.isDebugEnabled()) {
+				logger.debug("congestion control good method " + goodMethod + ", dialog "  + dialog + " routeHeader " + routeHeader);
+			}
+			if(!goodMethod) {
+				if(dialog == null && (routeHeader == null || ((Parameters)routeHeader.getAddress().getURI()).getParameter(MessageDispatcher.RR_PARAM_PROXY_APP) == null)) { 
+					logger.error("dropping request, memory is too high or too many messages present in queues");
+					return;
+				}
+			}
+		}	
+		
 		try {
 			if(logger.isDebugEnabled()) {
 				logger.debug("sipApplicationDispatcher " + this + ", Got a request event "  + request.toString());
@@ -653,10 +666,6 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 						dialog,
 						JainSipUtils.DIALOG_CREATING_METHODS.contains(requestMethod));			
 			updateRequestStatistics(request);
-			// Check if the request is meant for me. If so, strip the topmost
-			// Route header.
-			final RouteHeader routeHeader = (RouteHeader) request
-					.getHeader(RouteHeader.NAME);
 			
 			//Popping the router header if it's for the container as
 			//specified in JSR 289 - Section 15.8
@@ -683,10 +692,13 @@ public class SipApplicationDispatcherImpl implements SipApplicationDispatcher, M
 			
 			try {
 				if(rejectSipMessages || memoryToHigh) {
-					if(!Request.ACK.equals(requestMethod) && !Request.PRACK.equals(requestMethod)) {
-						String method = requestEvent.getRequest().getMethod();
-						boolean goodMethod = method.equals(Request.BYE) || method.equals(Request.CANCEL);
-						if(!goodMethod) {
+					String method = requestEvent.getRequest().getMethod();
+					boolean goodMethod = method.equals(Request.ACK) || method.equals(Request.PRACK) || method.equals(Request.BYE) || method.equals(Request.CANCEL) || method.equals(Request.UPDATE) || method.equals(Request.INFO);
+					if(logger.isDebugEnabled()) {
+						logger.debug("congestion control good method " + goodMethod + ", dialog "  + dialog + " routeHeader " + routeHeader);
+					}
+					if(!goodMethod) {
+						if(dialog == null && (routeHeader == null || ((Parameters)routeHeader.getAddress().getURI()).getParameter(MessageDispatcher.RR_PARAM_PROXY_APP) == null)) {
 							MessageDispatcher.sendErrorResponse(Response.SERVICE_UNAVAILABLE, (ServerTransaction) sipServletRequest.getTransaction(), (Request) sipServletRequest.getMessage(), sipProvider);
 							return;
 						}
