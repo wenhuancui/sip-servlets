@@ -31,8 +31,8 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.jboss.logging.Logger;
 import org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistributableSessionData;
-import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSessionKey;
-import org.mobicents.servlet.sip.core.session.MobicentsSipSessionKey;
+import org.mobicents.servlet.sip.core.session.SipApplicationSessionKey;
+import org.mobicents.servlet.sip.core.session.SipSessionKey;
 import org.mobicents.servlet.sip.message.SipServletRequestImpl;
 import org.mobicents.servlet.sip.message.SipServletResponseImpl;
 
@@ -146,7 +146,10 @@ public final class ConvergedSessionReplicationContext
          sipReplicationContext.set(ctx);
       }
       
-      ctx.sipappCount++;     
+      ctx.sipappCount++; 
+      if(logger.isDebugEnabled()) {
+			logger.debug("enterSipApp= " + ctx + " sipappCount " + ctx.sipappCount);
+	  }
    }
    
    /**
@@ -244,6 +247,9 @@ public final class ConvergedSessionReplicationContext
       if (ctx != null)
       {
          ctx.sipappCount--;
+         if(logger.isDebugEnabled()) {
+ 			logger.debug("exitSipApp= " + ctx + " sipappCount " + ctx.sipappCount);
+         }
          if (ctx.sipappCount < 1)
          {
             // We've unwound any nested webapp calls, so we'll clean up and 
@@ -325,7 +331,7 @@ public final class ConvergedSessionReplicationContext
       }      
    }
    
-   public static void sipSessionExpired(ClusteredSipSession<? extends OutgoingDistributableSessionData> session, MobicentsSipSessionKey key, SnapshotSipManager manager)
+   public static void sipSessionExpired(ClusteredSipSession<? extends OutgoingDistributableSessionData> session, SipSessionKey key, SnapshotSipManager manager)
    {
       ConvergedSessionReplicationContext ctx = getCurrentSipContext();
       if(logger.isDebugEnabled()) {
@@ -337,7 +343,7 @@ public final class ConvergedSessionReplicationContext
       }      
    }
    
-   public static void sipApplicationSessionExpired(ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> session, MobicentsSipApplicationSessionKey key, SnapshotSipManager manager)
+   public static void sipApplicationSessionExpired(ClusteredSipApplicationSession<? extends OutgoingDistributableSessionData> session, SipApplicationSessionKey key, SnapshotSipManager manager)
    {
       ConvergedSessionReplicationContext ctx = getCurrentSipContext();
       if(logger.isDebugEnabled()) {
