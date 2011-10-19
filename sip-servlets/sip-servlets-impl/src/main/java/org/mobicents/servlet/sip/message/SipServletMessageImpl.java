@@ -1121,6 +1121,9 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 		return this.sessionKey;
 	}
 
+	public void setSipSessionKey(SipSessionKey sessionKey) {
+		this.sessionKey = sessionKey;
+	}
 	
 	/*
 	 * (non-Javadoc)

@@ -370,6 +370,11 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 		final String applicationName = sipContext.getApplicationName();
 		final Request request = (Request) sipServletRequest.getMessage();
 		
+		// Making sure to nullify those ref so that if there is a race condition as in 
+		// http://code.google.com/p/mobicents/issues/detail?id=2937
+		// we return null instead of the invalidated sip application session
+		sipServletRequest.setSipSession(null);
+		sipServletRequest.setSipSessionKey(null);		
 		sipServletRequest.setOrphan(true);
 		sipServletRequest.setAppSessionId(applicationId);
 		sipServletRequest.setCurrentApplicationName(applicationName);
