@@ -363,7 +363,7 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 	 * Allows to route subsequent requests statelessly to proxy applications to 
 	 * improve perf and mem usage.
 	 */
-	private void handleOrphanRequest(final SipProvider sipProvider,
+	private static void handleOrphanRequest(final SipProvider sipProvider,
 			final SipServletRequestImpl sipServletRequest,
 			String applicationId, final SipContext sipContext)
 			throws DispatcherException {
@@ -380,9 +380,9 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 				SipConnector connector = StaticServiceHolder.sipStandardService.findSipConnector(transport);
 				
 				String branch = ((ViaHeader)sipServletRequest.getMessage().getHeader(ViaHeader.NAME)).getBranch();
-				ViaHeader via = JainSipUtils.createViaHeader(sipApplicationDispatcher.getSipNetworkInterfaceManager(), request, 
+				ViaHeader via = JainSipUtils.createViaHeader(sipContext.getSipApplicationDispatcher().getSipNetworkInterfaceManager(), request, 
 						JainSipUtils.createBranch("orphan", 
-								sipApplicationDispatcher.getHashFromApplicationName(applicationName),
+								sipContext.getSipApplicationDispatcher().getHashFromApplicationName(applicationName),
 								Integer.toString(branch.hashCode()) + branch.substring(branch.length()/2)), 
 								null) ;
 				if(connector.isUseStaticAddress()) {
@@ -424,6 +424,17 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 				// Issue 2886 : http://code.google.com/p/mobicents/issues/detail?id=2886 ACK is bound out of replication context
 				// we need to enterSipAppHa because was started in another thread so we need to bind to this thread
 				sipContext.enterSipAppHa(true);
+			}
+			
+			// Issue 2937 : http://code.google.com/p/mobicents/issues/detail?id=2937
+			// Susbequent Requests whose session is invalidated are still routed to the application
+			if(!appSession.isValidInternal()) {
+				if(appSession.isOrphan() || sipContext.getSipFactoryFacade().isRouteOrphanRequests()) {
+					handleOrphanRequest(sipProvider, sipServletRequest, appSession.getId(), sipContext);
+				} else {
+					throw new DispatcherException(Response.CALL_OR_TRANSACTION_DOES_NOT_EXIST, "The corresponding sip application session to this subsequent request " + request +
+						" has been invalidated or timed out.");	
+				}
 			}
 			
 			final String requestMethod = sipServletRequest.getMethod();
