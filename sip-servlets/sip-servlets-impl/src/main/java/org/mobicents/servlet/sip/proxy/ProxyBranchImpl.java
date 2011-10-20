@@ -445,7 +445,8 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 		}
 		
 		// Use the original dialog in the new session
-		newSession.setSessionCreatingDialog(originalSipSession.getSessionCreatingDialog());
+		// commented out proxy applications shouldn't use any dialogs !!!
+//		newSession.setSessionCreatingDialog(originalSipSession.getSessionCreatingDialog());
 		
 		// And set a reference to the proxy		
 		newSession.setProxy(proxy);		

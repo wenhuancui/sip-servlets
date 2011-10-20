@@ -40,6 +40,7 @@ package org.mobicents.servlet.sip.message;
 
 import gov.nist.javax.sip.DialogExt;
 import gov.nist.javax.sip.stack.SIPClientTransaction;
+import gov.nist.javax.sip.stack.SIPServerTransaction;
 import gov.nist.javax.sip.stack.SIPTransaction;
 
 import java.io.IOException;
@@ -632,6 +633,13 @@ public class SipServletResponseImpl extends SipServletMessageImpl implements
 				} else {
 					if(logger.isDebugEnabled()) {
 						logger.debug("Sending response " + message + " through tx " + transaction);
+					}
+					if(proxy != null && transaction.getDialog() != null && transaction instanceof SIPServerTransaction) {
+						// http://code.google.com/p/mobicents/issues/detail?id=2939 : Application Chaining and multiple protocols usage issue
+						// avoid that in Application chaining case (Proxy then B2BUA), the proxy server tx that got
+						// the dialog affected to it, mess up with the last response in multiple protocols scenarios.
+						// so we nullify the dialog for that tx which is fine since we are a proxy application
+						((SIPServerTransaction) transaction).setDialog(null, null);
 					}
 					transaction.sendResponse( (Response)this.message );
 					if(dialog != null) {
