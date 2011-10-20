@@ -45,7 +45,6 @@ import gov.nist.javax.sip.stack.SIPServerTransaction;
 import gov.nist.javax.sip.stack.SIPTransaction;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Set;
 
@@ -249,7 +248,7 @@ public class SubsequentRequestDispatcher extends RequestDispatcher {
 		
 		if(StaticServiceHolder.sipStandardService.isHttpFollowsSip()) {
 			String jvmRoute = StaticServiceHolder.sipStandardService.getJvmRoute();
-			if(jvmRoute == null) {
+			if(jvmRoute != null) {
 				sipApplicationSession.setJvmRoute(jvmRoute);
 			}
 		}
