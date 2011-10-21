@@ -77,22 +77,7 @@ public class DistributedCacheConvergedSipManagerDelegate<T extends OutgoingDistr
 			log_.debug("DistributedCacheConvergedSipManagerDelegate.setApplicationNameHashed() : sipApplicationName " + sipApplicationName + " sipApplicationNameHashed " + sipApplicationNameHashed);
 		}
 		if(sipCacheListener_ == null && sipApplicationNameHashed != null) {
-			sipCacheListener_ = new SipCacheListener(
-					jBossCacheService.cacheWrapper_, manager, jBossCacheService.combinedPath_,
-					Util.getReplicationGranularity(manager), sipApplicationName, sipApplicationNameHashed);
-			if (log_.isDebugEnabled()) {
-				log_.debug("DistributedCacheConvergedSipManagerDelegate.start() : sipCacheListener " + sipCacheListener_);
-			}
-			jBossCacheService.getCache().addCacheListener(sipCacheListener_);
-	
-			if (manager.isPassivationEnabled()) {
-				log_.debug("Passivation is enabled");
-				sipPassivationListener_ = new SipPassivationListener(
-						manager,
-						jBossCacheService.combinedPath_, sipApplicationNameHashed);
-				jBossCacheService.getCache().addCacheListener(
-						sipPassivationListener_);
-			}
+			createCacheListeners();
 		}
 	}
 	
@@ -101,22 +86,26 @@ public class DistributedCacheConvergedSipManagerDelegate<T extends OutgoingDistr
 			log_.debug("DistributedCacheConvergedSipManagerDelegate.start() : sipApplicationName " + sipApplicationName + " sipApplicationNameHashed " + sipApplicationNameHashed);
 		}
 		if(sipApplicationName != null) {
-			sipCacheListener_ = new SipCacheListener(
-					jBossCacheService.cacheWrapper_, manager, jBossCacheService.combinedPath_,
-					Util.getReplicationGranularity(manager), sipApplicationName, sipApplicationNameHashed);
-			if (log_.isDebugEnabled()) {
-				log_.debug("DistributedCacheConvergedSipManagerDelegate.start() : sipCacheListener " + sipCacheListener_);
-			}
-			jBossCacheService.getCache().addCacheListener(sipCacheListener_);
+			createCacheListeners();
+		}
+	}
 	
-			if (manager.isPassivationEnabled()) {
-				log_.debug("Passivation is enabled");
-				sipPassivationListener_ = new SipPassivationListener(
-						manager,
-						jBossCacheService.combinedPath_, sipApplicationNameHashed);
-				jBossCacheService.getCache().addCacheListener(
-						sipPassivationListener_);
-			}
+	private void createCacheListeners() {
+		sipCacheListener_ = new SipCacheListener(
+				jBossCacheService.cacheWrapper_, manager, jBossCacheService.combinedPath_,
+				Util.getReplicationGranularity(manager), sipApplicationName, sipApplicationNameHashed);
+		if (log_.isDebugEnabled()) {
+			log_.debug("DistributedCacheConvergedSipManagerDelegate.start() : sipCacheListener " + sipCacheListener_);
+		}
+		jBossCacheService.getCache().addCacheListener(sipCacheListener_);
+
+		if (manager.isPassivationEnabled()) {
+			log_.debug("Passivation is enabled");
+			sipPassivationListener_ = new SipPassivationListener(
+					manager,
+					jBossCacheService.combinedPath_, sipApplicationNameHashed);
+			jBossCacheService.getCache().addCacheListener(
+					sipPassivationListener_);
 		}
 	}
 	
