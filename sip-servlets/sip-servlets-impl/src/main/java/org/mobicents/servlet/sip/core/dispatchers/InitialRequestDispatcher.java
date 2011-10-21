@@ -41,7 +41,6 @@ package org.mobicents.servlet.sip.core.dispatchers;
 import gov.nist.javax.sip.SipStackExt;
 import gov.nist.javax.sip.header.extensions.JoinHeader;
 import gov.nist.javax.sip.header.extensions.ReplacesHeader;
-import gov.nist.javax.sip.message.MessageExt;
 
 import java.io.IOException;
 import java.io.Serializable;

@@ -124,6 +124,10 @@ public class DefaultMobicentsCluster implements MobicentsCluster {
 		this.txMgr = txMgr;
 		this.elector = elector;
 		this.clusteredCacheDataIndexingHandler = new DefaultClusteredCacheDataIndexingHandler();
+		if(logger.isDebugEnabled()) {
+			   logger.debug("DefaultMobicentsCluster elector : " + elector + ", txMgr " + txMgr + 
+					   ", clusteredCacheDataIndexingHandler " + clusteredCacheDataIndexingHandler);
+		}
 	}
 
 	/* (non-Javadoc)
