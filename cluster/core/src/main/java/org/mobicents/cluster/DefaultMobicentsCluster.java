@@ -42,9 +42,13 @@ import org.jboss.cache.config.Configuration;
 import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.notifications.annotation.BuddyGroupChanged;
 import org.jboss.cache.notifications.annotation.CacheListener;
+import org.jboss.cache.notifications.annotation.NodeCreated;
+import org.jboss.cache.notifications.annotation.NodeModified;
 import org.jboss.cache.notifications.annotation.NodeRemoved;
 import org.jboss.cache.notifications.annotation.ViewChanged;
 import org.jboss.cache.notifications.event.BuddyGroupChangedEvent;
+import org.jboss.cache.notifications.event.NodeCreatedEvent;
+import org.jboss.cache.notifications.event.NodeModifiedEvent;
 import org.jboss.cache.notifications.event.NodeRemovedEvent;
 import org.jboss.cache.notifications.event.ViewChangedEvent;
 import org.jgroups.Address;
@@ -463,6 +467,21 @@ public class DefaultMobicentsCluster implements MobicentsCluster {
 			}
 		}
 	}
+	
+	@NodeCreated
+	public void onNodeCreateddEvent(NodeCreatedEvent event) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("onNodeCreateddEvent : " + event.getFqn() + " : local[" + event.isOriginLocal() + "] pre[" + event.isPre() + "] : event local address[" + event.getCache().getLocalAddress() + "]");
+		}
+	}
+
+	@NodeModified
+	public void onNodeModifiedEvent(NodeModifiedEvent event) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("onNodeModifiedEvent : " + event.getFqn() + " : local[" + event.isOriginLocal() + "] pre[" + event.isPre() + "] : event local address[" + event.getCache().getLocalAddress() + "]");
+		}
+	}
+	
 	// NOTE USED FOR NOW
 	
 	/*
