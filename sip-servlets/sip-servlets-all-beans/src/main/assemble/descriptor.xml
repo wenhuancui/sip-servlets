@@ -91,6 +91,9 @@
 			<useTransitiveDependencies>false</useTransitiveDependencies>
 			<useProjectArtifact>false</useProjectArtifact>
 			<scope>compile</scope>
+			<excludes>
+				<exclude>org.mobicents.servlet.sip:sip-servlets-jboss5-ha-server-cache*:jar</exclude>
+			</excludes>
 		</dependencySet>
 	</dependencySets>
 	  
