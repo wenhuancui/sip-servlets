@@ -26,14 +26,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.pojo.impl.InternalConstant;
-import org.jboss.logging.Logger;
 import org.jboss.web.tomcat.service.session.distributedcache.spi.DistributableSessionMetadata;
 import org.jboss.web.tomcat.service.session.distributedcache.spi.DistributableSipApplicationSessionMetadata;
 import org.jboss.web.tomcat.service.session.distributedcache.spi.DistributableSipSessionMetadata;
@@ -50,7 +49,7 @@ import org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistrib
  */
 public class DistributedCacheConvergedSipManagerDelegate<T extends OutgoingDistributableSessionData> {
 	public static final Integer SIP_SERVLETS_METADATA_KEY = Integer.valueOf(4);
-	protected Logger log_ = Logger.getLogger(getClass());
+	protected Logger log_ = Logger.getLogger(DistributedCacheConvergedSipManagerDelegate.class);
 	public static final String SIPSESSION = "SIPSESSION";
 	protected String sipApplicationNameHashed; 
 	protected String sipApplicationName;
@@ -63,6 +62,9 @@ public class DistributedCacheConvergedSipManagerDelegate<T extends OutgoingDistr
 	public DistributedCacheConvergedSipManagerDelegate(AbstractJBossCacheService<OutgoingDistributableSessionData> jBossCacheService, LocalDistributableSessionManager localManager) {
 		this.jBossCacheService = jBossCacheService;
 		manager = localManager;
+		if (log_.isDebugEnabled()) {
+			log_.debug("DistributedCacheConvergedSipManagerDelegate : jbossCacheService " + jBossCacheService + " manager " + manager);
+		}
 	}
 	
 	public void setApplicationName(String applicationName) {
@@ -74,10 +76,16 @@ public class DistributedCacheConvergedSipManagerDelegate<T extends OutgoingDistr
 	}
 	
 	public void start() {		
+		if (log_.isDebugEnabled()) {
+			log_.debug("DistributedCacheConvergedSipManagerDelegate.start() : sipApplicationName " + sipApplicationName);
+		}
 		if(sipApplicationName != null) {
 			sipCacheListener_ = new SipCacheListener(
 					jBossCacheService.cacheWrapper_, manager, jBossCacheService.combinedPath_,
 					Util.getReplicationGranularity(manager), sipApplicationName, sipApplicationNameHashed);
+			if (log_.isDebugEnabled()) {
+				log_.debug("DistributedCacheConvergedSipManagerDelegate.start() : sipCacheListener " + sipCacheListener_);
+			}
 			jBossCacheService.getCache().addCacheListener(sipCacheListener_);
 	
 			if (manager.isPassivationEnabled()) {

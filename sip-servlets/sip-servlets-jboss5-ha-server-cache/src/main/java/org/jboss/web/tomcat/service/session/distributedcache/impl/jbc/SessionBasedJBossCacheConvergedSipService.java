@@ -72,6 +72,11 @@ public class SessionBasedJBossCacheConvergedSipService extends
 	@Override
 	public void start() {
 		super.start();
+		if (log_.isDebugEnabled()) {
+			log_
+				.debug("starting delegate "
+						+ delegate);
+		}
 		delegate.start();
 	}
 
