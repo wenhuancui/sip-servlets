@@ -56,11 +56,7 @@ public class JBossJainSipCacheListener {
 	 * 
 	 */
 	public JBossJainSipCacheListener(ClusteredSipStack clusteredSipStack) {
-		this.clusteredSipStack = clusteredSipStack;
-		if (clusteredlogger.isLoggingEnabled(StackLogger.TRACE_INFO)) {
-			clusteredlogger.logInfo(
-					"JBossJainSipCacheListener : " + clusteredSipStack);
-		}
+		this.clusteredSipStack = clusteredSipStack;		
 	}
 
 	@CacheStarted
