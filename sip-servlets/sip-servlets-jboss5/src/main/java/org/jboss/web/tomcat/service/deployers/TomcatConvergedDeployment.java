@@ -333,21 +333,26 @@ public class TomcatConvergedDeployment extends TomcatDeployment {
 				new Timer().scheduleAtFixedRate(new TimerTask() {
 					int retries = 100;
 					public void run() {
-						Thread.currentThread().setContextClassLoader(cl);
-						if(retries-->0) {
-							log.debug("Trying to inject utilities for converged app into EJB - attempts left: " + retries);
-							try {
-								injectSipUtilitiesIntoEJBs(context, metaData);
-								log.info("Attempt to inject SIP utilitiess into EJB succeeded at " + retries + " attempts left.");
-								cancel();
-							} catch (Exception e) {
-								if(retries%10 == 0) {
-									log.warn("Attempt to inject SIP utilities into EJB failed " + context + " " + metaData + " retries left = " + retries);
+						final ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
+						try {
+							Thread.currentThread().setContextClassLoader(cl);
+							if(retries-->0) {
+								log.debug("Trying to inject utilities for converged app into EJB - attempts left: " + retries);
+								try {
+									injectSipUtilitiesIntoEJBs(context, metaData);
+									log.info("Attempt to inject SIP utilitiess into EJB succeeded at " + retries + " attempts left.");
+									cancel();
+								} catch (Exception e) {
+									if(retries%10 == 0) {
+										log.warn("Attempt to inject SIP utilities into EJB failed " + context + " " + metaData + " retries left = " + retries);
+									}
 								}
+							} else {
+								cancel();
+								log.error("Attempt to inject SIP utilities into EJB failed after 100 attempts, the EJB didnt come up. We are giving up.");
 							}
-						} else {
-							cancel();
-							log.error("Attempt to inject SIP utilities into EJB failed after 100 attempts, the EJB didnt come up. We are giving up.");
+						} finally {
+							Thread.currentThread().setContextClassLoader(oldCl);
 						}
 						
 					}
