@@ -60,6 +60,7 @@ import javax.servlet.sip.TimerListener;
 import javax.servlet.sip.annotation.SipServlet;
 
 import org.apache.log4j.Logger;
+import org.mobicents.javax.servlet.ContainerListener;
 import org.mobicents.javax.servlet.sip.ProxyBranchListener;
 import org.mobicents.servlet.sip.listener.SipConnectorListener;
 import org.mobicents.servlet.sip.startup.SipContext;
@@ -85,6 +86,7 @@ public class SipListenersHolder {
 	private Map<EventListener, SipServletImpl> listenerServlets;
 	// There may be at most one TimerListener defined.
 	private TimerListener timerListener;
+	private ContainerListener containerListener;
 	//the sip context the holder is attached to
 	private SipContext sipContext;	
 
@@ -219,6 +221,11 @@ public class SipListenersHolder {
 			added = true;
 		}
 
+		if (listener instanceof ContainerListener) {
+			this.setContainerListener((ContainerListener) listener);
+			added = true;
+		}
+		
 		if(!added) {
 			throw new IllegalArgumentException("Wrong type of LISTENER!!!["
 				+ listener + "]");
@@ -290,7 +297,7 @@ public class SipListenersHolder {
 	public void setTimerListener(TimerListener listener) {
 		if(this.timerListener != null) {
 			throw new IllegalArgumentException(
-					"the time listener has already been set ("+timerListener.getClass().getName() +
+					"the timer listener has already been set ("+this.timerListener.getClass().getName() +
 					"), There may be at most one TimerListener defined !");
 		}			 
 		this.timerListener = listener;
@@ -394,6 +401,7 @@ public class SipListenersHolder {
 			checkDeallocateServlet(proxyListener);
 		}
 		checkDeallocateServlet(timerListener);
+		checkDeallocateServlet(containerListener);
 	}
 	
 	/**
@@ -416,6 +424,7 @@ public class SipListenersHolder {
 		this.proxyBranchListeners.clear();
 		this.listenerServlets.clear();
 		this.timerListener = null;
+		this.containerListener = null;
 	}
 
 	/**
@@ -433,6 +442,25 @@ public class SipListenersHolder {
 				logger.error("couldn't deallocate listener " + eventListener.getClass().getName());
 			}
 		}
+	}
+
+	/**
+	 * @return the containerListener
+	 */
+	public ContainerListener getContainerListener() {
+		return containerListener;
+	}
+
+	/**
+	 * @param containerListener the containerListener to set
+	 */
+	public void setContainerListener(ContainerListener containerListener) {
+		if(this.containerListener != null) {
+			throw new IllegalArgumentException(
+					"the Container listener has already been set ("+ this.containerListener.getClass().getName() +
+					"), There may be at most one ContainerListener defined !");
+		}			 
+		this.containerListener = containerListener;
 	}
 
 }
