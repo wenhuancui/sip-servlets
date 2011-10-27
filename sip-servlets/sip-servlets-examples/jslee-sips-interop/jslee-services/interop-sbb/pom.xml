@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.mobicents.servlet.sip.example</groupId>
 		<artifactId>jslee-sips-interop-demo-jslee-services-parent</artifactId>
-		<version>5.1.1.GA-JBCP5</version>
+		<version>5.1.2.GA-JBCP5_1</version>
 	</parent>
 	
 	<artifactId>jslee-sips-interop-demo-jslee-interop-sbb</artifactId>
@@ -15,19 +15,19 @@
 		<dependency>
 			<groupId>org.mobicents.servlet.sip.example</groupId>
 			<artifactId>jslee-sips-interop-commons</artifactId>
-			<version>5.1.1.GA-JBCP5</version>
+			<version>5.1.2.GA-JBCP5_1</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mobicents.servlet.sip</groupId>
 			<artifactId>sip-servlets-spec</artifactId>
-			<version>5.1.1.GA-JBCP5</version>
+			<version>5.1.2.GA-JBCP5_1</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>		
 			<groupId>org.mobicents.servlet.sip.example</groupId>
 			<artifactId>jslee-sips-interop-demo-slee-custom-events</artifactId>
-			<version>5.1.1.GA-JBCP5</version>
+			<version>5.1.2.GA-JBCP5_1</version>
 		</dependency>
 		<dependency>		
 			<groupId>org.mobicents.servers.media</groupId>

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.mobicents.ha.javax.sip</groupId>
 		<artifactId>mobicents-jain-sip-ha</artifactId>
-		<version>5.1.1.GA-JBCP5</version>
+		<version>5.1.2.GA-JBCP5_1</version>
 	</parent>
 
 	<artifactId>mobicents-jain-sip-jboss4</artifactId>
