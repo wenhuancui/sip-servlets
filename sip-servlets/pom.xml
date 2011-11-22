@@ -278,6 +278,21 @@
 	<!-- repositories -->
 	<repositories>
 		<repository>
+			<id>jboss-deprecated-repository</id>
+			<name>JBoss Deprecated Maven Repository</name>
+			<url>https://repository.jboss.org/nexus/content/repositories/deprecated/ 
+	            </url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
 		  <id>jboss-public-repository-group</id>
 		  <name>JBoss Public Maven Repository Group</name>
 		  <url>https://repository.jboss.org/nexus/content/groups/public/</url>

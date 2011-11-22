@@ -162,7 +162,9 @@ public class DistributableSimpleSipServlet
 				}
 				timer = (TimerService) getServletContext().getAttribute(TIMER_SERVICE);
 			}
-			timer.createTimer(request.getApplicationSession(), byeDelay, false, request.getSession().getId());
+			X x = new X();
+			x.setId(request.getSession().getId());
+			timer.createTimer(request.getApplicationSession(), byeDelay, false, x);
 		} else if ((((SipURI)request.getTo().getURI()).getUser()).contains(SAS_TIMER_SEND_BYE)) {
 			request.getSession().getApplicationSession().setExpires(1);
 		} else if ((((SipURI)request.getTo().getURI()).getUser()).contains(CANCEL_SERVLET_TIMER)) {
@@ -178,7 +180,9 @@ public class DistributableSimpleSipServlet
 				}
 				timer = (TimerService) getServletContext().getAttribute(TIMER_SERVICE);
 			}			
-			servletTimer = timer.createTimer(request.getApplicationSession(), byeDelay, false, request.getSession().getId());
+			X x = new X();
+			x.setId(request.getSession().getId());
+			servletTimer = timer.createTimer(request.getApplicationSession(), byeDelay, false, x);
 		}
 	}
 
@@ -271,7 +275,7 @@ public class DistributableSimpleSipServlet
 		if(logger.isInfoEnabled()) {
 			logger.info("Distributable Simple Servlet: timer expired\n");
 		}
-		SipSession sipSession = servletTimer.getApplicationSession().getSipSession((String)servletTimer.getInfo());
+		SipSession sipSession = servletTimer.getApplicationSession().getSipSession(((X)servletTimer.getInfo()).getId());
 		if(sipSession != null && !State.TERMINATED.equals(sipSession.getState())) {
 			try {
 				sipSession.createRequest("BYE").send();

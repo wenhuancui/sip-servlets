@@ -255,7 +255,7 @@ $Id: war-deployers-jboss-beans.xml 85945 2009-03-16 19:45:12Z dimitris@jboss.org
        <property name="securityContextClassName">org.jboss.security.plugins.JBossSecurityContext</property> 
    </bean>
    
-   <bean name="MergedJBossConvergedSipMetaDataDeployer" 
+   <bean name="MergedJBossWebMetaDataDeployer" 
           class="org.jboss.sip.deployers.MergedJBossConvergedSipMetaDataDeployer">
    </bean>
 

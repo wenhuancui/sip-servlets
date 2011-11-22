@@ -323,7 +323,7 @@
             </entry>
             <entry>
                <key>jboss-web_5_0.xsd</key>
-               <value>org.jboss.metadata.sip.jboss.JBoss50ConvergedSipMetaData</value>
+               <value>org.jboss.metadata.sip.jboss.JBoss50DTDConvergedSipMetaData</value>
             </entry>
             <!-- PersistenceMetaData -->
             <entry>

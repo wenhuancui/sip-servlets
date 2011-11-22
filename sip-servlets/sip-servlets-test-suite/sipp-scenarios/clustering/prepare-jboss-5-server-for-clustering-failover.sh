@@ -10,19 +10,19 @@ rm -rf $JBOSS_HOME/server/port-1
 rm -rf $JBOSS_HOME/server/port-2
 rm -rf $JBOSS_HOME/server/port-3
 
-mvn clean install -f ../../../pom.xml -P jboss-5 -Dnode=sipservlets-production
+mvn clean install -f ../../../pom.xml -P jboss-5 -Dnode=all
 
-#cp setup/jboss-5/mss-sip-stack-jboss.properties $JBOSS_HOME/server/all/conf/mss-sip-stack.properties
+cp setup/jboss-5/mss-sip-stack-jboss.properties $JBOSS_HOME/server/all/conf/mss-sip-stack.properties
 #cp setup/jboss-5/performance/log4j.xml $JBOSS_HOME/server/all/conf/jboss-log4j.xml
 #cp setup/jboss-5/log4j.xml $JBOSS_HOME/server/all/conf/jboss-log4j.xml
-#cp setup/jboss-5/context-jboss-5.xml $JBOSS_HOME/server/all/deploy/jbossweb.sar/context.xml
-#cp setup/jboss-5/jboss-beans.xml $JBOSS_HOME/server/all/deploy/jbossweb.sar/META-INF/jboss-beans.xml
-#cp setup/jboss-5/metadata-deployer-jboss-beans.xml $JBOSS_HOME/server/all/deployers/metadata-deployer-jboss-beans.xml
-#cp setup/jboss-5/war-deployers-jboss-beans.xml $JBOSS_HOME/server/all/deployers/jbossweb.deployer/META-INF/war-deployers-jboss-beans.xml
-#cp setup/jboss-5/jboss-cache-manager-jboss-beans.xml $JBOSS_HOME/server/all/deploy/cluster/jboss-cache-manager.sar/META-INF/jboss-cache-manager-jboss-beans.xml
+cp setup/jboss-5/context-jboss-5.xml $JBOSS_HOME/server/all/deploy/jbossweb.sar/context.xml
+cp setup/jboss-5/jboss-beans.xml $JBOSS_HOME/server/all/deploy/jbossweb.sar/META-INF/jboss-beans.xml
+cp setup/jboss-5/metadata-deployer-jboss-beans.xml $JBOSS_HOME/server/all/deployers/metadata-deployer-jboss-beans.xml
+cp setup/jboss-5/war-deployers-jboss-beans.xml $JBOSS_HOME/server/all/deployers/jbossweb.deployer/META-INF/war-deployers-jboss-beans.xml
+cp setup/jboss-5/jboss-cache-manager-jboss-beans.xml $JBOSS_HOME/server/all/deploy/cluster/jboss-cache-manager.sar/META-INF/jboss-cache-manager-jboss-beans.xml
 
-cp -rf $JBOSS_HOME/server/sipservlets-production $JBOSS_HOME/server/port-1
-cp -rf $JBOSS_HOME/server/sipservlets-production $JBOSS_HOME/server/port-2
+cp -rf $JBOSS_HOME/server/all $JBOSS_HOME/server/port-1
+cp -rf $JBOSS_HOME/server/all $JBOSS_HOME/server/port-2
 
 cp setup/jboss-5/server-jboss-5-failover-port-1.xml $JBOSS_HOME/server/port-1/deploy/jbossweb.sar/server.xml
 cp setup/jboss-5/server-jboss-5-failover-port-2.xml $JBOSS_HOME/server/port-2/deploy/jbossweb.sar/server.xml
