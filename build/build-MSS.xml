@@ -1,0 +1,274 @@
+<?xml version="1.0"?>
+<project name="jbcp5.local.build" default="release" basedir=".">
+
+	<!--Properties-->
+
+	<property environment="sys"/>
+
+	<condition property="mvn.executable" value="${sys.M2_HOME}\bin\mvn.bat" else="mvn">
+		<os family="windows"/>
+	</condition>
+
+	<condition property="jboss.home" value="${sys.JBOSS_HOME}">
+	   <not>  
+	      <isset property="jboss.home"/>
+	   </not>
+	</condition>
+
+	<condition property="mvn.build.profile" value="jboss-5">
+	   <not>  
+	      <isset property="mvn.build.profile"/>
+	   </not>
+	</condition>
+
+	<condition property="jboss.node" value="default">
+	   <not>  
+	      <isset property="jboss.node"/>
+	   </not>
+	</condition>
+
+
+	<taskdef onerror="fail" resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="${ant.file.jbcp.platform.release}/../lib/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+
+	<target name="check-nodes">
+		<condition property="ha.capable">
+			<or>
+				<equals arg1="${jboss.node}" arg2="all" />
+				<equals arg1="${jboss.node}" arg2="production" />
+				<equals arg1="${jboss.node}" arg2="mss-production" />
+			</or>
+		</condition>
+		<condition property="not.ha.capable">
+			<or>
+				<equals arg1="${jboss.node}" arg2="default" />
+				<equals arg1="${jboss.node}" arg2="mss-default" />
+			</or>
+		</condition>
+		<condition property="supported.node" >
+			<or>
+			      <istrue value="${ha.capable}"/>
+			      <istrue value="${not.ha.capable}"/>
+			</or>
+		</condition>
+		<fail message="The given node is not supported!" unless="supported.node" />
+		
+	</target>
+	
+	<target name="ha-echo" if="ha.capable">
+		<echo>--- builidng HA node ---</echo>
+	</target>
+	
+	<target name="not-ha-echo" if="not.ha.capable">
+		<echo>--- builidng NOT HA node ---</echo>
+	</target>
+	
+	<!-- build all -->
+	<target name="build" depends="check-nodes,ha-echo, not-ha-echo">
+		<echo>builidng with JBOSS_HOME=${jboss.home} into node:${jboss.node}</echo>
+		<echo>builidng MSS profile=${mvn.build.profile}</echo>
+		<antcall target="build-parent" />
+		<antcall target="build-maven-eclipse-plugin" />
+		<antcall target="build-maven-du-plugin" />
+		<antcall target="build-maven-library-plugin" />
+		<antcall target="build-cluster" />
+		<antcall target="build-sip-balancer" />
+		<antcall target="build-jain-sip-ext" />
+		<antcall target="build-jain-sip-ha" />
+		<antcall target="build-sip-servlets" />
+	</target>
+
+	<target name="release" depends="build,copy-props">
+		<echo>Release into JBOSS node</echo>
+	</target>
+	
+	<target name="copy-props">
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/jboss-beans.xml" todir="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar/META-INF" />
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/context-jboss-5.xml" tofile="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar/context.xml" />
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/profileservice-jboss-beans.xml" todir="${jboss.home}/server/${jboss.node}/deploy" />
+		<!--deployer-->
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/metadata-deployer-jboss-beans.xml" todir="${jboss.home}/server/${jboss.node}/deployers" />
+
+		<antcall target="copy-HA-props" />
+		<antcall target="copy-non-HA-props" />
+	
+	</target>
+
+	<target name="copy-HA-props" if="ha.capable">
+				
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-examples/simple-sip-servlet-distributable/distributable-simple-dar.properties" tofile="${jboss.home}/server/${jboss.node}/conf/dars/mobicents-dar.properties" />
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/mss-sip-stack-jboss-5-all.properties" tofile="${jboss.home}/server/${jboss.node}/conf/mss-sip-stack.properties" />
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-impl/docs/jboss5/failover-server-jboss-5.xml" tofile="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar/server.xml" />
+		<!--deployer-->
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/failover-war-deployers-jboss-beans.xml" tofile="${jboss.home}/server/${jboss.node}/deployers/jbossweb.deployer/META-INF/war-deployers-jboss-beans.xml" />
+		
+		
+		<!-- MVN respective assembles-->
+	    <!--file>
+	      <source>${basedir}/../sip-servlets-examples/simple-sip-servlet-distributable/distributable-simple-dar.properties</source>
+	      <destName>mobicents-dar.properties</destName>
+	      <outputDirectory>/conf/dars</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/mss-sip-stack-jboss-5-all.properties</source>
+	      <destName>mss-sip-stack.properties</destName>
+	      <outputDirectory>/conf</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-impl/docs/jboss5/failover-server-jboss-5.xml</source>
+	      <destName>server.xml</destName>
+	      <outputDirectory>/jbossweb.sar</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/jboss-beans.xml</source>
+	      <outputDirectory>/jbossweb.sar/META-INF</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/context-jboss-5.xml</source>
+	      <destName>context.xml</destName>
+	      <outputDirectory>/jbossweb.sar</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/profileservice-jboss-beans.xml</source>
+	      <destName>profileservice-jboss-beans.xml</destName>
+	      <outputDirectory>/</outputDirectory>
+	    </file>
+		
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/metadata-deployer-jboss-beans.xml</source>
+	      <outputDirectory>/</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/failover-war-deployers-jboss-beans.xml</source>
+	      <destName>war-deployers-jboss-beans.xml</destName>
+	      <outputDirectory>/jbossweb.deployer/META-INF</outputDirectory>
+	    </file-->
+		
+	
+	</target>
+	
+	<target name="copy-non-HA-props" if="not.ha.capable">
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/src/site/resources/click2call-dar.properties" tofile="${jboss.home}/server/${jboss.node}/conf/dars/mobicents-dar.properties" />
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/mss-sip-stack-jboss-5.properties" tofile="${jboss.home}/server/${jboss.node}/conf/mss-sip-stack.properties" />
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/server-jboss-5.xml" tofile="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar/server.xml" />
+		<!--deployer-->
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/war-deployers-jboss-beans.xml" todir="${jboss.home}/server/${jboss.node}/deployers/jbossweb.deployer/META-INF" />
+		
+		<!-- MVN respective assembles-->
+	    <!--file>
+	      <source>${basedir}/../sip-servlets-bootstrap/src/site/resources/click2call-dar.properties</source>
+	      <destName>mobicents-dar.properties</destName>
+	      <outputDirectory>/conf/dars</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/mss-sip-stack-jboss-5.properties</source>
+	      <destName>mss-sip-stack.properties</destName>
+	      <outputDirectory>/conf</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/server-jboss-5.xml</source>
+	      <destName>server.xml</destName>
+	      <outputDirectory>/jbossweb.sar</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/jboss-beans.xml</source>
+	      <outputDirectory>/jbossweb.sar/META-INF</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/context-jboss-5.xml</source>
+	      <destName>context.xml</destName>
+	      <outputDirectory>/jbossweb.sar</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/profileservice-jboss-beans.xml</source>
+	      <destName>profileservice-jboss-beans.xml</destName>
+	      <outputDirectory>/</outputDirectory>
+	    </file>
+
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/metadata-deployer-jboss-beans.xml</source>
+	      <outputDirectory>/</outputDirectory>
+	    </file>
+	    <file>
+	      <source>${basedir}/../sip-servlets-bootstrap/release/war-deployers-jboss-beans.xml</source>
+	      <outputDirectory>/jbossweb.deployer/META-INF</outputDirectory>
+	    </file-->
+		
+	
+	</target>
+	<!-- ========================== -->
+	<!-- components build targets -->
+	<!-- ========================== -->
+
+	<!-- parent-->
+
+	<target name="build-parent">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../parent">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+	
+	<!-- tools-->
+	
+	<target name="build-maven-du-plugin">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../tools/maven-du-plugin">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+
+	<target name="build-maven-eclipse-plugin">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../tools/maven-eclipse-plugin">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+	
+	<target name="build-maven-library-plugin">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../tools/maven-library-plugin">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+	
+	<!-- HA-->
+	
+	<target name="build-cluster">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../cluster">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+	
+	<target name="build-sip-balancer">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../sip-balancer">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+
+	<target name="build-jain-sip-ext">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../jain-sip-ext">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+
+	<target name="build-jain-sip-ha">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../jain-sip-ha">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+	
+	<!-- Sip Servlets -->
+	
+	<target name="build-sip-servlets">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../sip-servlets">
+			<arg line="clean install -P validate-source-headers -P${mvn.build.profile} -Denv.JBOSS_HOME=${jboss.home} -Dnode=${jboss.node}" />
+		</exec>
+	</target>
+
+	<!-- clean build process -->
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${docs.stage.dir}" />
+	</target>
+
+</project>
