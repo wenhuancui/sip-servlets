@@ -59,13 +59,13 @@
 				</configuration>
 			</plugin>	
 		</plugins>
-		<extensions>
+		<!-- extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-webdav</artifactId>
 				<version>RELEASE</version>
 			</extension>
-		</extensions>
+		</extensions-->
 	</build>
 	
 	<!-- repositories -->
