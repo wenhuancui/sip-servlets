@@ -1,3 +1,4 @@
+Assumption 0: You made a svn checkout of http://mobicents.googlecode.com/svn/branches/jbcp/5.1.1_HF/ branch
 Assumption 1: You have your EAP version installed locally and set $JBOSS_HOME variable
 Assumption 2: Your EAP version is unsigned for local DEV purpose. You may achive this by using command
 find $JBOSS_HOME -name '*.jar' -print0 | xargs -0 -I JAR zip -d JAR META-INF/JBOSSCOD.*" 
