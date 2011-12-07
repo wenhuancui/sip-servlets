@@ -39,13 +39,13 @@
 			<or>
 				<equals arg1="${jboss.node}" arg2="all" />
 				<equals arg1="${jboss.node}" arg2="production" />
-				<equals arg1="${jboss.node}" arg2="mss-production" />
+				<equals arg1="${jboss.node}" arg2="sipservlets-production" />
 			</or>
 		</condition>
 		<condition property="not.ha.capable">
 			<or>
 				<equals arg1="${jboss.node}" arg2="default" />
-				<equals arg1="${jboss.node}" arg2="mss-default" />
+				<equals arg1="${jboss.node}" arg2="sipservlets-default" />
 			</or>
 		</condition>
 		<condition property="supported.node" >
