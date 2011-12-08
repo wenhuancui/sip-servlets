@@ -23,6 +23,7 @@
 package org.jboss.metadata.sip.jboss;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -239,12 +240,13 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
       
       if(original != null && original.getSipSecurityContraints() != null)
          setSipSecurityContraints(original.getSipSecurityContraints());
-
+      
       if(original != null && original.getContextParams() != null)
           setSipContextParams(original.getContextParams());
       
       if(original != null && original.getListeners() != null)
-          setSipListeners(original.getListeners());
+//          setSipListeners(original.getListeners());
+    	  mergeSipListeners(original.getListeners());
       
       JBossServletsMetaData soverride = null;
       ServletsMetaData soriginal = null;
@@ -274,7 +276,7 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
           setConcurrencyControlMode(original.getConcurrencyControlMode());
       
       //listeners should not be merged because they have a special treatment when loading the context
-      
+      //baranowb: but listeners have been merged few lines above....
    // Update run-as indentity for a run-as-principal
       if(sipServlets != null)
       {
@@ -507,10 +509,13 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
        else if(original != null && original.getContextParams() != null)
           setSipContextParams(original.getContextParams());
       
+      ArrayList<ListenerMetaData> mergedListeners = new ArrayList<ListenerMetaData>();
       if(override != null && override.sipListeners!= null)
-          setSipListeners(override.sipListeners);
-       else if(original != null && original.getListeners() != null)
-          setSipListeners(original.getListeners());
+          //setSipListeners(override.sipListeners);
+    	  mergedListeners.addAll(override.sipListeners);
+      if(original != null && original.getListeners() != null)
+    	  mergedListeners.addAll(original.getListeners());
+      this.mergeSipListeners(mergedListeners);
       
       JBossServletsMetaData soverride = null;
       ServletsMetaData soriginal = null;
@@ -546,7 +551,7 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
           setConcurrencyControlMode(original.getConcurrencyControlMode());
       
       //listeners should not be merged because they have a special treatment when loading the context
-      
+      //baranowb: once again, original code merges them few lines above...
    // Update run-as indentity for a run-as-principal
       if(sipServlets != null)
       {
@@ -580,6 +585,7 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
          }
       }
    }
+
 	/**
 	 * @param applicationName the applicationName to set
 	 */
@@ -737,4 +743,23 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
 	public ConcurrencyControlMode getConcurrencyControlMode() {
 		return concurrencyControlMode;
 	}	
+	
+    protected void mergeSipListeners(List<ListenerMetaData> lst) {
+
+	    //precaution, silent return?
+		if(lst == null)
+		{
+			return;
+		}
+		
+		if(this.sipListeners == null)
+		{
+			//NOTE: make separate copy ?
+			this.sipListeners = new ArrayList<ListenerMetaData>(lst);
+		}else
+		{
+			this.sipListeners.addAll(lst);
+		}
+
+}
 }
