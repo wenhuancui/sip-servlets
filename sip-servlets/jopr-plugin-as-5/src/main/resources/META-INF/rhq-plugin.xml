@@ -747,30 +747,51 @@
     <metric property="responseTime"
             dataType="calltime" defaultOn="false" defaultInterval="600000" units="milliseconds" destinationType="URL"
             description="the minimum, maximum, and average response times for requests serviced by this sipapp"/>
+    <metric property="ResponseTime"
+            dataType="calltime" defaultOn="false" defaultInterval="600000" units="milliseconds" destinationType="URL"
+            description="the minimum, maximum, and average response times for requests serviced by this sipapp"/>
 
     <metric property="activeSessions"
+           displayName="Currently Active HTTP Sessions"
+           units="none" description="the number of HTTP sessions that are currently active for this converged WAR" />
+    <metric property="ActiveSessions"
            displayName="Currently Active HTTP Sessions"
            units="none" description="the number of HTTP sessions that are currently active for this converged WAR" />
 
     <metric property="maxActive" displayName="Maximum Active HTTP Sessions"
            units="none" description="the maximum number of HTTP sessions that have been active for this converged WAR" />
+    <metric property="MaxActive" displayName="Maximum Active HTTP Sessions"
+           units="none" description="the maximum number of HTTP sessions that have been active for this converged WAR" />
 
     <metric property="sessionCounter" displayName="Created HTTP Sessions"
+           units="none" description="the number of HTTP sessions created for this converged WAR"
+           measurementType="trendsup" />
+    <metric property="SessionCounter" displayName="Created HTTP Sessions"
            units="none" description="the number of HTTP sessions created for this converged WAR"
            measurementType="trendsup" />
 
     <metric property="expiredSessions" displayName="Expired HTTP Sessions"
            units="none" description="the number of expired HTTP sessions for this converged WAR"
            measurementType="trendsup" />
+    <metric property="ExpiredSessions" displayName="Expired HTTP Sessions"
+           units="none" description="the number of expired HTTP sessions for this converged WAR"
+           measurementType="trendsup" />
 
     <metric property="rejectedSessions" displayName="Rejected HTTP Sessions"
+           units="none" description="the number of expired HTTP sessions for this converged WAR"
+           measurementType="trendsup" />
+    <metric property="RejectedSessions" displayName="Rejected HTTP Sessions"
            units="none" description="the number of expired HTTP sessions for this converged WAR"
            measurementType="trendsup" />
 
     <metric property="sessionAverageAliveTime" displayName="Average HTTP Session Alive Time"
            units="seconds" description="the average alive time of HTTP sessions for this converged WAR" />
+    <metric property="SessionAverageAliveTime" displayName="Average HTTP Session Alive Time"
+           units="seconds" description="the average alive time of HTTP sessions for this converged WAR" />
 
     <metric property="sessionMaxAliveTime" displayName="Max HTTP Session Alive Time"
+           units="seconds" description="the maximum alive time of HTTP sessions for this converged WAR" />
+    <metric property="SessionMaxAliveTime" displayName="Max HTTP Session Alive Time"
            units="seconds" description="the maximum alive time of HTTP sessions for this converged WAR" />
 
     <metric property="Servlet.minimumResponseTime" displayName="Minimum Response Time"
@@ -800,27 +821,49 @@
     <metric property="activeSipSessions" 
     	   displayName="Currently Active SIP Sessions"
            units="none" description="the number of SIP sessions that are currently active for this converged WAR" />
+    <metric property="ActiveSipSessions"
+           displayName="Currently Active SIP Sessions"
+           units="none" description="the number of SIP sessions that are currently active for this converged WAR" />
 
     <metric property="maxActiveSipSessions" 
     	   displayName="Maximum number of Active SIP Sessions"
+           units="none" description="the maximum number of SIP sessions that have been active for this converged WAR" />
+    <metric property="MaxActiveSipSessions"
+           displayName="Maximum number of Active SIP Sessions"
            units="none" description="the maximum number of SIP sessions that have been active for this converged WAR" />
 
     <metric property="sipSessionCounter" 
     		displayName="SIP Sessions created"
             units="none" description="the number of SIP sessions created for this converged WAR"
             measurementType="trendsup" />
-                 
+    <metric property="SipSessionCounter"
+                displayName="SIP Sessions created"
+            units="none" description="the number of SIP sessions created for this converged WAR"
+            measurementType="trendsup" />
+
     <metric property="numberOfSipSessionCreationPerSecond" 
     		displayName="SIP Sessions created per second"
             units="none" description="Number of SIP sessions created per second for the sipapp"
             measurementType="trendsup" />
+    <metric property="NumberOfSipSessionCreationPerSecond"
+                displayName="SIP Sessions created per second"
+            units="none" description="Number of SIP sessions created per second for the sipapp"
+            measurementType="trendsup" />
 
-    <metric property="expiredSipSessions" 
+    <metric property="expiredSipSessions"
+                displayName="Expired SIP Sessions"
+            units="none" description="the number of expired SIP sessions for this converged WAR"
+            measurementType="trendsup" />
+    <metric property="ExpiredSipSessions" 
     		displayName="Expired SIP Sessions"
             units="none" description="the number of expired SIP sessions for this converged WAR"
             measurementType="trendsup" />
-                 
-    <metric property="rejectedSipSessions" 
+
+    <metric property="rejectedSipSessions"
+                displayName="Rejected SIP Sessions"
+            units="none" description="the number of expired SIP sessions for this converged WAR"
+            measurementType="trendsup" />
+    <metric property="RejectedSipSessions" 
     		displayName="Rejected SIP Sessions"
             units="none" description="the number of expired SIP sessions for this converged WAR"
             measurementType="trendsup" />
@@ -828,25 +871,45 @@
     <metric property="sipSessionAverageAliveTime" 
     		displayName="SIP Session Average alive time"
            	units="seconds" description="Average alive time of a Sip Session for this converged WAR" />
+    <metric property="SipSessionAverageAliveTime"
+                displayName="SIP Session Average alive time"
+            units="seconds" description="Average alive time of a Sip Session for this converged WAR" />
 
     <metric property="sipSessionMaxAliveTime" 
     		displayName="Max SIP Session alive time"
             units="seconds" description="Maximum alive time of a Sip Session for this converged WAR" />
+    <metric property="SipSessionMaxAliveTime"
+                displayName="Max SIP Session alive time"
+            units="seconds" description="Maximum alive time of a Sip Session for this converged WAR" />
 
-	<metric property="activeSipApplicationSessions" 
-			displayName="Currently Active SIP Application Sessions"
-	        units="none" description="Number active SIP application sessions for this converged WAR" />
+    <metric property="activeSipApplicationSessions"
+                displayName="Currently Active SIP Application Sessions"
+            units="none" description="Number active SIP application sessions for this converged WAR" />
+    <metric property="ActiveSipApplicationSessions" 
+		displayName="Currently Active SIP Application Sessions"
+	    units="none" description="Number active SIP application sessions for this converged WAR" />
 
     <metric property="maxActiveSipApplications" 
     		displayName="Maximum number of Active Sip Application Sessions"
             units="none" description="Maximum number of active SIP application sessions for this converged WAR" />
+    <metric property="MaxActiveSipApplications"
+                displayName="Maximum number of Active Sip Application Sessions"
+            units="none" description="Maximum number of active SIP application sessions for this converged WAR" />
 
-	<metric property="sipApplicationSessionCounter" 
-			displayName="Sip Application Sessions created"
-	        units="none" description="Number of SIP application sessions created for this converged WAR"
-	        measurementType="trendsup" />
-                 
-    <metric property="numberOfSipApplicationSessionCreationPerSecond" 
+    <metric property="sipApplicationSessionCounter" 
+		displayName="Sip Application Sessions created"
+	    units="none" description="Number of SIP application sessions created for this converged WAR"
+	    measurementType="trendsup" />
+    <metric property="SipApplicationSessionCounter"
+                displayName="Sip Application Sessions created"
+            units="none" description="Number of SIP application sessions created for this converged WAR"
+            measurementType="trendsup" />
+
+    <metric property="numberOfSipApplicationSessionCreationPerSecond"
+                displayName="Sip Application Sessions created per second"
+            units="none" description="Number of SIP application sessions created per second for this converged WAR"
+            measurementType="trendsup" />
+    <metric property="NumberOfSipApplicationSessionCreationPerSecond" 
     		displayName="Sip Application Sessions created per second"
             units="none" description="Number of SIP application sessions created per second for this converged WAR"
             measurementType="trendsup" />
@@ -855,17 +918,31 @@
     		displayName="Expired Sip Application Sessions"
             units="none" description="Number of expired SIP Application sessions for this converged WAR"
             measurementType="trendsup" />
-            
+    <metric property="ExpiredSipApplicationSessions"
+                displayName="Expired Sip Application Sessions"
+            units="none" description="Number of expired SIP Application sessions for this converged WAR"
+            measurementType="trendsup" />
+
     <metric property="rejectedSipApplicationSessions" 
     		displayName="Rejected Sip Application Sessions"
+            units="none" description="Number of SIP Application sessions rejected for this converged WAR"
+            measurementType="trendsup" />
+    <metric property="RejectedSipApplicationSessions"
+                displayName="Rejected Sip Application Sessions"
             units="none" description="Number of SIP Application sessions rejected for this converged WAR"
             measurementType="trendsup" />
 
     <metric property="sipApplicationSessionAverageAliveTime" 
     		displayName="Sip Application Session Average alive time"
             units="seconds" description="Average alive time of a SIP Application Sessions for this converged WAR" />
+    <metric property="SipApplicationSessionAverageAliveTime"
+                displayName="Sip Application Session Average alive time"
+            units="seconds" description="Average alive time of a SIP Application Sessions for this converged WAR" />
 
-    <metric property="sipApplicationSessionMaxAliveTime" 
+    <metric property="sipApplicationSessionMaxAliveTime"
+                displayName="Max Sip Application Session alive time"
+            units="seconds" description="Maximum alive time of a SIP Application Sessions for this converged WAR" />
+    <metric property="SipApplicationSessionMaxAliveTime" 
     		displayName="Max Sip Application Session alive time"
             units="seconds" description="Maximum alive time of a SIP Application Sessions for this converged WAR" />
 '>
