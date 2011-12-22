@@ -22,7 +22,7 @@
 
 	<properties>
 		<jdiameter.version>5.1.1.GA-JBCP5</jdiameter.version>
-		<mobicents.cluster.version>5.1.1.GA-JBCP5</mobicents.cluster.version>
+		<mobicents.cluster.version>5.1.2.GA-JBCP5_1</mobicents.cluster.version>
 	</properties>
 
 	<dependencyManagement>
