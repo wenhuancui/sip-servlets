@@ -32,6 +32,8 @@ import gov.nist.javax.sip.header.SIPHeaderNames;
 import gov.nist.javax.sip.header.WWWAuthenticate;
 import gov.nist.javax.sip.header.extensions.JoinHeader;
 import gov.nist.javax.sip.header.extensions.ReplacesHeader;
+import gov.nist.javax.sip.header.ims.PathHeader;
+import gov.nist.javax.sip.message.MessageExt;
 
 import java.text.ParseException;
 import java.util.ArrayList;
