@@ -20,26 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-/*
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */
 package org.mobicents.servlet.sip.testsuite;
 
 import gov.nist.javax.sip.DialogExt;
 import gov.nist.javax.sip.address.SipUri;
+import gov.nist.javax.sip.header.HeaderExt;
 import gov.nist.javax.sip.header.HeaderFactoryExt;
 import gov.nist.javax.sip.header.ParameterNames;
 import gov.nist.javax.sip.header.SIPETag;
@@ -97,6 +82,7 @@ import javax.sip.header.RouteHeader;
 import javax.sip.header.SIPETagHeader;
 import javax.sip.header.SIPIfMatchHeader;
 import javax.sip.header.SubscriptionStateHeader;
+import javax.sip.header.SupportedHeader;
 import javax.sip.header.ToHeader;
 import javax.sip.header.ViaHeader;
 import javax.sip.message.Request;
@@ -302,7 +288,7 @@ public class TestSipListener implements SipListener {
 
 	private boolean setTransport=true;
 
-	private boolean serviceUnavailableReceived = false;
+	private Response serviceUnavailableResponse = null;
 
 	private int referResponseToSend = 202;
 
@@ -994,6 +980,20 @@ public class TestSipListener implements SipListener {
 				toHeader.setTag(Integer.toString(new Random().nextInt(10000000)));
 			}
 //			okResponse.addHeader(contactHeader);
+			SupportedHeader supportedHeader = (SupportedHeader) request.getHeader(SupportedHeader.NAME);
+			PathHeader pathHeader = (PathHeader) request.getHeader(PathHeader.NAME);
+			contactHeader = (ContactHeader) request.getHeader(ContactHeader.NAME);
+			if(supportedHeader != null) {
+				okResponse.addHeader(supportedHeader);
+				if(((HeaderExt)supportedHeader).getValue().contains("outbound")) {					
+					okResponse.addHeader(protocolObjects.headerFactory.createRequireHeader("outbound"));
+					contactHeader.setExpires(3600);
+					okResponse.addHeader(contactHeader);
+					if(pathHeader != null) {
+						okResponse.addHeader(pathHeader);
+					}
+				}
+			}
 			serverTransaction.sendResponse(okResponse);
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1374,7 +1374,7 @@ public class TestSipListener implements SipListener {
 			this.serverErrorReceived = true;
 		}		
 		if(response.getStatusCode() == 503) {
-			this.serviceUnavailableReceived  = true;
+			this.serviceUnavailableResponse = response;
 		}
 		if(response.toString().toLowerCase().contains("info")) {
 			lastInfoResponseTime = System.currentTimeMillis();
@@ -2771,8 +2771,8 @@ public class TestSipListener implements SipListener {
 	/**
 	 * @return the serviceUnavailableReceived
 	 */
-	public boolean isServiceUnavailableReceived() {
-		return serviceUnavailableReceived;
+	public Response getServiceUnavailableResponse() {
+		return serviceUnavailableResponse;
 	}
 
 	public void setReferResponseToSend(int referResponseToSend) {
