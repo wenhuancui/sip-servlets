@@ -131,7 +131,13 @@ public class FaultTolerantScheduler {
 				@Override
 				public void run() {
 					try {
+						if(logger.isDebugEnabled()) {
+							logger.debug("Purging canceled timer tasks...");
+						}
 						executor.purge();				
+						if(logger.isDebugEnabled()) {
+							logger.debug("Purging canceled timer tasks completed.");
+						}
 					}
 					catch (Exception e) {
 						logger.error("failed to execute purge",e);

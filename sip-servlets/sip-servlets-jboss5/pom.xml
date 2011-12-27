@@ -285,6 +285,10 @@
 					<plugin>
 		 	        	<groupId>org.apache.maven.plugins</groupId>
 		 	        	<artifactId>maven-dependency-plugin</artifactId>
+		 	        	<configuration>
+		 	        		<overWriteReleases>true</overWriteReleases>
+		 					<overWriteSnapshots>true</overWriteSnapshots>
+		 	        	</configuration>	
 		 	        	<executions>		 	          		
 		 	          		<execution>
 		 	            			<id>copy-to-jboss-lib</id>

@@ -68,7 +68,13 @@ public class TimerServiceImpl implements SipServletTimerService {
 			Runnable r = new Runnable() {			
 				public void run() {
 					try {
-						scheduledExecutor.purge();				
+						if(logger.isDebugEnabled()) {
+							logger.debug("Purging canceled timer tasks...");
+						}
+						scheduledExecutor.purge();
+						if(logger.isDebugEnabled()) {
+							logger.debug("Purging canceled timer tasks completed.");
+						}						
 					}
 					catch (Exception e) {
 						logger.error("failed to execute purge",e);
