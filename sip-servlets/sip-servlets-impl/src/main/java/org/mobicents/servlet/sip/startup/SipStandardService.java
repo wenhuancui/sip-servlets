@@ -163,6 +163,7 @@ public class SipStandardService extends StandardService implements SipService {
 	private Properties sipStackProperties;	
 	private String sipStackPropertiesFileLocation;
 	private String addressResolverClass = DNSAddressResolver.class.getName();
+	private Integer purgePeriod = 0;
 	
 	//the balancers to send heartbeat to and our health info
 	@Deprecated
@@ -1148,4 +1149,13 @@ public class SipStandardService extends StandardService implements SipService {
 	public ReplicationStrategy getReplicationStrategy() {
 		return replicationStrategy;
 	}
+	
+	public Integer getPurgePeriod() {
+		return purgePeriod;
+	}
+	
+	public void setPurgePeriod(Integer purgePeriod) {
+		this.purgePeriod = purgePeriod;
+	}
+	
 }

@@ -46,10 +46,10 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.sip.ServletTimer;
 import javax.servlet.sip.SipApplicationSession;
 import javax.servlet.sip.TimerListener;
-import javax.servlet.sip.TimerService;
 
 import org.apache.log4j.Logger;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
+import org.mobicents.servlet.sip.startup.StaticServiceHolder;
 
 public class TimerServiceImpl implements SipServletTimerService {
 	
@@ -62,7 +62,21 @@ public class TimerServiceImpl implements SipServletTimerService {
 	private transient ScheduledThreadPoolExecutor scheduledExecutor;
 	
 	public TimerServiceImpl() {		
-		scheduledExecutor = new ScheduledThreadPoolExecutor(SCHEDULER_THREAD_POOL_DEFAULT_SIZE);;
+		scheduledExecutor = new ScheduledThreadPoolExecutor(SCHEDULER_THREAD_POOL_DEFAULT_SIZE);
+		int purgePeriod = StaticServiceHolder.sipStandardService.getPurgePeriod();
+		if(purgePeriod > 0) {
+			Runnable r = new Runnable() {			
+				public void run() {
+					try {
+						scheduledExecutor.purge();				
+					}
+					catch (Exception e) {
+						logger.error("failed to execute purge",e);
+					}
+				}
+			};
+			scheduledExecutor.scheduleWithFixedDelay(r, purgePeriod, purgePeriod, TimeUnit.MINUTES);
+		}
 	}
 	
 	/*
