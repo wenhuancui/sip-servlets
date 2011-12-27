@@ -63,7 +63,7 @@ public class TimerServiceImpl implements SipServletTimerService {
 	
 	public TimerServiceImpl() {		
 		scheduledExecutor = new ScheduledThreadPoolExecutor(SCHEDULER_THREAD_POOL_DEFAULT_SIZE);
-		int purgePeriod = StaticServiceHolder.sipStandardService.getPurgePeriod();
+		int purgePeriod = StaticServiceHolder.sipStandardService.getCanceledTimerTasksPurgePeriod();
 		if(purgePeriod > 0) {
 			Runnable r = new Runnable() {			
 				public void run() {
