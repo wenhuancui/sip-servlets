@@ -163,7 +163,7 @@ public class SipStandardService extends StandardService implements SipService {
 	private Properties sipStackProperties;	
 	private String sipStackPropertiesFileLocation;
 	private String addressResolverClass = DNSAddressResolver.class.getName();
-	private Integer canceledTimerTasksPurgePeriod = 0;
+	private int canceledTimerTasksPurgePeriod = 0;
 	
 	//the balancers to send heartbeat to and our health info
 	@Deprecated
@@ -1150,11 +1150,11 @@ public class SipStandardService extends StandardService implements SipService {
 		return replicationStrategy;
 	}
 	
-	public Integer getCanceledTimerTasksPurgePeriod() {
+	public int getCanceledTimerTasksPurgePeriod() {
 		return canceledTimerTasksPurgePeriod;
 	}
 	
-	public void setCanceledTimerTasksPurgePeriod(Integer value) {
+	public void setCanceledTimerTasksPurgePeriod(int value) {
 		this.canceledTimerTasksPurgePeriod = value;
 	}
 	
