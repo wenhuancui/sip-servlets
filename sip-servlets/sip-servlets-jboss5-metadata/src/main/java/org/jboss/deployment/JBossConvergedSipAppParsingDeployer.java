@@ -97,7 +97,7 @@ public class JBossConvergedSipAppParsingDeployer extends SchemaResolverDeployer<
       //not reuired merge? for SIP metadata its done in: MergedJBossConvergedSipMetaDataDeployer class... propably also for specMetaData
       //
       mergedMetaData.merge(metaData, specMetaData);
-      //mergedMetaData.merge(metaData, sipMetaData);
+      mergedMetaData.merge(metaData, sipMetaData);
       // Set the merged as the output
       unit.getTransientManagedObjects().addAttachment(JBossConvergedSipMetaData.class, mergedMetaData);      
       // Keep the raw parsed metadata as well

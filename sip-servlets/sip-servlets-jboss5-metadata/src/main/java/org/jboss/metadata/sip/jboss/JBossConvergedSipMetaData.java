@@ -24,6 +24,7 @@ package org.jboss.metadata.sip.jboss;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,7 +62,7 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
 	private SessionConfigMetaData sipSessionConfig;	
 	private SipLoginConfigMetaData sipLoginConfig;     
 	private List<? extends ParamValueMetaData> sipContextParams;
-	private List<ListenerMetaData> sipListeners;
+	private Set<ListenerMetaData> sipListeners;
 	private JBossServletsMetaData sipServlets;
 	private MessageDestinationsMetaData messageDestinations;
 	private SecurityRolesMetaData securityRoles;
@@ -509,7 +510,7 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
        else if(original != null && original.getContextParams() != null)
           setSipContextParams(original.getContextParams());
       
-      ArrayList<ListenerMetaData> mergedListeners = new ArrayList<ListenerMetaData>();
+      List<ListenerMetaData> mergedListeners = new ArrayList<ListenerMetaData>();
       if(override != null && override.sipListeners!= null)
           //setSipListeners(override.sipListeners);
     	  mergedListeners.addAll(override.sipListeners);
@@ -661,13 +662,13 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
 	/**
 	 * @param sipListeners the sipListeners to set
 	 */
-	public void setSipListeners(List<ListenerMetaData> sipListeners) {
+	public void setSipListeners(Set<ListenerMetaData> sipListeners) {
 		this.sipListeners = sipListeners;
 	}
 	/**
 	 * @return the sipListeners
 	 */
-	public List<ListenerMetaData> getSipListeners() {
+	public Set<ListenerMetaData> getSipListeners() {
 		return sipListeners;
 	}
 	/**
@@ -755,7 +756,7 @@ public class JBossConvergedSipMetaData extends JBossWebMetaData {
 		if(this.sipListeners == null)
 		{
 			//NOTE: make separate copy ?
-			this.sipListeners = new ArrayList<ListenerMetaData>(lst);
+			this.sipListeners = new HashSet<ListenerMetaData>(lst);
 		}else
 		{
 			this.sipListeners.addAll(lst);

@@ -283,43 +283,48 @@ public class TomcatConvergedDeployment extends TomcatDeployment {
 //				Thread.currentThread().setContextClassLoader(ClusteredSession.class.getClassLoader());
 				// Try to initate clustering, fallback to standard if no clustering
 				// is available				
-					String managerClassName = config.getManagerClass();								
-					Class managerClass = Thread.currentThread()
-							.getContextClassLoader().loadClass(managerClassName);
-					manager = (AbstractJBossManager) managerClass.newInstance();
-					// MSS : we set the classloader because Clustering class are mixed up with deployers class
-					// causing CL problems : need to separate them in different jars
-//					ClassLoader previousClassLoader = Thread.currentThread().getContextClassLoader();
-//					Thread.currentThread().setContextClassLoader(ClusteredSession.class.getClassLoader());
-					// Try to initate clustering, fallback to standard if no clustering
-					// is available
-					try {				
-						String name = "//"
-								+ ((hostName == null) ? "localhost" : hostName)
-								+ ctxPath;
-						manager.init(name, metaData);
+					String managerClassName = config.getManagerClass();	
+					if (managerClassName != null) {
+						Class managerClass = Thread.currentThread()
+								.getContextClassLoader().loadClass(managerClassName);
+						manager = (AbstractJBossManager) managerClass.newInstance();
+						// MSS : we set the classloader because Clustering class are mixed up with deployers class
+						// causing CL problems : need to separate them in different jars
+						//					ClassLoader previousClassLoader = Thread.currentThread().getContextClassLoader();
+						//					Thread.currentThread().setContextClassLoader(ClusteredSession.class.getClassLoader());
+						// Try to initate clustering, fallback to standard if no clustering
+						// is available
+						try {				
+							String name = "//"
+									+ ((hostName == null) ? "localhost" : hostName)
+									+ ctxPath;
+							manager.init(name, metaData);
 
-						server.setAttribute(objectName, new Attribute("manager",
-								manager));
+							server.setAttribute(objectName, new Attribute("manager",
+									manager));
 
-						log.debug("Enabled clustering support for ctxPath=" + ctxPath);
-					} catch (ClusteringNotSupportedException e) {
-						// JBAS-3513 Just log a WARN, not an ERROR
-						log
-								.warn("Failed to setup clustering, clustering disabled. ClusteringNotSupportedException: "
-										+ e.getMessage());
-					} catch (NoClassDefFoundError ncdf) {
-						// JBAS-3513 Just log a WARN, not an ERROR
-						log.warn("Failed to setup clustering, clustering disabled. NoClassDefFoundError: "
-								+ ncdf.getMessage());
-						log.debug("Classes needed for clustered webapp unavailable",
-								ncdf);				
-					} catch (Throwable t) {
-						// TODO consider letting this through and fail the deployment
-						log
-								.error(
-										"Failed to setup clustering, clustering disabled. Exception: ",
-										t);
+							log.debug("Enabled clustering support for ctxPath=" + ctxPath);
+						} catch (ClusteringNotSupportedException e) {
+							// JBAS-3513 Just log a WARN, not an ERROR
+							log
+							.warn("Failed to setup clustering, clustering disabled. ClusteringNotSupportedException: "
+									+ e.getMessage());
+						} catch (NoClassDefFoundError ncdf) {
+							// JBAS-3513 Just log a WARN, not an ERROR
+							log.warn("Failed to setup clustering, clustering disabled. NoClassDefFoundError: "
+									+ ncdf.getMessage());
+							log.debug("Classes needed for clustered webapp unavailable",
+									ncdf);				
+						} catch (Throwable t) {
+							// TODO consider letting this through and fail the deployment
+							log
+							.error(
+									"Failed to setup clustering, clustering disabled. Exception: ",
+									t);
+						}
+					}
+					else {
+						log.debug("Sip app has distributable but manager class is not set, running in local mode?");
 					}
 			}
 			// Start it	
