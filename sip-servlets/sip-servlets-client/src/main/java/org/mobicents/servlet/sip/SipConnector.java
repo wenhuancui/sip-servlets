@@ -77,7 +77,8 @@ public class SipConnector implements Serializable {
 	private String staticServerAddress;
 	private int staticServerPort;
 	private boolean useStaticAddress;
-	
+	private boolean replaceStaticServerAddressForInternalRoutingRequest = true;
+
 	/**
 	 * @return the Transport
 	 */
@@ -184,6 +185,15 @@ public class SipConnector implements Serializable {
 
 	public void setUseStaticAddress(boolean useStaticAddress) {
 		this.useStaticAddress = useStaticAddress;
+	}
+	
+	public boolean isReplaceStaticServerAddressForInternalRoutingRequest() {
+		return replaceStaticServerAddressForInternalRoutingRequest;
+	}
+	
+	public void setReplaceStaticServerAddressForInternalRoutingRequest(
+			boolean value) {
+		this.replaceStaticServerAddressForInternalRoutingRequest = value;
 	}
 	
 	/*

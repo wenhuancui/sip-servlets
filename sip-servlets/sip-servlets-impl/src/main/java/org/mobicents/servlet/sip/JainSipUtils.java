@@ -125,7 +125,6 @@ import javax.sip.message.Message;
 import javax.sip.message.Request;
 
 import org.apache.log4j.Logger;
-import org.mobicents.servlet.sip.core.ApplicationRoutingHeaderComposer;
 import org.mobicents.servlet.sip.core.ExtendedListeningPoint;
 import org.mobicents.servlet.sip.core.SipApplicationDispatcher;
 import org.mobicents.servlet.sip.core.SipNetworkInterfaceManager;
@@ -816,6 +815,23 @@ public final class JainSipUtils {
 				if(logger.isDebugEnabled()) {
 					logger.debug("The request is going internally due to sipUri = " + sipUri);
 				}
+				if (!sipConnector
+						.isReplaceStaticServerAddressForInternalRoutingRequest()) {
+					// config that turns off optimization if uri is the static
+					// server address, this allows the static server address to
+					// be a hop in the request outgoing path
+					if (sipConnector.getStaticServerAddress() != null
+							&& (sipConnector.getStaticServerAddress().equals(
+									sipUri.getHost()) || sipConnector
+									.getStaticServerAddress().equals(
+											sipUri.getHost() + ":"
+													+ sipUri.getPort()))) {
+						if(logger.isDebugEnabled()) {
+							logger.debug("Avoiding URI optimization due to connector configuration and URI points to the static server address.");
+						}
+						return;
+					}
+				}				
 				ExtendedListeningPoint lp = null;
 				if(session.getOutboundInterface() != null) {
 					javax.sip.address.SipURI outboundInterfaceURI = (javax.sip.address.SipURI) SipFactories.addressFactory.createURI(session.getOutboundInterface());

@@ -38,7 +38,8 @@ ipAddress="127.0.0.1"
  staticServerAddress="122.122.122.122" 
  staticServerPort="44"
  useStaticAddress="true"
- httpFollowsSip="false"/>]]></programlisting>
+ httpFollowsSip="false"
+ replaceStaticServerAddressForInternalRoutingRequest="false" />]]></programlisting>
     </example>
     <variablelist>
       <title>SIP &lt;connector&gt; Attributes</title>
@@ -113,6 +114,13 @@ ipAddress="127.0.0.1"
           </para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term>replaceStaticServerAddressForInternalRoutingRequest</term>
+        <listitem>
+          <para>Optional property that by default has true value. If value is false then the Sip Servlets container will not replace addresses in Route headers, or in the Request URI, that points to the static server addresss, before proxying requests.</para>
+        </listitem>
+      </varlistentry>
+      
     </variablelist>
     <note>
       <para>A comprehensive list of implementing classes for the SIP Stack is available from the <ulink url="http://hudson.jboss.org/hudson/job/jain-sip/lastSuccessfulBuild/artifact/javadoc/javax/sip/SipStack.html">Class SipStackImpl page on nist.gov</ulink>.</para>
