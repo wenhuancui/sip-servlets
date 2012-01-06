@@ -31,6 +31,7 @@ import org.jboss.web.tomcat.service.session.distributedcache.spi.OutgoingDistrib
 import org.mobicents.servlet.sip.core.session.DistributableSipManager;
 import org.mobicents.servlet.sip.core.session.MobicentsSipApplicationSession;
 import org.mobicents.servlet.sip.startup.SipContext;
+import org.mobicents.servlet.sip.startup.StaticServiceHolder;
 import org.mobicents.timers.FaultTolerantScheduler;
 import org.mobicents.timers.TimerTask;
 import org.mobicents.timers.TimerTaskData;
@@ -142,7 +143,7 @@ public class FaultTolerantSasTimerService implements ClusteredSipApplicationSess
 	private FaultTolerantScheduler getScheduler() {
 		if(scheduledExecutor == null) {
 			TimerTaskFactory timerTaskFactory = new SipApplicationSessionTaskFactory(this.sipManager);
-			scheduledExecutor = new FaultTolerantScheduler(NAME + ((SipContext)sipManager.getContainer()).getApplicationNameHashed(), corePoolSize, this.sipManager.getMobicentsCluster(), (byte) 0, this.sipManager.getMobicentsCluster().getMobicentsCache().getJBossCache().getConfiguration().getRuntimeConfig().getTransactionManager(), timerTaskFactory);
+			scheduledExecutor = new FaultTolerantScheduler(NAME + ((SipContext)sipManager.getContainer()).getApplicationNameHashed(), corePoolSize, this.sipManager.getMobicentsCluster(), (byte) 0, this.sipManager.getMobicentsCluster().getMobicentsCache().getJBossCache().getConfiguration().getRuntimeConfig().getTransactionManager(), timerTaskFactory, StaticServiceHolder.sipStandardService.getCanceledTimerTasksPurgePeriod());
 		}
 		return scheduledExecutor;
 	}
