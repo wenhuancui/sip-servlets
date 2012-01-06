@@ -22,6 +22,7 @@
 
 package org.jboss.web.tomcat.service.session;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -34,9 +35,12 @@ import org.mobicents.servlet.sip.core.session.SipSessionKey;
  * 
  */
 public class ConvergedSessionInvalidationTracker {
-	private static final ThreadLocal<Map<Manager, String>> invalidatedSessions = new ThreadLocal<Map<Manager, String>>();
-	private static final ThreadLocal<Map<Manager, SipSessionKey>> invalidatedSipSessions = new ThreadLocal<Map<Manager, SipSessionKey>>();
-	private static final ThreadLocal<Map<Manager, SipApplicationSessionKey>> invalidatedSipApplicationSessions = new ThreadLocal<Map<Manager, SipApplicationSessionKey>>();
+	
+	private static final Object MAP_VALUE = new Object();
+	
+	private static final ThreadLocal<Map<Manager, Map<String,Object>>> invalidatedSessions = new ThreadLocal<Map<Manager, Map<String,Object>>>();
+	private static final ThreadLocal<Map<Manager, Map<SipSessionKey,Object>>> invalidatedSipSessions = new ThreadLocal<Map<Manager, Map<SipSessionKey,Object>>>();
+	private static final ThreadLocal<Map<Manager, Map<SipApplicationSessionKey,Object>>> invalidatedSipApplicationSessions = new ThreadLocal<Map<Manager,Map<SipApplicationSessionKey,Object>>>();
 	private static final ThreadLocal<Boolean> suspended = new ThreadLocal<Boolean>();
 
 	public static void suspend() {
@@ -49,68 +53,95 @@ public class ConvergedSessionInvalidationTracker {
 
 	public static void sessionInvalidated(String id, Manager manager) {
 		if (Boolean.TRUE != suspended.get()) {
-			Map<Manager, String> map = invalidatedSessions.get();
+			Map<Manager, Map<String,Object>> map = invalidatedSessions.get();
 			if (map == null) {
-				map = new WeakHashMap<Manager, String>(2);
+				map = new HashMap<Manager, Map<String,Object>>(2);						
 				invalidatedSessions.set(map);
 			}
-			map.put(manager, id);
+			Map<String,Object> managerMap = map.get(manager);
+			if(managerMap == null) {
+				managerMap = new WeakHashMap<String,Object>();
+				map.put(manager, managerMap);
+			}
+			managerMap.put(id, MAP_VALUE);
 		}
 	}
 	
 	public static void sipSessionInvalidated(SipSessionKey key, Manager manager) {
 		if (Boolean.TRUE != suspended.get()) {
-			Map<Manager, SipSessionKey> map = invalidatedSipSessions.get();
+			Map<Manager, Map<SipSessionKey,Object>> map = invalidatedSipSessions.get();
 			if (map == null) {
-				map = new WeakHashMap<Manager, SipSessionKey>(2);
+				map = new HashMap<Manager, Map<SipSessionKey,Object>>(2);						
 				invalidatedSipSessions.set(map);
 			}
-			map.put(manager, key);
+			Map<SipSessionKey,Object> managerMap = map.get(manager);
+			if(managerMap == null) {
+				managerMap = new WeakHashMap<SipSessionKey,Object>();
+				map.put(manager, managerMap);
+			}
+			managerMap.put(key, MAP_VALUE);
 		}
 	}
 	
 	public static void sipApplicationSessionInvalidated(SipApplicationSessionKey key, Manager manager) {
 		if (Boolean.TRUE != suspended.get()) {
-			Map<Manager, SipApplicationSessionKey> map = invalidatedSipApplicationSessions.get();
+			Map<Manager, Map<SipApplicationSessionKey,Object>> map = invalidatedSipApplicationSessions.get();
 			if (map == null) {
-				map = new WeakHashMap<Manager, SipApplicationSessionKey>(2);
+				map = new HashMap<Manager, Map<SipApplicationSessionKey,Object>>(2);						
 				invalidatedSipApplicationSessions.set(map);
 			}
-			map.put(manager, key);
+			Map<SipApplicationSessionKey,Object> managerMap = map.get(manager);
+			if(managerMap == null) {
+				managerMap = new WeakHashMap<SipApplicationSessionKey,Object>();
+				map.put(manager, managerMap);
+			}
+			managerMap.put(key, MAP_VALUE);
 		}
 	}
 
 	public static void clearInvalidatedSession(String id, Manager manager) {
-		Map<Manager, String> map = invalidatedSessions.get();
+		Map<Manager, Map<String,Object>> map = invalidatedSessions.get();
 		if (map != null) {
-			map.remove(manager);
-		}
+			Map<String,Object> managerMap = map.get(manager);
+			if (managerMap != null) {
+				managerMap.remove(id);
+			}
+		}		
 	}
 
 	public static boolean isSessionInvalidated(String id, Manager manager) {
 		boolean result = false;
-		Map<Manager, String> map = invalidatedSessions.get();
+		Map<Manager, Map<String,Object>> map = invalidatedSessions.get();
 		if (map != null) {
-			result = id.equals(map.get(manager));
-		}
+			Map<String,Object> managerMap = map.get(manager);
+			if (managerMap != null) {
+				result = managerMap.containsKey(id);
+			}
+		}		
 		return result;
 	}
 	
 	public static boolean isSipSessionInvalidated(SipSessionKey key, Manager manager) {
 		boolean result = false;
-		Map<Manager, SipSessionKey> map = invalidatedSipSessions.get();
+		Map<Manager, Map<SipSessionKey,Object>> map = invalidatedSipSessions.get();
 		if (map != null) {
-			result = key.equals(map.get(manager));
-		}
+			Map<SipSessionKey,Object> managerMap = map.get(manager);
+			if (managerMap != null) {
+				result = managerMap.containsKey(key);
+			}
+		}		
 		return result;
 	}
 	
 	public static boolean isSipApplicationSessionInvalidated(SipApplicationSessionKey key, Manager manager) {
 		boolean result = false;
-		Map<Manager, SipApplicationSessionKey> map = invalidatedSipApplicationSessions.get();
+		Map<Manager, Map<SipApplicationSessionKey,Object>> map = invalidatedSipApplicationSessions.get();
 		if (map != null) {
-			result = key.equals(map.get(manager));
-		}
+			Map<SipApplicationSessionKey,Object> managerMap = map.get(manager);
+			if (managerMap != null) {
+				result = managerMap.containsKey(key);
+			}
+		}		
 		return result;
 	}
 }
