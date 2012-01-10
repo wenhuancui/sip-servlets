@@ -888,8 +888,10 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.3.1</version>
 				<configuration>
-					<archive>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+					<archive>						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>						
+            <manifestEntries>
+              <Trusted-Library>true</Trusted-Library>
+            </manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
