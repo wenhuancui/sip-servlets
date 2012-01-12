@@ -37,7 +37,7 @@
         <title>JON for Production</title>
 <!--Ticket #709 - Editor Comment - this list should be a procedure, and expanded to explain the process a bit more thoroughly.-->        <itemizedlist>
           <listitem>
-            <para>Follow the JON installation instructions to install the latest version of JON <ulink url="http://docs.redhat.com/docs/en-US/JBoss_Operations_Network/2.4.1/html/Release_Notes/Installing-jon.html">.</para>
+            <para>Follow the JON installation instructions to install the latest version of JON <ulink url="http://docs.redhat.com/docs/en-US/JBoss_Operations_Network/2.4.1/html/Release_Notes/Installing-jon.html"/>.</para>
           </listitem>
           <listitem>
             <para>Stop the JON server and agent if they are running.</para>
