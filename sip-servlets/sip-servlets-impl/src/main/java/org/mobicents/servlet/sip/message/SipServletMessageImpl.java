@@ -818,10 +818,8 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	 * @see javax.servlet.sip.SipServletMessage#getFrom()
 	 */
 	public Address getFrom() {
-		// AddressImpl enforces immutability!!
-		FromHeader from = (FromHeader) this.message
-				.getHeader(getCorrectHeaderName(FromHeader.NAME));
-		AddressImpl address = new AddressImpl(from.getAddress(), AddressImpl.getParameters((Parameters)from), getTransaction() == null ? true : false);
+		FromHeader from = (FromHeader) this.message.getHeader(getCorrectHeaderName(FromHeader.NAME));
+		AddressImpl address = new AddressImpl(from.getAddress(), AddressImpl.getParameters((Parameters)from), !isCommitted());
 		return address;
 	}
 	
@@ -1130,9 +1128,8 @@ public abstract class SipServletMessageImpl implements SipServletMessage, Extern
 	 * @see javax.servlet.sip.SipServletMessage#getTo()
 	 */
 	public Address getTo() {
-		ToHeader to = (ToHeader) this.message
-			.getHeader(getCorrectHeaderName(ToHeader.NAME));
-		return new AddressImpl(to.getAddress(), AddressImpl.getParameters((Parameters)to), getTransaction() == null ? true : false);
+		ToHeader to = (ToHeader) this.message.getHeader(getCorrectHeaderName(ToHeader.NAME));
+		return new AddressImpl(to.getAddress(), AddressImpl.getParameters((Parameters)to), !isCommitted());
 	}
 	
 	/*
