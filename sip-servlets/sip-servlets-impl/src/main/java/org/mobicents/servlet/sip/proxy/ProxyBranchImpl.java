@@ -49,6 +49,7 @@ import javax.servlet.sip.SipURI;
 import javax.servlet.sip.URI;
 import javax.servlet.sip.ar.SipApplicationRoutingDirective;
 import javax.sip.ClientTransaction;
+import javax.sip.DialogState;
 import javax.sip.InvalidArgumentException;
 import javax.sip.SipException;
 import javax.sip.SipProvider;
@@ -537,7 +538,10 @@ public class ProxyBranchImpl implements ProxyBranch, ProxyBranchExt, Externaliza
 			}
 			if(status == 200 &&
 				(Request.PRACK.equals(response.getMethod()) || Request.UPDATE.equals(response.getMethod()))) {
-				updateTimer(true);
+				// Update timer C if and only if the dialog is in early state
+				if (response.getDialog() != null && DialogState.EARLY == response.getDialog().getState()) {
+					updateTimer(true);
+				}
 			}
 			
 			if(logger.isDebugEnabled())
