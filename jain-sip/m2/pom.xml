@@ -7,7 +7,7 @@
 	<groupId>javax.sip</groupId>
 	<artifactId>jain-sip</artifactId>
 	<packaging>pom</packaging>
-	<version>1.2</version>
+	<version>1.2.166.1_JBCP5</version>
 	<name>jain-sip</name>
 	<url>http://jain-sip.dev.java.net</url>
 
