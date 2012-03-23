@@ -13,7 +13,7 @@
 	<name>jain-sip-ri</name>
 	<url>http://jain-sip.dev.java.net</url>
 	<build>
-		<sourceDirectory>../../src</sourceDirectory>
+		<sourceDirectory>../src</sourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -31,19 +31,6 @@
 						<exclude>gov/nist/javax/sip/stack/sctp/**</exclude>
 					</excludes>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
