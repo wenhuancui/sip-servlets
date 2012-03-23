@@ -2,12 +2,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>javax.sip</groupId>
-		<version>1.2.166.1_JBCP5</version>
+		<version>1.2.166.1_JBCP5_1</version>
 		<artifactId>jain-sip</artifactId>
 	</parent>
 
 	<artifactId>jain-sip-ri</artifactId>
-	<version>1.2.166.1_JBCP5</version>
+	<version>1.2.166.1_JBCP5_1</version>
 
 	<packaging>jar</packaging>
 	<name>jain-sip-ri</name>
@@ -91,7 +91,7 @@
 		<dependency>
 			<groupId>javax.sip</groupId>
 			<artifactId>jain-sip-api</artifactId>
-			<version>1.2.166.1_JBCP5</version>
+			<version>1.2.166.1_JBCP5_1</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
