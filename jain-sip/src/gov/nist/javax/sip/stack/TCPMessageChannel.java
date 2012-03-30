@@ -251,7 +251,7 @@ public class TCPMessageChannel extends ConnectionOrientedMessageChannel {
         	logger.logWarning("Failed to connect " + this.peerAddress + ":" + this.peerPort +" but trying the advertised port=" + this.peerPortAdvertisedInHeaders + " if it's different than the port we just failed on");
         }
         if(sock == null) { // If we couldn't connect to the host, try the advertised port as failsafe
-        	if(this.peerPort != this.peerPortAdvertisedInHeaders && peerPortAdvertisedInHeaders > 0) { // no point in trying same port
+        	if(this.peerPort != this.peerPortAdvertisedInHeaders && peerPortAdvertisedInHeaders > 0 && this.peerAddressAdvertisedInHeaders != null) { // no point in trying same port
                 logger.logWarning("Couldn't connect to peerAddress = " + peerAddress + " peerPort = " + peerPort + " key = " + key +  " retrying on peerPortAdvertisedInHeaders " + peerPortAdvertisedInHeaders);
                 
 //                MessageChannel backupChannel = this.sipStack.createRawMessageChannel(
@@ -261,7 +261,7 @@ public class TCPMessageChannel extends ConnectionOrientedMessageChannel {
 //                backupChannel.sendMessage(msg, peerAddress, peerPortAdvertisedInHeaders, retry);
                 
         		sock = this.sipStack.ioHandler.sendBytes(this.messageProcessor.getIpAddress(),
-                    this.peerAddress, this.peerPortAdvertisedInHeaders, this.peerProtocol, msg, isClient, this);        		
+                    this.peerAddressAdvertisedInHeaders, this.peerPortAdvertisedInHeaders, this.peerProtocol, msg, isClient, this);        		
         		this.peerPort = this.peerPortAdvertisedInHeaders;
         		this.key = MessageChannel.getKey(peerAddress, peerPort, "TCP");
                 logger.logWarning("retry suceeded to peerAddress = " + peerAddress + " peerPortAdvertisedInHeaders = " + peerPortAdvertisedInHeaders + " key = " + key);

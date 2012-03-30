@@ -392,6 +392,12 @@ public class IOHandler {
                  * to determine the IP address and port to open the connection
                  * and send the response to.
                  */
+
+                /*
+                 * ammendonca: this does not make sense, it will pick own stack
+                 * address from getViaHost() and getViaPort() and establish connection
+                 * to self, possibly leaking the thread.
+                 * 
                 if (!isClient) {
                     receiverAddress = InetAddress.getByName(messageChannel
                             .getViaHost());
@@ -449,6 +455,8 @@ public class IOHandler {
                     logger.logError("IOException occured at " , ex);
                     throw ex;
                 }
+                */
+                throw ex;
             } finally {
                 leaveIOCriticalSection(key);
             }

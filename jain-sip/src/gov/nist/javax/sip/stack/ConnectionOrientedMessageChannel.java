@@ -90,6 +90,7 @@ public abstract class ConnectionOrientedMessageChannel extends MessageChannel im
     
     // This is the port that we will find in the headers of the messages from the peer
     protected int peerPortAdvertisedInHeaders = -1;
+    protected InetAddress peerAddressAdvertisedInHeaders;
 
     protected int peerPort;
 
@@ -312,8 +313,12 @@ public abstract class ConnectionOrientedMessageChannel extends MessageChannel im
                 	} else {
                 		this.peerPortAdvertisedInHeaders = hopPort;
                 	}
+                	// ammendonca: store the via host for using on fallback connection, if needed
+                	if(this.peerAddressAdvertisedInHeaders == null) {
+                    	this.peerAddressAdvertisedInHeaders = InetAddress.getByName(hop.getHost());
+                	}
                 	if(logger.isLoggingEnabled(LogWriter.TRACE_DEBUG)) {
-                    	logger.logDebug("3.Storing peerPortAdvertisedInHeaders = " + peerPortAdvertisedInHeaders + " for this channel " + this + " key " + key);
+                    	logger.logDebug("3.Storing peerAddressAdvertisedInHeaders = " + peerAddressAdvertisedInHeaders + " and peerPortAdvertisedInHeaders = " + peerPortAdvertisedInHeaders + " for this channel " + this + " key " + key);
                     }
                 }
                 try {
