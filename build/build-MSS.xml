@@ -4,7 +4,11 @@
 	<!--Properties-->
 
 	<property environment="sys"/>
-
+    <property name="jbcp.configurations" value="sipservlets-production,sipservlets-default"/>
+	
+    <property name="release.name" value="JBCP"/>
+    <property name="release.version" value="5.1.4-SNAPSHOT"/>
+	
 	<condition property="mvn.executable" value="${sys.M2_HOME}\bin\mvn.bat" else="mvn">
 		<os family="windows"/>
 	</condition>
@@ -27,7 +31,14 @@
 	   </not>
 	</condition>
 
+	<condition property="jbcp.distro.zip.path" value="">
+	   <not>  
+	      <isset property="jbcp.distro.zip.path"/>
+	   </not>
+	</condition>
 
+    <property name="release.dir" value="${basedir}/release-package"/>
+	
 	<taskdef onerror="fail" resource="net/sf/antcontrib/antlib.xml">
 		<classpath>
 			<pathelement location="${ant.file.jbcp.platform.release}/../lib/ant-contrib-1.0b3.jar" />
@@ -84,6 +95,93 @@
 	<target name="release" depends="build,copy-props">
 		<echo>Release into JBOSS node</echo>
 	</target>
+	
+	
+	<target name="package-JBCP">
+		<echo>Package JBCP</echo>
+		<antcall target="unzip-jbcp-distro"/>
+		<antcall target="clean-jbcp-distro">
+			<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
+		</antcall>
+		<for delimiter="," param="jboss.node" list="${jbcp.configurations}">
+			<sequential>
+				<echo>[Populating '@{jboss.node}' jboss.node]</echo>
+				<antcall target="release">
+					<param name="jboss.node" value="@{jboss.node}"/>
+					<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
+				</antcall>
+			</sequential>
+		</for>
+		<antcall target="clean-jbcp-post-build">
+			<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
+		</antcall>
+		<antcall target="zip-release"/>
+	</target>
+	
+	
+	<target name="unzip-jbcp-distro">
+			<unzip src="${jbcp.distro.zip.path}" dest="${release.dir}" />
+	</target>
+	
+	<target name="clean-jbcp-distro">
+		<for delimiter="," param="jboss.node" list="${jbcp.configurations}">
+			<sequential>
+				<echo>[Cleaning '@{jboss.node}' jboss.node]</echo>
+				<delete failonerror="true" verbose="true">
+					<fileset file="${jboss.home}/server/@{jboss.node}/deploy/profileservice-jboss-beans.xml"/>
+				</delete>				
+				<!--delete failonerror="true" verbose="true">
+					<fileset file="${jboss.home}/server/@{jboss.node}/deploy/sip-servlets-management.war"/>
+				</delete-->				
+				<!--delete failonerror="true" verbose="true">
+					<fileset dir="${jboss.home}/server/@{jboss.node}/deploy/admin-console.war/plugins">
+						<include name="**/*mobicents*"/>
+					</fileset>
+				</delete-->				
+				<delete failonerror="true" verbose="true">
+					<fileset dir="${jboss.home}/server/@{jboss.node}/deploy/jbossweb.sar">
+						<include name="**/jain-sip-ri*.jar"/>
+					</fileset>
+				</delete>				
+				<delete failonerror="true" verbose="true">
+					<fileset dir="${jboss.home}/server/@{jboss.node}/deploy/jbossweb.sar">
+						<patternset id="pat">
+							<include name="**/cache*"/>
+							<include name="**/core*"/>
+							<include name="**/mobicents*"/>
+							<include name="**/sip*"/>
+							<include name="**/timers*"/>
+						  </patternset>		
+					</fileset>
+				</delete>				
+				<delete failonerror="true" verbose="true">
+					<fileset dir="${jboss.home}/server/@{jboss.node}/deployers/jbossweb.deployer">
+						<include name="**/sip-servlets*"/>
+					</fileset>
+				</delete>				
+			</sequential>
+		</for>
+		<delete failonerror="true" verbose="true">
+				<fileset dir="${jboss.home}/common/lib">
+					<include name="**/sip-servlets-jboss5-ha-server-cache*"/>
+				</fileset>
+		</delete>				
+	</target>
+	
+	
+	<target name="clean-jbcp-post-build">
+		<delete failonerror="true" verbose="true">
+			<fileset dir="${jboss.home}/client">
+				<include name="**/sip-servlets-spec*"/>
+			</fileset>
+			<fileset dir="${jboss.home}/docs/licenses">
+				<include name="**/JAIN_SIP*"/>
+				<include name="**/LGPL-LICENSE*"/>
+				<include name="**/MOBICENTS-LICENSE*"/>
+			</fileset>
+		</delete>				
+	</target>	
+	
 	
 	<target name="copy-props">
 		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/jboss-beans.xml" todir="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar/META-INF" />
@@ -260,10 +358,31 @@
 	<!-- Sip Servlets -->
 	
 	<target name="build-sip-servlets">
+		<echo>build-sip-servlets</echo>
+		<echo>builidng with JBOSS_HOME=${jboss.home} into node:${jboss.node}</echo>
 		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../sip-servlets">
 			<arg line="clean install -P validate-source-headers -P${mvn.build.profile} -Denv.JBOSS_HOME=${jboss.home} -Dnode=${jboss.node}" />
 		</exec>
 	</target>
+	
+	<target name="zip-release" depends="set-zip-filename">
+		<zip destfile="${ant.file.mobicents.all.release}/../${zip.filename}" filesonly="false">
+			<zipfileset dir="${release.dir}" prefix="" />
+		</zip>
+	</target>
+	
+	<target name="set-zip-filename" depends="set-time-stamp">
+		<property name="zip-filename-prefix" value="${release.name}-${release.version}" />
+		<condition property="zip.filename" value="${zip-filename-prefix}-${time.stamp}.zip" else="${zip-filename-prefix}.zip">
+			<isset property="time.stamp" />
+		</condition>
+	</target>
+
+	<target name="set-time-stamp" unless="skip.timestamp">
+		<tstamp>
+			<format property="time.stamp" pattern="yyMMddHHmm" />
+		</tstamp>
+	</target>	
 
 	<!-- clean build process -->
 	<target name="clean">
