@@ -99,24 +99,23 @@
 	
 	<target name="package-JBCP">
 		<echo>Package JBCP</echo>
-		
 		<antcall target="unzip-jbcp-distro"/>
-		<!--antcall target="clean-jbcp-distro">
+		<antcall target="clean-jbcp-distro">
 			<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
-		</antcall-->
-		
-		
-			<for delimiter="," param="jboss.node" list="${jbcp.configurations}">
-				<sequential>
-					<echo>[Populating '@{jboss.node}' jboss.node]</echo>
-					<antcall target="release">
-						<param name="jboss.node" value="@{jboss.node}"/>
-						<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
-					</antcall>
-				</sequential>
-			</for>
-		
-			<antcall target="zip-release"/>
+		</antcall>
+		<for delimiter="," param="jboss.node" list="${jbcp.configurations}">
+			<sequential>
+				<echo>[Populating '@{jboss.node}' jboss.node]</echo>
+				<antcall target="release">
+					<param name="jboss.node" value="@{jboss.node}"/>
+					<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
+				</antcall>
+			</sequential>
+		</for>
+		<antcall target="clean-jbcp-post-build">
+			<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
+		</antcall>
+		<antcall target="zip-release"/>
 	</target>
 	
 	
@@ -131,14 +130,14 @@
 				<delete failonerror="true" verbose="true">
 					<fileset file="${jboss.home}/server/@{jboss.node}/deploy/profileservice-jboss-beans.xml"/>
 				</delete>				
-				<delete failonerror="true" verbose="true">
+				<!--delete failonerror="true" verbose="true">
 					<fileset file="${jboss.home}/server/@{jboss.node}/deploy/sip-servlets-management.war"/>
-				</delete>				
-				<delete failonerror="true" verbose="true">
+				</delete-->				
+				<!--delete failonerror="true" verbose="true">
 					<fileset dir="${jboss.home}/server/@{jboss.node}/deploy/admin-console.war/plugins">
 						<include name="**/*mobicents*"/>
 					</fileset>
-				</delete>				
+				</delete-->				
 				<delete failonerror="true" verbose="true">
 					<fileset dir="${jboss.home}/server/@{jboss.node}/deploy/jbossweb.sar">
 						<include name="**/jain-sip-ri*.jar"/>
@@ -167,7 +166,22 @@
 					<include name="**/sip-servlets-jboss5-ha-server-cache*"/>
 				</fileset>
 		</delete>				
+	</target>
+	
+	
+	<target name="clean-jbcp-post-build">
+		<delete failonerror="true" verbose="true">
+			<fileset dir="${jboss.home}/client">
+				<include name="**/sip-servlets-spec*"/>
+			</fileset>
+			<fileset dir="${jboss.home}/docs/licenses">
+				<include name="**/JAIN_SIP*"/>
+				<include name="**/LGPL-LICENSE*"/>
+				<include name="**/MOBICENTS-LICENSE*"/>
+			</fileset>
+		</delete>				
 	</target>	
+	
 	
 	<target name="copy-props">
 		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/jboss-beans.xml" todir="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar/META-INF" />
