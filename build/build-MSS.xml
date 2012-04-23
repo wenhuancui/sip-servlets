@@ -5,7 +5,7 @@
 
 	<property environment="sys"/>
     <property name="jbcp.configurations" value="sipservlets-production,sipservlets-default"/>
-	
+    <property name="eap.configurations" value="default,production"/>	
     <property name="release.name" value="JBCP"/>
     <property name="release.version" value="5.1.4-SNAPSHOT"/>
 	
@@ -36,9 +36,15 @@
 	      <isset property="jbcp.distro.zip.path"/>
 	   </not>
 	</condition>
+	<condition property="eap.distro.zip.path" value="">
+	   <not>  
+	      <isset property="eap.distro.zip.path"/>
+	   </not>
+	</condition>
 
-    <property name="release.dir" value="${basedir}/release-package"/>
-	
+       <property name="release.dir" value="${basedir}/release-package"/>
+       <property name="eap.release.dir" value="${basedir}/eap-release-package"/>
+
 	<taskdef onerror="fail" resource="net/sf/antcontrib/antlib.xml">
 		<classpath>
 			<pathelement location="${ant.file.jbcp.platform.release}/../lib/ant-contrib-1.0b3.jar" />
@@ -89,6 +95,9 @@
 		<antcall target="build-sip-balancer" />
 		<antcall target="build-jain-sip-ext" />
 		<antcall target="build-jain-sip-ha" />
+		<!--antcall target="build-jdiameter" />
+		<antcall target="build-jdiameter-ha" />
+		<antcall target="build-diameter-mux" /-->
 		<antcall target="build-sip-servlets" />
 	</target>
 
@@ -97,8 +106,8 @@
 	</target>
 	
 	
-	<target name="package-JBCP">
-		<echo>Package JBCP</echo>
+	<target name="repackage-JBCP">
+		<echo>Repackage JBCP from an old JBCP distro</echo>
 		<antcall target="unzip-jbcp-distro"/>
 		<antcall target="clean-jbcp-distro">
 			<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
@@ -117,10 +126,85 @@
 		</antcall>
 		<antcall target="zip-release"/>
 	</target>
+
+	<target name="package-JBCP">
+		<echo>Package JBCP from on top of EAP distro</echo>
+		<antcall target="unzip-jbcp-distro"/>
+		<antcall target="unzip-eap-distro">
+			<param name="jboss.home" value="${eap.release.dir}/jboss-eap-5.1/jboss-as"/>
+		</antcall>
+		<for delimiter="," param="jboss.node" list="${eap.configurations}">
+			<sequential>
+				<echo>[Populating '@{jboss.node}' jboss.node]</echo>
+				<antcall target="release">
+					<param name="jboss.node" value="@{jboss.node}"/>
+					<param name="jboss.home" value="${eap.release.dir}/jboss-eap-5.1/jboss-as"/>
+				</antcall>
+			</sequential>
+		</for>
+		<antcall target="clean-old-JBCP-nodes"/>
+		<antcall target="copy-release-nodes"/>
+		<antcall target="zip-release"/>
+	</target>
+
+
+	<target name="package-EAP-striped-MSS-only">
+		<echo>Package Sipservlets on top of EAP distro</echo>
+		<antcall target="unzip-eap-distro">
+			<param name="jboss.home" value="${eap.release.dir}/jboss-eap-5.1/jboss-as"/>
+		</antcall>
+		<for delimiter="," param="jboss.node" list="${eap.configurations}">
+			<sequential>
+				<echo>[Populating '@{jboss.node}' jboss.node]</echo>
+				<antcall target="release">
+					<param name="jboss.node" value="@{jboss.node}"/>
+					<param name="jboss.home" value="${eap.release.dir}/jboss-eap-5.1/jboss-as"/>
+				</antcall>
+			</sequential>
+		</for>
+		<antcall target="zip-release">
+			<param name="release.dir" value="${eap.release.dir}"/>
+			<param name="release.name" value="MSS-ONLY-JBCP-STRIPED"/>
+		</antcall>
+	</target>
 	
 	
 	<target name="unzip-jbcp-distro">
-			<unzip src="${jbcp.distro.zip.path}" dest="${release.dir}" />
+		<unzip src="${jbcp.distro.zip.path}" dest="${release.dir}" />
+	</target>
+
+	<target name="clean-old-JBCP-nodes">
+		<delete includeemptydirs="true" failonerror="true" verbose="true">
+			<fileset dir="${release.dir}/jboss-eap-5.1/jboss-as/server/sipservlets-production" />
+		</delete>
+		<delete includeemptydirs="true" failonerror="true" verbose="true">
+			<fileset dir="${release.dir}/jboss-eap-5.1/jboss-as/server/sipservlets-default" />
+		</delete>
+	</target>
+
+	<target name="copy-release-nodes">
+		<copy verbose="true" overwrite="true" todir="${release.dir}/jboss-eap-5.1/jboss-as/server/sipservlets-default">
+			<fileset dir="${eap.release.dir}/jboss-eap-5.1/jboss-as/server/default" includes="*/**"/>
+		</copy>
+		<copy verbose="true" overwrite="true" todir="${release.dir}/jboss-eap-5.1/jboss-as/server/sipservlets-production">
+			<fileset dir="${eap.release.dir}/jboss-eap-5.1/jboss-as/server/production" includes="*/**"/>
+		</copy>
+	</target>
+
+
+	<target name="unzip-eap-distro">
+		<delete dir="${jboss.home}" failonerror="true" />
+		<unzip src="${eap.distro.zip.path}" dest="${eap.release.dir}" />
+
+		<propertyregex input="${eap.configurations}" regexp="(\w+)" global="true" replace="**/\1/**" property="used.configurations" />
+		<echo>Included configurations: ${release.configurations} -&gt; Excludes list: ${used.configurations}</echo>
+		
+		<delete includeemptydirs="true" failonerror="false" verbose="false">
+			<fileset dir="${jboss.home}/server" excludes="${used.configurations}" />
+		</delete>
+		<delete includeemptydirs="true" failonerror="false" verbose="false">
+			<fileset dir="${jboss.home}/../seam1"/>
+		</delete>
 	</target>
 	
 	<target name="clean-jbcp-distro">
@@ -355,6 +439,25 @@
 		</exec>
 	</target>
 	
+	<!--Diameter-->
+	<target name="build-jdiameter">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../jdiameter">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+	
+	<target name="build-jdiameter-ha">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../jdiameter-ha">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+
+	<target name="build-diameter-mux">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../diameter-mux">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+
 	<!-- Sip Servlets -->
 	
 	<target name="build-sip-servlets">
@@ -391,3 +494,4 @@
 	</target>
 
 </project>
+
