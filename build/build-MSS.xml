@@ -95,6 +95,9 @@
 		<antcall target="build-sip-balancer" />
 		<antcall target="build-jain-sip-ext" />
 		<antcall target="build-jain-sip-ha" />
+		<antcall target="build-jdiameter" />
+		<antcall target="build-jdiameter-ha" />
+		<antcall target="build-diameter-mux" />
 		<antcall target="build-sip-servlets" />
 	</target>
 
@@ -436,6 +439,25 @@
 		</exec>
 	</target>
 	
+	<!--Diameter-->
+	<target name="build-jdiameter">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../jdiameter">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+	
+	<target name="build-jdiameter-ha">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../jdiameter-ha">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+
+	<target name="build-diameter-mux">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../diameter-mux">
+			<arg line="clean install -P validate-source-headers" />
+		</exec>
+	</target>
+
 	<!-- Sip Servlets -->
 	
 	<target name="build-sip-servlets">
