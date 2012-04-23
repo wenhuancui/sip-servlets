@@ -95,9 +95,9 @@
 		<antcall target="build-sip-balancer" />
 		<antcall target="build-jain-sip-ext" />
 		<antcall target="build-jain-sip-ha" />
-		<antcall target="build-jdiameter" />
+		<!--antcall target="build-jdiameter" />
 		<antcall target="build-jdiameter-ha" />
-		<antcall target="build-diameter-mux" />
+		<antcall target="build-diameter-mux" /-->
 		<antcall target="build-sip-servlets" />
 	</target>
 
