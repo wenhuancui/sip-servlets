@@ -36,7 +36,7 @@ In the black CMD window type 'java -version' You should see something similar to
 <title>Testing if Java is installed and running</title>
 <mediaobject id="windows_cmd_test_java_running">
 <imageobject>
-<imagedata align="center" fileref="images/windows_cmd_test_java_running.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_windows_cmd_test_java_running.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure>
@@ -59,7 +59,7 @@ Double-click the .exe file and follow the menu to complete your installation. <s
 <title>JDK executable file</title>
 <mediaobject id="jdk_download_executable">
 <imageobject>
-<imagedata align="center" fileref="images/jdk_download_executable.jpg" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_jdk_download_executable.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure>
@@ -84,7 +84,7 @@ Set JAVA_HOME=C:\Java\jdk1.7.0_02
 <title>Set environment variable</title>
 <mediaobject id="set_env_variable_windows">
 <imageobject>
-<imagedata align="center" fileref="images/set_env_variable_windows.jpg" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_set_env_variable_windows.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure>
@@ -104,19 +104,28 @@ Make sure you download the latest Tomcat and not the JBoss.
 <title>Download mobicents tomcat</title>
 <mediaobject id="install_mobicents_tomcat_windows">
 <imageobject>
-<imagedata align="center" fileref="images/install_mobicents_tomcat_windows.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_install_mobicents_tomcat_windows.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure>
 
-The downloaded file will appear similar to this screenshot
+The downloaded file will appear similar to this screenshot below
 
+<figure>
+<title>Downloaded Tomcat File </title>
+<mediaobject id="click2call_download_latest_version_tomcat">
+<imageobject>
+<imagedata align="center" fileref="images/click2call_download_latest_version_tomcat.png" format="PNG"/>
+</imageobject>
+</mediaobject>
+</figure>
 
+The extracted file will look similar to this folder
 <figure>
 <title>Content of Tomcat Directory</title>
 <mediaobject id="content_mss_tomcat_directory">
 <imageobject>
-<imagedata align="center" fileref="images/content_mss_tomcat_directory.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_content_mss_tomcat_directory.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure> 
@@ -143,7 +152,7 @@ Start > run > cmd
 <title>Start Tomcat Server</title>
 <mediaobject id="starting_tomcat_server">
 <imageobject>
-<imagedata align="center" fileref="images/starting_tomcat_server.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_starting_tomcat_server.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure>
@@ -156,7 +165,7 @@ This will open another cmd.exe window similar to the one below
 <title>Tomcat Server Started</title>
 <mediaobject id="mss_tomcat_server_started">
 <imageobject>
-<imagedata align="center" fileref="images/mss_tomcat_server_started.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_mss_tomcat_server_started.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure>
@@ -179,7 +188,7 @@ Here is a screenshot of the server.xml file with the default port 8080.
 <title>Tomcat Default Http Port</title>
 <mediaobject id="changing_tomcat_http_default_port">
 <imageobject>
-<imagedata align="center" fileref="images/changing_tomcat_http_default_port.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_changing_tomcat_http_default_port.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure>
@@ -191,7 +200,7 @@ The port number must be higher than 1024. In the example below, the port number 
 <title>Change Default Http Port to 8040</title>
 <mediaobject id="updated_tomcat_http_port">
 <imageobject>
-<imagedata align="center" fileref="images/updated_tomcat_http_port.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_updated_tomcat_http_port.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure>
@@ -207,7 +216,7 @@ You will see a page similar to the screenshot below
 <title>Localhost Homepage</title>
 <mediaobject id="localhost_http_homepage">
 <imageobject>
-<imagedata align="center" fileref="images/localhost_http_homepage.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_localhost_http_homepage.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure>
@@ -239,7 +248,7 @@ Download the latest version of the soft phones, install and configure them like 
 <title>Wengo Softphone Configuration</title>
 <mediaobject id="wengo_softphone_configuration">
 <imageobject>
-<imagedata align="center" fileref="images/wengo_softphone_configuration.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_wengo_softphone_configuration.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure> 
@@ -257,7 +266,7 @@ After the installation is complete, you can start up the 3CXPhone, you will see 
 <title>3CXphone Profile</title>
 <mediaobject id="3cxphone_softphone_profile">
 <imageobject>
-<imagedata align="center" fileref="images/3cxphone_softphone_profile.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_3cxphone_softphone_profile.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure> 
@@ -266,9 +275,9 @@ In the Accounts window choose the <emphasis> 'New' </emphasis> button and config
 
 <figure>
 <title>3CXphone Softphone Configuration</title>
-<mediaobject id="3CXphone_softphone_configuration">
+<mediaobject id="3cxphone_softphone_configuration">
 <imageobject>
-<imagedata align="center" fileref="images/3CXphone_softphone_configuration.jpg" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_3cxphone_softphone_configuration.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure> 
@@ -285,7 +294,7 @@ you can go back to the <literal> http://localhost:8040/click2call/index.jsp page
 <title>Registered Sip Clients</title>
 <mediaobject id="mobicents_sip_servlets_registered_clients">
 <imageobject>
-<imagedata align="center" fileref="images/mobicents_sip_servlets_registered_clients.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_mobicents_sip_servlets_registered_clients.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure> 
@@ -305,7 +314,7 @@ Because you will be using the SIP protocol, you will need to type the contact de
 <title>Wengo Phone Contact User Details</title>
 <mediaobject id="wengo_softphone_user_contact">
 <imageobject>
-<imagedata align="center" fileref="images/wengo_softphone_user_contact.jpg" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_wengo_softphone_user_contact.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure> 
@@ -316,7 +325,7 @@ You need to do the same on the 3CXPhone contact. The phone contact number will b
 <title>3CXPhone Contact User Details</title>
 <mediaobject id="3cxphone_contact_user_detail.png">
 <imageobject>
-<imagedata align="center" fileref="images/3cxphone_contact_user_detail.png" format="PNG"/>
+<imagedata align="center" fileref="images/click2call_3cxphone_contact_user_detail.png" format="PNG"/>
 </imageobject>
 </mediaobject>
 </figure> 
@@ -324,4 +333,4 @@ Once you have both contact sip details configured, you can start to make calls a
 
 </para> 
 
-</section> 
+</section>
