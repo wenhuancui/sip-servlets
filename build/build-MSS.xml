@@ -30,20 +30,31 @@
 	      <isset property="jboss.node"/>
 	   </not>
 	</condition>
+	
+    <property name="release.dir" value="${basedir}/release-package"/>
+    <property name="eap.release.dir" value="${basedir}/eap-release-package"/>
+	
 
-	<condition property="jbcp.distro.zip.path" value="">
+	<!--condition property="jbcp.distro.zip.path">
 	   <not>  
 	      <isset property="jbcp.distro.zip.path"/>
 	   </not>
 	</condition>
-	<condition property="eap.distro.zip.path" value="">
+	<condition property="eap.distro.zip.path">
 	   <not>  
 	      <isset property="eap.distro.zip.path"/>
 	   </not>
 	</condition>
-
-       <property name="release.dir" value="${basedir}/release-package"/>
-       <property name="eap.release.dir" value="${basedir}/eap-release-package"/>
+	<condition property="jbcp.distro.path">
+	   <not>  
+	      <isset property="jbcp.distro.path"/>
+	   </not>
+	</condition>
+	<condition property="eap.distro.path">
+	   <not>  
+	      <isset property="eap.distro.path"/>
+	   </not>
+	</condition-->
 
 	<taskdef onerror="fail" resource="net/sf/antcontrib/antlib.xml">
 		<classpath>
@@ -106,9 +117,8 @@
 	</target>
 	
 	
-	<target name="repackage-JBCP">
+	<target name="repackage-JBCP" depends="prepare-input-source">
 		<echo>Repackage JBCP from an old JBCP distro</echo>
-		<antcall target="unzip-jbcp-distro"/>
 		<antcall target="clean-jbcp-distro">
 			<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
 		</antcall>
@@ -127,12 +137,8 @@
 		<antcall target="zip-release"/>
 	</target>
 
-	<target name="package-JBCP">
+	<target name="package-JBCP" depends="prepare-input-source">
 		<echo>Package JBCP from on top of EAP distro</echo>
-		<antcall target="unzip-jbcp-distro"/>
-		<antcall target="unzip-eap-distro">
-			<param name="jboss.home" value="${eap.release.dir}/jboss-eap-5.1/jboss-as"/>
-		</antcall>
 		<for delimiter="," param="jboss.node" list="${eap.configurations}">
 			<sequential>
 				<echo>[Populating '@{jboss.node}' jboss.node]</echo>
@@ -148,11 +154,8 @@
 	</target>
 
 
-	<target name="package-EAP-striped-MSS-only">
+	<target name="package-EAP-striped-MSS-only"  depends="prepare-input-source">
 		<echo>Package Sipservlets on top of EAP distro</echo>
-		<antcall target="unzip-eap-distro">
-			<param name="jboss.home" value="${eap.release.dir}/jboss-eap-5.1/jboss-as"/>
-		</antcall>
 		<for delimiter="," param="jboss.node" list="${eap.configurations}">
 			<sequential>
 				<echo>[Populating '@{jboss.node}' jboss.node]</echo>
@@ -207,6 +210,39 @@
 		</delete>
 	</target>
 	
+	<target name="prepare-input-source">
+		<antcall target="prepare-input-source-jbcp-from-path"/>	
+		<antcall target="prepare-input-source-eap-from-path"/>	
+		<antcall target="prepare-input-source-jbcp-from-zip"/>	
+		<antcall target="prepare-input-source-eap-from-zip"/>	
+	</target>
+	
+	<target name="prepare-input-source-jbcp-from-path" if="jbcp.distro.path">
+		<echo>JBCP path is set to: ${jbcp.distro.zip.path}</echo>
+		<copy verbose="false" overwrite="false" todir="${release.dir}" failonerror="false">
+			<fileset dir="${jbcp.distro.path}" includes="*/**"/>
+		</copy>
+	</target>
+
+	<target name="prepare-input-source-eap-from-path" if="eap.distro.path">
+		<echo>EAP path is set to: ${eap.distro.path}</echo>
+		<copy verbose="false" overwrite="false" todir="${eap.release.dir}" failonerror="false">
+			<fileset dir="${eap.distro.path}" includes="*/**"/>
+		</copy>
+	</target>
+	
+	<target name="prepare-input-source-jbcp-from-zip" if="jbcp.distro.zip.path">
+		<echo>JBCP path to zip is set to: ${jbcp.distro.zip.path}</echo>
+		<antcall target="unzip-jbcp-distro"/>
+	</target>
+	
+	<target name="prepare-input-source-eap-from-zip" if="eap.distro.zip.path">
+		<echo>eap path to zip is set to: ${eap.distro.zip.path}</echo>
+		<antcall target="unzip-eap-distro">
+			<param name="jboss.home" value="${eap.release.dir}/jboss-eap-5.1/jboss-as"/>
+		</antcall>
+	</target>
+
 	<target name="clean-jbcp-distro">
 		<for delimiter="," param="jboss.node" list="${jbcp.configurations}">
 			<sequential>

@@ -1,3 +1,14 @@
+Building JBCP 
+--------------------
+Input parameters:
+-Djboss.home=${jboss home}.....Set your JBOSS_HOME folder (defaults to $env.JBOSS_HOME if omitted)
+-Djboss.node=${jboss configuration}.....Set jboss configuration node to be build (defaults to "default" as configuration node)
+-Dmvn.build.profile=${maven profile for MSS}.....Set Sip-Servlets maven profile to be built (defaults to "jboss-5")
+-Djbcp.distro.zip.path=[Path to JBCP distro zip file]
+-Djbcp.distro.path=[Path to JBCP distro folder]
+-Deap.distro.zip.path=[Path to EAP distro zip file]
+-Deap.distro.path=[Path to EAP distro folder]
+
 Building JBCP on your local machine using EAP unsigned release
 --------------------------------------------------------------------
 Assumption 0: You made a svn checkout of http://mobicents.googlecode.com/svn/branches/jbcp/5.1.1_HF/ branch
@@ -22,7 +33,11 @@ find [JBCP folder] -name '*.jar' -print0 | xargs -0 -I JAR zip -d JAR META-INF/J
 for UNIX based OS.
 
 1. cd into build folder
-2. type: ant repackage-JBCP -f build-MSS.xml -Djbcp.distro.zip.path=[Path to unsigned JBCP distro]
+2. type: 
+ant repackage-JBCP -f build-MSS.xml -Djbcp.distro.zip.path=[Path to unsigned JBCP distro zip file]
+ OR equally with folder
+ant repackage-JBCP -f build-MSS.xml -Djbcp.distro.path=[Path to unsigned JBCP distro folder]
+
 Example:
 ant repackage-JBCP -f build-MSS.xml -Djbcp.distro.zip.path=/home/pslegr/jbcp-development/jbcp2/release-CP/MP_5.1.3_CR01/full-dist/JBCP-5.1.3.CR01.zip
 3.There is created a repackaged JBCP zip bundle in build folder.   
@@ -39,7 +54,13 @@ Assumption 3: You have your EAP version downloaded locally
 Assumption 4: Your EAP version is unsigned
 
 1. cd into build folder
-2. type: ant package-JBCP -f build-MSS.xml -Djbcp.distro.zip.path=[Path to unsigned JBCP distro] -Deap.distro.zip.path=[Path to unsigned EAP distro]
+2. type: 
+ant package-JBCP -f build-MSS.xml -Djbcp.distro.zip.path=[Path to unsigned JBCP distro zip file] -Deap.distro.zip.path=[Path to unsigned EAP distro zip file]
+ OR equally with folders
+ant package-JBCP -f build-MSS.xml -Djbcp.distro.path=[Path to unsigned JBCP distro path] -Deap.distro.path=[Path to unsigned EAP distro path]
+ OR mixed
+ant package-JBCP -f build-MSS.xml -Djbcp.distro.path=[Path to unsigned JBCP distro path] -Deap.distro.zip.path=[Path to unsigned EAP distro zip file]
+
 Example:
 ant package-JBCP -f build-MSS.xml -Deap.distro.zip.path=/home/pslegr/WORKSPACE/JBCP-5.1.x/5.1.x/build/unsigned_EAP-input/jboss-eap-unsigned-5.1.0.zip -Djbcp.distro.zip.path=/home/pslegr/WORKSPACE/JBCP-5.1.x/5.1.x/build/unsigned-JBCP-input/JBCP-5.1.3_unsigned.zip
 3.There is created a repackaged JBCP zip bundle in build folder.   
@@ -53,7 +74,11 @@ find [EAP folder] -name '*.jar' -print0 | xargs -0 -I JAR zip -d JAR META-INF/JB
 for UNIX based OS.
 
 1. cd into build folder
-2. type: ant package-EAP-striped-MSS-only -f build-MSS.xml -Deap.distro.zip.path=[Path to unsigned EAP distro]
+2. type:
+ant package-EAP-striped-MSS-only -f build-MSS.xml -Deap.distro.zip.path=[Path to unsigned EAP distro zip file]
+ OR equally with folders
+ant package-EAP-striped-MSS-only -f build-MSS.xml -Deap.distro.path=[Path to unsigned EAP distro folder]
+
 Example:
 ant package-EAP-striped-MSS-only -f build-MSS.xml -Deap.distro.zip.path=/home/pslegr/WORKSPACE/JBCP-5.1.x/5.1.x/build/unsigned_EAP-input/jboss-eap-unsigned-5.1.0.zip
 3.There is created a repackaged JBCP zip bundle in build folder.   
