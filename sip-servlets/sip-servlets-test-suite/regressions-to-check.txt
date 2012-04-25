@@ -1,0 +1,5 @@
+org.mobicents.servlet.sip.testsuite.b2bua.B2BUASessionCallbackTest.testCallForwardingCallerSendByeDoubleCallback
+org.mobicents.servlet.sip.testsuite.routing.SameContainerRoutingServletTest.testSameContainerRouting
+org.mobicents.servlet.sip.testsuite.routing.SameContainerRoutingServletTest.testSameContainerRoutingNo200ToNotify
+org.mobicents.servlet.sip.testsuite.simple.ShootistSipServletTest.testShootistIOException
+org.mobicents.servlet.sip.testsuite.simple.ShootmeSipServletTest.testShootmeOrphanRequests 
