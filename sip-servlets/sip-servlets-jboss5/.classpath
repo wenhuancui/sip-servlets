@@ -3,7 +3,7 @@
   <classpathentry kind="src" path="src/main/java" including="**/*.java"/>
   <classpathentry kind="output" path="target/classes"/>
   <classpathentry kind="var" path="M2_REPO/javax/sip/jain-sip-api/1.2/jain-sip-api-1.2.jar" sourcepath="M2_REPO/javax/sip/jain-sip-api/1.2/jain-sip-api-1.2-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/javax/sip/jain-sip-ri/1.2.164/jain-sip-ri-1.2.164.jar"/>
+  <classpathentry kind="var" path="M2_REPO/javax/sip/jain-sip-ri/1.2.166/jain-sip-ri-1.2.166.jar" sourcepath="M2_REPO/javax/sip/jain-sip-ri/1.2.166/jain-sip-ri-1.2.166-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/javax/transaction/jta/1.1/jta-1.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/javax/faces/jsf-impl/1.2_12/jsf-impl-1.2_12.jar"/>
   <classpathentry kind="var" path="M2_REPO/javax/security/jaas/1.0.01/jaas-1.0.01.jar"/>
@@ -16,13 +16,13 @@
   <classpathentry kind="var" path="M2_REPO/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar"/>
   <classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar"/>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-impl/5.1.2.GA-JBCP5_1/sip-servlets-impl-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-impl/5.1.2.GA-JBCP5_1/sip-servlets-impl-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-spec/5.1.2.GA-JBCP5_1/sip-servlets-spec-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-spec/5.1.2.GA-JBCP5_1/sip-servlets-spec-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-annotations/5.1.2.GA-JBCP5_1/sip-servlets-annotations-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-annotations/5.1.2.GA-JBCP5_1/sip-servlets-annotations-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-client/5.1.2.GA-JBCP5_1/sip-servlets-client-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-client/5.1.2.GA-JBCP5_1/sip-servlets-client-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jruby/5.1.2.GA-JBCP5_1/sip-servlets-jruby-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jruby/5.1.2.GA-JBCP5_1/sip-servlets-jruby-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jboss5-metadata/5.1.2.GA-JBCP5_1/sip-servlets-jboss5-metadata-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jboss5-metadata/5.1.2.GA-JBCP5_1/sip-servlets-jboss5-metadata-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jboss5-ha-server-cache/5.1.2.GA-JBCP5_1/sip-servlets-jboss5-ha-server-cache-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jboss5-ha-server-cache/5.1.2.GA-JBCP5_1/sip-servlets-jboss5-ha-server-cache-5.1.2.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-impl/5.1.3.GA-JBCP5_1/sip-servlets-impl-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-impl/5.1.3.GA-JBCP5_1/sip-servlets-impl-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-spec/5.1.3.GA-JBCP5_1/sip-servlets-spec-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-spec/5.1.3.GA-JBCP5_1/sip-servlets-spec-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-annotations/5.1.3.GA-JBCP5_1/sip-servlets-annotations-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-annotations/5.1.3.GA-JBCP5_1/sip-servlets-annotations-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-client/5.1.3.GA-JBCP5_1/sip-servlets-client-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-client/5.1.3.GA-JBCP5_1/sip-servlets-client-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jruby/5.1.3.GA-JBCP5_1/sip-servlets-jruby-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jruby/5.1.3.GA-JBCP5_1/sip-servlets-jruby-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jboss5-metadata/5.1.3.GA-JBCP5_1/sip-servlets-jboss5-metadata-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jboss5-metadata/5.1.3.GA-JBCP5_1/sip-servlets-jboss5-metadata-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jboss5-ha-server-cache/5.1.3.GA-JBCP5_1/sip-servlets-jboss5-ha-server-cache-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/servlet/sip/sip-servlets-jboss5-ha-server-cache/5.1.3.GA-JBCP5_1/sip-servlets-jboss5-ha-server-cache-5.1.3.GA-JBCP5_1-sources.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jboss/cache/jbosscache-pojo/3.0.0.GA/jbosscache-pojo-3.0.0.GA.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jboss/cache/jbosscache-core/3.1.0.GA/jbosscache-core-3.1.0.GA.jar"/>
   <classpathentry kind="var" path="M2_REPO/jgroups/jgroups/2.6.10.GA/jgroups-2.6.10.GA.jar"/>
@@ -109,7 +109,7 @@
   <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-j2se/5.1.0.GA/jboss-as-j2se-5.1.0.GA-tests.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jboss/jbossas/jboss-as-mbeans/5.1.0.GA/jboss-as-mbeans-5.1.0.GA.jar"/>
   <classpathentry kind="var" path="M2_REPO/bcel/bcel/5.1/bcel-5.1.jar"/>
-  <classpathentry kind="var" path="M2_REPO/regexp/regexp/1.2/regexp-1.2.jar"/>
+  <!--classpathentry kind="var" path="M2_REPO/regexp/regexp/1.2/regexp-1.2.jar"/-->
   <classpathentry kind="var" path="M2_REPO/org/jboss/test/jboss-test/1.1.4.GA/jboss-test-1.1.4.GA.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/apache/ant/ant-junit/1.7.0/ant-junit-1.7.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar"/>
@@ -186,10 +186,10 @@
   <classpathentry kind="var" path="M2_REPO/org/jboss/ejb3/tx2/jboss-ejb3-tx2-impl/0.0.1/jboss-ejb3-tx2-impl-0.0.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jboss/ejb3/tx2/jboss-ejb3-tx2-spi/0.0.1/jboss-ejb3-tx2-spi-0.0.1.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/jboss/ejb3/instantiator/jboss-ejb3-instantiator-spi/1.0.0-alpha-2/jboss-ejb3-instantiator-spi-1.0.0-alpha-2.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/cluster/core/5.1.2.GA-JBCP5_1/core-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/cluster/core/5.1.2.GA-JBCP5_1/core-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/cluster/cache/5.1.2.GA-JBCP5_1/cache-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/cluster/cache/5.1.2.GA-JBCP5_1/cache-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/cluster/timers/5.1.2.GA-JBCP5_1/timers-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/cluster/timers/5.1.2.GA-JBCP5_1/timers-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/ha/javax/sip/mobicents-jain-sip-ha-core/5.1.2.GA-JBCP5_1/mobicents-jain-sip-ha-core-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/ha/javax/sip/mobicents-jain-sip-ha-core/5.1.2.GA-JBCP5_1/mobicents-jain-sip-ha-core-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/ha/javax/sip/mobicents-jain-sip-jboss5/5.1.2.GA-JBCP5_1/mobicents-jain-sip-jboss5-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/ha/javax/sip/mobicents-jain-sip-jboss5/5.1.2.GA-JBCP5_1/mobicents-jain-sip-jboss5-5.1.2.GA-JBCP5_1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/mobicents/tools/sip-balancer-jar/5.1.2.GA-JBCP5_1/sip-balancer-jar-5.1.2.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/tools/sip-balancer-jar/5.1.2.GA-JBCP5_1/sip-balancer-jar-5.1.2.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/cluster/core/5.1.3.GA-JBCP5_1/core-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/cluster/core/5.1.3.GA-JBCP5_1/core-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/cluster/cache/5.1.3.GA-JBCP5_1/cache-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/cluster/cache/5.1.3.GA-JBCP5_1/cache-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/cluster/timers/5.1.3.GA-JBCP5_1/timers-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/cluster/timers/5.1.3.GA-JBCP5_1/timers-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/ha/javax/sip/mobicents-jain-sip-ha-core/5.1.3.GA-JBCP5_1/mobicents-jain-sip-ha-core-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/ha/javax/sip/mobicents-jain-sip-ha-core/5.1.3.GA-JBCP5_1/mobicents-jain-sip-ha-core-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/ha/javax/sip/mobicents-jain-sip-jboss5/5.1.3.GA-JBCP5_1/mobicents-jain-sip-jboss5-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/ha/javax/sip/mobicents-jain-sip-jboss5/5.1.3.GA-JBCP5_1/mobicents-jain-sip-jboss5-5.1.3.GA-JBCP5_1-sources.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/mobicents/tools/sip-balancer-jar/5.1.3.GA-JBCP5_1/sip-balancer-jar-5.1.3.GA-JBCP5_1.jar" sourcepath="M2_REPO/org/mobicents/tools/sip-balancer-jar/5.1.3.GA-JBCP5_1/sip-balancer-jar-5.1.3.GA-JBCP5_1-sources.jar"/>
 </classpath>

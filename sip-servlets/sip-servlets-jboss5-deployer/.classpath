@@ -151,7 +151,7 @@
 	<classpathentry kind="var" path="M2_REPO/wutka-dtdparser/dtdparser121/1.2.1/dtdparser121-1.2.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sip-servlets-spec"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/sip-servlets-jboss-5-metadata"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/sip-servlets-jboss5-metadata"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sip-servlets-annotations"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/sip-servlets-impl"/>
 	<classpathentry kind="output" path="target/classes"/>
