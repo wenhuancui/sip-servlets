@@ -218,10 +218,13 @@
 	</target>
 	
 	<target name="prepare-input-source-jbcp-from-path" if="jbcp.distro.path">
-		<echo>JBCP path is set to: ${jbcp.distro.zip.path}</echo>
+		<echo>JBCP path is set to: ${jbcp.distro.path}</echo>
 		<copy verbose="false" overwrite="false" todir="${release.dir}" failonerror="false">
 			<fileset dir="${jbcp.distro.path}" includes="*/**"/>
 		</copy>
+		<antcall target="unsign">
+			<param name="unsign.dir" value="${release.dir}"/>
+		</antcall>
 	</target>
 
 	<target name="prepare-input-source-eap-from-path" if="eap.distro.path">
@@ -229,11 +232,17 @@
 		<copy verbose="false" overwrite="false" todir="${eap.release.dir}" failonerror="false">
 			<fileset dir="${eap.distro.path}" includes="*/**"/>
 		</copy>
+		<antcall target="unsign">
+			<param name="unsign.dir" value="${eap.release.dir}"/>
+		</antcall>
 	</target>
 	
 	<target name="prepare-input-source-jbcp-from-zip" if="jbcp.distro.zip.path">
 		<echo>JBCP path to zip is set to: ${jbcp.distro.zip.path}</echo>
 		<antcall target="unzip-jbcp-distro"/>
+		<antcall target="unsign">
+			<param name="unsign.dir" value="${release.dir}"/>
+		</antcall>
 	</target>
 	
 	<target name="prepare-input-source-eap-from-zip" if="eap.distro.zip.path">
@@ -241,6 +250,16 @@
 		<antcall target="unzip-eap-distro">
 			<param name="jboss.home" value="${eap.release.dir}/jboss-eap-5.1/jboss-as"/>
 		</antcall>
+		<antcall target="unsign">
+			<param name="unsign.dir" value="${eap.release.dir}"/>
+		</antcall>
+	</target>
+
+	<target name="unsign">
+		<exec executable="bash" failonerror="false">
+		    <arg value="-c"/>
+		    <arg value="find ${unsign.dir} -name '*.jar' -print0 | xargs -0 -I JAR zip -d JAR META-INF/JBOSSCOD.*"/>
+		</exec>	
 	</target>
 
 	<target name="clean-jbcp-distro">
