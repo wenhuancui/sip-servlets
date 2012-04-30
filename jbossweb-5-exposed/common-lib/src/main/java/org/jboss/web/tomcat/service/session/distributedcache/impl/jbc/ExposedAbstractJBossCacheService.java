@@ -67,7 +67,7 @@ public class ExposedAbstractJBossCacheService {
 
 	public Object getUnMarshalledValue(
 			DistributableSessionMetadata metadata) {
-		return jBossCacheService.getMarshalledValue(metadata);
+		return jBossCacheService.getUnMarshalledValue(metadata);
 	}
 
 	public IncomingDistributableSessionData getDistributableSessionData(
