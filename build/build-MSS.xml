@@ -110,12 +110,13 @@
 		<antcall target="build-jdiameter-ha" />
 		<antcall target="build-diameter-mux" /-->
 		<antcall target="build-sip-servlets" />
+		<antcall target="copy-jbossweb-5-exposed-libs" />
 	</target>
+
 
 	<target name="release" depends="build,copy-props">
 		<echo>Release into JBOSS node</echo>
 	</target>
-	
 	
 	<target name="repackage-JBCP" depends="prepare-input-source">
 		<echo>Repackage JBCP from an old JBCP distro</echo>
@@ -139,17 +140,17 @@
 
 	<target name="package-JBCP" depends="prepare-input-source">
 		<echo>Package JBCP from on top of EAP distro</echo>
-		<for delimiter="," param="jboss.node" list="${eap.configurations}">
+		<antcall target="clean-old-JBCP-nodes"/>
+		<antcall target="copy-release-nodes"/>
+		<for delimiter="," param="jboss.node" list="${jbcp.configurations}">
 			<sequential>
 				<echo>[Populating '@{jboss.node}' jboss.node]</echo>
 				<antcall target="release">
 					<param name="jboss.node" value="@{jboss.node}"/>
-					<param name="jboss.home" value="${eap.release.dir}/jboss-eap-5.1/jboss-as"/>
+					<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
 				</antcall>
 			</sequential>
 		</for>
-		<antcall target="clean-old-JBCP-nodes"/>
-		<antcall target="copy-release-nodes"/>
 		<antcall target="zip-release"/>
 	</target>
 
@@ -182,6 +183,11 @@
 		</delete>
 		<delete includeemptydirs="true" failonerror="true" verbose="true">
 			<fileset dir="${release.dir}/jboss-eap-5.1/jboss-as/server/sipservlets-default" />
+		</delete>
+		<delete failonerror="true" verbose="true">
+			<fileset dir="${release.dir}/jboss-eap-5.1/jboss-as/common/lib">
+				<include name="**/sip-servlets-jboss5-ha-server-cache*"/>
+			</fileset>
 		</delete>
 	</target>
 
@@ -256,10 +262,12 @@
 	</target>
 
 	<target name="unsign">
+		<!--
 		<exec executable="bash" failonerror="false">
 		    <arg value="-c"/>
 		    <arg value="find ${unsign.dir} -name '*.jar' -print0 | xargs -0 -I JAR zip -d JAR META-INF/JBOSSCOD.*"/>
 		</exec>	
+		-->
 	</target>
 
 	<target name="clean-jbcp-distro">
@@ -320,7 +328,6 @@
 			</fileset>
 		</delete>				
 	</target>	
-	
 	
 	<target name="copy-props">
 		<copy overwrite="true" verbose="true" file="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-bootstrap/release/jboss-beans.xml" todir="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar/META-INF" />
@@ -547,5 +554,11 @@
 		<delete dir="${build.dir}" />
 		<delete dir="${docs.stage.dir}" />
 	</target>
-
+	
+	<target name="copy-jbossweb-5-exposed-libs">
+		<echo>Copying signed JBoss Web 5 Exposed Libs</echo>		
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp.platform.release}/../lib/jbossweb-5-exposed-common-lib-1.0.0-SNAPSHOT.jar" todir="${jboss.home}/common/lib" />
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp.platform.release}/../lib/jbossweb-5-exposed-jbossweb.sar-1.0.0-SNAPSHOT.jar" todir="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar" />
+	</target>
+	
 </project>
