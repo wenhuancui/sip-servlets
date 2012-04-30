@@ -16,9 +16,16 @@
 		<jboss.version>5.1.0.GA</jboss.version>	
 	</properties>
 	<dependencies>		
-		<!-- JBoss dependencies -->
+	
+		<dependency>
+			<groupId>com.redhat.jbcp</groupId>
+			<artifactId>jbossweb-5-exposed-common-lib</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+			<scope>provided</scope>			
+		</dependency>
 		
-				
+		<!-- JBoss dependencies -->
+						
 		<dependency>
 			<groupId>org.jboss.jbossas</groupId>
 			<artifactId>jboss-as-tomcat</artifactId>
@@ -68,7 +75,7 @@
 					</classpathExcludes-->
 					<generateProjectsForModules>true</generateProjectsForModules>	
 					<resolveTransitiveDependencies>true</resolveTransitiveDependencies>
-					<eclipseProjectName>sip-servlets-jruby</eclipseProjectName>
+					<eclipseProjectName>sip-servlets-jboss5-ha-server-cache</eclipseProjectName>
 				</configuration>
 			</plugin>
 		</plugins>

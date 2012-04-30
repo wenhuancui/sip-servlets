@@ -26,7 +26,7 @@ import org.jboss.deployers.spi.DeploymentException;
 import org.jboss.deployers.spi.deployer.DeploymentStages;
 import org.jboss.deployers.structure.spi.DeploymentUnit;
 import org.jboss.deployment.AnnotationMetaDataDeployer;
-import org.jboss.deployment.ConvergedSipAnnotationMetaDataDeployer;
+import org.jboss.deployment.sip.ConvergedSipAnnotationMetaDataDeployer;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.metadata.sip.jboss.JBossConvergedSipMetaData;

@@ -209,7 +209,7 @@ public class TomcatConvergedDeployer extends org.jboss.web.tomcat.service.deploy
 		//if the application is a sip servlet application or converged one we use the TomcatConvergedDeployment to be able to deploy it 
 		// in accordance with sip servlets spec
 		if(isSipServletApplication(unit, metaData)) { 
-			className = (getDeploymentClass() == null) ? "org.jboss.web.tomcat.service.deployers.TomcatConvergedDeployment"
+			className = (getDeploymentClass() == null) ? "org.jboss.web.tomcat.service.deployers.sip.TomcatConvergedDeployment"
 					: getDeploymentClass();
 			config.setContextClassName(SIP_CONTEXT_CLASS);	
 			config.setManagerClass(this.sipManagerClass);

@@ -59,7 +59,7 @@
 					</classpathExcludes-->
 					<generateProjectsForModules>true</generateProjectsForModules>	
 					<resolveTransitiveDependencies>true</resolveTransitiveDependencies>
-					<eclipseProjectName>sip-servlets-jboss-5-metadata</eclipseProjectName>
+					<eclipseProjectName>sip-servlets-jboss5-deployer</eclipseProjectName>
 				</configuration>
 			</plugin>
 		</plugins>
