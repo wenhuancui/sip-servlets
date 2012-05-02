@@ -344,10 +344,10 @@ public class SipFactoryImpl implements Externalizable {
 		}
 	    
 		final SipServletRequestImpl origRequestImpl = (SipServletRequestImpl) origRequest;
-		final MobicentsSipSession originalSession = origRequestImpl.getSipSession();
-		final MobicentsSipApplicationSession originalAppSession = originalSession
-				.getSipApplicationSession();				
-		
+		final MobicentsSipApplicationSession originalAppSession = (MobicentsSipApplicationSession) origRequestImpl.getApplicationSession(false);		
+		if (originalAppSession == null) {
+			throw new IllegalStateException("original request's app session does not exists");
+		}				
 		
 		final Request newRequest = (Request) origRequestImpl.message.clone();
 		((MessageExt)newRequest).setApplicationData(null);
@@ -427,11 +427,14 @@ public class SipFactoryImpl implements Externalizable {
 				}
 			}
 									
-			newFromHeader.setTag(ApplicationRoutingHeaderComposer.getHash(getSipApplicationDispatcher(), originalSession.getKey().getApplicationName(), originalAppSession.getKey().getId()));
+			newFromHeader.setTag(ApplicationRoutingHeaderComposer.getHash(getSipApplicationDispatcher(), originalAppSession.getKey().getApplicationName(), originalAppSession.getKey().getId()));
 			
-			final SipSessionKey key = SessionManagerUtil.getSipSessionKey(originalAppSession.getKey().getId(), originalSession.getKey().getApplicationName(), newRequest, false);
+			final SipSessionKey key = SessionManagerUtil.getSipSessionKey(originalAppSession.getKey().getId(), originalAppSession.getKey().getApplicationName(), newRequest, false);
 			final MobicentsSipSession session = ((SipManager)originalAppSession.getSipContext().getManager()).getSipSession(key, true, this, originalAppSession);			
-			session.setHandler(originalSession.getHandler());
+			final MobicentsSipSession originalSession = origRequestImpl.getSipSession();
+			if(originalSession != null) {
+				session.setHandler(originalSession.getHandler());
+			};			
 			
 			final SipServletRequestImpl newSipServletRequest = new SipServletRequestImpl(
 					newRequest,
