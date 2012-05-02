@@ -1,0 +1,2019 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="sid-4784788">
+    
+    <title>The MIB Generator</title>
+    <para>Included in the SNMP Adaptor is a way for a user to generate an SNMP MIB file based on already defined attributes.xml and notifications.xml. This MIB file allows an SNMP manager to display metrics in a much more human readable way than would otherwise be possible, and the generator allows the user to skip the arduous task of manually creating an MIB file.</para>
+    <section id="sid-4784788_TheMIBGenerator-TheImportanceoftheMIBFile">
+      
+      <title>The Importance of the MIB File</title>
+      <para>An MIB is not necessary for the operation of an SNMP manager. However, having one defined is very helpful for getting sensible, readable information back from a given agent. As an example, see the following queries, one with a properly defined MIB, and one without:</para>
+      <section id="sid-4784788_TheMIBGenerator-WithoutMIB">
+        
+        <title>Without MIB</title>
+        <informalexample>
+          <programlisting>[thauser@tommycat mibs]$ snmpget -v1 -c public 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.1.0
+iso.3.6.1.4.1.2312.100.1.1.1.0 = INTEGER: 109</programlisting>
+        </informalexample>
+        <para>As you can see, we have to specify the OID we are interested in numerically, and we are returned the result in similar fashion.</para>
+      </section>
+      <section id="sid-4784788_TheMIBGenerator-WithMIB%3A">
+        
+        <title>With MIB:</title>
+        <informalexample>
+          <programlisting>[thauser@tommycat mibs]$ snmpget -v1 -c public 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.1.0
+JBOSS-AS-MIB::activeThreadCount.0 = INTEGER: 109</programlisting>
+        </informalexample>
+        <para>We are returned a much more readable and informative result, with a properly defined MIB. We can even query this name directly and get the correct results:</para>
+        <informalexample>
+          <programlisting>[thauser@tommycat mibs]$ snmpget -v1 -c public 127.0.0.1:1161 activeThreadCount.0
+JBOSS-AS-MIB::activeThreadCount.0 = INTEGER: 109</programlisting>
+        </informalexample>
+        <para>This is the advantage of having an MIB.</para>
+        <para>The other parts of this guide go into more detail around getting the MIB generator to generate an appropriate MIB for anyone's needs.</para>
+      </section>
+    </section>
+    <section id="sid-4784798">
+      
+      <title>MIB Generator attributes.xml Modifications</title>
+      <para>For the SNMP adaptor, the attributes.xml consists of three types of elements: the top-level &lt;attribute-mappings&gt;, &lt;mbean&gt; and &lt;attribute&gt;. The &lt;attribute-mappings&gt; tag contains a list of &lt;mbean&gt;s. Each &lt;mbean&gt; tag must have a name attribute that indicates the JMX ObjectName of the MBean to monitor. The &lt;mbean&gt; also contains a list of &lt;attribute&gt; tags. Each &lt;attribute&gt; tag requires a name, which corresponds to an MBean attribute name, and an OID, which indicates what OID this particular &lt;attribute&gt; can be queried at. The rest of these instructions assume a basic understanding of the SNMP adaptor attributes.xml format.</para>
+      <para>In addition to the standard elements and attributes that the SNMP adaptor uses in its attributes.xml, the MIB generator can make use of several additional attributes, a few of which are required for a valid MIB to be generated. The optional attributes will not interfere with the SNMP adaptor, and so the same file can be used for both purposes. There are two elements of importance in the attributes.xml that have received the changes, and we will go into them in detail here. Within this explanation, &lt;mbean&gt; means the element defined within the attributes.xml, &lt;attribute&gt; means any element defined within an &lt;mbean&gt;. MBean refers to the actual MBean on the server, and attribute (without tags) refers to the XML meaning.</para>
+      <section id="sid-4784798_MIBGeneratorattributes.xmlModifications-attributeElement">
+        
+        <title>attribute Element</title>
+        <para>The &lt;attribute&gt; is defined like this: &lt;attribute name="distributable" oid=".2"/&gt;</para>
+        <para>This element denotes an Object or Metric contained in the &lt;mbean&gt; this &lt;attribute&gt; was defined in. The valid attributes are listed below:</para>
+        <informaltable>
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Purpose
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Importance
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Default Value
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name of the metric on the MBean. Must match exactly to such a metric.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    oid
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The numeric identifier SNMP uses to identify this particular attribute. Can be a single number, or a full OID, if the &lt;mbean&gt; doesn't define a prefix.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    mode
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Indicates whether this MBean attribute should be writeable via SNMP.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ro (read only)
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    snmp-type
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. The type SNMP managers should attempt to interpret this attribute as.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    OCTET STRING (SIZE (0..255))
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    max-access
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. Set the type of access SNMP managers should have to this attribute.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    read-only
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    description
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. A description of the attribute that will be place in the MIB.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ""
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    status
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. The SNMP STATUS of this attribute.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    current
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    table
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. Indicates that this attribute should be treated as a table. Suitable for MBean metrics that are Arrays, Lists, or Maps, if direct access to elements is desired.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    false
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>Each &lt;attribute&gt; will have its own MIB definition. What is contained in this definition depends on the attributes defined in the &lt;mbean&gt;, and the amount of optional attributes defined in the &lt;attribute&gt; itself. Here's an example MIB Object, with placeholders for each attribute in the &lt;attribute&gt;.</para>
+        <informalexample>
+          <programlisting>&lt;name&gt; OBJECT-TYPE
+        SYNTAX &lt;snmp-type&gt;
+        ACCESS &lt;max-access&gt;
+        STATUS &lt;status&gt;
+        DESCRIPTION
+                "&lt;description&gt;"
+::= { &lt;definition-name&gt; &lt;oid&gt; }</programlisting>
+        </informalexample>
+        <para>The definition-name attribute comes from the &lt;mbean&gt;, as will be seen later. All of the optional attributes are to help the MIB be more complete; they are not strictly required for a valid MIB to be produced. The &lt;attribute&gt; element is rather simple, as is the transformation from the XML into MIB form. It is necessary to understand the purpose of these optional attributes before moving on to the more complicated part, the &lt;mbean&gt; element.</para>
+      </section>
+      <section id="sid-4784798_MIBGeneratorattributes.xmlModifications-mbeanElement">
+        
+        <title>mbean Element</title>
+        <para>The &lt;mbean&gt; is defined like this:  &lt;mbean name="jboss.system:type=ServerInfo" oid-prefix=".1.3.6.1.4.1.2312.100.1.1" definition-name="jbossAsObjects"&gt;</para>
+        <para>This element denotes an MBean which you would like to monitor with SNMP. The valid attributes are listed below:</para>
+        <informaltable>
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Purpose
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Importance
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Default Value
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name of the mbean to be monitored by the snmp-adaptor. Can be a pattern / wildcard. Must be in ObjectName form.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    oid-prefix
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The value contained in this attribute will be prepended onto all of the &lt;attribute&gt; elements contained in this &lt;mbean&gt; element.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ""
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    definition-name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name to give the value contained in the oid-prefix field in the MIB, if any.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    <superscript>1</superscript>
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    table-name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Table specific. The name for the entry in the MIB if name is a wildcard.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Special
+                    <superscript>2</superscript>
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    "UNKNOWN"
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    description
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Table specific. The description about this &lt;mbean&gt; that will be placed into the MIB, if it is a table.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ""
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    status
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Table specific. The SNMP status of this object.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    "current"
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>
+          <superscript>1</superscript>
+          : This attribute must be defined if there is an oid-prefix defined, and no other &lt;mbean&gt; element with the same oid-prefix defines a definition-name, for correct MIB generation.
+        </para>
+        <para>
+          <superscript>2</superscript>
+          : This attribute must be defined if the name of the &lt;mbean&gt; is a pattern / wildcard.
+        </para>
+        <para>Example of a standard &lt;mbean&gt; definition, within a minimal attributes.xml:</para>
+        <informalexample>
+          <programlisting>&lt;attribute-mappings&gt;
+ &lt;mbean name="jboss.system:type=ServerInfo" oid-prefix=".1.3.6.1.4.1.2312.100.1.1"&gt;    
+    &lt;attribute name="ActiveThreadCount" oid=".1"/&gt;
+ &lt;/mbean&gt;
+&lt;/attribute-mappings&gt;</programlisting>
+        </informalexample>
+        <para>
+          Each &lt;mbean&gt; element contains within it any amount of &lt;attribute&gt; elements. These &lt;attribute&gt; give the name of the MBean attribute you want to monitor, as well as assign an OID to that attribute.
+          
+          With the oid-prefix defined, each &lt;attribute&gt; will have this value prepended to it. So, ActiveThreadCount's effective OID is: 1.3.6.1.4.1.2312.100.1.1.1.0 because this is not a table, thus all &lt;attributes&gt; are treated as scalar SNMP values. The above &lt;mbean&gt; definition is good enough for the snmp-adaptor. However, there is not enough information in this &lt;mbean&gt; for a proper MIB entry to be generated. This is where the additional attributes for &lt;mbean&gt; come in. If we use the generator on the above attributes.xml, we will get the following:
+        </para>
+        <informalexample>
+          <programlisting>[thauser@tommycat mibs]$ java -jar jboss-as-varia-mib-generator.jar -a attributes.xml -m TEST-MODULE -o TEST.mib
+There was no definition-name for oid-prefix: 1.3.6.1.4.1.2312.100.1.1</programlisting>
+        </informalexample>
+        <para>This is because there is no other &lt;mbean&gt; with a definition-name for that oid-prefix. Only one &lt;mbean&gt; needs a definition-name attribute defined if they have the same value in their oid-prefix attribute. The definition-name must be defined in the first &lt;mbean&gt; that uses a specific oid-prefix. Any subsequent definition-name attributes which are associated with the same oid-prefix will be ignored. As an example:</para>
+        <informalexample>
+          <programlisting>&lt;attribute-mappings&gt;
+ &lt;mbean name="jboss.system:type=ServerInfo" oid-prefix=".1.3.6.1.4.1.2312.100.1.1" definition-name="definition1"&gt;    
+    &lt;attribute name="ActiveThreadCount" oid=".1"/&gt;
+ &lt;/mbean&gt;
+ &lt;mbean name="jboss.system:type=AnotherMbean" oid-prefix=".1.3.6.1.4.1.2312.100.1.1" definition-name="definition2"&gt;
+    &lt;attribute name="AnotherAttribute" oid=".1"/&gt;
+ &lt;/mbean&gt;
+&lt;/attribute-mappings&gt;</programlisting>
+        </informalexample>
+        <para>
+          In this case, the MIB will associate the name "definition1" with 1.3.6.1.4.1.2312.100.1.1 in the MIB, and will ignore the "definition2" in the 2nd &lt;mbean&gt;, because it has the same value in its oid-prefix attribute.
+          
+          If the first &lt;mbean&gt; had no definition-name defined, the same error as above would be thrown, even though "definition2" is defined.
+        </para>
+        <para>Here is the MIB generated using the above command, with the above example attributes.xml:</para>
+        <informalexample>
+          <programlisting>-- This MIB Generated by the JBoss MIB Generator
+
+TEST-MODULE DEFINITIONS ::=BEGIN
+
+IMPORTS
+    OBJECT-TYPE,
+    NOTIFICATION-TYPE,
+    Counter32,
+    Gauge32,
+    Counter64,
+    TimeTicks
+        FROM SNMPv2-SMI
+    DisplayString,
+    TruthValue
+        FROM SNMPv2-TC;
+
+definition1        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 1 }
+
+activeThreadCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { definition1 1 }
+
+anotherAttribute OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { definition1 1 }
+
+END</programlisting>
+        </informalexample>
+        <para>The definition-name is the only required attribute for MIB generation to complete correctly. The other attributes are there to make the resulting MIB more exact and verbose, with the exception of the table-name attribute. This attribute has a special role, for use when the given &lt;mbean&gt; name is a wildcard.</para>
+        <para>Example of a wildcard &lt;mbean&gt; definition:</para>
+        <informalexample>
+          <programlisting>&lt;mbean name="jboss.web:host=localhost,path=*,type=Manager" oid-prefix="1.3.6.1.4.1.2312.100.1.1.30.1" definition-name="testTableDef" table-name="test" status="current"&gt;
+      &lt;attribute name="distributable" oid=".2" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionCounter" oid=".3" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSessions" oid=".4" snmp-type="INTEGER"/&gt;
+&lt;/mbean&gt;</programlisting>
+        </informalexample>
+        <para>Since the name attribute in this definition is a wildcard, it may match more than one MBean on the MBeanServer. The snmp-adaptor will put all values into a table, which is indexed by the ObjectName returned by a query into the MBean server on the given wildcard. In the MIB, this MBean definition will be split into three entries; one defining the table itself, one defining a table row, and one defining the SYNTAX of the table row. The way these are defined is dependent on the definition-name, table-name, and oid-prefix attributes. The list of &lt;attribute&gt; will be added to the MIB below these three entries, and their OIDs will be prefixed with the full value of the oid-prefix attribute.</para>
+        <para>An example of the three entries, with placeholders for relevant fields:</para>
+        <para>The oid-prefix is chopped up in order to have oids that make sense for every one of these entries. More detail below.</para>
+        <para>The Table entry:</para>
+        <informalexample>
+          <programlisting>&lt;table-name&gt;Table OBJECT-TYPE
+    SYNTAX    SEQUENCE OF &lt;table-name (Capitalized)&gt;Entry
+    MAX-ACCESS    not-accessible
+    STATUS    &lt;status&gt;
+    DESCRIPTION
+        "&lt;description&gt;"
+::= { &lt;definition-name&gt; &lt;2nd to last number in oid-prefix&gt; }</programlisting>
+        </informalexample>
+        <para>
+          <emphasis role="strong">Note:</emphasis>
+          This second to last number in oid-prefix must not clash with another object in the MIB, if the rest of the oid-prefix is not unique.
+        </para>
+        <para>The Row entry:</para>
+        <informalexample>
+          <programlisting>&lt;table-name&gt;Entry OBJECT-TYPE
+    SYNTAX    &lt;table-name (Capitalized)&gt;Entry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        "&lt;description&gt;"
+
+        INDEX    {
+        IMPLIED &lt;table-name&gt;ObjectName
+        }
+::= { &lt;table-name&gt;Table &lt;last number in oid-prefix&gt; }</programlisting>
+        </informalexample>
+        <para>Notice the capitalization differences in the attribute names in the next entry. This is done to make the MIB more readable, and to make sure there are no two tables with the same metric names.</para>
+        <para>The Syntax entry:</para>
+        <informalexample>
+          <programlisting>&lt;table-name (Capitalized)&gt;Entry ::= SEQUENCE {
+    &lt;table-name&gt;ObjectName    DisplayString,
+    &lt;table-name&gt;Distributable    INTEGER,
+    &lt;table-name&gt;SessionCounter    INTEGER,
+    &lt;table-name&gt;ActiveSessions    INTEGER
+}</programlisting>
+        </informalexample>
+        <para>The interpretation of the oid-prefix is modified here. The oid of the Table MIB object is taken to be oid-prefix, except for the last number. The oid of the Entry MIB object is the full oid-prefix, and the attributes contained in the table function the same as in a normal &lt;mbean&gt;. However, the repercussions are that the definition-name will be matched up against the oid-prefix short the last two dotted numbers. If no definition-name exists for that OID, the same error encountered before will occur.</para>
+        <para>In this example, we have the following OIDs:</para>
+        <para>
+          testTableDef = 1.3.6.1.4.1.2312.100.1.1
+          
+          testTable = 1.3.6.1.4.1.2312.100.1.30 or testTableDef.30
+          
+          testEntry = 1.3.6.1.4.1.2312.100.1.30.1 or testTable.1
+          
+          testObjectName = 1.3.6.1.4.1.2312.100.1.30.1.1 (this is the index of the table) or testEntry.1
+          
+          testDistributable = 1.3.6.1.4.1.2312.100.1.30.1.2 or testEntry.2
+          
+          testSessionCounter = 1.3.6.1.4.1.2312.100.1.30.1.3 or testEntry.3
+          
+          testActiveSessions = 1.3.6.1.4.1.2312.100.1.30.1.4 or testEntry.4
+        </para>
+        <para>Below is the MIB entry that will be generated from the &lt;mbean&gt; above.</para>
+        <informalexample>
+          <programlisting>testTableDef        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 1 }
+
+testTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF TestEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+::= { testTableDef 30 }
+
+testEntry OBJECT-TYPE
+    SYNTAX    TestEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+
+        INDEX    {
+        IMPLIED testObjectName
+        }
+::= { testTable 1 }
+
+TestEntry ::= SEQUENCE {
+    testObjectName    DisplayString,
+    testDistributable    INTEGER,
+    testSessionCounter    INTEGER,
+    testActiveSessions    INTEGER
+}
+
+testObjectName OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        ""
+::= { testEntry 1 }
+
+testDistributable OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { testEntry 2 }
+
+testSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { testEntry 3 }
+
+testActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { testEntry 4 }</programlisting>
+        </informalexample>
+        <para>Note that the ObjectName object will always be present, as it is the index the snmp-adaptor uses in its internal representation. Thus, the user must not define any attribute with .1, or the MIB generation will fail.</para>
+        <para>As a final example, here is the Mobicents mss-attributes.xml, modified to allow MIB generation, and the resulting MIB:</para>
+        <para>Command used:</para>
+        <informalexample>
+          <programlisting>java -jar jboss-as-varia-mib-generator.jar -a mss-attributes.xml -m TEST-MODULE -o TEST.mib</programlisting>
+        </informalexample>
+        <informalexample>
+          <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;attribute-mappings&gt;
+   
+   &lt;!-- basic system information --&gt;
+   &lt;mbean name="jboss.system:type=ServerInfo" oid-prefix=".1.3.6.1.4.1.2312.100.1" definition-name="jbossAsObjects"&gt;
+      &lt;attribute name="ActiveThreadCount" oid=".1"/&gt;
+      &lt;attribute name="FreeMemory" oid=".2"/&gt;
+      &lt;attribute name="MaxMemory" oid=".3"/&gt;
+   &lt;/mbean&gt;
+
+   &lt;!-- tomcat global http request processing --&gt;
+   &lt;!--&lt;mbean name="jboss.web:name=http-0.0.0.0-8080,type=GlobalRequestProcessor"&gt;
+      &lt;attribute name="requestCount" oid=".1.2.3.4.1.5"/&gt;
+   &lt;/mbean&gt;--&gt;
+   
+   &lt;!-- Tx Manager statistics --&gt;
+   &lt;mbean name="jboss:service=TransactionManager"&gt;
+      &lt;attribute name="CommitCount" oid=".1.3.6.1.4.1.2312.100.1.6"/&gt;
+      &lt;attribute name="RollbackCount" oid=".1.3.6.1.4.1.2312.100.1.7"/&gt;
+      &lt;attribute name="TransactionCount" oid=".1.3.6.1.4.1.2312.100.1.8"/&gt;
+   &lt;/mbean&gt;
+   
+   &lt;!-- DefaultDS statistics --&gt;
+   &lt;mbean name="jboss.jca:name=DefaultDS,service=ManagedConnectionPool" oid-prefix=".1.3.6.1.4.1.2312.100.1"&gt;
+      &lt;attribute name="InUseConnectionCount" oid=".9"/&gt;
+      &lt;attribute name="MaxConnectionsInUseCount" oid=".10"/&gt;
+   &lt;/mbean&gt;
+
+   &lt;!-- system information group see RFC-1213 --&gt;
+   &lt;mbean name="jboss.jmx:name=SnmpAgent,service=MIB2SystemGroup" oid-prefix=".1.3.6.1.2.1.1" definition-name="system"&gt;
+      &lt;attribute name="SysDescr" oid=".1" mode="rw"/&gt; &lt;!-- can be modified over snmp --&gt;
+      &lt;attribute name="SysObjectId" oid=".2"/&gt;
+      &lt;attribute name="SysUpTime" oid=".3"/&gt;
+      &lt;attribute name="SysContact" oid=".4"/&gt;
+      &lt;attribute name="SysName" oid=".5"/&gt;
+      &lt;attribute name="SysLocation" oid=".6"/&gt;
+      &lt;attribute name="SysServices" oid=".7"/&gt;
+   &lt;/mbean&gt;
+   
+   &lt;!-- sip application dispatcher --&gt;
+   &lt;mbean name="jboss.web:type=SipApplicationDispatcher" oid-prefix=".1.3.6.1.4.1.2312.100.1.11" definition-name="sipApplicationDispatcher"&gt;      
+      &lt;attribute name="baseTimerInterval" oid=".2" mode="rw"/&gt;
+      &lt;attribute name="t2Interval" oid=".3" mode="rw"/&gt;
+      &lt;attribute name="t4Interval" oid=".4" mode="rw"/&gt;
+      &lt;attribute name="timerDInterval" oid=".5" mode="rw"/&gt;
+      &lt;attribute name="memoryThreshold" oid=".6" mode="rw"/&gt;
+      &lt;attribute name="backToNormalMemoryThreshold" oid=".7" mode="rw"/&gt;
+      &lt;attribute name="gatherStatistics" oid=".8" mode="rw"/&gt;
+      &lt;attribute name="requestsProcessed" oid=".9" /&gt;
+      &lt;attribute name="responsesProcessed" oid=".10" /&gt;
+      &lt;attribute name="congestionControlCheckingInterval" oid=".11" mode="rw"/&gt;
+   &lt;/mbean&gt;
+   
+   &lt;!-- sip stack --&gt;
+   &lt;mbean name="org.mobicents.jain.sip:name=Mobicents-SIP-Servlets,type=sip-stack" oid-prefix=".1.3.6.1.4.1.2312.100.1.11.1" definition-name="mobicentsSipServlets"&gt;
+      &lt;attribute name="NumberOfClientTransactions" oid=".1"/&gt;
+      &lt;attribute name="NumberOfServerTransactions" oid=".2"/&gt;
+      &lt;attribute name="NumberOfDialogs" oid=".3"/&gt;
+      &lt;attribute name="LocalMode" oid=".4"/&gt;
+   &lt;/mbean&gt;
+   
+   &lt;!-- Web Apps --&gt;
+   &lt;mbean name="jboss.web:host=localhost,path=/*,type=Manager" oid-prefix=".1.3.6.1.4.1.2312.100.10.1" definition-name="sipManagerTableDef" table-name="manager"&gt;
+      &lt;attribute name="distributable" oid=".2" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionCounter" oid=".3" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSessions" oid=".4" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxActiveSessions" oid=".5" mode="rw" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionAverageAliveTime" oid=".6" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="expiredSessions" oid=".7" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="rejectedSessions" oid=".8" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxInactiveInterval" oid=".9" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionMaxAliveTime" oid=".10" snmp-type="INTEGER"/&gt;                  
+   &lt;/mbean&gt;
+   
+   &lt;!-- Sip or Converged Web+Sip Apps --&gt;
+   &lt;mbean name="jboss.web:host=localhost,path=/*,type=SipManager" oid-prefix=".1.3.6.1.4.1.2312.100.11.1" definition-name="sipManagerTableDef" table-name="sipManager"&gt;
+      &lt;attribute name="distributable" oid=".2" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionCounter" oid=".3" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSessions" oid=".4" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxActiveSessions" oid=".5" mode="rw" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionAverageAliveTime" oid=".6" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="expiredSessions" oid=".7" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="rejectedSessions" oid=".8" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxInactiveInterval" oid=".9" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionMaxAliveTime" oid=".10" snmp-type="INTEGER"/&gt;       
+      &lt;attribute name="sipSessionCounter" oid=".11" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sipApplicationSessionCounter" oid=".12" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSipSessions" oid=".13" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSipApplicationSessions" oid=".14" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="expiredSipSessions" oid=".15" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="expiredSipApplicationSessions" oid=".16" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="rejectedSipSessions" oid=".17" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="rejectedSipApplicationSessions" oid=".18" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxActiveSipSessions" oid=".19" mode="rw" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxActiveSipApplicationSessions" oid=".20" mode="rw" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sipSessionAverageAliveTime" oid=".21" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="sipApplicationSessionAverageAliveTime" oid=".22" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sipSessionMaxAliveTime" oid=".23" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sipApplicationSessionMaxAliveTime" oid=".24" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="numberOfSipSessionCreationPerSecond" oid=".25" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="numberOfSipApplicationSessionCreationPerSecond" oid=".26" snmp-type="INTEGER"/&gt;
+   &lt;/mbean&gt;
+   
+&lt;/attribute-mappings&gt;</programlisting>
+        </informalexample>
+        <informalexample>
+          <programlisting>-- This MIB Generated by the JBoss MIB Generator
+
+TEST-MODULE DEFINITIONS ::=BEGIN
+
+IMPORTS
+    OBJECT-TYPE,
+    NOTIFICATION-TYPE,
+    Counter32,
+    Gauge32,
+    Counter64,
+    TimeTicks
+        FROM SNMPv2-SMI
+    DisplayString,
+    TruthValue
+        FROM SNMPv2-TC;
+
+mobicentsSipServlets        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 11 1 }
+jbossAsObjects        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 }
+sipManagerTableDef        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 }
+sipApplicationDispatcher        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 11 }
+system        OBJECT IDENTIFIER ::= { 1 3 6 1 2 1 1 }
+
+activeThreadCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 1 }
+
+freeMemory OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 2 }
+
+maxMemory OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 3 }
+
+commitCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 6 }
+
+rollbackCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 7 }
+
+transactionCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 8 }
+
+inUseConnectionCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 9 }
+
+maxConnectionsInUseCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 10 }
+
+sysDescr OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 1 }
+
+sysObjectId OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 2 }
+
+sysUpTime OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 3 }
+
+sysContact OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 4 }
+
+sysName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 5 }
+
+sysLocation OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 6 }
+
+sysServices OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 7 }
+
+baseTimerInterval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 2 }
+
+t2Interval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 3 }
+
+t4Interval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 4 }
+
+timerDInterval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 5 }
+
+memoryThreshold OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 6 }
+
+backToNormalMemoryThreshold OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 7 }
+
+gatherStatistics OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 8 }
+
+requestsProcessed OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 9 }
+
+responsesProcessed OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 10 }
+
+congestionControlCheckingInterval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 11 }
+
+numberOfClientTransactions OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { mobicentsSipServlets 1 }
+
+numberOfServerTransactions OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { mobicentsSipServlets 2 }
+
+numberOfDialogs OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { mobicentsSipServlets 3 }
+
+localMode OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { mobicentsSipServlets 4 }
+
+managerTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF ManagerEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+::= { sipManagerTableDef 10 }
+
+managerEntry OBJECT-TYPE
+    SYNTAX    ManagerEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+
+        INDEX    {
+        IMPLIED managerObjectName
+        }
+::= { managerTable 1 }
+
+ManagerEntry ::= SEQUENCE {
+    managerObjectName    DisplayString,
+    managerDistributable    INTEGER,
+    managerSessionCounter    INTEGER,
+    managerActiveSessions    INTEGER,
+    managerMaxActiveSessions    INTEGER,
+    managerSessionAverageAliveTime    INTEGER,
+    managerExpiredSessions    INTEGER,
+    managerRejectedSessions    INTEGER,
+    managerMaxInactiveInterval    INTEGER,
+    managerSessionMaxAliveTime    INTEGER
+}
+
+managerObjectName OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 1 }
+
+managerDistributable OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 2 }
+
+managerSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 3 }
+
+managerActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 4 }
+
+managerMaxActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 5 }
+
+managerSessionAverageAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 6 }
+
+managerExpiredSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 7 }
+
+managerRejectedSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 8 }
+
+managerMaxInactiveInterval OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 9 }
+
+managerSessionMaxAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 10 }
+
+
+sipManagerTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF SipManagerEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+::= { sipManagerTableDef 11 }
+
+sipManagerEntry OBJECT-TYPE
+    SYNTAX    SipManagerEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+
+        INDEX    {
+        IMPLIED sipManagerObjectName
+        }
+::= { sipManagerTable 1 }
+
+SipManagerEntry ::= SEQUENCE {
+    sipManagerObjectName    DisplayString,
+    sipManagerDistributable    INTEGER,
+    sipManagerSessionCounter    INTEGER,
+    sipManagerActiveSessions    INTEGER,
+    sipManagerMaxActiveSessions    INTEGER,
+    sipManagerSessionAverageAliveTime    INTEGER,
+    sipManagerExpiredSessions    INTEGER,
+    sipManagerRejectedSessions    INTEGER,
+    sipManagerMaxInactiveInterval    INTEGER,
+    sipManagerSessionMaxAliveTime    INTEGER,
+    sipManagerSipSessionCounter    INTEGER,
+    sipManagerSipApplicationSessionCounter    INTEGER,
+    sipManagerActiveSipSessions    INTEGER,
+    sipManagerActiveSipApplicationSessions    INTEGER,
+    sipManagerExpiredSipSessions    INTEGER,
+    sipManagerExpiredSipApplicationSessions    INTEGER,
+    sipManagerRejectedSipSessions    INTEGER,
+    sipManagerRejectedSipApplicationSessions    INTEGER,
+    sipManagerMaxActiveSipSessions    INTEGER,
+    sipManagerMaxActiveSipApplicationSessions    INTEGER,
+    sipManagerSipSessionAverageAliveTime    INTEGER,
+    sipManagerSipApplicationSessionAverageAliveTime    INTEGER,
+    sipManagerSipSessionMaxAliveTime    INTEGER,
+    sipManagerSipApplicationSessionMaxAliveTime    INTEGER,
+    sipManagerNumberOfSipSessionCreationPerSecond    INTEGER,
+    sipManagerNumberOfSipApplicationSessionCreationPerSecond    INTEGER
+}
+
+sipManagerObjectName OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 1 }
+
+sipManagerDistributable OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 2 }
+
+sipManagerSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 3 }
+
+sipManagerActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 4 }
+
+sipManagerMaxActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 5 }
+
+sipManagerSessionAverageAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 6 }
+
+sipManagerExpiredSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 7 }
+
+sipManagerRejectedSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 8 }
+
+sipManagerMaxInactiveInterval OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 9 }
+
+sipManagerSessionMaxAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 10 }
+
+sipManagerSipSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 11 }
+
+sipManagerSipApplicationSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 12 }
+
+sipManagerActiveSipSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 13 }
+
+sipManagerActiveSipApplicationSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 14 }
+
+sipManagerExpiredSipSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 15 }
+
+sipManagerExpiredSipApplicationSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 16 }
+
+sipManagerRejectedSipSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 17 }
+
+sipManagerRejectedSipApplicationSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 18 }
+
+sipManagerMaxActiveSipSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 19 }
+
+sipManagerMaxActiveSipApplicationSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 20 }
+
+sipManagerSipSessionAverageAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 21 }
+
+sipManagerSipApplicationSessionAverageAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 22 }
+
+sipManagerSipSessionMaxAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 23 }
+
+sipManagerSipApplicationSessionMaxAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 24 }
+
+sipManagerNumberOfSipSessionCreationPerSecond OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 25 }
+
+sipManagerNumberOfSipApplicationSessionCreationPerSecond OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 26 }
+
+
+END</programlisting>
+        </informalexample>
+      </section>
+    </section>
+    <section id="sid-4784801">
+      
+      <title>MIB Generator notifications.xml Modifications</title>
+      <para>The notifications.xml file is responsible for indicating how a given JMX notification should be transformed into an equivalent SNMP trap. The driver behind this transformation is the notification-type attribute, which indicates the type of JMX notification to transform using a given definition. Here is an example notifications.xml file:</para>
+      <informalexample>
+        <programlisting>&lt;notification-map-list&gt;
+ &lt;mapping notification-type="jboss.snmp.agent.heartbeat" generic="3" specific="0" enterprise="1.2.3.4.5.6.7"&gt;
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="a:uptime" oid="1.2.3.4.5.6.7.5"/&gt;
+      &lt;var-bind tag="a:trapCount" oid="1.2.3.4.5.6.7.6"/&gt;
+      &lt;var-bind tag="n:message" oid="1.2.3.4.5.6.7.7"/&gt;
+      &lt;var-bind tag="n:sequenceNumber" oid="1.2.3.4.5.6.7.8"/&gt;
+    &lt;/var-bind-list&gt;
+  &lt;/mapping&gt;
+&lt;/notification-map-list&gt;</programlisting>
+      </informalexample>
+      <para>
+        This notification would catch the "jboss.snmp.agent.heartbeat" notification, and create an SNMP trap with the payload described in each var-bind, according to the var-bind-list wrapper-class. This class defines how such objects are retrieved.
+        
+        The values contained in generic and specific are to identify the trap, and the OID in enterprise should be the OID of the object that is emitting this trap. The trap can contain an arbitrary amount of &lt;var-bind&gt;s in its payload.. It is in these &lt;var-bind&gt; tags that the binding of values to OIDs gets tricky.
+      </para>
+      <section id="sid-4784801_MIBGeneratornotifications.xmlModifications-Thevarbindelement">
+        
+        <title>The var-bind element</title>
+        <para>The &lt;var-bind&gt; element, which is much like the &lt;attribute&gt; element inside attributes.xml, is defined like this: &lt;var-bind tag="a:uptime" oid="1.2.3.4.5.6.7.5"/&gt;</para>
+        <para>A &lt;var-bind&gt; element has two required attributes, and a single optional attribute, for use by the MIB Generator.</para>
+        <informaltable>
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Purpose
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Importance
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Default Value
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    tag
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Used by the default wrapper class to indicate what value to retrieve.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    oid
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The OID that should be assigned to the retrieved value.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    type
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The SNMP type of this variable binding. Used by the MIB generator
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    DisplayString
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>There are two different actions the MIB generator may take, based on the value of the tag attribute.</para>
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Value
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Result
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    a:*
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The OID paired with a tag that has value a:* MUST correspond to an &lt;attirbute&gt; in attributes.xml.
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    n:*, u:*
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    A new MIB Entry is defined for each of these var-binds, with OIDs as defined. They are then included in the notification's definition in the MIB.
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>The oid of an a:* tag must have a definition in the MIB, and thus for the MIB Generator's purposes, must have a definition in the attributes.xml. An SNMP trap cannot contain, in its payload, an object which is not defined either in an imported MIB, or in the MIB where the definition of the trap resides. Since it is the only way to have such a definition exist in the generated MIB, this requirement is enforced. This OID is assumed to be a scalar object. There is currently no support for including a table cell's value in the Trap for the snmp-adaptor.</para>
+        <para>If the tag is n:* or u:*, a new entry in the MIB is defined, using the prefix "jmxNotification" for the name and modifying capitalization for readability. The SYNTAX of this new entry is defined by the type attribute.</para>
+      </section>
+      <section id="sid-4784801_MIBGeneratornotifications.xmlModifications-Themappingelement">
+        
+        <title>The mapping element</title>
+        <para>This element contains most of the required attributes for the MIB generator. A minimal definition for the snmp-adaptor looks like this:</para>
+        <informalexample>
+          <programlisting>&lt;mapping notification-type="jboss.snmp.agent.coldstart" generic="0" specific="0" enterprise="1.2.3.4.5.6.7"&gt;
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="a:trapCount" oid="1.2.3.4.5.6.7.6"/&gt;
+    &lt;/var-bind-list&gt;
+  &lt;/mapping&gt;</programlisting>
+        </informalexample>
+        <para>The MIB Generator requires more information about the trap in order to create a meaningful entry. Here's an example of a notification.xml that has enough meta-data for proper MIB generation:</para>
+        <informalexample>
+          <programlisting>&lt;mapping name="jbossAsHeartbeatNotification" notification-type="jboss.snmp.agent.heartbeat" generic="0" specific="3" enterprise="1.3.6.1.4.1.2312.100.1.2" definition-name="jbossAsTraps"&gt;
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="a:trapCount" oid="1.3.6.1.4.1.2312.100.1.1.11"/&gt;
+    &lt;/var-bind-list&gt;
+  &lt;/mapping&gt;</programlisting>
+        </informalexample>
+        <para>A table of additional attributes for the &lt;mapping&gt; element is as follows. All values in the "Importance" column are for the MIB Generator, not the snmp-adaptor.</para>
+        <informaltable>
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Purpose
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Importance
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Default Value
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name of the notification as it should appear in the MIB
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    notification-type
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The actual class name of the JMX notification to be intercepted
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    generic
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Part of the identification of the trap
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    specific
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Part of the OID of the trap
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    enterprise
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Part of the OID of the trap.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    inform
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    A boolean for indicating whether this trap should be an INFORM.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    False
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    security-name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Indicates the user to be associated with this trap. V3 only.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    definition-name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name to associate with the value in the enterprise attribute.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    description
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    A description about what the notification is for or contains, to be placed into the MIB
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ""
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>The MIB generator requires more information, and is more strict about this information, than with the attributes.xml. The most important thing is that the oids in the &lt;var-binds&gt; match up to the oids in the attributes.xml. Otherwise, the MIB generator will not generate a valid MIB, and generation will fail.</para>
+        <para>The OID of a given notification is in the following form, for v2c and v3 traps:</para>
+        <para>&lt;enterprise&gt;.0.&lt;specific&gt;</para>
+        <para>Here is an example of the MIB generator's ouput for the notifications.xml given above:</para>
+        <informalexample>
+          <programlisting>jbossAsHeartbeatNotification NOTIFICATION-TYPE
+        OBJECTS {
+                trapCount
+        }
+        STATUS current
+        DESCRIPTION
+                ""
+::= { jbossAsTraps 3 }</programlisting>
+        </informalexample>
+        <para>Since the oid associated with the a:trapCount tag exists in the MIB, the name of that attribute in the MIB is defined as being part of the notification. The OID of this jbossAsHeartbeatNotification is equal to</para>
+        <para>1.3.6.1.4.1.2312.100.1.2.0.3</para>
+        <para>
+          jbossAsTraps = &lt;enterprise&gt;.&lt;generic&gt;
+          
+          and the final number comes from the &lt;specific&gt; attribute.
+        </para>
+        <para>As an example, here is output of the heartbeat notification (a simple notification sent every so often, indicating that the server is still alive).The notifications.xml defining this SNMP notification has been included in the MIB generation, so the names of the fields have the correct human-readable name listed:</para>
+        <informalexample>
+          <programlisting>2011-07-14 16:18:53 localhost.localdomain [UDP: [127.0.0.1]:1161-&gt;[127.0.0.1]]:
+DISMAN-EVENT-MIB::sysUpTimeInstance = Timeticks: (536372) 1:29:23.72    
+SNMPv2-MIB::snmpTrapOID.0 = OID: JBOSS-AS-VARIA::jbossAsHeartbeatNotification    
+SNMPv2-MIB::sysUpTime = STRING: 536372   
+JBOSS-AS-VARIA::trapCount = STRING: 805    
+JBOSS-AS-VARIA::jbossJmxNotificationMessage = STRING: heartbeat report    
+JBOSS-AS-VARIA::jbossJmxNotificationSequenceNumber = STRING: 269</programlisting>
+        </informalexample>
+      </section>
+    </section>
+    <section id="sid-4784803">
+      
+      <title>Using the Generator</title>
+      <para>Currently, there are two ways to use the MIB Generator. The first is to simply use the executable jar, with the desired files, to output an MIB of your choosing. The second is to use the maven plugin that will invoke the MIB Generator on given files at compile time, allowing you to have an MIB for your web application which is designed to run on the JBossAS.</para>
+      <section id="sid-4784803_UsingtheGenerator-UsingtheJAR">
+        
+        <title>Using the JAR</title>
+        <para>The jar has a very simple set of commands. They are as follows:</para>
+        <itemizedlist>
+          <listitem>
+            <para>-a : The attributes file to be used, if any.</para>
+          </listitem>
+          <listitem>
+            <para>-n : The notifications file to be used, if any.</para>
+          </listitem>
+          <listitem>
+            <para>-m : The Module Name to be used. This Module Name is how the SNMP manager will identify the definitions in the MIB, it is not done by filename.</para>
+          </listitem>
+          <listitem>
+            <para>-o : The output file name.</para>
+          </listitem>
+        </itemizedlist>
+        <para>The JAR can be used with both attributes / notifications files, or just the attributes file. It is also possible to use it with just the notifications file, but the tags in such a notifications file must not include a:* tags. It must only contain tags for attributes whose definitions can be generated, such as n:* and u:* tags. The -m and -o flags are required. The -o can include the path you would like to put the final MIB.</para>
+        <para>Example usage:</para>
+        <informalexample>
+          <programlisting>[thauser@tommycat snmp-adaptor.sar]$ java -jar jboss-snmp-5.1.1.GA-mib-generator.jar -a attributes.xml -n notifications.xml -m JBOSS-AS-VARIA -o ~/.snmp/mibs/TEST.mib</programlisting>
+        </informalexample>
+      </section>
+      <section id="sid-4784803_UsingtheGenerator-UsingtheMavenPlugin">
+        
+        <title>Using the Maven Plugin</title>
+        <para>There is also a Maven Plugin available. Instead of specifying these files on the command line, they are included in the plugin descriptor inside your project's pom.xml. Here's an example of such a descriptor:</para>
+        <informalexample>
+          <programlisting>&lt;plugin&gt;
+ &lt;groupId&gt;org.jboss&lt;/groupId&gt;
+ &lt;artifactId&gt;mibgen-maven-plugin&lt;/artifactId&gt;
+ &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+  &lt;configuration&gt;
+   &lt;attributesFile&gt;workspace/snmp4j-int/varia/src/resources/services/snmp/deploy/attributes.xml&lt;/attributesFile&gt;
+   &lt;notificationsFile&gt;workspace/snmp4j-int/varia/src/resources/services/snmp/deploy/notifications.xml&lt;/notificationsFile&gt;
+   &lt;moduleName&gt;TEST-MIB&lt;/moduleName&gt;
+   &lt;outputFile&gt;/home/yyz/thauser/.snmp/mibs/JBOSS-AS-VARIA.mib&lt;/outputFile&gt;
+  &lt;/configuration&gt;
+ &lt;executions&gt;
+  &lt;execution&gt;
+   &lt;phase&gt;compile&lt;/phase&gt;
+    &lt;goals&gt;
+     &lt;goal&gt;generate-mib&lt;/goal&gt;
+    &lt;/goals&gt;
+   &lt;/execution&gt;
+ &lt;/executions&gt;
+&lt;/plugin&gt;</programlisting>
+        </informalexample>
+      </section>
+    </section>
+	
+
+  </chapter>

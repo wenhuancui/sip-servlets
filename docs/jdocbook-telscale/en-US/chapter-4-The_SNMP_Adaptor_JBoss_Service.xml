@@ -1,0 +1,507 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="sid-4784981">
+    
+    <title>The SNMP Adaptor JBoss Service</title>
+    <section id="sid-4784981_TheSNMPAdaptorJBossService-Location">
+      
+      <title>Location</title>
+      <para>The SNMP Adaptor JBoss Service is located in $JBOSS_HOME/server/&lt;profile&gt;/deploy/snmp-adaptor.sar</para>
+    </section>
+    <section id="sid-4784981_TheSNMPAdaptorJBossService-Responsibilities">
+      
+      <title>Responsibilities</title>
+      <para>
+        <emphasis role="color:#333333">The SNMP Adaptor Service</emphasis>
+        <emphasis role="color:#333333">contains the general configuration of the SNMP service and the JMX to SNMP mapping for the JBoss Application Server and its subcomponents.</emphasis>
+      </para>
+      <para>
+        <emphasis role="color:#333333">The SNMP Adaptor Service Agent listen on a given UDP port (default 1161). The manager may send requests from any available source port to port 1161 in the Agent. The Agent responses will be sent back to the source port of the manager sent requests. The</emphasis>
+        <emphasis role="color:#333333">SNMP Adaptor Service</emphasis>
+        <emphasis role="color:#333333">also provides a manager that can receive notifications (Traps and Inform Requests) on port 1162. The</emphasis>
+        <emphasis role="color:#333333">SNMP Adaptor Service Agent</emphasis>
+        <emphasis role="color:#333333">may generate notifications from any available port on behalf of the JBoss Application Server or its components and applications deployed within it.</emphasis>
+      </para>
+    </section>
+    <section id="sid-4784981_TheSNMPAdaptorJBossService-Installation">
+      
+      <title>Installation</title>
+      <para>
+        Extract the file
+        <ulink url="https://docs.jboss.org/author/download/attachments/4784981/snmp-adaptor.sar.zip?version=1&amp;modificationDate=1310504114000">snmp-adaptor.sar.zip</ulink>
+        to
+        <code>$JBOSS_HOME/server/&lt;profile&gt;/deploy</code>
+      </para>
+      <para>
+        <emphasis role="italics">Note : make sure to remove the old snmp-adaptor.sar if present</emphasis>
+      </para>
+    </section>
+    <section id="sid-4784981_TheSNMPAdaptorJBossService-Configuration">
+      
+      <title>Configuration</title>
+      <para>The SNMP Adaptor JBoss Service location will be referred as $JBOSS_SNMP_ADAPTOR.</para>
+      <para>The SNMP Adaptor JBoss Service offers 5 configuration files</para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <xref linkend="sid-4785093"/>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <xref linkend="sid-4785095"/>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <xref linkend="sid-4785099"/>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <xref linkend="sid-4785104"/>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <xref linkend="sid-4785106"/>
+          </para>
+        </listitem>
+      </itemizedlist>
+      <section id="sid-4784981_TheSNMPAdaptorJBossService-">
+        
+        <title/>
+      </section>
+    </section>
+    <section id="sid-4785093">
+      
+      <title>SNMP Adaptor JBoss Service Configuration file</title>
+      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/jboss-service.xml managing the general configuration of the SNMP Adaptor, It defines 3 MBeans :</para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            The SNMP Adaptor Manager
+            <emphasis role="strong">org.jboss.jmx.adaptor.snmp.trapd.TrapdService</emphasis>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            The SNMP Adaptor Agent
+            <emphasis role="strong">org.jboss.jmx.adaptor.snmp.agent.SnmpAgentService</emphasis>
+            : It defines a set of properties to override the default behavior of the Agent and the location of the other configuration files used by the agent. It also defines the list of Subscriptions to JMX notifications from the JBoss Application Server, its components and applications deployed within it that the agent filters and will map to SNMP Notifications. This subscriptionList attribute warrants a specific section as it is used in conjunction with the Notifications configuration file. It defines a list of JMX Notifications emitted by MBeans (the name can use wilcard to match multiple MBeans at the same time) to intercept that will be converted by the SNMP Adaptor as an SNMP Notification through the Notifications configuration file. The type of the notification will be used to find in the Notifications file how to map it, which OID to give it and which information will be sent.
+          </para>
+        </listitem>
+      </itemizedlist>
+      <para>
+        <emphasis role="italics">Note : Both above MBean uses the</emphasis>
+        <ulink url="http://community.jboss.org/wiki/AS5ServiceBindingManager">JBoss Service Binding Manager</ulink>
+        <emphasis role="italics">to configure the ports where the JBoss SNMP Agent and Manager are listening on</emphasis>
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            System Information as specified in RFC 1213
+            <emphasis role="strong">org.jboss.jmx.adaptor.snmp.system.MIB2SystemGroupService</emphasis>
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section id="sid-4785095">
+      
+      <title>SNMP Adaptor Attributes configuration file</title>
+      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/attributes.xml and controls the mapping of JMX mbean attributes to SNMP OIDs accessible through the SNMP Adaptor. It defines a list of MBean and their attributes to map to SNMP OID.</para>
+      <para>
+        Each
+        <emphasis role="strong">mbean</emphasis>
+        entry must specify :
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis role="strong">name</emphasis>
+            : The MBean name for which its attributes need to be exposed. The MBean name can be a wildcard, in which case the returned set will be exposed as an SNMP Table (A walk-through for that is given in
+            <xref linkend="sid-4784932"/>
+            ),
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">oid-prefix</emphasis>
+            (optional) : if set it will be prepended to the attributes oid.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            a list of
+            <emphasis role="strong">attribute</emphasis>
+            that specifies :
+          </para>
+          <itemizedlist>
+            <listitem>
+              <para>
+                <emphasis role="strong">name</emphasis>
+                it needs to match the one in has to be exposed from the MBean
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                <emphasis role="strong">oid</emphasis>
+                identifier of the attribute. It can either be the full oid or only the last part of it if the oid-prefix was set above. All attributes are Scalar objects by default which means that to access them you will need to add a .0 to the attribute oid to access it (A walk-through for that is given in
+                <xref linkend="sid-4784932"/>
+                ,
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                <emphasis role="strong">table</emphasis>
+                if the attribute has to be exposed as a Tabular object ie a SNMP table (A walk-through for that is given in
+                <xref linkend="sid-4784975"/>
+                , currently if set to true only array, List and Map are supported and within those only basic types (String, int, long, boolean, otherwise Object.toString will be called)
+              </para>
+            </listitem>
+            <listitem>
+              <para>
+                <emphasis role="strong">mode</emphasis>
+                if set to *rw, *it means that the attribute is writable (can be set) otherwise by default it is read-only
+              </para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section id="sid-4785099">
+      
+      <title>SNMP Adaptor Notifications configuration File</title>
+      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/notifications.xml and controls the mapping of JMX notifications onto SNMP traps. The key for the mapping is considered to be the notification type as defined in the subscriptions list of the SNMP Adaptor JBoss Service configuration file.</para>
+      <para>
+        For generic SNMPv1 traps,
+        <emphasis role="italics">Enterprise</emphasis>
+        field contains value of
+        <ulink url="http://tools.cisco.com/Support/SNMP/do/BrowseOID.do?local=en&amp;translate=Translate&amp;objectInput=1.3.6.1.2.1.1.2">sysObjectID</ulink>
+        of the device that sends trap. For vendor specific traps,
+        <emphasis role="italics">Generic trap type field</emphasis>
+        is set to enterpriseSpecific(6
+      </para>
+      <para>
+        Each
+        <emphasis role="strong">mapping</emphasis>
+        entry must specify :
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis role="strong">notification-type</emphasis>
+            : The type of JMX Notifications to wrap as a SNMP Notification. Please note that the notification has to be caught first by the subscription list filter defined in SNMP Adaptor JBoss Service configuration file (A walk-through for that is given in
+            <xref linkend="sid-4784977"/>
+          </para>
+        </listitem>
+      </itemizedlist>
+      <para>
+        <emphasis role="italics">Note : The below attributes generic, specific and enterprise varies depending on the version of the protocol namely - v1 and v2. For v1, . For v2 and v3, It is essentially a concatenation of the</emphasis>
+        <emphasis role="strong">
+          <emphasis role="italics">e</emphasis>
+        </emphasis>
+        <emphasis role="strong">
+          <emphasis role="italics">nterprise</emphasis>
+        </emphasis>
+        _ parameter and two additional sub-identifiers, '0' (so make sure to set generic as 0 here), and the_
+        <emphasis role="strong">
+          <emphasis role="italics">s</emphasis>
+        </emphasis>
+        <emphasis role="strong">
+          <emphasis role="italics">pecific</emphasis>
+        </emphasis>
+        <emphasis role="italics">trap code</emphasis>
+        _ parameter_
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis role="strong">generic</emphasis>
+            : Indicates one of a number of generic trap types
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">specific</emphasis>
+            : Indicates one of a number of specific trap codes.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">enterprise</emphasis>
+            : contains value of
+            <ulink url="http://tools.cisco.com/Support/SNMP/do/BrowseOID.do?local=en&amp;translate=Translate&amp;objectInput=1.3.6.1.2.1.1.2">sysObjectID</ulink>
+            of the device that sends trap
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">inform</emphasis>
+            : if set to
+            <emphasis role="strong">"true"</emphasis>
+            , this trap will be send as an inform (acknowledged trap)
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">security-name</emphasis>
+            : the user to associate with the sending of the trap (will be used for version 3 of the protocol only)
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">var-bind-list</emphasis>
+            whose defines a
+            <emphasis role="strong">wrapper-class</emphasis>
+            that allows to to extract info from arbitrary notification subclasses. The generated trap may contain an arbitrary payload of
+            <emphasis role="italics">variable bindings</emphasis>
+            (
+            <emphasis role="strong">var-bind)</emphasis>
+            with explicitly specified
+            <emphasis role="strong">oid</emphasis>
+            and values extracted from the emitted notification (
+            <emphasis role="strong">tag</emphasis>
+            ). To extract those values a wrapper class implementing the org.jboss.jmx.adaptor.snmp.agent.NotificationWrapper interface must be supplied. At runtime, the value specified using the element is passed to the wrapper class implementation as the key to be mapped, in an implementation specific way, to a corresponding value. A default implementation of this interface comes with class org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport. This implementation recognizes the following set of tags :
+          </para>
+        </listitem>
+      </itemizedlist>
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                <para>Tag</para>
+              </entry>
+              <entry>
+                <para>Description</para>
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <para>
+                  n:message
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>javax.management.Notification.getMessage()</para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:sequenceNumber
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.getSequenceNumber()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:timeStamp
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.getTimestamp()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:type
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.getType()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:all
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.toString()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:class
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.getClass().getName()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  a:startTime
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  snmp agent/adaptor start time
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  a:uptime
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  snmp agent/adaptor up time
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  a:trapCount
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  snmp agent/adaptor trap count
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>u:&lt;user-defined-tag&gt;</para>
+              </entry>
+              <entry>
+                <para>
+                  looked-up in n.getUserData()
+                  
+                  
+                </para>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
+    <section id="sid-4785104">
+      
+      <title>SNMP Adaptor Managers Configuration File</title>
+      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/managers.xml and is used to configure the SNMP managers to which the generated SNMP traps should be forwarded.</para>
+      <para>
+        Each
+        <emphasis role="strong">manager</emphasis>
+        entry must specify:
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis role="strong">address</emphasis>
+            : the manager's address (IP address or host name)
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">port</emphasis>
+            : the listening port
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">local-address</emphasis>
+            : the local binding address (optional)
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">local-port</emphasis>
+            : the local binding port (optional)
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">version</emphasis>
+            : the SNMP version to use (1 or 2 or 3)
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">community-string</emphasis>
+            : If version is 1 or 2, the community string (public or private)
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section id="sid-4785106">
+      
+      <title>SNMP Adaptor Users Configuration File</title>
+      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/users.xml and is used to configure the SNMP users when using version 3 of the protocol.</para>
+      <para>Each user entry must specify:</para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis role="strong">securityName</emphasis>
+            : the security name of the user (typically the user name).
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">authenticationProtocol</emphasis>
+            : the authentication protcol to be associated with this user (MD5 or SHA). If not set, this user only supports unauthenticated messages.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">authenticationPassphrase</emphasis>
+            : If present, the authentication Protocol must also be present. RFC3414 §11.2 requires passphrases to have a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgumentException will be thrown.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">privacyProtocol</emphasis>
+            : the privacy protcol ID to be associated with this user (DES, 3DES, AES128, AES192, AES256). If not set, this user only supports unencrypted messages.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="strong">privacyPassphrase</emphasis>
+            : If present, the privacy Protocol must also be set. RFC3414 §11.2 requires passphrases to have a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgumentException will be thrown.
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </chapter>

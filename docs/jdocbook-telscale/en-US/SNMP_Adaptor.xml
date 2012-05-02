@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<book>
+
+ <!-- <xi:include href="Preface.xml" xmlns:xi="http://www.w3.org/2001/XInclude" /> -->
+   <xi:include href="Book_Info.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />    
+  <xi:include href="chapter-1-General_Information.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <xi:include href="chapter-2-SNMP_Adaptor_s_Description.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <xi:include href="chapter-3-SNMP_Adaptor_WalkThrough.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <xi:include href="chapter-4-The_SNMP_Adaptor_JBoss_Service.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <xi:include href="chapter-5-The_SNMP_Adaptor_JBoss_Deployer.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <xi:include href="chapter-6-SNMP_Adaptor_Walkthrough.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <xi:include href="chapter-7-The_MIB_Generator.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <chapter>
+  <title> Revision History </title>
+  <xi:include href="Revision_History.xml" xmlns:xi="http://www.w3.org/2001/XInclude" /> 
+  </chapter>
+</book>

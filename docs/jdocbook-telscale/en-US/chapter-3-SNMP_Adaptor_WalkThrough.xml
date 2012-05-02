@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="sid-4588087_SNMPAdaptor-SNMPAdaptorWalkThrough">
+    
+    <title>SNMP Adaptor WalkThrough</title>
+    <para>
+      <emphasis role="color:#000000">The</emphasis>
+      <emphasis role="color:#000000">
+        <xref linkend="sid-4785050"/>
+      </emphasis>
+      <emphasis role="color:#000000">will guide through on how to monitor and manage the JBoss Application Server, its components and the applications deployed within it through SNMP by wrapping the JMX MBeans</emphasis>
+    </para>
+  </chapter>

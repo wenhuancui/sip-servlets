@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="sid-4588087_SNMPAdaptor-SNMPAdaptor%27sDescription">
+    
+    <title>SNMP Adaptor's Description</title>
+    <para>
+      <emphasis role="color:#000000">JBoss Application Server and Mobicents now features a revamped SNMP Adaptor, leveraging</emphasis>
+      <emphasis role="color:#000000">
+        <ulink url="http://www.snmp4j.org/">snmp4j</ulink>
+      </emphasis>
+      <emphasis role="color:#000000">as a Java implementation of SNMP, that wraps the JMX MBean and Notifications to allow monitoring and configuration of the Application Server and applications deployed on it through the SNMP protocol.Note: the documentation for the previous version can be found here</emphasis>
+      <emphasis role="color:#000000">
+        <ulink url="http://community.jboss.org/wiki/JBossSNMPAdapter"/>
+      </emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">The Adaptor now supports all versions of the protocol, v1, v2c and v3 including security for v2c and v3. It also has supports for tables and both traps and informs.</emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">The Adaptor is broke down in 2 pieces :</emphasis>
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          <xref linkend="sid-4784981"/>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <xref linkend="sid-4784983"/>
+        </para>
+      </listitem>
+    </itemizedlist>
+  </chapter>

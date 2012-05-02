@@ -1,0 +1,915 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="sid-4785050">
+    
+    <title>SNMP Adaptor Walkthrough</title>
+    <section id="sid-4785050_SNMPAdaptorWalkthrough-">
+      
+      <title>Description</title>
+      <para>
+        <emphasis role="color:#000000">The following sections will guide you on how to setup and test the various features of the adapter on a step by step like tutorial by showing you how to access your JMX Beans and expose them through SNMP. The popular</emphasis>
+        <ulink url="http://www.net-snmp.org/">net-snmp</ulink>
+        <emphasis role="color:#000000">will be used to show interoperability with the JBoss SNMP Adaptor.</emphasis>
+      </para>
+      <para>
+        <emphasis role="color:#000000">SNMPv1 specified five core protocol data units (PDUs). Two other PDUs,</emphasis>
+        <emphasis role="color:#000000">
+          <emphasis role="italics">GetBulkRequest</emphasis>
+        </emphasis>
+        <emphasis role="color:#000000">and</emphasis>
+        <emphasis role="color:#000000">
+          <emphasis role="italics">InformRequest</emphasis>
+        </emphasis>
+        <emphasis role="color:#000000">were added in SNMPv2 and carried over to SNMPv3.</emphasis>
+      </para>
+      <para>
+        <emphasis role="color:#000000">The seven SNMP protocol data units (PDUs) are as follows:</emphasis>
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis role="color:#000000">
+              <emphasis role="strong">Response</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000"/>
+            <emphasis role="color:#000000">Returns variable bindings and acknowledgement from agent to manager for below</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">GetRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">,</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">SetRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">,</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">GetNextRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">,</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">GetBulkRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">and</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">InformRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">. Error reporting is provided by</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">error-status</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">and</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">error-index</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">fields. Although it was used as a response to both gets and sets, this PDU was called</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">GetResponse</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">in SNMPv1.</emphasis>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="color:#000000">
+              <emphasis role="strong">GetRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">* *</emphasis>
+            <emphasis role="color:#000000">A manager-to-agent request to retrieve the value of a variable or list of variables.</emphasis>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="color:#000000">
+              <emphasis role="strong">SetRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">A manager-to-agent request to change the value of a variable or list of variables.</emphasis>
+          </para>
+        </listitem>
+      </itemizedlist>
+      <para>
+        <emphasis role="color:#000000">The 3 above PDUs are covered by</emphasis>
+        <link linkend="sid-4784932">Accessing JMX Beans Attributes (SNMP GET and SET)</link>
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis role="color:#000000">
+              <emphasis role="strong">GetNextRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000"/>
+            <emphasis role="color:#000000">A manager-to-agent request to discover available variables and their values. Returns a</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">Response</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">with variable binding for the lexicographically next variable in the MIB. The entire MIB of an agent can be walked by iterative application of</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">GetNextRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">starting at OID 0. Rows of a table can be read by specifying column OIDs in the variable bindings of the request.</emphasis>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="color:#000000">
+              <emphasis role="strong">GetBulkRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">Optimized version of</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">GetNextRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">. A manager-to-agent request for multiple iterations of</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">GetNextRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">. Returns a</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">Response</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">with multiple variable bindings walked from the variable binding or bindings in the request. PDU specific</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">non-repeaters</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">and</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">max-repetitions</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">fields are used to control response behavior.</emphasis>
+          </para>
+        </listitem>
+      </itemizedlist>
+      <para>
+        <emphasis role="color:#000000">The 2 above PDUs are covered by</emphasis>
+        <emphasis role="color:#000000">
+          <link linkend="sid-4784975">Accessing JMX wildcards or Beans Attributes as Tables (SNMP getnext, SNMP getbulk)</link>
+        </emphasis>
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis role="color:#000000">
+              <emphasis role="strong">Trap</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000"/>
+            <emphasis role="color:#000000">Asynchronous notification from agent to manager. Includes current</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">sysUpTime</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">value, an OID identifying the type of trap and optional variable bindings.</emphasis>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis role="color:#000000">
+              <emphasis role="strong">InformRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">* *</emphasis>
+            <emphasis role="color:#000000">Acknowledged asynchronous notification from manager to manager. This PDU uses the same format as the SNMPv2 version of</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">Trap</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">. Manager-to-manager notifications were already possible in SNMPv1 (using a</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">Trap</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">), but as SNMP commonly runs over UDP where delivery is not assured and dropped packets are not reported, delivery of a</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">Trap</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">was not guaranteed.</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">InformRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">fixes this by sending back an acknowledgement on receipt. Receiver replies with</emphasis>
+            <emphasis role="color:#000000">{_}Response _</emphasis>
+            <emphasis role="color:#000000">parroting all information in the</emphasis>
+            <emphasis role="color:#000000">
+              <emphasis role="italics">InformRequest</emphasis>
+            </emphasis>
+            <emphasis role="color:#000000">.</emphasis>
+          </para>
+        </listitem>
+      </itemizedlist>
+      <para>
+        <emphasis role="color:#000000">The 2 above PDUs are covered by</emphasis>
+        <xref linkend="sid-4784977"/>
+      </para>
+      <para>
+        <emphasis role="color:#000000">Included in the SNMP Adaptor is a way for a user to generate an SNMP MIB file based on already defined attributes.xml and notifications.xml, See</emphasis>
+        <xref linkend="sid-4784788"/>
+        <emphasis role="color:#000000">for more information.</emphasis>
+      </para>
+    </section>
+    <section id="sid-4785050_SNMPAdaptorWalkthrough-x">
+      
+      <title>SNMP set up and user configuration</title>
+      <para>
+        <emphasis role="color:#000000">To test the SNMP Adaptor, we will use v3 of the protocol as it is the current standard version of SNMP since 2004. Install Net-SNMP from</emphasis>
+        <emphasis role="color:#000000">
+          <ulink url="http://www.net-snmp.org/"/>
+        </emphasis>
+        <emphasis role="color:#000000">. The JBoss SNMP Adaptor provides a default set of users configured by default in its</emphasis>
+        <emphasis role="color:#000000">
+          <link linkend="sid-4784981">users configuration file</link>
+        </emphasis>
+        <emphasis role="color:#000000"/>
+      </para>
+      <para>This is the user that will be used throughout the walkthrough ﻿:</para>
+      <informalexample>
+        <programlisting>&lt;user&gt;
+    &lt;securityName&gt;TEST&lt;/securityName&gt;
+    &lt;authenticationProtocol&gt;MD5&lt;/authenticationProtocol&gt;
+    &lt;authenticationPassphrase&gt;maplesyrup&lt;/authenticationPassphrase&gt;
+    &lt;privacyProtocol&gt;DES&lt;/privacyProtocol&gt;
+    &lt;privacyPassphrase&gt;maplesyrup&lt;/privacyPassphrase&gt;
+  &lt;/user&gt;</programlisting>
+      </informalexample>
+      <para>The same user has to be configured on net-snmp so that net-snmp and JBoss SNMP Adaptor can communicate in a secure manner. Run the following command for a console</para>
+      <informalexample>
+        <programlisting>net-snmp-config --create-snmpv3-user -a maplesyrup TEST</programlisting>
+      </informalexample>
+      <para>
+        <emphasis role="italics">
+          Note: In linux, you will need to run it with root privileges through _
+          <emphasis role="strong"/>
+        </emphasis>
+        <emphasis role="strong">sudo{_}</emphasis>
+      </para>
+      <para>Issuing the above command should display the following output</para>
+      <para/>
+      <informalexample>
+        <programlisting>adding the following line to /var/lib/snmp/snmpd.conf:
+   createUser TEST MD5 "maplesyrup" DES
+adding the following line to /usr/share/snmp/snmpd.conf:
+   rwuser TEST</programlisting>
+      </informalexample>
+      <para>To be able to receive SNMP Traps or INFORM from a given user, snmptrapd configuration has to be modified :</para>
+      <informalexample>
+        <programlisting>sudo gedit /etc/snmp/snmptrapd.conf</programlisting>
+      </informalexample>
+      <para>And add the following</para>
+      <informalexample>
+        <programlisting>#User to receive TRAP
+createUser -e 0x80001370017F000101 TEST MD5 maplesyrup DES maplesyrup
+#User to receive INFORM
+createUser myuser MD5 password DES password
+#Those make snmptrapd log the TRAPs and INFORM to the console
+authUser log,execute,net TEST
+authUser log,execute,net myuser</programlisting>
+      </informalexample>
+      <para>
+        It is possible to make snmptrap display the name of the OID defined in the MIB of JBoss. More information can also be found in
+        <xref linkend="sid-4784788"/>
+      </para>
+      <para>Check the directory where the MIBs will be loaded from with the following command :</para>
+      <informalexample>
+        <programlisting>net-snmp-config --default-mibdirs</programlisting>
+      </informalexample>
+      <para>Edit the snmp.conf</para>
+      <informalexample>
+        <programlisting>sudo gedit /etc/snmp/snmp.conf</programlisting>
+      </informalexample>
+      <para>and add the following</para>
+      <informalexample>
+        <programlisting>#include all MIB
+mibs +ALL</programlisting>
+      </informalexample>
+      <para>Copy the MIB from JBoss Application Server to your user dir where the MIB will be loaded from</para>
+      <informalexample>
+        <programlisting>cp $JBOSS_HOME/server/default/deploy/snmp-adaptor.sar/attributes.mib /home/&lt;user&gt;/.snmp/mibs/</programlisting>
+      </informalexample>
+    </section>
+    <section id="sid-4785085">
+      
+      <title>Exposing your Application metrics through SNMP</title>
+      <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-Description">
+        
+        <title>Description</title>
+        <para>
+          The application attached herewith
+          <emphasis role="strong">
+            <ulink url="https://docs.jboss.org/author/download/attachments/4785085/snmp-servlet.zip?version=1&amp;modificationDate=1311864471000">snmp-servlet.zip</ulink>
+          </emphasis>
+          showcase a basic web application that provides a web page which displays a counter, each time the page is refreshed the counter is incremented. Alternatively, a message can be set through JMX that will display on the web page as well. The application also register a MBean providing the following set of monitoring information :
+        </para>
+        <itemizedlist>
+          <listitem>
+            <para>counter : the current value of the counter</para>
+          </listitem>
+          <listitem>
+            <para>message : allows to retrieve and set the value of the message that will be displayed on the page along with the counter</para>
+          </listitem>
+          <listitem>
+            <para>messageHistory : all the values that have been set since the application is running returned as a java.util.List&lt;String&gt;</para>
+          </listitem>
+          <listitem>
+            <para>messageHistoryAsArray : all the values that have been set since the application is running returned as a String array.</para>
+          </listitem>
+          <listitem>
+            <para>countHistory : all the values that have been displayed since the application is running returned as a primitive int array.</para>
+          </listitem>
+          <listitem>
+            <para>messageCountHistory : a Map which have as a key the message and as a value the corresponding counter value that was present when the message was set.</para>
+          </listitem>
+        </itemizedlist>
+        <para>The application also send will make use of the SNMP Agent MBean Service to send a SNMP trap on when the application is deployed.</para>
+        <para>All those information will be used for testing the different SNMP PDUs.</para>
+      </section>
+      <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-MappingApplicationJMXAttributesandNotificationstoSNMP">
+        
+        <title>Mapping Application JMX Attributes and Notifications to SNMP</title>
+        <para>
+          Similarly on how the
+          <xref linkend="sid-4784981"/>
+          allows to map the MBean and JMX Notifications from the JBoss Application Server and its components through the Attributes and Notifications configuration files, the
+          <xref linkend="sid-4784983"/>
+          will check for applications deployed within the JBoss Application Server if they contains either a snmp-attributes.xml file or a snmp-notifications.xml or both.
+        </para>
+        <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-TheAttributesconfigurationfile">
+          
+          <title>The Attributes configuration file</title>
+          <para>
+            It is located at META-INF/attributes.xml and have the exact same schema as
+            <xref linkend="sid-4785095"/>
+          </para>
+          <para>
+            The configuration file for the example attached is the following and describes the mapping between the MBean and its attributes defined in the
+            <emphasis role="strong">Description</emphasis>
+            section above :
+          </para>
+          <informalexample>
+            <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;attribute-mappings&gt;
+   &lt;mbean name="test.com:service=SnmpTest" oid-prefix=".1.3.6.1.4.1.2312.100.10.11"&gt;
+      &lt;attribute name="Message" oid=".1" mode="rw"/&gt;
+      &lt;attribute name="Count" oid=".2"/&gt;
+      &lt;attribute name="MessageHistory" oid=".3.1" table="true" mode="rw"/&gt;
+      &lt;attribute name="MessageHistoryAsArray" oid=".4.1" table="true" mode="rw"/&gt;
+      &lt;attribute name="CountHistory" oid=".5.1" table="true" mode="rw"/&gt;
+      &lt;attribute name="MessageCountHistory" oid=".6.1" table="true" mode="rw"/&gt;
+   &lt;/mbean&gt;
+&lt;/attribute-mappings&gt;</programlisting>
+          </informalexample>
+          <para>NOTE: OIDs used in example have been created "randomly" with RedHat OID prefix and example specific OID leafs!</para>
+        </section>
+        <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-TheNotificationsconfigurationfile">
+          
+          <title>The Notifications configuration file</title>
+          <para>
+            It is located at META-INF/notifications.xml and have the exact same schema as
+            <xref linkend="sid-4785099"/>
+          </para>
+          <para>
+            The configuration file for the example attached is the following and describes the mapping between the notification that will be sent in the
+            <emphasis role="strong">Description</emphasis>
+            section above :
+          </para>
+          <informalexample>
+            <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;notification-map-list&gt;   
+  &lt;mapping notification-type="snmp.servlet.test.coldstart" generic="6" specific="10" enterprise="1.3.6.1.4.1.2312.100.11" security-name="TEST"&gt;
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="u:startTime" oid="1.3.6.1.4.1.2312.100.10.11.1" type="OctetString"/&gt;      
+    &lt;/var-bind-list&gt;               
+  &lt;/mapping&gt;
+&lt;/notification-map-list&gt;</programlisting>
+          </informalexample>
+        </section>
+      </section>
+    </section>
+    <section id="sid-4784932">
+      
+      <title>Accessing JMX Beans Attributes</title>
+      <section id="sid-4784932_AccessingJMXBeansAttributes-Description">
+        
+        <title>Description</title>
+        <para>
+          <emphasis role="color:#000000">This section will guide through the GetRequest and SetRequest</emphasis>
+          <emphasis role="color:#000000">SNMP PDUs and how they map to JMX attributes and the JBoss SNMP Adaptor. Each of them will go through the scalar objects only (Long, AtomicLong, Boolean, AtomicBoolean, String, Integer, AtomicInteger) and tabular objects (java.util.List, java.util.Map and arrays the following primitive types int, long, boolean or same supported Object as for the scalar objects). net-snmp will act as a manager and JBoss Application Server SNMP Resource Adaptor as the Agent. The JBoss Application Server SNMP Adaptor is exposing out of the box a certain number of MBean and their attributes in</emphasis>
+          <xref linkend="sid-4785095"/>
+          <emphasis role="color:#000000">. The following MBean will be used as an example for scalar objects :</emphasis>
+        </para>
+        <informalexample>
+          <programlisting>&lt;!- system information group see RFC-1213 -&gt;
+   &lt;mbean name="jboss.jmx:name=SnmpAgent,service=MIB2SystemGroup" oid-prefix=".1.3.6.1.2.1.1"&gt;
+      &lt;attribute name="SysDescr" oid=".1" mode="rw"/&gt; &lt;!- can be modified over snmp as mode is rw -&gt;
+      &lt;attribute name="SysObjectId" oid=".2"/&gt;
+      &lt;attribute name="SysUpTime" oid=".3"/&gt;
+      &lt;attribute name="SysContact" oid=".4"/&gt;
+      &lt;attribute name="SysName" oid=".5"/&gt;
+      &lt;attribute name="SysLocation" oid=".6"/&gt;
+      &lt;attribute name="SysServices" oid=".7"/&gt;
+   &lt;/mbean&gt;</programlisting>
+        </informalexample>
+        <para>Make sure JBoss Application Server is started on 127.0.0.1 before trying the following commands. Please remember that the walkthrough is using the user TEST with password maplesyrup and that the SNMP Adaptor runs with the default configuration ie its agent will be listening on ip address 127.0.0.1 and port 1161</para>
+      </section>
+      <section id="sid-4784932_AccessingJMXBeansAttributes-ExposingaJMXAttributeasScalarObjectandreadingitsvaluethroughSNMPGetRequest">
+        
+        <title>Exposing a JMX Attribute as Scalar Object and reading its value through SNMP GetRequest</title>
+        <para>To Request the SysDescr attribute of the jboss.jmx:name=SnmpAgent,service=MIB2SystemGroup, the OID that has to be queried is the concatenation of the oid-prefix, the oid of the attribute and .0 as it is a scalar attribute so the following command should be issued</para>
+        <informalexample>
+          <programlisting>snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0</programlisting>
+        </informalexample>
+        <para>which will give the following output</para>
+        <informalexample>
+          <programlisting>iso.3.6.1.2.1.1.1.0 = STRING: "JBoss Application Server"</programlisting>
+        </informalexample>
+      </section>
+      <section id="sid-4784932_AccessingJMXBeansAttributes-ExposingaJMXAttributeasScalarObjectandsettingitsvaluethroughSNMPSetRequest">
+        
+        <title>Exposing a JMX Attribute as Scalar Object and setting its value through SNMP SetRequest</title>
+        <para>To Modify the SysDescr attribute of the jboss.jmx:name=SnmpAgent,service=MIB2SystemGroup, the OID that has to be queried is the concatenation of the oid-prefix, the oid of the attribute and .0 as it is a scalar attribute so the following command should be issued</para>
+        <informalexample>
+          <programlisting> snmpset -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0 s "JBoss Application Server Rocks"</programlisting>
+        </informalexample>
+        <para>which will give the following output</para>
+        <informalexample>
+          <programlisting>iso.3.6.1.2.1.1.1.0 = STRING: "JBoss Application Server Rocks"</programlisting>
+        </informalexample>
+      </section>
+      <section id="sid-4784932_AccessingJMXBeansAttributes-DiscoveringthenextOID%2FJMXAttributetoquerythroughSNMPGetNextRequest">
+        
+        <title>Discovering the next OID/JMX Attribute to query through SNMP GetNextRequest</title>
+        <para>
+          SNMP allows you to know what is the next OID to query through the
+          <emphasis role="strong">GetNextRequest</emphasis>
+          PDU. So to know what is the next attribute after SysDescr the following query should be issued :
+        </para>
+        <informalexample>
+          <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0</programlisting>
+        </informalexample>
+        <para>which will give the following output</para>
+        <informalexample>
+          <programlisting>iso.3.6.1.2.1.1.2.0 = OID: iso.3.6.1.4.1.2312.100.9.1.1.6</programlisting>
+        </informalexample>
+        <para>
+          Note that as opposed to the GetRequest PDU, the response does not contain the same OID as was in the query but the next OID along with its value, so through this command it is possible to iterate through the whole MIB. It is also very useful to iterate through table as will be shown in
+          <xref linkend="sid-4784975"/>
+        </para>
+      </section>
+    </section>
+    <section id="sid-4784975">
+      
+      <title>Accessing JMX Beans Attributes as Tables</title>
+      <section id="sid-4784975_AccessingJMXBeansAttributesasTables-Description">
+        
+        <title>Description</title>
+        <para>
+          <emphasis role="color:#000000">This section will guide through the GetRequest and SetRequest</emphasis>
+          <emphasis role="color:#000000">SNMP PDUs and how they map to JMX attributes and the JBoss SNMP Adaptor.</emphasis>
+          <emphasis role="color:#000000">Each of them will go through the tabular objects only (java.util.List, java.util.Map and arrays the following primitive types int, long, boolean or same supported Object as for the scalar objects).</emphasis>
+        </para>
+        <para>
+          <emphasis role="color:#000000">Both types of tabular object support by JBoss SNMP Adaptor will be used :</emphasis>
+        </para>
+        <itemizedlist>
+          <listitem>
+            <para>
+              <emphasis role="color:#000000">index based for arrays and java.util.List type of JMX Attributes</emphasis>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <emphasis role="color:#000000">key based for java.util.Map type of JMX attributes or to access mbean whose name is a wildcard which will return multiple MBeans to query as a table whose ObjectName will be the key.</emphasis>
+            </para>
+          </listitem>
+        </itemizedlist>
+        <para>
+          <emphasis role="color:#000000">For both types, the tabular object is comprised of 2 columns :</emphasis>
+        </para>
+        <itemizedlist>
+          <listitem>
+            <para>
+              <emphasis role="color:#000000">for arrays and java.util.List type of JMX Attributes, the first column will be the indexes and the second column will be the values</emphasis>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <emphasis role="color:#000000">for java.util.Map type of JMX attributes, the first column will be the keys and the second column will be the values (the SNMP Adaptor will make a copy of the keySet sorted alphabetically so that it can be displayed correctly)</emphasis>
+            </para>
+          </listitem>
+        </itemizedlist>
+        <para>
+          <emphasis role="color:#000000">net-snmp will act as a manager and JBoss Application Server SNMP Resource Adaptor as the Agent. The JBoss Application Server SNMP Adaptor is not exposing out of the box MBean attributes exposed as arrays, List or Map so we will use the sample application from</emphasis>
+          <emphasis role="color:#000000">
+            <xref linkend="sid-4785085"/>
+          </emphasis>
+          <emphasis role="color:#000000">. The following MBean will be used as an example :</emphasis>
+        </para>
+        <informalexample>
+          <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;attribute-mappings&gt;
+   &lt;mbean name="test.com:service=SnmpTest" oid-prefix=".1.3.6.1.4.1.2312.100.10.11"&gt;
+      &lt;attribute name="Message" oid=".1" mode="rw"/&gt;
+      &lt;attribute name="Count" oid=".2"/&gt;
+      &lt;attribute name="MessageHistory" oid=".3.1" table="true" mode="rw"/&gt;
+      &lt;attribute name="MessageHistoryAsArray" oid=".4.1" table="true" mode="rw"/&gt;
+      &lt;attribute name="CountHistory" oid=".5.1" table="true" mode="rw"/&gt;
+      &lt;attribute name="MessageCountHistory" oid=".6.1" table="true" mode="rw"/&gt;
+   &lt;/mbean&gt;
+&lt;/attribute-mappings&gt;</programlisting>
+        </informalexample>
+        <para>Notice that all attributes that will be exposed as table have the table attribute set to"true".</para>
+        <para>Also as compared to scalar objects, the OID for a tabular object is a bit different. Indeed in SNMP both the Tabular Object itself and its Row Entry (describing the columns of the tabular object) have a distinct OID. So as an example MessageHistory attribute, will have an OID for the table itself, .1.3.6.1.4.1.2312.100.10.11.3 and for its row entry describing the columns .1.3.6.1.4.1.2312.100.10.11.3.1, both being non writable whereas the table contents itself will be writable since mode is set to "rw".</para>
+        <para>
+          Make sure to deploy the snmp-servlet.war contained in the target directory of the snmp-servlet.zip from
+          <xref linkend="sid-4785085"/>
+          in the deploy directory of the JBoss Application Server profile that is currently running
+        </para>
+        <para>Then let's assume we set a message then refresh the pages 3 times, then set another message and refresh again 3 times.</para>
+      </section>
+      <section id="sid-4784975_AccessingJMXBeansAttributesasTables-IndexBasedTabularObjects">
+        
+        <title>Index Based Tabular Objects</title>
+        <para>MessageHistory Attribute is of type java.util.List&lt;String&gt; so is a Tabular Object index based that will be used for the following sub sections as an example.</para>
+        <section id="sid-4784975_AccessingJMXBeansAttributesasTables-ExposingaJMXAttributeasTabularObject%28IndexBased%29andreadingitsvaluethroughSNMPGetRequest">
+          
+          <title>Exposing a JMX Attribute as Tabular Object (Index Based) and reading its value through SNMP GetRequest</title>
+          <para>To read the first message that was set in MessageHistory, the query OID should be the concatenation of the oid prefix (.1.3.6.1.4.1.2312.100.10.11) + the MessageHistory OID (.3.1) + the value column (.2) + the index to retrieve the value from (.1) (remember that to access the index 0, .1 should be used because .0 are reserved for scalar objects) so the following command should be issued :</para>
+          <informalexample>
+            <programlisting>snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.1</programlisting>
+          </informalexample>
+          <para>which will give the following output</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.3.1.2.1 = STRING: "first message"</programlisting>
+          </informalexample>
+          <para>Then to get the second message, the following command should be issued</para>
+          <informalexample>
+            <programlisting>snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.2</programlisting>
+          </informalexample>
+          <para>which will give the following output</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.3.1.2.2 = STRING: "second message"</programlisting>
+          </informalexample>
+          <para>and so on in keeping increasing the last value until the index doesn't match anything.</para>
+          <informalexample>
+            <programlisting>snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.3</programlisting>
+          </informalexample>
+          <para>will give</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.3.1.2.3 = No Such Object available on this agent at this OID</programlisting>
+          </informalexample>
+          <para>
+            The other and standard way to find out the size of the table is to use
+            <emphasis role="strong">GetNextRequest</emphasis>
+            SNMP PDU, which is covered in another section of this page
+          </para>
+        </section>
+        <section id="sid-4784975_AccessingJMXBeansAttributesasTables-">
+          
+          <title>Exposing a JMX Attribute as Tabular Object (Index Based) and setting its value through SNMP SetRequest</title>
+          <para>To set a value in a tabular object that is index based the same principle is applied the query OID should be the concatenation of the oid prefix (.1.3.6.1.4.1.2312.100.10.11) + the MessageHistory OID (.3.1) + the value column (.2) + the index to retrieve the value from (.1) (remember that to access the index 0, .1 should be used because .0 are reserved for scalar objects) so the following command should be issued to modify the second message of the MessageHistory table</para>
+          <informalexample>
+            <programlisting>snmpset -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.2 s "overriding second message"</programlisting>
+          </informalexample>
+          <para>which will give the following output</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.3.1.2.2 = STRING: "overriding second message"</programlisting>
+          </informalexample>
+          <para>
+            <emphasis role="italics">Note: It is not currently possible to create or remove rows in a table through the JBoss SNMP Adaptor</emphasis>
+          </para>
+        </section>
+        <section id="sid-4784975_AccessingJMXBeansAttributesasTables-IteratingthroughaTabularObject%28IndexBased%29throughSNMPGetNextRequest">
+          
+          <title>Iterating through a Tabular Object (Index Based) through SNMP GetNextRequest</title>
+          <para>Rows of a table can be read by specifying column OIDs in the variable bindings of the request, so by specifying the table OID ie for MessageHistory table attribute the OID will be .1.3.6.1.4.1.2312.100.10.11.3.1, it is actually possible to iterate through the full table by issuing a set of GetNextRequest SNMP PDU. To iterate through the MessageHistory table the following commands should be issued :</para>
+          <informalexample>
+            <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1
+iso.3.6.1.4.1.2312.100.10.11.3.1.2.1 = STRING: "first message"</programlisting>
+          </informalexample>
+          <para>By querying the table OID, this gives us the first entry OID and value in the table, that can be used to get the next entry OID and value so the following command should be issued</para>
+          <informalexample>
+            <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.1
+iso.3.6.1.4.1.2312.100.10.11.3.1.2.2 = STRING: "overriding second message"</programlisting>
+          </informalexample>
+          <para>this gives us the second entry OID and value in the table, that can be used to get the next entry OID and value so the following command should be issued</para>
+          <informalexample>
+            <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.2
+iso.3.6.1.4.1.2312.100.10.11.4.1.2.1 = STRING: "first message"</programlisting>
+          </informalexample>
+          <para>notice how the OID jumped from attribute 3.1 (full OID queried was iso.3.6.1.4.1.2312.100.10.11.3.1.2.2) to 4.1 (full OID iso.3.6.1.4.1.2312.100.10.11.4.1.2.1) because there was no more rows in the table the GetNextRequest returned the next OID which happens to be the next attribute (MessageHistoryAsArray) which is also a tabular object (same content as MessageHistory but returned as String array)</para>
+        </section>
+        <section id="sid-4784975_AccessingJMXBeansAttributesasTables-IteratingthroughaTabularObject%28IndexBased%29throughSNMPGetBulkRequest">
+          
+          <title>Iterating through a Tabular Object (Index Based) through SNMP GetBulkRequest</title>
+          <para>The GetBulkRequest was introduced in SNMP version 2 because iterating through a table with GetNext proved to be tedious and inefficient. So GetBulkRequest was introduced to allow fetching a table completely with one request instead of multiple GetNext requests. So to iterate through the MessageHistory table the following command should be issued :</para>
+          <informalexample>
+            <programlisting>snmpbulkget -v 3 -Cr2 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1</programlisting>
+          </informalexample>
+          <para>which give the following output</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.3.1.2.1 = STRING: "first message"
+iso.3.6.1.4.1.2312.100.10.11.3.1.2.2 = STRING: "overriding second message"</programlisting>
+          </informalexample>
+        </section>
+      </section>
+      <section id="sid-4784975_AccessingJMXBeansAttributesasTables-KeyBasedTabularObjects">
+        
+        <title>Key Based Tabular Objects</title>
+        <para>MessageCountHistory Attribute is of type java.util.Map&lt;String, Integer&gt; so is a Tabular Object key based that will be used for the following sub sections as an example.</para>
+        <section id="sid-4784975_AccessingJMXBeansAttributesasTables-IteratingthroughaTabularObject%28KeyBased%29throughSNMPGetNextRequest">
+          
+          <title>Iterating through a Tabular Object (Key Based) through SNMP GetNextRequest</title>
+          <para>As opposed to an index based Tabular Object, there is no index to iterate through for the rows of a table, so there is no way to issue a GetRequest PDU directly except if the table contents is already known to the querier. So as for index based tabular objects by specifying the table OID ie for MessageCountHistory table attribute the OID will be .1.3.6.1.4.1.2312.100.10.11.6.1, it is actually possible to iterate through the full table by issuing a set of GetNextRequest SNMP PDU. To iterate through the MessageCountHistory table the following commands should be issued :</para>
+          <informalexample>
+            <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.6.1</programlisting>
+          </informalexample>
+          <para>which gives the following output :</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.6.1.2.102.105.114.115.116.32.109.101.115.115.97.103.101 = INTEGER: 3</programlisting>
+          </informalexample>
+          <para>The interesting thing to notice here  is the OID given back in response. The OID is a concatenation of the table entry OID (.1.3.6.1.4.1.2312.100.10.11.6.1) and of the ASN.1 representation of the first entry key of the java.util.Map MessageCountHistory attribute (ie "first message"), to get the next key of the map, the OID of the response has to be used just like for regular index based tabular objects so to get the next entry OID and value the following command should be issue</para>
+          <informalexample>
+            <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.6.1.2.102.105.114.115.116.32.109.101.115.115.97.103.101</programlisting>
+          </informalexample>
+          <para>which gives the following output :</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.6.1.2.115.101.99.111.110.100.32.109.101.115.115.97.103.101 = INTEGER: 6</programlisting>
+          </informalexample>
+          <para>Again the OID is a concatenation of the table entry OID (.1.3.6.1.4.1.2312.100.10.11.6.1) and of the ASN.1 representation of the second entry key of the java.util.Map MessageCountHistory attribute (ie "second message"). And so on to iterate through the whole table.</para>
+        </section>
+        <section id="sid-4784975_AccessingJMXBeansAttributesasTables-IteratingthroughaTabularObject%28KeyBased%29throughSNMPGetBulkRequest">
+          
+          <title>Iterating through a Tabular Object (Key Based) through SNMP GetBulkRequest</title>
+          <para>The GetBulkRequest was introduced in SNMP version 2 because iterating through a table with GetNext proved to be tedious and inefficient. So GetBulkRequest was introduced to allow fetching a table completely with one request instead of multiple GetNext requests. So to iterate through the MessageHistory table the following command should be issued :</para>
+          <informalexample>
+            <programlisting>snmpbulkget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.6.1</programlisting>
+          </informalexample>
+          <para>which give the following output</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.6.1.2.102.105.114.115.116.32.109.101.115.115.97.103.101 = INTEGER: 3
+iso.3.6.1.4.1.2312.100.10.11.6.1.2.115.101.99.111.110.100.32.109.101.115.115.97.103.101 = INTEGER: 6</programlisting>
+          </informalexample>
+        </section>
+        <section id="sid-4784975_AccessingJMXBeansAttributesasTables-x">
+          
+          <title>Exposing a JMX Attribute as Tabular Object (Key Based) and reading its value through SNMP GetRequest</title>
+          <para>Now that the OID of the rows of the key based table are known, they can be read by querying the OID that should be the concatenation of the oid prefix (.1.3.6.1.4.1.2312.100.10.11) + the MessageCountHistory OID (6.1) + the value column (.2) + the ASN.1 representation of the key of the table whose value wants to be retrieved so for retrieving the "first message" corresponding value in the Map the following command should be issued :</para>
+          <informalexample>
+            <programlisting>snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.6.1.2.102.105.114.115.116.32.109.101.115.115.97.103.101</programlisting>
+          </informalexample>
+          <para>which will give the following output</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.6.1.2.102.105.114.115.116.32.109.101.115.115.97.103.101 = INTEGER: 3</programlisting>
+          </informalexample>
+        </section>
+        <section id="sid-4784975_AccessingJMXBeansAttributesasTables-xx">
+          
+          <title>Exposing a JMX Attribute as Tabular Object (Key Based) and setting its value through SNMP SetRequest</title>
+          <para>Now that the OID of the rows of the key based table are known, they can be set by querying the OID that should be the concatenation of the oid prefix (.1.3.6.1.4.1.2312.100.10.11) + the MessageCountHistory OID (6.1) + the value column (.2) + the ASN.1 representation of the key of the table whose value wants to be set so for changing the "first message" corresponding value in the Map the following command should be issued :</para>
+          <informalexample>
+            <programlisting>snmpset -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.6.1.2.102.105.114.115.116.32.109.101.115.115.97.103.101 i 69</programlisting>
+          </informalexample>
+          <para>which will give the following output</para>
+          <informalexample>
+            <programlisting>iso.3.6.1.4.1.2312.100.10.11.6.1.2.102.105.114.115.116.32.109.101.115.115.97.103.101 = INTEGER: 69</programlisting>
+          </informalexample>
+          <para>
+            <emphasis role="italics">Note: It is not currently possible to create or remove rows in a table through the JBoss SNMP Adaptor</emphasis>
+          </para>
+        </section>
+      </section>
+    </section>
+    <section id="sid-4785173">
+      
+      <title>Accessing JMX Wildcard as a Table</title>
+      <para>
+        The JBoss SNMP Adaptor allows for the
+        <xref linkend="sid-4785095"/>
+        to specify in the MBean
+        <emphasis role="strong">name</emphasis>
+        a mbean query by using wildcards to get back a list of MBean which can be particularly useful for Web Applications by example as shown below :
+      </para>
+      <informalexample>
+        <programlisting>&lt;!- Web Apps -&gt;
+   &lt;mbean name="jboss.web:host=localhost,path=/*,type=Manager" oid-prefix=".1.3.6.1.4.1.2312.100.1.1.12.1"&gt;
+      &lt;attribute name="distributable" oid=".1"/&gt;
+      &lt;attribute name="sessionCounter" oid=".2"/&gt;
+      &lt;attribute name="activeSessions" oid=".3"/&gt;
+      &lt;attribute name="maxActiveSessions" oid=".4" mode="rw"/&gt;
+      &lt;attribute name="sessionAverageAliveTime" oid=".5"/&gt;      
+      &lt;attribute name="expiredSessions" oid=".6"/&gt;      
+      &lt;attribute name="rejectedSessions" oid=".7"/&gt;
+      &lt;attribute name="maxInactiveInterval" oid=".8"/&gt;
+      &lt;attribute name="sessionMaxAliveTime" oid=".9"/&gt;                  
+   &lt;/mbean&gt;</programlisting>
+      </informalexample>
+      <para>
+        Here the JBoss SNMP Adaptor will detect that the mbean name is a query and will return this as a Key Based Tabular Object (See
+        <xref linkend="sid-4784975"/>
+        ) whose key will be the ASN.1 representation of the ObjectName of the MBean itself.
+      </para>
+      <para>So to check all web applications deployed in the JBoss Web Container, the following commands should be issued :</para>
+      <informalexample>
+        <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.1.1.12.1</programlisting>
+      </informalexample>
+      <para>which gives the following output :</para>
+      <informalexample>
+        <programlisting>iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0</programlisting>
+      </informalexample>
+      <para>
+        The OID is the concatenation of the OID prefix (.1.3.6.1.4.1.2312.100.1.1.12.1), first attribute (
+        <emphasis role="strong">distributable</emphasis>
+        , .2) and the ASN.1 representation of the following web application ObjectName "jboss.web:type=Manager,path=/,host=localhost"
+      </para>
+      <para>
+        <emphasis role="strong">Important Note: SNMP don't iterate through a full row before moving to the next one, it rather do it by column so keeping on the same attribute until all rows have been iterated before moving to the next attribute</emphasis>
+      </para>
+      <para>From the important note above it means that querying with GetNextRequest PDU will give you the same distributable attribute but for the next application :</para>
+      <informalexample>
+        <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116</programlisting>
+      </informalexample>
+      <para>which gives the following output</para>
+      <informalexample>
+        <programlisting>iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0</programlisting>
+      </informalexample>
+      <para>
+        The OID is the concatenation of the OID prefix (.1.3.6.1.4.1.2312.100.1.1.12.1), first attribute (
+        <emphasis role="strong">distributable</emphasis>
+        , .2) and the ASN.1 representation of the following web application ObjectName "jboss.web:type=Manager,path=/admin-console,host=localhost"
+      </para>
+      <para>and you can keep on going until the last row (application) for this attribute :</para>
+      <informalexample>
+        <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116</programlisting>
+      </informalexample>
+      <para>which gives the following output</para>
+      <informalexample>
+        <programlisting>iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116</programlisting>
+      </informalexample>
+      <para>
+        Notice the beginning of the OID iso.3.6.1.4.1.2312.100.1.1.12.1*.3* ends with .3 which means that it has reach the second column (
+        <emphasis role="strong">sessionCounter</emphasis>
+        attribute). And continue until the end of the table
+      </para>
+      <para>To read the full table, it is possible to issue the following command which sends the next GetNextRequest PDU automatically until it has reached the end of the table</para>
+      <informalexample>
+        <programlisting>snmpwalk -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.1.1.12.1</programlisting>
+      </informalexample>
+      <para>which gives the following output (full table)</para>
+      <para>
+        <emphasis role="italics">Note : to make it more readable use the</emphasis>
+        <emphasis role="italics">
+          <xref linkend="sid-4784788"/>
+        </emphasis>
+        _ and load the default JBoss MIB into Net-SNMP_
+      </para>
+      <informalexample>
+        <programlisting>iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.105.110.118.111.107.101.114.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.98.111.115.115.119.115.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.109.120.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.105.112.45.115.101.114.118.108.101.116.115.45.109.97.110.97.103.101.109.101.110.116.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.110.109.112.45.115.101.114.118.108.101.116.45.53.46.49.46.48.46.71.65.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.105.110.118.111.107.101.114.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.98.111.115.115.119.115.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.109.120.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.105.112.45.115.101.114.118.108.101.116.115.45.109.97.110.97.103.101.109.101.110.116.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.110.109.112.45.115.101.114.118.108.101.116.45.53.46.49.46.48.46.71.65.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.4.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.4.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.4.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.105.110.118.111.107.101.114.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.4.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.98.111.115.115.119.115.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.4.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.109.120.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.4.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.105.112.45.115.101.114.118.108.101.116.115.45.109.97.110.97.103.101.109.101.110.116.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.4.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.110.109.112.45.115.101.114.118.108.101.116.45.53.46.49.46.48.46.71.65.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.4.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.5.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: -1
+iso.3.6.1.4.1.2312.100.1.1.12.1.5.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: -1
+iso.3.6.1.4.1.2312.100.1.1.12.1.5.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.105.110.118.111.107.101.114.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: -1
+iso.3.6.1.4.1.2312.100.1.1.12.1.5.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.98.111.115.115.119.115.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: -1
+iso.3.6.1.4.1.2312.100.1.1.12.1.5.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.109.120.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: -1
+iso.3.6.1.4.1.2312.100.1.1.12.1.5.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.105.112.45.115.101.114.118.108.101.116.115.45.109.97.110.97.103.101.109.101.110.116.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: -1
+iso.3.6.1.4.1.2312.100.1.1.12.1.5.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.110.109.112.45.115.101.114.118.108.101.116.45.53.46.49.46.48.46.71.65.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: -1
+iso.3.6.1.4.1.2312.100.1.1.12.1.5.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: -1
+iso.3.6.1.4.1.2312.100.1.1.12.1.6.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.6.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.6.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.105.110.118.111.107.101.114.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.6.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.98.111.115.115.119.115.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.6.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.109.120.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.6.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.105.112.45.115.101.114.118.108.101.116.115.45.109.97.110.97.103.101.109.101.110.116.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.6.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.110.109.112.45.115.101.114.118.108.101.116.45.53.46.49.46.48.46.71.65.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.6.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.7.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.7.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.7.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.105.110.118.111.107.101.114.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.7.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.98.111.115.115.119.115.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.7.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.109.120.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.7.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.105.112.45.115.101.114.118.108.101.116.115.45.109.97.110.97.103.101.109.101.110.116.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.7.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.110.109.112.45.115.101.114.118.108.101.116.45.53.46.49.46.48.46.71.65.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.7.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.8.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.8.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.8.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.105.110.118.111.107.101.114.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.8.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.98.111.115.115.119.115.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.8.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.109.120.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.8.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.105.112.45.115.101.114.118.108.101.116.115.45.109.97.110.97.103.101.109.101.110.116.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.8.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.110.109.112.45.115.101.114.118.108.101.116.45.53.46.49.46.48.46.71.65.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.8.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.9.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 1800
+iso.3.6.1.4.1.2312.100.1.1.12.1.9.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 1800
+iso.3.6.1.4.1.2312.100.1.1.12.1.9.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.105.110.118.111.107.101.114.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 1800
+iso.3.6.1.4.1.2312.100.1.1.12.1.9.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.98.111.115.115.119.115.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 1800
+iso.3.6.1.4.1.2312.100.1.1.12.1.9.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.109.120.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 1800
+iso.3.6.1.4.1.2312.100.1.1.12.1.9.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.105.112.45.115.101.114.118.108.101.116.115.45.109.97.110.97.103.101.109.101.110.116.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 1800
+iso.3.6.1.4.1.2312.100.1.1.12.1.9.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.110.109.112.45.115.101.114.118.108.101.116.45.53.46.49.46.48.46.71.65.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 1800
+iso.3.6.1.4.1.2312.100.1.1.12.1.9.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 1800
+iso.3.6.1.4.1.2312.100.1.1.12.1.10.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.10.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.10.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.105.110.118.111.107.101.114.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.10.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.98.111.115.115.119.115.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.10.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.106.109.120.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.10.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.105.112.45.115.101.114.118.108.101.116.115.45.109.97.110.97.103.101.109.101.110.116.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.10.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.115.110.109.112.45.115.101.114.118.108.101.116.45.53.46.49.46.48.46.71.65.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+iso.3.6.1.4.1.2312.100.1.1.12.1.10.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0</programlisting>
+      </informalexample>
+    </section>
+    <section id="sid-4784977">
+      
+      <title>Sending JMX Notifications as SNMP Traps (or INFORMs)</title>
+      <section id="sid-4784977_SendingJMXNotificationsasSNMPTraps%28orINFORMs%29-SendingSNMPTrapfromJBossApplicationServer">
+        
+        <title>Sending SNMP Trap from JBoss Application Server</title>
+        <para>
+          When started the SNMP Adaptor sends a JMX Notification that is converted into an SNMP Trap, here is the excerpt of the
+          <xref linkend="sid-4785099"/>
+          that is doing the conversion
+        </para>
+        <informalexample>
+          <programlisting> &lt;mapping notification-type="jboss.snmp.agent.coldstart" generic="0" specific="0" enterprise="1.2.3.4.5.6.7" inform="false" security-name="TEST"&gt;    
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="a:startTime" oid="1.2.3.4.5.6.7.9"/&gt;
+      &lt;var-bind tag="a:trapCount" oid="1.2.3.4.5.6.7.6"/&gt;      
+    &lt;/var-bind-list&gt;               
+  &lt;/mapping&gt;</programlisting>
+        </informalexample>
+        <para>
+          When a JMX Notification is sent through JBoss Application Server, the SNMP Adaptor converts it with the
+          <xref linkend="sid-4785099"/>
+          then the SNMP Trap (or INFORM if the
+          <emphasis role="strong">inform</emphasis>
+          attribute is set to
+          <emphasis role="strong">"true"</emphasis>
+          ) will be sent to each Manager defined in
+          <xref linkend="sid-4785104"/>
+        </para>
+        <para>To test the reception of SNMP Trap, the snmptrap daemon needs to be started with the following command :</para>
+        <informalexample>
+          <programlisting>sudo snmptrapd -f -Lo</programlisting>
+        </informalexample>
+        <para>
+          The following option
+          <emphasis role="strong">-Dusm</emphasis>
+          can be added to the above command for debugging user negotiation
+        </para>
+        <para>Then when JBoss Application Server has been started, the following output can be seen on the console where snmptrapd was started</para>
+        <informalexample>
+          <programlisting>2011-07-12 22:18:19 localhost.localdomain \[UDP: \[127.0.0.1\]:1161-&gt;\[127.0.0.1\]\]:
+iso.3.6.1.2.1.1.3.0 = Timeticks: (35) 0:00:00.35 iso.3.6.1.6.3.1.1.4.1.0 = OID: iso.2.3.4.5.6.7.0.0 iso.2.3.4.5.6.7.9 = STRING: "Tue Jul 12 22:18:18 CEST 2011" iso.2.3.4.5.6.7.6 = STRING: "0"</programlisting>
+        </informalexample>
+      </section>
+      <section id="sid-4784977_SendingJMXNotificationsasSNMPTraps%28orINFORMs%29-SendingSNMPTrapfromyourapplication">
+        
+        <title>Sending SNMP Trap from your application</title>
+        <para>
+          <xref linkend="sid-4785085"/>
+          details and provide the source code on how an application can use the same mechanism to send JMX Notifications that get converted to a SNMP Notification then sent out through the Managers defined in
+          <xref linkend="sid-4785104"/>
+        </para>
+        <para>
+          When started the application attached in
+          <xref linkend="sid-4785085"/>
+          sends a JMX Notification that is converted into an SNMP Trap, here is the excerpt of the
+          <xref linkend="sid-4785099"/>
+          that is doing the conversion from the JMX Notification sent by the application on startup to the SNMP Notification that is sent out
+        </para>
+        <informalexample>
+          <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;notification-map-list&gt;
+  &lt;mapping notification-type="snmp.servlet.test.coldstart" generic="6" specific="10" enterprise="1.3.6.1.4.1.2312.100" security-name="TEST"&gt;
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="u:startTime" oid="1.3.6.1.4.1.2312.100.10.1" type="OctetString"/&gt;
+    &lt;/var-bind-list&gt;
+  &lt;/mapping&gt;
+&lt;/notification-map-list&gt;</programlisting>
+        </informalexample>
+        <para>To test the reception of SNMP Trap, the snmptrap daemon needs to be started with the following command :</para>
+        <informalexample>
+          <programlisting>sudo snmptrapd -f -Lo</programlisting>
+        </informalexample>
+        <para>
+          The following option
+          <emphasis role="strong">-Dusm</emphasis>
+          can be added to the above command for debugging user negotiation
+        </para>
+        <para>Then when the application has been started, the following output can be seen on the console where snmptrapd was started</para>
+        <informalexample>
+          <programlisting>2011-07-12 22:18:32 localhost.localdomain [UDP: [127.0.0.1]:1161-&gt;[127.0.0.1]]:
+iso.3.6.1.2.1.1.3.0 = Timeticks: (14526) 0:02:25.26 iso.3.6.1.6.3.1.1.4.1.0 = OID: iso.3.6.1.4.1.2312.100.0.10 iso.3.6.1.4.1.2312.100.10.1 = STRING: "Tue Jul 12 22:18:32 CEST 2011"</programlisting>
+        </informalexample>
+      </section>
+    </section>
+  </chapter>

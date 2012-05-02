@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="sid-4588087_SNMPAdaptor-GeneralInformation">
+    
+    <title>General Information</title>
+    <para>
+      <emphasis role="color:#000000">
+        <emphasis role="strong">Simple Network Management Protocol (SNMP)</emphasis>
+      </emphasis>
+      <emphasis role="color:#000000">is the most popular network management protocol in the TCP/IP protocol suite, using a simple request/response protocol that communicates management information about the configuration and status of nodes between two types of SNMP software entities: SNMP applications, also called</emphasis>
+      <emphasis role="color:#000000">
+        <emphasis role="strong">SNMP managers</emphasis>
+      </emphasis>
+      <emphasis role="color:#000000">and</emphasis>
+      <emphasis role="color:#000000">
+        <emphasis role="strong">SNMP agents</emphasis>
+      </emphasis>
+      <emphasis role="color:#000000">.</emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">Essentially, SNMP agents expose management data on the managed systems as variables. The protocol also permits active management tasks, such as modifying and applying a new configuration through remote modification of these variables. The variables accessible via SNMP are organized in hierarchies.</emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">SNMP itself does not define which information (which variables) a managed system should offer. Rather, SNMP uses an extensible design, where the available information and other metadata (such as type and description of the variable) is described by</emphasis>
+      <emphasis role="color:#000000">
+        <emphasis role="strong">Management Information Bases (MIBs)</emphasis>
+      </emphasis>
+      <emphasis role="color:#000000">. MIBs describe the structure of the management data of a device subsystem</emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">Objects in the MIB are defined using a subset of Abstract Syntax Notation One (</emphasis>
+      <emphasis role="color:#000000">
+        <emphasis role="strong">ASN.1</emphasis>
+      </emphasis>
+      <emphasis role="color:#000000">) called "Structure of Management Information Version 2 (SMIv2)"</emphasis>
+      <ulink url="http://tools.ietf.org/html/rfc2578">RFC 2578</ulink>
+      <emphasis role="color:#000000">.</emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">The MIB is hierarchical (</emphasis>
+      <emphasis role="color:#000000">
+        <emphasis role="strong">tree-structured</emphasis>
+      </emphasis>
+      <emphasis role="color:#000000">) and entries are addressed through</emphasis>
+      <emphasis role="color:#000000">object identifiers or</emphasis>
+      <emphasis role="color:#000000">{*}OID. *</emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">The IANA OID registry contains a list of registered entities that use OIDs to reference internal structures (e.g. directory attributes). Each entity is assigned an initial referential value (e.g. 1.3.6.1.4.1.2312 for Red Hat, see</emphasis>
+      <ulink url="http://www.oid-info.com/get/1.3.6.1.4.1.2312"/>
+      <emphasis role="color:#000000">) and thereafter the internal numbering plan is up to the entity to define (e.g. 1.3.6.1.4.1.2312.100.1.1 might refer to the "ActiveThreadCount" attribute of the JBoss Application Sever). This allows for precise referencing of data attributes in a company or other entity. See diagram below representing the JBoss Application Server hierarchy</emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">A managed object (sometimes called a MIB object, an object, or a MIB) is one of any number of specific characteristics of a managed device. Managed objects are made up of one or more object instances (identified by their OIDs), which are essentially variables.</emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">Object identifiers (OID) uniquely identifies managed objects in the MIB hierarchy.</emphasis>
+    </para>
+    <figure>
+<title>TODO InformalFigure image title empty</title>
+      <mediaobject>
+        <imageobject>
+		  <imagedata align="center" fileref="images/SNMP_JBOSS_MIB_Hierarchy.png" format="PNG"/>
+        </imageobject>
+      </mediaobject>
+    </figure>
+    <para>
+      <emphasis role="color:#000000">To obtain values of objects from the manager, it is necessary to specify the instance of the object. The instance of an object is specified by appending an instance index to the object identifier, by example for ActiveThreadCount attribute of the JBoss Application Server the OID to query would be 1.3.6.1.4.1.2312.100.1.1.0.</emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">Two types of managed objects exist:</emphasis>
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          <emphasis role="color:#000000">{*}Scalar object *</emphasis>
+          <emphasis role="color:#000000">A Scalar Object defines a single object instance. A scalar object by definition has only one instance as opposed to a table. Therefore, an instance index of zero is always specified when retrieving the value of a scalar object. An instance index higher than 0 can only be used in the case of tabular objects, which can have multiple instances.</emphasis>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <emphasis role="color:#000000">{*}Tabular object *</emphasis>
+          <emphasis role="color:#000000">A Tabular Object defines multiple related object instances that are grouped in MIB tables. The JBoss SNMP Adaptor uses two types of ways to access values in a table :</emphasis>
+        </para>
+        <itemizedlist>
+          <listitem>
+            <para>
+              <emphasis role="color:#000000">a separate index column for tabular objects that represents arrays and java.util.List since they are indexed, but to query the Java index that starts at 0 in an array or List, it will start at index .1 for SNMP as .0 is reserved for scalar objects</emphasis>
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              <emphasis role="color:#000000">For tabular objects whose type is a java.util.Map or a wildcard used in a MBean, the index column will be named as per the key of the data in the row.</emphasis>
+            </para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </chapter>

@@ -58,7 +58,9 @@
 				      		<version>1.1.0.FINAL</version>
 				    	</dependency>
 				</dependencies>
-				<configuration>					
+
+				<configuration>			
+				<!--				
 					<sourceDocumentName>SIP_Servlets_Server_User_Guide.xml</sourceDocumentName>
 					<sourceDirectory>${project.build.directory}/docbook/resources</sourceDirectory>
 					<imageResource>
@@ -67,12 +69,24 @@
 							<include>images/*</include>
 						</includes>
 					</imageResource>
+			-->
+			
+			<sourceDocumentName>SNMP_Adaptor.xml</sourceDocumentName>
+					<sourceDirectory>${project.build.directory}/../</sourceDirectory>
+					<imageResource>
+						<directory>${project.build.directory}/../en-US</directory>
+						<includes>
+							<include>images/*</include>
+						</includes>
+					</imageResource>
+			
+			
 					<formats>
-						<format>
+						<!--<format>
 							<formatName>pdf</formatName>
 							<stylesheetResource>classpath:/xslt/org/jboss/pdf.xsl</stylesheetResource>
 							<finalName>SIP_Servlets_Server_User_Guide.pdf</finalName>
-						</format>
+						</format> -->
 						<format>
 							<formatName>html</formatName>
 							<stylesheetResource>classpath:/xslt/org/jboss/xhtml.xsl</stylesheetResource>

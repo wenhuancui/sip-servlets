@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="sid-4784983">
+    
+    <title>The SNMP Adaptor JBoss Deployer</title>
+    <section id="sid-4784983_TheSNMPAdaptorJBossDeployer-Location">
+      
+      <title>Location</title>
+      <para>The SNMP Adaptor Deployer is located in $JBOSS_HOME/server/&lt;profile&gt;/deployers/snmp.deployer</para>
+    </section>
+    <section id="sid-4784983_TheSNMPAdaptorJBossDeployer-Installation">
+      
+      <title>Installation</title>
+      <para>
+        Extract the file
+        <ulink url="https://docs.jboss.org/author/download/attachments/4784983/snmp.deployer.zip?version=1&amp;modificationDate=1311864578000">snmp.deployer.zip</ulink>
+        to
+        <code>$JBOSS_HOME/server/&lt;profile&gt;/deployers</code>
+      </para>
+    </section>
+    <section id="sid-4784983_TheSNMPAdaptorJBossDeployer-Responsibilities">
+      
+      <title>Responsibilities</title>
+      <para>The SNMP Adaptor Deployer dynamically looks for snmp-attributes.xml and snmp-notifications.xml files in any applications deployed within JBoss Application Server and register the notifications, attributes and their JMX mapping with the SNMP Adaptor JBoss Service.</para>
+      <section id="sid-4784983_TheSNMPAdaptorJBossDeployer-">
+        
+        <title/>
+      </section>
+    </section>
+  </chapter>

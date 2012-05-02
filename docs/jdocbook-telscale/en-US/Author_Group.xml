@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE authorgroup PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<authorgroup>
+
+  <author>
+    <firstname>Bartosz</firstname>
+    <surname>Baranowski</surname>
+    <email>baranowb@gmail.com</email>
+  </author>
+  <author>
+    <firstname>Jean</firstname>
+    <surname>Deruelle</surname>
+    <email>jean.deruelle@gmail.com</email>
+  </author>
+  <author>
+    <firstname>Thomas</firstname>
+    <surname>Hauser</surname>
+    <email>thauser@redhat.com</email>
+  </author>
+</authorgroup>
