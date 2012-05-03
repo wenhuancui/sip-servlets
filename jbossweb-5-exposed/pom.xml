@@ -65,9 +65,10 @@
 		</repository>
 	</repositories>
 
-  <scm>  			
-  	<connection>scm:svn:https://mobicents.googlecode.com/svn/branches/jbcp/5.1.1_HF/jbossweb-5-exposed</connection>
-  	<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/branches/jbcp/5.1.1_HF/jbossweb-5-exposed</developerConnection>
-  	<url>http://mobicents.googlecode.com/svn/branches/jbcp/5.1.1_HF/jbossweb-5-exposed</url>
+ <scm>  			
+  	<connection>scm:svn:https://mobicents.googlecode.com/svn/branches/jbcp/5.1.x/jbossweb-5-exposed</connection>
+  	<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/branches/jbcp/5.1.x/jbossweb-5-exposed</developerConnection>
+  	<url>http://mobicents.googlecode.com/svn/branches/jbcp/5.1.x/jbossweb-5-exposed</url>
   </scm>
+  
 </project>
