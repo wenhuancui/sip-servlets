@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.redhat.jbcp</groupId>
 		<artifactId>jbossweb-5-exposed</artifactId>
-		<version>1.1-SNAPSHOT</version>
+		<version>5.1.4.GA-JBCP5_1</version>
 	</parent>
 		
 	<artifactId>jbossweb-5-exposed-jbossweb.sar</artifactId>
