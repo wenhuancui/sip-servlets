@@ -46,8 +46,8 @@
 		<ant.version>1.6.5</ant.version>
 		
 		
-		<jain-sip-api.version>1.2</jain-sip-api.version>
-		<jain-sip-ri.version>${jain-sip-api.version}.167</jain-sip-ri.version>
+		<jain-sip-api.version>1.2.166.1_JBCP5_1</jain-sip-api.version>
+		<jain-sip-ri.version>1.2.166.1_JBCP5_1</jain-sip-ri.version>
 		
 		<jain-mgcp.version>1.0</jain-mgcp.version>
 		<jcc.version>1.1</jcc.version>				
