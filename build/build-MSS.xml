@@ -151,6 +151,9 @@
 				</antcall>
 			</sequential>
 		</for>
+		<antcall target="clean-jbcp-post-build">
+			<param name="jboss.home" value="${release.dir}/jboss-eap-5.1/jboss-as"/>
+		</antcall>
 		<antcall target="zip-release"/>
 	</target>
 
