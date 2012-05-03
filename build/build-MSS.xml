@@ -560,8 +560,8 @@
 	
 	<target name="copy-jbossweb-5-exposed-libs">
 		<echo>Copying signed JBoss Web 5 Exposed Libs</echo>		
-		<copy overwrite="true" verbose="true" file="${ant.file.jbcp.platform.release}/../lib/jbossweb-5-exposed-common-lib-1.0.0-SNAPSHOT.jar" todir="${jboss.home}/common/lib" />
-		<copy overwrite="true" verbose="true" file="${ant.file.jbcp.platform.release}/../lib/jbossweb-5-exposed-jbossweb.sar-1.0.0-SNAPSHOT.jar" todir="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar" />
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp.platform.release}/../lib/jbossweb-5-exposed-common-lib-1.0.jar" todir="${jboss.home}/common/lib" />
+		<copy overwrite="true" verbose="true" file="${ant.file.jbcp.platform.release}/../lib/jbossweb-5-exposed-jbossweb.sar-1.0.jar" todir="${jboss.home}/server/${jboss.node}/deploy/jbossweb.sar" />
 	</target>
 	
 </project>
