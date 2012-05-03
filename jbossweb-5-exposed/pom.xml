@@ -10,7 +10,7 @@
 		
 	<groupId>com.redhat.jbcp</groupId>
 	<artifactId>jbossweb-5-exposed</artifactId>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	
@@ -66,9 +66,9 @@
 	</repositories>
 
  <scm>  			
-  	<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/jbcp/jbossweb-5-exposed/1.0</connection>
-  	<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/jbcp/jbossweb-5-exposed/1.0</developerConnection>
-  	<url>http://mobicents.googlecode.com/svn/tags/jbcp/jbossweb-5-exposed/1.0</url>
+  	<connection>scm:svn:https://mobicents.googlecode.com/svn/branches/jbcp/5.1.x/jbossweb-5-exposed</connection>
+  	<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/branches/jbcp/5.1.x/jbossweb-5-exposed</developerConnection>
+  	<url>http://mobicents.googlecode.com/svn/branches/jbcp/5.1.x/jbossweb-5-exposed</url>
   </scm>
   
 </project>
