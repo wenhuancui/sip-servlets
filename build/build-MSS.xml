@@ -102,7 +102,8 @@
 		<antcall target="build-maven-eclipse-plugin" />
 		<antcall target="build-maven-du-plugin" />
 		<antcall target="build-maven-library-plugin" />
-		<antcall target="build-cluster" />
+		<antcall target="build-jain-sip" />
+		<antcall target="build-cluster"/>
 		<antcall target="build-sip-balancer" />
 		<antcall target="build-jain-sip-ext" />
 		<antcall target="build-jain-sip-ha" />
@@ -110,6 +111,8 @@
 		<antcall target="build-jdiameter-ha" />
 		<antcall target="build-diameter-mux" /-->
 		<antcall target="build-sip-servlets" />
+		<antcall target="build-sip-servlets-jopr" />
+		<antcall target="build-sip-servlets-management" />
 		<antcall target="copy-jbossweb-5-exposed-libs" />
 	</target>
 
@@ -478,6 +481,14 @@
 		</exec>
 	</target>
 	
+	<!-- jain-sip-->
+
+	<target name="build-jain-sip">
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../jain-sip">
+			<arg line="clean install" />
+		</exec>
+	</target>
+
 	<!-- HA-->
 	
 	<target name="build-cluster">
@@ -490,6 +501,11 @@
 		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../sip-balancer">
 			<arg line="clean install -P validate-source-headers" />
 		</exec>
+		<copy failonerror="true" overwrite="true" verbose="true" tofile="${release.dir}/tools/sip-balancer/sip-balancer-jar-with-dependencies.jar">
+		    <fileset dir="${ant.file.jbcp.platform.release}/../../sip-balancer/jar/target/">
+		    	<include name="**/sip-balancer-*-jar-with-dependencies.jar"/>
+		    </fileset>
+		  </copy>
 	</target>
 
 	<target name="build-jain-sip-ext">
@@ -531,6 +547,34 @@
 		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../sip-servlets">
 			<arg line="clean install -P validate-source-headers -P${mvn.build.profile} -Denv.JBOSS_HOME=${jboss.home} -Dnode=${jboss.node}" />
 		</exec>
+	</target>
+
+	<target name="build-sip-servlets-jopr">
+		<echo>build-sip-servlets jopr plugin</echo>
+		<echo>builidng with JBOSS_HOME=${jboss.home} into node:${jboss.node}</echo>
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../sip-servlets/jopr-plugin-as-5">
+			<arg line="clean install -Denv.JBOSS_HOME=${jboss.home} -Dnode=${jboss.node}" />
+		</exec>
+		<copy failonerror="true" overwrite="true" verbose="true" todir="${jboss.home}/server/${jboss.node}/deploy/admin-console.war/plugins">
+		    <fileset dir="${ant.file.jbcp.platform.release}/../../sip-servlets/jopr-plugin-as-5/target/">
+		    	<include name="**/jopr-mobicents-sip-servlets-as-5-plugin*.jar"/>
+		    	<exclude name="**/jopr-mobicents-sip-servlets-as-5-plugin*-sources.jar"/>
+		    </fileset>
+		  </copy>
+		<move failonerror="true" verbose="true" file="${jboss.home}/server/${jboss.node}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar" tofile="${jboss.home}/server/${jboss.node}/deploy/admin-console.war/plugins/jopr-jboss-as-5-plugin.jar.bak"/>
+	</target>
+
+	<target name="build-sip-servlets-management">
+		<echo>build-sip-servlets management</echo>
+		<echo>builidng with JBOSS_HOME=${jboss.home} into node:${jboss.node}</echo>
+		<exec executable="${mvn.executable}" dir="${ant.file.jbcp5.local.build}/../../sip-servlets/sip-servlets-management">
+			<arg line="clean install -Denv.JBOSS_HOME=${jboss.home} -Dnode=${jboss.node}" />
+		</exec>
+		<copy failonerror="true" overwrite="true" verbose="true" tofile="${jboss.home}/server/${jboss.node}/deploy/sip-servlets-management.war">
+		    <fileset dir="${ant.file.jbcp.platform.release}/../../sip-servlets/sip-servlets-management/target/">
+		    	<include name="**/sip-servlets-management-*.war"/>
+		    </fileset>
+		  </copy>
 	</target>
 	
 	<target name="zip-release" depends="set-zip-filename">
