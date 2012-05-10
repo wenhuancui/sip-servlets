@@ -410,7 +410,7 @@ public abstract class AbstractHASipDialog extends SIPDialog implements HASipDial
 				logger.logDebug(getDialogIdToReplicate() + " : firstTransactionMethod " + firstTransactionMethod);
 			}
 		}
-		if(recreation) {
+		if(recreation && isServer()) {
 			isLatestTxServer = (Boolean) metaData.get(IS_LATEST_TX_SERVER);
 			if(logger.isLoggingEnabled(StackLogger.TRACE_DEBUG)) {
 				logger.logDebug("HA SIP Dialog is Server ? " + isServer() + ", isLatestTxServer ? " + isLatestTxServer);
@@ -420,7 +420,7 @@ public abstract class AbstractHASipDialog extends SIPDialog implements HASipDial
 			// 	From and To Uris switch places in certain conditions
 			if(isLatestTxServer) {
 				if(logger.isLoggingEnabled(StackLogger.TRACE_DEBUG)) {
-					logger.logDebug("dialog : switching parties on recreation " + getDialogIdToReplicate() + " localParty = " + getLocalParty());
+					logger.logDebug("switching parties on recreation");
 				}
 				Address remoteParty = getLocalParty();
 				Address localParty = getRemoteParty();
