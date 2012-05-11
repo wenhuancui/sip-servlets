@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="sid-4588087_SNMPAdaptor-SNMPAdaptor%27sDescription">
+<section id="sid-4588087_SNMPAdaptor-SNMPAdaptor%27sDescription">
     
     <title>SNMP Adaptor's Description</title>
     <para>
@@ -31,4 +31,4 @@
         </para>
       </listitem>
     </itemizedlist>
-  </chapter>
+  </section>

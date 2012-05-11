@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="sid-4784983">
+<section id="sid-4784983">
     
     <title>The SNMP Adaptor JBoss Deployer</title>
     <section id="sid-4784983_TheSNMPAdaptorJBossDeployer-Location">
@@ -27,4 +27,4 @@
         <title/>
       </section>
     </section>
-  </chapter>
+  </section>

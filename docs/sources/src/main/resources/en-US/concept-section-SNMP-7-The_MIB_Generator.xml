@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="sid-4784788">
+<section id="sid-4784788">
     
     <title>The MIB Generator</title>
     <para>Included in the SNMP Adaptor is a way for a user to generate an SNMP MIB file based on already defined attributes.xml and notifications.xml. This MIB file allows an SNMP manager to display metrics in a much more human readable way than would otherwise be possible, and the generator allows the user to skip the arduous task of manually creating an MIB file.</para>
@@ -2016,4 +2016,4 @@ JBOSS-AS-VARIA::jbossJmxNotificationSequenceNumber = STRING: 269</programlisting
     </section>
 	
 
-  </chapter>
+  </section>
