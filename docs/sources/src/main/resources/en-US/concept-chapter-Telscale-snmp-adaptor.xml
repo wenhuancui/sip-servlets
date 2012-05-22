@@ -1,0 +1,904 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="telscale-snmp-adaptor">
+  <title>Telscale SNMP Adaptor User Guide</title>
+
+  <para>
+  There are multiple ways to access the Snmp data on the Telscale server. You can use an SNMP command line tool like the Net-Snmp. 
+  For ease of use, this user guide will be based on the OpenNMS network monitoring application. The reason for this is that it allows
+  for quick setup allowing the System and Network Administrator to concentrate on getting the most out of the Telscale server. First of all,
+  let us get an overview of SNMP
+  </para>
+  
+  <section>
+  <title> SNMP General Information</title>
+  
+  
+  <para>
+  Simple Network Management Protocol (SNMP)is the most popular network management protocol in the 
+  TCP/IP protocol suite, using a simple request/response protocol that communicates management 
+  information about the configuration and status of nodes between two types of SNMP software entities:
+  SNMP applications, also calledSNMP managersandSNMP agents. </para>
+  
+  <para>Essentially, SNMP agents expose management data on the managed systems as variables. The protocol 
+also permits active management tasks, such as modifying and applying a new configuration through 
+remote modification of these variables. The variables accessible via SNMP are organized in hierarchies.</para>
+
+<para>
+SNMP itself does not define which information (which variables) a managed system should offer. 
+Rather, SNMP uses an extensible design, where the available information and other metadata 
+(such as type and description of the variable) is described byManagement Information Bases (MIBs). 
+MIBs describe the structure of the management data of a device subsystem </para>
+
+<para> Objects in the MIB are defined using a subset of Abstract Syntax Notation One (ASN.1) 
+called "Structure of Management Information Version 2 (SMIv2)" 
+
+      <ulink url="http://tools.ietf.org/html/rfc2578">RFC 2578</ulink>
+</para>
+<para> The MIB is hierarchical (tree-structured) and entries are addressed throughobject identifiers or OIDs </para>
+
+<para> The IANA OID registry contains a list of registered entities that use OIDs to reference internal structures
+ (e.g. directory attributes). Each entity is assigned an initial referential value (e.g. 1.3.6.1.4.1.2312 for Red Hat, see 
+ <ulink url="http://www.oid-info.com/get/1.3.6.1.4.1.2312"/> and thereafter the internal numbering plan is up to the entity to define 
+ (e.g. 1.3.6.1.4.1.2312.100.1.1 might refer to the "ActiveThreadCount" attribute of the JBoss Application Sever). 
+ This allows for precise referencing of data attributes in a company or other entity. 
+ See diagram below representing the JBoss Application Server hierarchy </para>
+
+<para> A managed object (sometimes called a MIB object, an object, or a MIB) 
+is one of any number of specific characteristics of a managed device. 
+Managed objects are made up of one or more object instances (identified by their OIDs), which are essentially variables. </para>
+
+<para> Object identifiers (OID) uniquely identifies managed objects in the MIB hierarchy. </para>
+
+	  
+<figure>
+	<title>TODO InformalFigure image title empty</title>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/snmp_JBOSS_MIB_Hierarchy.png"/>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+
+<para>
+To obtain values of objects from the manager, it is necessary to specify the instance of the object. 
+The instance of an object is specified by appending an instance index to the object identifier, 
+by example for ActiveThreadCount attribute of the JBoss Application Server the OID to query would be 1.3.6.1.4.1.2312.100.1.1.0. </para>
+
+
+<para> Two types of managed objects exist: </para>
+
+
+<para> <emphasis role="color:#000000">Scalar object </emphasis> </para>
+ <para>Scalar Object defines a single object instance. A scalar object by definition has only one instance as opposed to a table. 
+ Therefore, an instance index of zero is always specified when retrieving the value of a scalar object. An instance index higher 
+ than 0 can only be used in the case of tabular objects, which can have multiple instances.</para>
+
+
+<para> <emphasis role="color:#000000">Tabular object </emphasis> </para>
+<para> Tabular Object defines multiple related object instances that are grouped in MIB tables. 
+The Telscale SNMP Adaptor uses two types of ways to access values in a table : a separate index column 
+for tabular objects that represents arrays and java.util.List since they are indexed, but to query the 
+Java index that starts at 0 in an array or List, it will start at index .1 for SNMP as .0 is reserved for scalar objects. For tabular 
+objects whose type is a java.util.Map or a wildcard used in a MBean, the index column will be named as per the key of the data in the row. </para>
+
+</section>
+
+<section>
+<title>SNMP Adaptor's Description</title>
+    <para>
+      <emphasis role="color:#000000">JBoss Application Server and Mobicents now features a revamped SNMP Adaptor, leveraging</emphasis>
+      <emphasis role="color:#000000">
+        <ulink url="http://www.snmp4j.org/">snmp4j</ulink>
+      </emphasis>
+      <emphasis role="color:#000000">as a Java implementation of SNMP, that wraps the JMX MBean and Notifications to allow monitoring and configuration of the Application Server and applications deployed on it through the SNMP protocol.Note: the documentation for the previous version can be found here</emphasis>
+      <emphasis role="color:#000000">
+        <ulink url="http://community.jboss.org/wiki/JBossSNMPAdapter"/>
+      </emphasis>
+    </para>
+    <para>
+      <emphasis role="color:#000000">The Adaptor now supports all versions of the protocol, v1, v2c and v3 including security for v2c and v3. It also has supports for tables and both traps and informs.</emphasis>
+    </para>
+
+</section>
+
+<section>
+<title>The SNMP Adaptor TELSCALE Service</title>
+     
+
+
+
+<para>
+The SNMP Adaptor Servicecontains the general configuration of the SNMP service and the JMX to SNMP mapping for
+ the JBoss Application Server and its subcomponents. </para>
+
+<para>The SNMP Adaptor Service Agent listen on a given UDP port (default 1161). The manager may send requests 
+from any available source port to port 1161 in the Agent. The Agent responses will be sent back to the 
+source port of the manager sent requests. TheSNMP Adaptor Servicealso provides a manager that can receive 
+notifications (Traps and Inform Requests) on port 1162. TheSNMP Adaptor Service Agentmay generate notifications
+ from any available port on behalf of the JBoss Application Server or its components and applications deployed within it.
+</para>
+
+</section>
+<section>
+<title>Telscale Binaries </title>
+
+<para>
+The SNMP Adaptor Telscale Service location $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar 
+will be referred to as $TELSCALE_SNMP_ADAPTOR. The installation will be explained further down.</para>
+<para>
+The SNMP Adaptor JBoss Service offers 5 configuration files that will be described below
+<screen>
+/META-INF/jboss-service.xml
+attributes.xml
+managers.xml
+notifications.xml
+users.xml
+</screen>
+</para>
+
+
+</section>
+
+<section> 
+
+<title> Telscale Jboss-Services.xml </title>
+<para>
+
+It is located at $TELSCALE_SNMP_ADAPTOR/META-INF/jboss-service.xml managing the general configuration of the SNMP Adaptor, 
+It defines 3 MBeans : The SNMP Adaptor Manager org.jboss.jmx.adaptor.snmp.trapd.TrapdService
+ The SNMP Adaptor Agent org.jboss.jmx.adaptor.snmp.agent.SnmpAgentService : It defines a set of 
+ properties to override the default behavior of the Agent and the location of the other configuration 
+ files used by the agent. It also defines the list of Subscriptions to JMX notifications from the 
+ JBoss Application Server, its components and applications deployed within it that the agent filters 
+ and will map to SNMP Notifications. This subscriptionList attribute warrants a specific section as 
+ it is used in conjunction with the Notifications configuration file. It defines a list of JMX Notifications 
+ emitted by MBeans (the name can use wilcard to match multiple MBeans at the same time) to intercept that will 
+ be converted by the SNMP Adaptor as an SNMP Notification through the Notifications configuration file. 
+ The type of the notification will be used to find in the Notifications file how to map it, which OID to 
+ give it and which information will be sent. 
+</para>
+<para>
+Note : Both above MBean uses the
+</para>
+<para>
+<ulink url="https://community.jboss.org/wiki/AS5ServiceBindingManager"> JBoss Service Binding Manager </ulink> to 
+configure the ports where the JBoss SNMP Agent and Manager are listening on
+ System Information as specified in RFC 1213 org.jboss.jmx.adaptor.snmp.system.MIB2SystemGroupService
+</para>
+  
+</section>
+<section>
+<title>SNMP Adaptor Attributes.xml configuration file </title>
+
+<para>
+It is located at $TELSCALE_SNMP_ADAPTOR/attributes.xml and controls the mapping of JMX
+ mbean attributes to SNMP OIDs accessible through the SNMP Adaptor. It defines a list of
+ MBean and their attributes to map to SNMP OID.
+ </para>
+<para>
+ Each mbean entry must specify : </para>
+ 
+ <screen>
+name : The MBean name for which its attributes need to be exposed. 
+The MBean name can be a wildcard, in which case the returned set will be 
+exposed as an SNMP Table 
+
+oid-prefix (optional) : if set it will be prepended to the attributes oid. 
+</screen>
+<para>
+a list of attribute that specifies : 
+</para>
+<screen>
+name: 
+it needs to match the one in has to be exposed from the MBean 
+
+oid:
+identifier of the attribute. It can either be the full oid or only the last part of it 
+if the oid-prefix was set above. All attributes are Scalar objects by default which means that 
+to access them you will need to add a .0 to the attribute oid to access it.
+
+table:
+if the attribute has to be exposed as a Tabular object ie a SNMP table 
+
+mode: 
+if set to *rw, *it means that the attribute is writable (can be set) otherwise by default it is read-only 
+</screen>
+
+</section>
+
+<section>
+
+<title> SNMP Adaptor Notifications.xml configuration File </title>
+
+<para>
+It is located at $JBOSS_SNMP_ADAPTOR/notifications.xml and controls the
+ mapping of JMX notifications onto SNMP traps. The key for the mapping 
+ is considered to be the notification type as defined in the subscriptions 
+ list of the SNMP Adaptor JBoss Service configuration file. </para>
+
+<para>
+For generic SNMPv1 traps, Enterprise field contains value of 
+            <ulink url="http://tools.cisco.com/Support/SNMP/do/BrowseOID.do?local=en&amp;translate=Translate&amp;objectInput=1.3.6.1.2.1.1.2">sysObjectID</ulink> of the device that sends trap. For vendor specific traps, Generic trap type field is set to enterpriseSpecific(6 
+</para>
+<para>
+Each mapping entry must specify : 
+</para>
+
+<screen>
+notification-type : 
+The type of JMX Notifications to wrap as a SNMP Notification. Please note that the notification has to 
+be caught first by the subscription list filter defined in SNMP Adaptor JBoss Service configuration file 
+
+Note : 
+The below attributes generic, specific and enterprise varies depending on the version of the protocol 
+namely - v1 and v2. For v1, . For v2 and v3, It is essentially a concatenation of theenterprise _ parameter 
+and two additional sub-identifiers, '0' (so make sure to set generic as 0 here), and the_ specifictrap code _ parameter_ 
+
+generic : 
+Indicates one of a number of generic trap types 
+
+specific : 
+Indicates one of a number of specific trap codes. 
+
+enterprise : 
+contains value of <ulink url="http://tools.cisco.com/Support/SNMP/do/BrowseOID.do?local=en&amp;translate=Translate&amp;objectInput=1.3.6.1.2.1.1.2">sysObjectID</ulink>of the device that sends trap 
+
+inform : 
+if set to "true" , this trap will be send as an inform (acknowledged trap) 
+
+security-name : 
+the user to associate with the sending of the trap (will be used for version 3 of the protocol only) 
+
+var-bind-list :
+whose defines a wrapper-class that allows to to extract info from arbitrary notification subclasses. 
+The generated trap may contain an arbitrary payload of variable bindings ( var-bind) with explicitly specified oid 
+and values extracted from the emitted notification ( tag ). To extract those values a wrapper class implementing the 
+org.jboss.jmx.adaptor.snmp.agent.NotificationWrapper interface must be supplied. At runtime, the value specified using 
+the element is passed to the wrapper class implementation as the key to be mapped, in an implementation specific way, 
+to a corresponding value. A default implementation of this interface comes with 
+class org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport. This implementation recognizes the following set of tags
+
+</screen>
+
+  <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                <para>Tag</para>
+              </entry>
+              <entry>
+                <para>Description</para>
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <para>
+                  n:message
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>javax.management.Notification.getMessage()</para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:sequenceNumber
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.getSequenceNumber()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:timeStamp
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.getTimestamp()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:type
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.getType()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:all
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.toString()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  n:class
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  javax.management.Notification.getClass().getName()
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  a:startTime
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  snmp agent/adaptor start time
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  a:uptime
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  snmp agent/adaptor up time
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  a:trapCount
+                  
+                </para>
+              </entry>
+              <entry>
+                <para>
+                  snmp agent/adaptor trap count
+                  
+                </para>
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>u:&lt;user-defined-tag&gt;</para>
+              </entry>
+              <entry>
+                <para>
+                  looked-up in n.getUserData()
+                  
+                  
+                </para>
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+
+</section>
+
+<section>
+
+
+
+<title> SNMP Adaptor Managers.xml Configuration File </title>
+<para>
+It is located at $TELSCALE_SNMP_ADAPTOR/managers.xml and is used to configure the SNMP managers 
+to which the generated SNMP traps should be forwarded.
+</para>
+
+<para>
+ Each manager entry must specify: 
+</para>
+
+<screen>
+address : the manager's address (IP address or host name) 
+
+port : the listening port 
+
+local-address : the local binding address (optional) 
+
+local-port : the local binding port (optional) 
+
+version : the SNMP version to use (1 or 2 or 3) 
+
+community-string : If version is 1 or 2, the community string (public or private) 
+</screen>
+
+</section>
+
+<section>
+
+
+<title> SNMP Adaptor Users.xml Configuration File </title>
+
+<para>
+It is located at $TELSCALE_SNMP_ADAPTOR/users.xml and is used to configure the SNMP users when using version 3 of the protocol.
+</para>
+
+<para>
+Each user entry must specify:
+</para>
+
+<screen>
+
+securityName : 
+the security name of the user (typically the user name). 
+
+authenticationProtocol : 
+the authentication protcol to be associated with this user (MD5 or SHA). 
+If not set, this user only supports unauthenticated messages. 
+
+
+authenticationPassphrase : 
+If present, the authentication Protocol must also be present. RFC3414 11.2 requires passphrases 
+to have a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgumentException will be thrown. 
+
+
+privacyProtocol : 
+the privacy protcol ID to be associated with this user 
+(DES, 3DES, AES128, AES192, AES256). If not set, this user only supports unencrypted messages. 
+
+
+privacyPassphrase : 
+If present, the privacy Protocol must also be set. RFC3414 11.2 requires passphrases to have 
+a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgumentException will be thrown. 
+
+</screen>
+
+</section>
+
+<section>
+<title> The SNMP Adaptor JBoss Deployer </title>
+
+<para>
+The SNMP Adaptor Deployer dynamically looks for snmp-attributes.xml and 
+snmp-notifications.xml files in any applications deployed within JBoss 
+Application Server and register the notifications, attributes and their 
+JMX mapping with the SNMP Adaptor JBoss Service.
+</para>
+
+<para>
+The SNMP adaptor deployer is located in 
+    <code>$TELSCALE_HOME/server/&lt;profile&gt;/deployers </code> directory. 
+</para>
+
+</section>
+
+<section>
+<title> Using the Open Source OpenNMS Application with TELSCALE </title>
+
+<para>
+Managing web servers using SNMP can be a tedious exercise. If you have to monitor
+multiple applications servers, using a tool like OpenNMS will make your job easier. There is a lot to take 
+into consideration. One of the most important thing is to install an SNMP tool with a database. That is what
+the next section will help you achieve.
+</para>
+
+</section>
+
+
+  <section>
+  <title>Installing OpenNMS </title>
+  
+  <para>    Prepare the opennms package </para>
+   <screen> rpm -Uvh http://yum.opennms.org/repofiles/opennms-repo-stable-fc16.noarch.rpm </screen>
+  <para>  You need to make sure that you that your system is able to find the package. You can check this by doing the following: </para>
+  <screen> yum search openNMS </screen>
+  <para> This will be installed later. First, you will need to install the database that will hold the monitored information</para>
+  
+<screen> yum install postgresql postgresql-server </screen>
+
+<para>You need to initialize the database and start up postgresql </para>
+
+<screen> service postgresql initdb </screen>
+<screen> service postgresql start </screen>
+
+<para> You need to run this command so that the database will be started after reboot</para>
+<screen> chkconfig postgresql on </screen>
+
+<para> on some systems you will have to run</para>
+
+<screen> systemctl enable postgresql.service </screen>
+
+<para>Edit this file /var/lib/pgsql/data/pg_hba.conf so that the content looks like this: </para>
+
+<screen>
+local   all         all                               trust
+host    all         all         127.0.0.1/32          trust
+host    all         all         ::1/128               trust
+
+</screen>
+
+<para> At this stage, you need to make sure JDK is installed on your system and the $JAVA_HOME environment variable is set. </para>
+
+<para> The next step will be to install OpenNMS. </para>
+<screen> yum -y install opennms  </screen>
+
+
+
+<para> Once you the complete message appears, you might need to disable automatic update of openNMS in order to 
+avoid changes to your current configuration. You can do the following: </para>
+
+<para> edit the  "/etc/yum.repos.d/opennms*" file and add the  <emphasis role="color:#000000">enabled=0 </emphasis> inside each [opennms-*] section </para>
+
+<para>You can undo this later if you need to </para>
+
+<para> OpenNMS needs to know the location of your Java installation. Tell OpenNMS which java version to use. 
+In the /usr/java/ directory, you might see  multiple version. In the example below, it points to 
+</para>
+
+<para> You need to run this command as root </para>
+
+<screen> /opt/opennms/bin/runjava -S /usr/java/jdk1.7.0_04/bin/java </screen>
+
+<para> This will produce an output similar to this</para>
+<screen> runjava: checking specified JRE: "/usr/java/jdk1.7.0_04/bin/java"...
+runjava: specified JRE is good.
+runjava: value of "/usr/java/jdk1.7.0_04/bin/java" stored in configuration file
+</screen>
+
+<para>Create a  database by running the command</para>
+
+<screen> /opt/opennms/bin/install -dis
+</screen>
+
+<para> If you get an error message like this </para>
+
+<para> 
+Caused by: org.postgresql.util.PSQLException: FATAL: Ident authentication failed for user "postgres"
+</para>
+
+<para> 
+Make sure you have edited the <emphasis role="color:#000000"> /var/lib/pgsql/data/pg_hba.conf</emphasis> file as mentioned above.
+The column METHOD should be set to <emphasis role="color:#000000">trust </emphasis>
+</para>
+
+<para>
+Then retry installing your database  <emphasis role="color:#000000">  /opt/opennms/bin/install -dis </emphasis> If all goes well, you should see
+</para>
+<screen>
+....truncated....
+- checking if iplike is usable... NO
+- removing existing iplike definition (if any)... OK
+- inserting C iplike function... SKIPPED (location of iplike function not set)
+- inserting PL/pgSQL iplike function... OK
+- checking for stale eventtime.so references... OK
+Installer completed successfully!
+</screen>
+
+
+<para> Under certain circumstances (firewall), it might be necessary to configure /etc/sysconfig/iptables to allow port 8980 
+which is what OpenNMS uses. If you will only be using 127.0.0.1 on your localhost, then you don't need to to this</para>
+
+<para> Next, you will ned to start OpenNMS</para>
+
+<screen> service opennms start </screen>
+
+<para> if you get the following error whilst Starting opennms (via systemctl):  
+Job failed. See system logs and 'systemctl status' for details.[FAILED]  </para>
+
+<para> Try restarting Postgresql </para>
+<screen> service postgresql restart </screen>
+<para> then start OpenNMS like this: </para>
+
+<screen> service opennms start </screen> 
+
+ 
+ <para> Once the OpenNMS service is started, you should be able to access the web interface on the following address: </para>
+ 
+ <screen> http://127.0.0.1:8980/opennms </screen>
+
+ </section>
+ 
+ <section>
+ <title> Accessing the OpenNMS Web Interface</title>
+ <screen>
+Login into OpenNms with the default  username and password
+
+default user account
+username = admin
+password = admin
+
+ </screen>
+ 
+ 
+ 
+ <figure>
+<title>Login Page OpenNMS</title>
+<mediaobject id="login_page_opennms">
+<imageobject>
+<imagedata align="center" fileref="images/snmp-opennms-login-page.png" format="PNG"/>
+</imageobject>
+</mediaobject>
+</figure>
+ 
+ <para>
+ 
+ You will notice that you have little to no data on your OpenNms web server. 
+ You need to run the perl command to do an initial scan of your system. </para>
+<screen>
+ perl $OPENNMS_HOME/bin/send-event.pl uei.opennms.org/internal/discovery/newSuspect -i 192.168.1.3
+</screen>
+
+<para>
+where 192.168.1.3 is the ip address of the OpenNms server
+</para>
+<para>
+Now go to the http://192.168.1.3:8980/opennms/  web page and click on the menu > Node List
+you should see that your server has been scanned and services are available like this screen shot below
+</para>
+ 
+
+ <figure>
+<title>Scan Node Lists</title>
+<mediaobject id="scan_node_list">
+<imageobject>
+<imagedata align="center" fileref="images/snmp-opennms-scanned-services-page.png" format="PNG"/>
+</imageobject>
+</mediaobject>
+</figure> 
+
+ 
+ </section>
+  
+
+  <section>
+  
+  <title> Setting up SNMP to monitor traps </title>
+
+
+<para>
+You should have Net-Snmp installed on your system. You should be able to run the following test command.
+</para>
+<screen> snmpget 127.0.0.1 sysUpTime.0 </screen>
+ <para>
+If you are not sure, you can install NET-SNMP on a linux distribution that uses Yum, as follows
+</para>
+
+<screen>
+yum install net-snmp net-snmp-libs net-snmp-utils
+</screen>
+
+<para>
+Once the installation is completed, you must start the snmp service
+</para>
+<screen> service snmpd start </screen>
+
+<para> Now you can perform a quick test to make sure your installation is properly completed. </para>
+
+
+<screen> Snmpget 127.0.0.1 sysUpTime.0 </screen>
+
+<para> Which should produce a result similar to </para>
+
+<screen> DISMAN-EVENT-MIB::sysUpTimeInstance = Timeticks: (17221523) 1 day, 23:50:15.23 </screen>
+
+
+<para> You can also run this command to show all the snmp information on your location system </para>
+
+<screen> snmpwalk -v 2c localhost -c public system </screen>
+
+<para>
+In order to make sure your OpenNMS agent is receiving traps, you need to send traps to the OpenNms server by trying the following command:
+</para>
+<screen>
+<code> snmptrap -v 2c -c public localhost &quot; &quot; ucdStart sysContact s &quot;TESTTING TRAPS&quot; </code>
+</screen>
+<para>
+then go into the   http://127.0.0.1:8980/opennms/ > events > all events > and you will see the screen below
+</para>
+
+ <figure>
+<title>OpenNMS Receiving Traps</title>
+<mediaobject id="opennms_receiving_traps">
+<imageobject>
+<imagedata align="center" fileref="images/snmp-opennms-testing-traps.png" format="PNG"/>
+</imageobject>
+</mediaobject>
+</figure> 
+  
+  </section>
+  
+<section>
+<title> Downloading TELSCALE Binaries </title>
+<para>
+The configuration above is to make sure your system is ready and functional independent of TELSCALE. 
+The next step will be using the Telscale Sip Servlets  that comes   with SNMP monitoring.
+
+You will need to have Telscale Sip Servlets installed on your system. It can be obtained here
+</para>
+
+<screen>
+https://telestax.zendesk.com/entries/21369346-telscale-6-1-0-ga-sip-servlets-binaries
+</screen>
+<para>
+There are two versions available and you need to download the  </para>
+
+<screen>
+TelScale-SIP-Servlets-6.1.0.GA-jboss-5.1.0.GA-1204271103.zip 
+</screen>
+<para>
+You need to perform the initial installation according to the user guide. 
+The Telscale Sip Servlet SNMP adaptor will allow you to monitor your server 
+and send traps to the OpenNMS trap listener.
+</para>
+
+<para>
+If you don't know where to put your mib file or you are not getting any results, 
+you can run the following command to see where the snmp tool is checking for mib files:
+</para>
+<screen>  snmpget -Dparse-mibs 2>&amp;1 | grep directory </screen>
+
+<para> You need to start the Telscale server in order to proceed with the next section</para>
+
+<screen> $TELSCALE_HOME/bin/run.sh </screen>
+
+<para> This can take a little over a minute to start depending on your system. </para>
+
+
+<para>
+
+Using version 3 of SNMP requires setting up a user and a password. When you install TELSCALE, a TEST user
+has already been created in the $TELSCALE_SNMP_ADAPTOR/user.xml file. This means you should be able to use
+the command below: </para>
+
+<screen>
+ snmpget -v 3 -u TEST -a MD5 -A &quot;maplesyrup&quot; -x DES -X &quot;maplesyrup&quot; -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0 
+ </screen>
+ 
+ <para> This should produce the following results: </para>
+<screen>
+SNMPv2-MIB::sysDescr.0 = STRING: Mobicents Sip Servlets 
+</screen>
+
+<para>
+If you get a Snmpget timeout, make sure you have the Telscale Sip Server running
+</para>
+
+<para> When you start the Telscale server using the $TELSCALE_HOME/bin/run.sh has mentioned above, it will automatically 
+send a trap to the OpenNMS trap listener and you will see the following on the Events window.</para>
+
+ <figure>
+<title>OpenNMS Telscale Coldstart Trap</title>
+<mediaobject id="opennms_telscale_coldstart_traps">
+<imageobject>
+<imagedata align="center" fileref="images/snmp-opennms-telscale-coldstart.png" format="PNG"/>
+</imageobject>
+</mediaobject>
+</figure> 
+
+</section>  
+  
+
+<section>
+<title> SNMP Walktrough</title>
+<para>
+The following sections will guide you on how to setup and test the various features of the 
+adapter on a step by step like tutorial by showing you how to access your JMX Beans and expose 
+them through SNMP. SNMPv1 specified five core protocol data units (PDUs). </para>
+<para> Two other PDUs,GetBulkRequestandInformRequestwere added in SNMPv2 and carried over to SNMPv3.</para>
+
+<screen>
+
+Response : Returns variable bindings and acknowledgement from agent to manager for belowGetRequest,
+SetRequest,GetNextRequest,GetBulkRequestandInformRequest. Error reporting is provided 
+byerror-statusanderror-indexfields. Although it was used as a response to both gets and sets, 
+this PDU was calledGetResponsein SNMPv1.
+
+
+GetRequest : A manager-to-agent request to retrieve the value of a variable or list of variables.
+
+
+SetRequest : A manager-to-agent request to change the value of a variable or list of variables.
+
+
+GetNextRequest : A manager-to-agent request to discover available variables and their values. 
+Returns aResponsewith variable binding for the lexicographically next variable in the MIB. 
+The entire MIB of an agent can be walked by iterative application ofGetNextRequeststarting 
+at OID 0. Rows of a table can be read by specifying column OIDs in the variable bindings of the request.
+
+
+GetBulkRequest : Optimized version ofGetNextRequest. A manager-to-agent request for multiple 
+iterations ofGetNextRequest. Returns aResponsewith multiple variable bindings walked from the 
+variable binding or bindings in the request. PDU specificnon-repeatersandmax-repetitionsfields 
+are used to control response behavior.
+
+
+
+Trap : Asynchronous notification from agent to manager. Includes currentsysUpTimevalue, 
+an OID identifying the type of trap and optional variable bindings.
+
+
+InformRequest : Acknowledged asynchronous notification from manager to manager. 
+This PDU uses the same format as the SNMPv2 version ofTrap. Manager-to-manager 
+notifications were already possible in SNMPv1 (using aTrap), but as SNMP commonly 
+runs over UDP where delivery is not assured and dropped packets are not reported, 
+delivery of aTrapwas not guaranteed.InformRequestfixes this by sending back an 
+acknowledgement on receipt. Receiver replies with{_}Response _parroting all 
+information in theInformRequest
+
+</screen>
+<para>
+To be able to receive SNMP Traps or INFORM from a given user, snmptrapd configuration has to be modified :
+</para>
+<para> sudo gedit /etc/snmp/snmptrapd.conf and add the following: </para>
+
+<screen>
+#User to receive TRAP
+createUser -e 0x80001370017F000101 TEST MD5 maplesyrup DES maplesyrup
+#User to receive INFORM
+createUser myuser MD5 password DES password
+#Those make snmptrapd log the TRAPs and INFORM to the console
+authUser log,execute,net TEST
+authUser log,execute,net myuser
+</screen>
+<para>
+Check the directory where the MIBs will be loaded from with the following command :
+</para>
+<screen>
+net-snmp-config --default-mibdirs
+</screen>
+<para> Edit the snmp.conf </para>
+<para> sudo gedit /etc/snmp/snmp.conf </para>
+<para> and add the following </para>
+<screen>
+#include all MIB
+mibs +ALL
+</screen>
+<para>
+Copy the MIB from JBoss Application Server to your user dir where the MIB will be loaded from
+</para>
+<screen>
+cp $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar/attributes.mib /home/&lt;user&gt;/.snmp/mibs/
+</screen>
+
+
+</section>  
+
+  
+  
+  </chapter>

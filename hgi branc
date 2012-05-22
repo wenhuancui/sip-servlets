@@ -1,0 +1,1170 @@
+[33mcommit 61a3f47ae4be87346de0f6fd20cc6fbc1e606f47[m
+Author: croufay <croufay@gmail.com>
+Date:   Tue May 1 18:58:12 2012 -0600
+
+    SNMP Adaptor user guide.. needs to be linked to from chap 6.1 of main mobicents user guide.
+
+[1mdiff --git a/docs/jdocbook-telscale/en-US/Author_Group.xml b/docs/jdocbook-telscale/en-US/Author_Group.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..d4cb721[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/Author_Group.xml[m
+[36m@@ -0,0 +1,20 @@[m
+[32m+[m[32m<?xml version='1.0' encoding='utf-8' ?>[m
+[32m+[m[32m<!DOCTYPE authorgroup PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">[m
+[32m+[m[32m<authorgroup>[m
+[32m+[m
+[32m+[m[32m  <author>[m
+[32m+[m[32m    <firstname>Bartosz</firstname>[m
+[32m+[m[32m    <surname>Baranowski</surname>[m
+[32m+[m[32m    <email>baranowb@gmail.com</email>[m
+[32m+[m[32m  </author>[m
+[32m+[m[32m  <author>[m
+[32m+[m[32m    <firstname>Jean</firstname>[m
+[32m+[m[32m    <surname>Deruelle</surname>[m
+[32m+[m[32m    <email>jean.deruelle@gmail.com</email>[m
+[32m+[m[32m  </author>[m
+[32m+[m[32m  <author>[m
+[32m+[m[32m    <firstname>Thomas</firstname>[m
+[32m+[m[32m    <surname>Hauser</surname>[m
+[32m+[m[32m    <email>thauser@redhat.com</email>[m
+[32m+[m[32m  </author>[m
+[32m+[m[32m</authorgroup>[m
+[1mdiff --git a/docs/jdocbook-telscale/en-US/Book_Info.xml b/docs/jdocbook-telscale/en-US/Book_Info.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..21a5588[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/Book_Info.xml[m
+[36m@@ -0,0 +1,19 @@[m
+[32m+[m[32m<?xml version='1.0'?>[m
+[32m+[m[32m<!DOCTYPE bookinfo PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [[m
+[32m+[m[32m<!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">[m
+[32m+[m[32m%BOOK_ENTITIES;[m
+[32m+[m[32m]>[m
+[32m+[m
+[32m+[m[32m<bookinfo id="Snmp_Adaptor_Guide">[m
+[32m+[m	[32m<title>Snmp Adaptor User Guide</title>[m
+[32m+[m
+[32m+[m[32m<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Author_Group.xml"/>[m
+[32m+[m
+[32m+[m
+[32m+[m[41m	[m
+[32m+[m
+[32m+[m
+[32m+[m[32m</bookinfo>[m
+[32m+[m
+[32m+[m
+[32m+[m
+[1mdiff --git a/docs/jdocbook-telscale/en-US/Revision_History.xml b/docs/jdocbook-telscale/en-US/Revision_History.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..32daf84[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/Revision_History.xml[m
+[36m@@ -0,0 +1,27 @@[m
+[32m+[m[32m﻿<?xml version='1.0'?>[m
+[32m+[m[32m<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [[m
+[32m+[m[32m<!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">[m
+[32m+[m[32m%BOOK_ENTITIES;[m
+[32m+[m[32m]>[m
+[32m+[m[32m<appendix>[m
+[32m+[m	[32m<title>Revision History</title>[m
+[32m+[m	[32m<simpara>[m
+[32m+[m		[32m<revhistory>[m
+[32m+[m		[32m<revision>[m
+[32m+[m[32m        <revnumber>x.x</revnumber>[m
+[32m+[m[32m        <date>date</date>[m
+[32m+[m[32m        <author>[m
+[32m+[m[32m          <firstname>Jean</firstname>[m
+[32m+[m[32m          <surname>Deruelle</surname>[m
+[32m+[m[32m          <email>jean.deruelle@gmail.com</email>[m
+[32m+[m[32m        </author>[m
+[32m+[m[32m        <revdescription>[m
+[32m+[m[32m          <simplelist>[m
+[32m+[m[32m            <member>Revision information</member>[m
+[32m+[m[32m          </simplelist>[m
+[32m+[m[32m        </revdescription>[m
+[32m+[m[32m      </revision>[m
+[32m+[m[32m    </revhistory>[m
+[32m+[m[32m  </simpara>[m
+[32m+[m[32m</appendix>[m
+[32m+[m
+[1mdiff --git a/docs/jdocbook-telscale/en-US/SNMP_Adaptor.xml b/docs/jdocbook-telscale/en-US/SNMP_Adaptor.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..c6e8d94[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/SNMP_Adaptor.xml[m
+[36m@@ -0,0 +1,18 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">[m
+[32m+[m[32m<book>[m
+[32m+[m
+[32m+[m[32m <!-- <xi:include href="Preface.xml" xmlns:xi="http://www.w3.org/2001/XInclude" /> -->[m
+[32m+[m[32m   <xi:include href="Book_Info.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />[m[41m    [m
+[32m+[m[32m  <xi:include href="chapter-1-General_Information.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />[m
+[32m+[m[32m  <xi:include href="chapter-2-SNMP_Adaptor_s_Description.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />[m
+[32m+[m[32m  <xi:include href="chapter-3-SNMP_Adaptor_WalkThrough.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />[m
+[32m+[m[32m  <xi:include href="chapter-4-The_SNMP_Adaptor_JBoss_Service.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />[m
+[32m+[m[32m  <xi:include href="chapter-5-The_SNMP_Adaptor_JBoss_Deployer.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />[m
+[32m+[m[32m  <xi:include href="chapter-6-SNMP_Adaptor_Walkthrough.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />[m
+[32m+[m[32m  <xi:include href="chapter-7-The_MIB_Generator.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />[m
+[32m+[m[32m  <chapter>[m
+[32m+[m[32m  <title> Revision History </title>[m
+[32m+[m[32m  <xi:include href="Revision_History.xml" xmlns:xi="http://www.w3.org/2001/XInclude" />[m[41m [m
+[32m+[m[32m  </chapter>[m
+[32m+[m[32m</book>[m
+[1mdiff --git a/docs/jdocbook-telscale/en-US/chapter-1-General_Information.xml b/docs/jdocbook-telscale/en-US/chapter-1-General_Information.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..4f70037[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/chapter-1-General_Information.xml[m
+[36m@@ -0,0 +1,99 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">[m
+[32m+[m[32m<chapter id="sid-4588087_SNMPAdaptor-GeneralInformation">[m
+[32m+[m[41m    [m
+[32m+[m[32m    <title>General Information</title>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">[m
+[32m+[m[32m        <emphasis role="strong">Simple Network Management Protocol (SNMP)</emphasis>[m
+[32m+[m[32m      </emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">is the most popular network management protocol in the TCP/IP protocol suite, using a simple request/response protocol that communicates management information about the configuration and status of nodes between two types of SNMP software entities: SNMP applications, also called</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">[m
+[32m+[m[32m        <emphasis role="strong">SNMP managers</emphasis>[m
+[32m+[m[32m      </emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">and</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">[m
+[32m+[m[32m        <emphasis role="strong">SNMP agents</emphasis>[m
+[32m+[m[32m      </emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">.</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">Essentially, SNMP agents expose management data on the managed systems as variables. The protocol also permits active management tasks, such as modifying and applying a new configuration through remote modification of these variables. The variables accessible via SNMP are organized in hierarchies.</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">SNMP itself does not define which information (which variables) a managed system should offer. Rather, SNMP uses an extensible design, where the available information and other metadata (such as type and description of the variable) is described by</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">[m
+[32m+[m[32m        <emphasis role="strong">Management Information Bases (MIBs)</emphasis>[m
+[32m+[m[32m      </emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">. MIBs describe the structure of the management data of a device subsystem</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">Objects in the MIB are defined using a subset of Abstract Syntax Notation One (</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">[m
+[32m+[m[32m        <emphasis role="strong">ASN.1</emphasis>[m
+[32m+[m[32m      </emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">) called "Structure of Management Information Version 2 (SMIv2)"</emphasis>[m
+[32m+[m[32m      <ulink url="http://tools.ietf.org/html/rfc2578">RFC 2578</ulink>[m
+[32m+[m[32m      <emphasis role="color:#000000">.</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">The MIB is hierarchical (</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">[m
+[32m+[m[32m        <emphasis role="strong">tree-structured</emphasis>[m
+[32m+[m[32m      </emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">) and entries are addressed through</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">object identifiers or</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">{*}OID. *</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">The IANA OID registry contains a list of registered entities that use OIDs to reference internal structures (e.g. directory attributes). Each entity is assigned an initial referential value (e.g. 1.3.6.1.4.1.2312 for Red Hat, see</emphasis>[m
+[32m+[m[32m      <ulink url="http://www.oid-info.com/get/1.3.6.1.4.1.2312"/>[m
+[32m+[m[32m      <emphasis role="color:#000000">) and thereafter the internal numbering plan is up to the entity to define (e.g. 1.3.6.1.4.1.2312.100.1.1 might refer to the "ActiveThreadCount" attribute of the JBoss Application Sever). This allows for precise referencing of data attributes in a company or other entity. See diagram below representing the JBoss Application Server hierarchy</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">A managed object (sometimes called a MIB object, an object, or a MIB) is one of any number of specific characteristics of a managed device. Managed objects are made up of one or more object instances (identified by their OIDs), which are essentially variables.</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">Object identifiers (OID) uniquely identifies managed objects in the MIB hierarchy.</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <figure>[m
+[32m+[m[32m<title>TODO InformalFigure image title empty</title>[m
+[32m+[m[32m      <mediaobject>[m
+[32m+[m[32m        <imageobject>[m
+[32m+[m		[32m  <imagedata align="center" fileref="images/SNMP_JBOSS_MIB_Hierarchy.png" format="PNG"/>[m
+[32m+[m[32m        </imageobject>[m
+[32m+[m[32m      </mediaobject>[m
+[32m+[m[32m    </figure>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">To obtain values of objects from the manager, it is necessary to specify the instance of the object. The instance of an object is specified by appending an instance index to the object identifier, by example for ActiveThreadCount attribute of the JBoss Application Server the OID to query would be 1.3.6.1.4.1.2312.100.1.1.0.</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">Two types of managed objects exist:</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <itemizedlist>[m
+[32m+[m[32m      <listitem>[m
+[32m+[m[32m        <para>[m
+[32m+[m[32m          <emphasis role="color:#000000">{*}Scalar object *</emphasis>[m
+[32m+[m[32m          <emphasis role="color:#000000">A Scalar Object defines a single object instance. A scalar object by definition has only one instance as opposed to a table. Therefore, an instance index of zero is always specified when retrieving the value of a scalar object. An instance index higher than 0 can only be used in the case of tabular objects, which can have multiple instances.</emphasis>[m
+[32m+[m[32m        </para>[m
+[32m+[m[32m      </listitem>[m
+[32m+[m[32m      <listitem>[m
+[32m+[m[32m        <para>[m
+[32m+[m[32m          <emphasis role="color:#000000">{*}Tabular object *</emphasis>[m
+[32m+[m[32m          <emphasis role="color:#000000">A Tabular Object defines multiple related object instances that are grouped in MIB tables. The JBoss SNMP Adaptor uses two types of ways to access values in a table :</emphasis>[m
+[32m+[m[32m        </para>[m
+[32m+[m[32m        <itemizedlist>[m
+[32m+[m[32m          <listitem>[m
+[32m+[m[32m            <para>[m
+[32m+[m[32m              <emphasis role="color:#000000">a separate index column for tabular objects that represents arrays and java.util.List since they are indexed, but to query the Java index that starts at 0 in an array or List, it will start at index .1 for SNMP as .0 is reserved for scalar objects</emphasis>[m
+[32m+[m[32m            </para>[m
+[32m+[m[32m          </listitem>[m
+[32m+[m[32m          <listitem>[m
+[32m+[m[32m            <para>[m
+[32m+[m[32m              <emphasis role="color:#000000">For tabular objects whose type is a java.util.Map or a wildcard used in a MBean, the index column will be named as per the key of the data in the row.</emphasis>[m
+[32m+[m[32m            </para>[m
+[32m+[m[32m          </listitem>[m
+[32m+[m[32m        </itemizedlist>[m
+[32m+[m[32m      </listitem>[m
+[32m+[m[32m    </itemizedlist>[m
+[32m+[m[32m  </chapter>[m
+[1mdiff --git a/docs/jdocbook-telscale/en-US/chapter-2-SNMP_Adaptor_s_Description.xml b/docs/jdocbook-telscale/en-US/chapter-2-SNMP_Adaptor_s_Description.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..4a79d2e[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/chapter-2-SNMP_Adaptor_s_Description.xml[m
+[36m@@ -0,0 +1,34 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">[m
+[32m+[m[32m<chapter id="sid-4588087_SNMPAdaptor-SNMPAdaptor%27sDescription">[m
+[32m+[m[41m    [m
+[32m+[m[32m    <title>SNMP Adaptor's Description</title>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">JBoss Application Server and Mobicents now features a revamped SNMP Adaptor, leveraging</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">[m
+[32m+[m[32m        <ulink url="http://www.snmp4j.org/">snmp4j</ulink>[m
+[32m+[m[32m      </emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">as a Java implementation of SNMP, that wraps the JMX MBean and Notifications to allow monitoring and configuration of the Application Server and applications deployed on it through the SNMP protocol.Note: the documentation for the previous version can be found here</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">[m
+[32m+[m[32m        <ulink url="http://community.jboss.org/wiki/JBossSNMPAdapter"/>[m
+[32m+[m[32m      </emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">The Adaptor now supports all versions of the protocol, v1, v2c and v3 including security for v2c and v3. It also has supports for tables and both traps and informs.</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">The Adaptor is broke down in 2 pieces :</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m    <itemizedlist>[m
+[32m+[m[32m      <listitem>[m
+[32m+[m[32m        <para>[m
+[32m+[m[32m          <xref linkend="sid-4784981"/>[m
+[32m+[m[32m        </para>[m
+[32m+[m[32m      </listitem>[m
+[32m+[m[32m      <listitem>[m
+[32m+[m[32m        <para>[m
+[32m+[m[32m          <xref linkend="sid-4784983"/>[m
+[32m+[m[32m        </para>[m
+[32m+[m[32m      </listitem>[m
+[32m+[m[32m    </itemizedlist>[m
+[32m+[m[32m  </chapter>[m
+[1mdiff --git a/docs/jdocbook-telscale/en-US/chapter-3-SNMP_Adaptor_WalkThrough.xml b/docs/jdocbook-telscale/en-US/chapter-3-SNMP_Adaptor_WalkThrough.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..a139dbb[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/chapter-3-SNMP_Adaptor_WalkThrough.xml[m
+[36m@@ -0,0 +1,13 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">[m
+[32m+[m[32m<chapter id="sid-4588087_SNMPAdaptor-SNMPAdaptorWalkThrough">[m
+[32m+[m[41m    [m
+[32m+[m[32m    <title>SNMP Adaptor WalkThrough</title>[m
+[32m+[m[32m    <para>[m
+[32m+[m[32m      <emphasis role="color:#000000">The</emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">[m
+[32m+[m[32m        <xref linkend="sid-4785050"/>[m
+[32m+[m[32m      </emphasis>[m
+[32m+[m[32m      <emphasis role="color:#000000">will guide through on how to monitor and manage the JBoss Application Server, its components and the applications deployed within it through SNMP by wrapping the JMX MBeans</emphasis>[m
+[32m+[m[32m    </para>[m
+[32m+[m[32m  </chapter>[m
+[1mdiff --git a/docs/jdocbook-telscale/en-US/chapter-4-The_SNMP_Adaptor_JBoss_Service.xml b/docs/jdocbook-telscale/en-US/chapter-4-The_SNMP_Adaptor_JBoss_Service.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..95b65ec[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/chapter-4-The_SNMP_Adaptor_JBoss_Service.xml[m
+[36m@@ -0,0 +1,507 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">[m
+[32m+[m[32m<chapter id="sid-4784981">[m
+[32m+[m[41m    [m
+[32m+[m[32m    <title>The SNMP Adaptor JBoss Service</title>[m
+[32m+[m[32m    <section id="sid-4784981_TheSNMPAdaptorJBossService-Location">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>Location</title>[m
+[32m+[m[32m      <para>The SNMP Adaptor JBoss Service is located in $JBOSS_HOME/server/&lt;profile&gt;/deploy/snmp-adaptor.sar</para>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4784981_TheSNMPAdaptorJBossService-Responsibilities">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>Responsibilities</title>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#333333">The SNMP Adaptor Service</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#333333">contains the general configuration of the SNMP service and the JMX to SNMP mapping for the JBoss Application Server and its subcomponents.</emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#333333">The SNMP Adaptor Service Agent listen on a given UDP port (default 1161). The manager may send requests from any available source port to port 1161 in the Agent. The Agent responses will be sent back to the source port of the manager sent requests. The</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#333333">SNMP Adaptor Service</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#333333">also provides a manager that can receive notifications (Traps and Inform Requests) on port 1162. The</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#333333">SNMP Adaptor Service Agent</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#333333">may generate notifications from any available port on behalf of the JBoss Application Server or its components and applications deployed within it.</emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4784981_TheSNMPAdaptorJBossService-Installation">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>Installation</title>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        Extract the file[m
+[32m+[m[32m        <ulink url="https://docs.jboss.org/author/download/attachments/4784981/snmp-adaptor.sar.zip?version=1&amp;modificationDate=1310504114000">snmp-adaptor.sar.zip</ulink>[m
+[32m+[m[32m        to[m
+[32m+[m[32m        <code>$JBOSS_HOME/server/&lt;profile&gt;/deploy</code>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="italics">Note : make sure to remove the old snmp-adaptor.sar if present</emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4784981_TheSNMPAdaptorJBossService-Configuration">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>Configuration</title>[m
+[32m+[m[32m      <para>The SNMP Adaptor JBoss Service location will be referred as $JBOSS_SNMP_ADAPTOR.</para>[m
+[32m+[m[32m      <para>The SNMP Adaptor JBoss Service offers 5 configuration files</para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <xref linkend="sid-4785093"/>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <xref linkend="sid-4785095"/>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <xref linkend="sid-4785099"/>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <xref linkend="sid-4785104"/>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <xref linkend="sid-4785106"/>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m      <section id="sid-4784981_TheSNMPAdaptorJBossService-">[m
+[32m+[m[41m        [m
+[32m+[m[32m        <title/>[m
+[32m+[m[32m      </section>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4785093">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>SNMP Adaptor JBoss Service Configuration file</title>[m
+[32m+[m[32m      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/jboss-service.xml managing the general configuration of the SNMP Adaptor, It defines 3 MBeans :</para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            The SNMP Adaptor Manager[m
+[32m+[m[32m            <emphasis role="strong">org.jboss.jmx.adaptor.snmp.trapd.TrapdService</emphasis>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            The SNMP Adaptor Agent[m
+[32m+[m[32m            <emphasis role="strong">org.jboss.jmx.adaptor.snmp.agent.SnmpAgentService</emphasis>[m
+[32m+[m[32m            : It defines a set of properties to override the default behavior of the Agent and the location of the other configuration files used by the agent. It also defines the list of Subscriptions to JMX notifications from the JBoss Application Server, its components and applications deployed within it that the agent filters and will map to SNMP Notifications. This subscriptionList attribute warrants a specific section as it is used in conjunction with the Notifications configuration file. It defines a list of JMX Notifications emitted by MBeans (the name can use wilcard to match multiple MBeans at the same time) to intercept that will be converted by the SNMP Adaptor as an SNMP Notification through the Notifications configuration file. The type of the notification will be used to find in the Notifications file how to map it, which OID to give it and which information will be sent.[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="italics">Note : Both above MBean uses the</emphasis>[m
+[32m+[m[32m        <ulink url="http://community.jboss.org/wiki/AS5ServiceBindingManager">JBoss Service Binding Manager</ulink>[m
+[32m+[m[32m        <emphasis role="italics">to configure the ports where the JBoss SNMP Agent and Manager are listening on</emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            System Information as specified in RFC 1213[m
+[32m+[m[32m            <emphasis role="strong">org.jboss.jmx.adaptor.snmp.system.MIB2SystemGroupService</emphasis>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4785095">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>SNMP Adaptor Attributes configuration file</title>[m
+[32m+[m[32m      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/attributes.xml and controls the mapping of JMX mbean attributes to SNMP OIDs accessible through the SNMP Adaptor. It defines a list of MBean and their attributes to map to SNMP OID.</para>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        Each[m
+[32m+[m[32m        <emphasis role="strong">mbean</emphasis>[m
+[32m+[m[32m        entry must specify :[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">name</emphasis>[m
+[32m+[m[32m            : The MBean name for which its attributes need to be exposed. The MBean name can be a wildcard, in which case the returned set will be exposed as an SNMP Table (A walk-through for that is given in[m
+[32m+[m[32m            <xref linkend="sid-4784932"/>[m
+[32m+[m[32m            ),[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">oid-prefix</emphasis>[m
+[32m+[m[32m            (optional) : if set it will be prepended to the attributes oid.[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            a list of[m
+[32m+[m[32m            <emphasis role="strong">attribute</emphasis>[m
+[32m+[m[32m            that specifies :[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m          <itemizedlist>[m
+[32m+[m[32m            <listitem>[m
+[32m+[m[32m              <para>[m
+[32m+[m[32m                <emphasis role="strong">name</emphasis>[m
+[32m+[m[32m                it needs to match the one in has to be exposed from the MBean[m
+[32m+[m[32m              </para>[m
+[32m+[m[32m            </listitem>[m
+[32m+[m[32m            <listitem>[m
+[32m+[m[32m              <para>[m
+[32m+[m[32m                <emphasis role="strong">oid</emphasis>[m
+[32m+[m[32m                identifier of the attribute. It can either be the full oid or only the last part of it if the oid-prefix was set above. All attributes are Scalar objects by default which means that to access them you will need to add a .0 to the attribute oid to access it (A walk-through for that is given in[m
+[32m+[m[32m                <xref linkend="sid-4784932"/>[m
+[32m+[m[32m                ,[m
+[32m+[m[32m              </para>[m
+[32m+[m[32m            </listitem>[m
+[32m+[m[32m            <listitem>[m
+[32m+[m[32m              <para>[m
+[32m+[m[32m                <emphasis role="strong">table</emphasis>[m
+[32m+[m[32m                if the attribute has to be exposed as a Tabular object ie a SNMP table (A walk-through for that is given in[m
+[32m+[m[32m                <xref linkend="sid-4784975"/>[m
+[32m+[m[32m                , currently if set to true only array, List and Map are supported and within those only basic types (String, int, long, boolean, otherwise Object.toString will be called)[m
+[32m+[m[32m              </para>[m
+[32m+[m[32m            </listitem>[m
+[32m+[m[32m            <listitem>[m
+[32m+[m[32m              <para>[m
+[32m+[m[32m                <emphasis role="strong">mode</emphasis>[m
+[32m+[m[32m                if set to *rw, *it means that the attribute is writable (can be set) otherwise by default it is read-only[m
+[32m+[m[32m              </para>[m
+[32m+[m[32m            </listitem>[m
+[32m+[m[32m          </itemizedlist>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4785099">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>SNMP Adaptor Notifications configuration File</title>[m
+[32m+[m[32m      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/notifications.xml and controls the mapping of JMX notifications onto SNMP traps. The key for the mapping is considered to be the notification type as defined in the subscriptions list of the SNMP Adaptor JBoss Service configuration file.</para>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        For generic SNMPv1 traps,[m
+[32m+[m[32m        <emphasis role="italics">Enterprise</emphasis>[m
+[32m+[m[32m        field contains value of[m
+[32m+[m[32m        <ulink url="http://tools.cisco.com/Support/SNMP/do/BrowseOID.do?local=en&amp;translate=Translate&amp;objectInput=1.3.6.1.2.1.1.2">sysObjectID</ulink>[m
+[32m+[m[32m        of the device that sends trap. For vendor specific traps,[m
+[32m+[m[32m        <emphasis role="italics">Generic trap type field</emphasis>[m
+[32m+[m[32m        is set to enterpriseSpecific(6[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        Each[m
+[32m+[m[32m        <emphasis role="strong">mapping</emphasis>[m
+[32m+[m[32m        entry must specify :[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">notification-type</emphasis>[m
+[32m+[m[32m            : The type of JMX Notifications to wrap as a SNMP Notification. Please note that the notification has to be caught first by the subscription list filter defined in SNMP Adaptor JBoss Service configuration file (A walk-through for that is given in[m
+[32m+[m[32m            <xref linkend="sid-4784977"/>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="italics">Note : The below attributes generic, specific and enterprise varies depending on the version of the protocol namely - v1 and v2. For v1, . For v2 and v3, It is essentially a concatenation of the</emphasis>[m
+[32m+[m[32m        <emphasis role="strong">[m
+[32m+[m[32m          <emphasis role="italics">e</emphasis>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m        <emphasis role="strong">[m
+[32m+[m[32m          <emphasis role="italics">nterprise</emphasis>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m        _ parameter and two additional sub-identifiers, '0' (so make sure to set generic as 0 here), and the_[m
+[32m+[m[32m        <emphasis role="strong">[m
+[32m+[m[32m          <emphasis role="italics">s</emphasis>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m        <emphasis role="strong">[m
+[32m+[m[32m          <emphasis role="italics">pecific</emphasis>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m        <emphasis role="italics">trap code</emphasis>[m
+[32m+[m[32m        _ parameter_[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">generic</emphasis>[m
+[32m+[m[32m            : Indicates one of a number of generic trap types[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">specific</emphasis>[m
+[32m+[m[32m            : Indicates one of a number of specific trap codes.[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">enterprise</emphasis>[m
+[32m+[m[32m            : contains value of[m
+[32m+[m[32m            <ulink url="http://tools.cisco.com/Support/SNMP/do/BrowseOID.do?local=en&amp;translate=Translate&amp;objectInput=1.3.6.1.2.1.1.2">sysObjectID</ulink>[m
+[32m+[m[32m            of the device that sends trap[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">inform</emphasis>[m
+[32m+[m[32m            : if set to[m
+[32m+[m[32m            <emphasis role="strong">"true"</emphasis>[m
+[32m+[m[32m            , this trap will be send as an inform (acknowledged trap)[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">security-name</emphasis>[m
+[32m+[m[32m            : the user to associate with the sending of the trap (will be used for version 3 of the protocol only)[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">var-bind-list</emphasis>[m
+[32m+[m[32m            whose defines a[m
+[32m+[m[32m            <emphasis role="strong">wrapper-class</emphasis>[m
+[32m+[m[32m            that allows to to extract info from arbitrary notification subclasses. The generated trap may contain an arbitrary payload of[m
+[32m+[m[32m            <emphasis role="italics">variable bindings</emphasis>[m
+[32m+[m[32m            ([m
+[32m+[m[32m            <emphasis role="strong">var-bind)</emphasis>[m
+[32m+[m[32m            with explicitly specified[m
+[32m+[m[32m            <emphasis role="strong">oid</emphasis>[m
+[32m+[m[32m            and values extracted from the emitted notification ([m
+[32m+[m[32m            <emphasis role="strong">tag</emphasis>[m
+[32m+[m[32m            ). To extract those values a wrapper class implementing the org.jboss.jmx.adaptor.snmp.agent.NotificationWrapper interface must be supplied. At runtime, the value specified using the element is passed to the wrapper class implementation as the key to be mapped, in an implementation specific way, to a corresponding value. A default implementation of this interface comes with class org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport. This implementation recognizes the following set of tags :[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m      <informaltable>[m
+[32m+[m[32m        <tgroup cols="2">[m
+[32m+[m[32m          <thead>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>Tag</para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>Description</para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m          </thead>[m
+[32m+[m[32m          <tbody>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  n:message[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>javax.management.Notification.getMessage()</para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  n:sequenceNumber[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  javax.management.Notification.getSequenceNumber()[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  n:timeStamp[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  javax.management.Notification.getTimestamp()[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  n:type[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  javax.management.Notification.getType()[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  n:all[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  javax.management.Notification.toString()[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  n:class[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  javax.management.Notification.getClass().getName()[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  a:startTime[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  snmp agent/adaptor start time[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  a:uptime[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  snmp agent/adaptor up time[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  a:trapCount[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  snmp agent/adaptor trap count[m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m            <row>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>u:&lt;user-defined-tag&gt;</para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m              <entry>[m
+[32m+[m[32m                <para>[m
+[32m+[m[32m                  looked-up in n.getUserData()[m
+[32m+[m[41m                  [m
+[32m+[m[41m                  [m
+[32m+[m[32m                </para>[m
+[32m+[m[32m              </entry>[m
+[32m+[m[32m            </row>[m
+[32m+[m[32m          </tbody>[m
+[32m+[m[32m        </tgroup>[m
+[32m+[m[32m      </informaltable>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4785104">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>SNMP Adaptor Managers Configuration File</title>[m
+[32m+[m[32m      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/managers.xml and is used to configure the SNMP managers to which the generated SNMP traps should be forwarded.</para>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        Each[m
+[32m+[m[32m        <emphasis role="strong">manager</emphasis>[m
+[32m+[m[32m        entry must specify:[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">address</emphasis>[m
+[32m+[m[32m            : the manager's address (IP address or host name)[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">port</emphasis>[m
+[32m+[m[32m            : the listening port[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">local-address</emphasis>[m
+[32m+[m[32m            : the local binding address (optional)[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">local-port</emphasis>[m
+[32m+[m[32m            : the local binding port (optional)[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">version</emphasis>[m
+[32m+[m[32m            : the SNMP version to use (1 or 2 or 3)[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">community-string</emphasis>[m
+[32m+[m[32m            : If version is 1 or 2, the community string (public or private)[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4785106">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>SNMP Adaptor Users Configuration File</title>[m
+[32m+[m[32m      <para>It is located at $JBOSS_SNMP_ADAPTOR/META-INF/users.xml and is used to configure the SNMP users when using version 3 of the protocol.</para>[m
+[32m+[m[32m      <para>Each user entry must specify:</para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">securityName</emphasis>[m
+[32m+[m[32m            : the security name of the user (typically the user name).[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">authenticationProtocol</emphasis>[m
+[32m+[m[32m            : the authentication protcol to be associated with this user (MD5 or SHA). If not set, this user only supports unauthenticated messages.[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">authenticationPassphrase</emphasis>[m
+[32m+[m[32m            : If present, the authentication Protocol must also be present. RFC3414 §11.2 requires passphrases to have a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgumentException will be thrown.[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">privacyProtocol</emphasis>[m
+[32m+[m[32m            : the privacy protcol ID to be associated with this user (DES, 3DES, AES128, AES192, AES256). If not set, this user only supports unencrypted messages.[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="strong">privacyPassphrase</emphasis>[m
+[32m+[m[32m            : If present, the privacy Protocol must also be set. RFC3414 §11.2 requires passphrases to have a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgumentException will be thrown.[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m  </chapter>[m
+[1mdiff --git a/docs/jdocbook-telscale/en-US/chapter-5-The_SNMP_Adaptor_JBoss_Deployer.xml b/docs/jdocbook-telscale/en-US/chapter-5-The_SNMP_Adaptor_JBoss_Deployer.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..df65cd4[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/chapter-5-The_SNMP_Adaptor_JBoss_Deployer.xml[m
+[36m@@ -0,0 +1,30 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">[m
+[32m+[m[32m<chapter id="sid-4784983">[m
+[32m+[m[41m    [m
+[32m+[m[32m    <title>The SNMP Adaptor JBoss Deployer</title>[m
+[32m+[m[32m    <section id="sid-4784983_TheSNMPAdaptorJBossDeployer-Location">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>Location</title>[m
+[32m+[m[32m      <para>The SNMP Adaptor Deployer is located in $JBOSS_HOME/server/&lt;profile&gt;/deployers/snmp.deployer</para>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4784983_TheSNMPAdaptorJBossDeployer-Installation">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>Installation</title>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        Extract the file[m
+[32m+[m[32m        <ulink url="https://docs.jboss.org/author/download/attachments/4784983/snmp.deployer.zip?version=1&amp;modificationDate=1311864578000">snmp.deployer.zip</ulink>[m
+[32m+[m[32m        to[m
+[32m+[m[32m        <code>$JBOSS_HOME/server/&lt;profile&gt;/deployers</code>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4784983_TheSNMPAdaptorJBossDeployer-Responsibilities">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>Responsibilities</title>[m
+[32m+[m[32m      <para>The SNMP Adaptor Deployer dynamically looks for snmp-attributes.xml and snmp-notifications.xml files in any applications deployed within JBoss Application Server and register the notifications, attributes and their JMX mapping with the SNMP Adaptor JBoss Service.</para>[m
+[32m+[m[32m      <section id="sid-4784983_TheSNMPAdaptorJBossDeployer-">[m
+[32m+[m[41m        [m
+[32m+[m[32m        <title/>[m
+[32m+[m[32m      </section>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m  </chapter>[m
+[1mdiff --git a/docs/jdocbook-telscale/en-US/chapter-6-SNMP_Adaptor_Walkthrough.xml b/docs/jdocbook-telscale/en-US/chapter-6-SNMP_Adaptor_Walkthrough.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..ab16619[m
+[1m--- /dev/null[m
+[1m+++ b/docs/jdocbook-telscale/en-US/chapter-6-SNMP_Adaptor_Walkthrough.xml[m
+[36m@@ -0,0 +1,915 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">[m
+[32m+[m[32m<chapter id="sid-4785050">[m
+[32m+[m[41m    [m
+[32m+[m[32m    <title>SNMP Adaptor Walkthrough</title>[m
+[32m+[m[32m    <section id="sid-4785050_SNMPAdaptorWalkthrough-">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>Description</title>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#000000">The following sections will guide you on how to setup and test the various features of the adapter on a step by step like tutorial by showing you how to access your JMX Beans and expose them through SNMP. The popular</emphasis>[m
+[32m+[m[32m        <ulink url="http://www.net-snmp.org/">net-snmp</ulink>[m
+[32m+[m[32m        <emphasis role="color:#000000">will be used to show interoperability with the JBoss SNMP Adaptor.</emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#000000">SNMPv1 specified five core protocol data units (PDUs). Two other PDUs,</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#000000">[m
+[32m+[m[32m          <emphasis role="italics">GetBulkRequest</emphasis>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m        <emphasis role="color:#000000">and</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#000000">[m
+[32m+[m[32m          <emphasis role="italics">InformRequest</emphasis>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m        <emphasis role="color:#000000">were added in SNMPv2 and carried over to SNMPv3.</emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#000000">The seven SNMP protocol data units (PDUs) are as follows:</emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="strong">Response</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000"/>[m
+[32m+[m[32m            <emphasis role="color:#000000">Returns variable bindings and acknowledgement from agent to manager for below</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">GetRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">,</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">SetRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">,</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">GetNextRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">,</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">GetBulkRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">and</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">InformRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">. Error reporting is provided by</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">error-status</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">and</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">error-index</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">fields. Although it was used as a response to both gets and sets, this PDU was called</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">GetResponse</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">in SNMPv1.</emphasis>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="strong">GetRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">* *</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">A manager-to-agent request to retrieve the value of a variable or list of variables.</emphasis>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="strong">SetRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">A manager-to-agent request to change the value of a variable or list of variables.</emphasis>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#000000">The 3 above PDUs are covered by</emphasis>[m
+[32m+[m[32m        <link linkend="sid-4784932">Accessing JMX Beans Attributes (SNMP GET and SET)</link>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="strong">GetNextRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000"/>[m
+[32m+[m[32m            <emphasis role="color:#000000">A manager-to-agent request to discover available variables and their values. Returns a</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">Response</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">with variable binding for the lexicographically next variable in the MIB. The entire MIB of an agent can be walked by iterative application of</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">GetNextRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">starting at OID 0. Rows of a table can be read by specifying column OIDs in the variable bindings of the request.</emphasis>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="strong">GetBulkRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">Optimized version of</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">GetNextRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">. A manager-to-agent request for multiple iterations of</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">GetNextRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">. Returns a</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">Response</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">with multiple variable bindings walked from the variable binding or bindings in the request. PDU specific</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">non-repeaters</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">and</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">max-repetitions</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">fields are used to control response behavior.</emphasis>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#000000">The 2 above PDUs are covered by</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#000000">[m
+[32m+[m[32m          <link linkend="sid-4784975">Accessing JMX wildcards or Beans Attributes as Tables (SNMP getnext, SNMP getbulk)</link>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <itemizedlist>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="strong">Trap</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000"/>[m
+[32m+[m[32m            <emphasis role="color:#000000">Asynchronous notification from agent to manager. Includes current</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">sysUpTime</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">value, an OID identifying the type of trap and optional variable bindings.</emphasis>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m        <listitem>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="strong">InformRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">* *</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">Acknowledged asynchronous notification from manager to manager. This PDU uses the same format as the SNMPv2 version of</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">Trap</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">. Manager-to-manager notifications were already possible in SNMPv1 (using a</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">Trap</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">), but as SNMP commonly runs over UDP where delivery is not assured and dropped packets are not reported, delivery of a</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">Trap</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">was not guaranteed.</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">InformRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">fixes this by sending back an acknowledgement on receipt. Receiver replies with</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">{_}Response _</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">parroting all information in the</emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">[m
+[32m+[m[32m              <emphasis role="italics">InformRequest</emphasis>[m
+[32m+[m[32m            </emphasis>[m
+[32m+[m[32m            <emphasis role="color:#000000">.</emphasis>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m        </listitem>[m
+[32m+[m[32m      </itemizedlist>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#000000">The 2 above PDUs are covered by</emphasis>[m
+[32m+[m[32m        <xref linkend="sid-4784977"/>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#000000">Included in the SNMP Adaptor is a way for a user to generate an SNMP MIB file based on already defined attributes.xml and notifications.xml, See</emphasis>[m
+[32m+[m[32m        <xref linkend="sid-4784788"/>[m
+[32m+[m[32m        <emphasis role="color:#000000">for more information.</emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4785050_SNMPAdaptorWalkthrough-x">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>SNMP set up and user configuration</title>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="color:#000000">To test the SNMP Adaptor, we will use v3 of the protocol as it is the current standard version of SNMP since 2004. Install Net-SNMP from</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#000000">[m
+[32m+[m[32m          <ulink url="http://www.net-snmp.org/"/>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m        <emphasis role="color:#000000">. The JBoss SNMP Adaptor provides a default set of users configured by default in its</emphasis>[m
+[32m+[m[32m        <emphasis role="color:#000000">[m
+[32m+[m[32m          <link linkend="sid-4784981">users configuration file</link>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m        <emphasis role="color:#000000"/>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <para>This is the user that will be used throughout the walkthrough ﻿:</para>[m
+[32m+[m[32m      <informalexample>[m
+[32m+[m[32m        <programlisting>&lt;user&gt;[m
+[32m+[m[32m    &lt;securityName&gt;TEST&lt;/securityName&gt;[m
+[32m+[m[32m    &lt;authenticationProtocol&gt;MD5&lt;/authenticationProtocol&gt;[m
+[32m+[m[32m    &lt;authenticationPassphrase&gt;maplesyrup&lt;/authenticationPassphrase&gt;[m
+[32m+[m[32m    &lt;privacyProtocol&gt;DES&lt;/privacyProtocol&gt;[m
+[32m+[m[32m    &lt;privacyPassphrase&gt;maplesyrup&lt;/privacyPassphrase&gt;[m
+[32m+[m[32m  &lt;/user&gt;</programlisting>[m
+[32m+[m[32m      </informalexample>[m
+[32m+[m[32m      <para>The same user has to be configured on net-snmp so that net-snmp and JBoss SNMP Adaptor can communicate in a secure manner. Run the following command for a console</para>[m
+[32m+[m[32m      <informalexample>[m
+[32m+[m[32m        <programlisting>net-snmp-config --create-snmpv3-user -a maplesyrup TEST</programlisting>[m
+[32m+[m[32m      </informalexample>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        <emphasis role="italics">[m
+[32m+[m[32m          Note: In linux, you will need to run it with root privileges through _[m
+[32m+[m[32m          <emphasis role="strong"/>[m
+[32m+[m[32m        </emphasis>[m
+[32m+[m[32m        <emphasis role="strong">sudo{_}</emphasis>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <para>Issuing the above command should display the following output</para>[m
+[32m+[m[32m      <para/>[m
+[32m+[m[32m      <informalexample>[m
+[32m+[m[32m        <programlisting>adding the following line to /var/lib/snmp/snmpd.conf:[m
+[32m+[m[32m   createUser TEST MD5 "maplesyrup" DES[m
+[32m+[m[32madding the following line to /usr/share/snmp/snmpd.conf:[m
+[32m+[m[32m   rwuser TEST</programlisting>[m
+[32m+[m[32m      </informalexample>[m
+[32m+[m[32m      <para>To be able to receive SNMP Traps or INFORM from a given user, snmptrapd configuration has to be modified :</para>[m
+[32m+[m[32m      <informalexample>[m
+[32m+[m[32m        <programlisting>sudo gedit /etc/snmp/snmptrapd.conf</programlisting>[m
+[32m+[m[32m      </informalexample>[m
+[32m+[m[32m      <para>And add the following</para>[m
+[32m+[m[32m      <informalexample>[m
+[32m+[m[32m        <programlisting>#User to receive TRAP[m
+[32m+[m[32mcreateUser -e 0x80001370017F000101 TEST MD5 maplesyrup DES maplesyrup[m
+[32m+[m[32m#User to receive INFORM[m
+[32m+[m[32mcreateUser myuser MD5 password DES password[m
+[32m+[m[32m#Those make snmptrapd log the TRAPs and INFORM to the console[m
+[32m+[m[32mauthUser log,execute,net TEST[m
+[32m+[m[32mauthUser log,execute,net myuser</programlisting>[m
+[32m+[m[32m      </informalexample>[m
+[32m+[m[32m      <para>[m
+[32m+[m[32m        It is possible to make snmptrap display the name of the OID defined in the MIB of JBoss. More information can also be found in[m
+[32m+[m[32m        <xref linkend="sid-4784788"/>[m
+[32m+[m[32m      </para>[m
+[32m+[m[32m      <para>Check the directory where the MIBs will be loaded from with the following command :</para>[m
+[32m+[m[32m      <informalexample>[m
+[32m+[m[32m        <programlisting>net-snmp-config --default-mibdirs</programlisting>[m
+[32m+[m[32m      </informalexample>[m
+[32m+[m[32m      <para>Edit the snmp.conf</para>[m
+[32m+[m[32m      <informalexample>[m
+[32m+[m[32m        <programlisting>sudo gedit /etc/snmp/snmp.conf</programlisting>[m
+[32m+[m[32m      </informalexample>[m
+[32m+[m[32m      <para>and add the following</para>[m
+[32m+[m[32m      <informalexample>[m
+[32m+[m[32m        <programlisting>#include all MIB[m
+[32m+[m[32mmibs +ALL</programlisting>[m
+[32m+[m[32m      </informalexample>[m
+[32m+[m[32m      <para>Copy the MIB from JBoss Application Server to your user dir where the MIB will be loaded from</para>[m
+[32m+[m[32m      <informalexample>[m
+[32m+[m[32m        <programlisting>cp $JBOSS_HOME/server/default/deploy/snmp-adaptor.sar/attributes.mib /home/&lt;user&gt;/.snmp/mibs/</programlisting>[m
+[32m+[m[32m      </informalexample>[m
+[32m+[m[32m    </section>[m
+[32m+[m[32m    <section id="sid-4785085">[m
+[32m+[m[41m      [m
+[32m+[m[32m      <title>Exposing your Application metrics through SNMP</title>[m
+[32m+[m[32m      <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-Description">[m
+[32m+[m[41m        [m
+[32m+[m[32m        <title>Description</title>[m
+[32m+[m[32m        <para>[m
+[32m+[m[32m          The application attached herewith[m
+[32m+[m[32m          <emphasis role="strong">[m
+[32m+[m[32m            <ulink url="https://docs.jboss.org/author/download/attachments/4785085/snmp-servlet.zip?version=1&amp;modificationDate=1311864471000">snmp-servlet.zip</ulink>[m
+[32m+[m[32m          </emphasis>[m
+[32m+[m[32m          showcase a basic web application that provides a web page which displays a counter, each time the page is refreshed the counter is incremented. Alternatively, a message can be set through JMX that will display on the web page as well. The application also register a MBean providing the following set of monitoring information :[m
+[32m+[m[32m        </para>[m
+[32m+[m[32m        <itemizedlist>[m
+[32m+[m[32m          <listitem>[m
+[32m+[m[32m            <para>counter : the current value of the counter</para>[m
+[32m+[m[32m          </listitem>[m
+[32m+[m[32m          <listitem>[m
+[32m+[m[32m            <para>message : allows to retrieve and set the value of the message that will be displayed on the page along with the counter</para>[m
+[32m+[m[32m          </listitem>[m
+[32m+[m[32m          <listitem>[m
+[32m+[m[32m            <para>messageHistory : all the values that have been set since the application is running returned as a java.util.List&lt;String&gt;</para>[m
+[32m+[m[32m          </listitem>[m
+[32m+[m[32m          <listitem>[m
+[32m+[m[32m            <para>messageHistoryAsArray : all the values that have been set since the application is running returned as a String array.</para>[m
+[32m+[m[32m          </listitem>[m
+[32m+[m[32m          <listitem>[m
+[32m+[m[32m            <para>countHistory : all the values that have been displayed since the application is running returned as a primitive int array.</para>[m
+[32m+[m[32m          </listitem>[m
+[32m+[m[32m          <listitem>[m
+[32m+[m[32m            <para>messageCountHistory : a Map which have as a key the message and as a value the corresponding counter value that was present when the message was set.</para>[m
+[32m+[m[32m          </listitem>[m
+[32m+[m[32m        </itemizedlist>[m
+[32m+[m[32m        <para>The application also send will make use of the SNMP Agent MBean Service to send a SNMP trap on when the application is deployed.</para>[m
+[32m+[m[32m        <para>All those information will be used for testing the different SNMP PDUs.</para>[m
+[32m+[m[32m      </section>[m
+[32m+[m[32m      <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-MappingApplicationJMXAttributesandNotificationstoSNMP">[m
+[32m+[m[41m        [m
+[32m+[m[32m        <title>Mapping Application JMX Attributes and Notifications to SNMP</title>[m
+[32m+[m[32m        <para>[m
+[32m+[m[32m          Similarly on how the[m
+[32m+[m[32m          <xref linkend="sid-4784981"/>[m
+[32m+[m[32m          allows to map the MBean and JMX Notifications from the JBoss Application Server and its components through the Attributes and Notifications configuration files, the[m
+[32m+[m[32m          <xref linkend="sid-4784983"/>[m
+[32m+[m[32m          will check for applications deployed within the JBoss Application Server if they contains either a snmp-attributes.xml file or a snmp-notifications.xml or both.[m
+[32m+[m[32m        </para>[m
+[32m+[m[32m        <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-TheAttributesconfigurationfile">[m
+[32m+[m[41m          [m
+[32m+[m[32m          <title>The Attributes configuration file</title>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            It is located at META-INF/attributes.xml and have the exact same schema as[m
+[32m+[m[32m            <xref linkend="sid-4785095"/>[m
+[32m+[m[32m          </para>[m
+[32m+[m[32m          <para>[m
+[32m+[m[32m            The configuration file for the example attached is the following and describes the mapping between the MBean and its attributes defined in the[m
+[32m+[m[32m            <emphasis role="strong">Description</emphasis>[m
+[32m+[m[32m            section above :[m
+[32m+[m[32m   
