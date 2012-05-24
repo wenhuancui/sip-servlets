@@ -632,6 +632,13 @@ Job failed. See system logs and 'systemctl status' for details.[FAILED]  </para>
  
  <screen> http://127.0.0.1:8980/opennms </screen>
 
+<note>
+<title>Debian Installation</title>
+<para>
+A debian version of this OpenNMS installation guide is available at <ulink url="http://www.opennms.org/wiki/Installation:Debian"/>
+</para>
+</note>
+
  </section>
  
  <section>
@@ -671,7 +678,6 @@ where 192.168.1.3 is the ip address of the OpenNms server
 Now go to the http://192.168.1.3:8980/opennms/  web page and click on the menu > Node List
 you should see that your server has been scanned and services are available like this screen shot below
 </para>
- 
 
  <figure>
 <title>Scan Node Lists</title>
@@ -681,7 +687,6 @@ you should see that your server has been scanned and services are available like
 </imageobject>
 </mediaobject>
 </figure> 
-
  
  </section>
   
