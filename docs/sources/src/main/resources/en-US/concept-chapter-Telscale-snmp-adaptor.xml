@@ -4,12 +4,12 @@
 %BOOK_ENTITIES;
 ]>
 <chapter id="telscale-snmp-adaptor">
-  <title>Telscale SNMP Adaptor User Guide</title>
+  <title>&PLATFORM_NAME; SNMP Adaptor User Guide</title>
 
   <para>
-  There are multiple ways to access the Snmp data on the Telscale server. You can use an SNMP command line tool like the Net-Snmp. 
+  There are multiple ways to access the Snmp data on the &PLATFORM_NAME; server. You can use an SNMP command line tool like the Net-Snmp. 
   For ease of use, this user guide will be based on the OpenNMS network monitoring application. The reason for this is that it allows
-  for quick setup allowing the System and Network Administrator to concentrate on getting the most out of the Telscale server. First of all,
+  for quick setup allowing the System and Network Administrator to concentrate on getting the most out of the &PLATFORM_NAME; server. First of all,
   let us get an overview of SNMP
   </para>
   
@@ -81,7 +81,7 @@ by example for ActiveThreadCount attribute of the JBoss Application Server the O
 
 <para> <emphasis role="color:#000000">Tabular object </emphasis> </para>
 <para> Tabular Object defines multiple related object instances that are grouped in MIB tables. 
-The Telscale SNMP Adaptor uses two types of ways to access values in a table : a separate index column 
+The &PLATFORM_NAME; SNMP Adaptor uses two types of ways to access values in a table : a separate index column 
 for tabular objects that represents arrays and java.util.List since they are indexed, but to query the 
 Java index that starts at 0 in an array or List, it will start at index .1 for SNMP as .0 is reserved for scalar objects. For tabular 
 objects whose type is a java.util.Map or a wildcard used in a MBean, the index column will be named as per the key of the data in the row. </para>
@@ -107,7 +107,7 @@ objects whose type is a java.util.Map or a wildcard used in a MBean, the index c
 </section>
 
 <section>
-<title>The SNMP Adaptor TELSCALE Service</title>
+<title>The SNMP Adaptor &PLATFORM_NAME; Service</title>
      
 
 
@@ -125,10 +125,10 @@ notifications (Traps and Inform Requests) on port 1162. TheSNMP Adaptor Service 
 
 </section>
 <section>
-<title>Telscale Binaries </title>
+<title>&PLATFORM_NAME; Binaries </title>
 
 <para>
-The SNMP Adaptor Telscale Service location $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar 
+The SNMP Adaptor &PLATFORM_NAME; Service location $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar 
 will be referred to as $TELSCALE_SNMP_ADAPTOR. The installation will be explained further down.</para>
 <para>
 The SNMP Adaptor JBoss Service offers 5 configuration files that will be described below
@@ -146,7 +146,7 @@ users.xml
 
 <section> 
 
-<title> Telscale Jboss-Services.xml </title>
+<title> &PLATFORM_NAME; Jboss-Services.xml </title>
 <para>
 
 It is located at $TELSCALE_SNMP_ADAPTOR/META-INF/jboss-service.xml managing the general configuration of the SNMP Adaptor, 
@@ -509,7 +509,7 @@ The SNMP adaptor deployer is located in
 </section>
 
 <section>
-<title> Using the Open Source OpenNMS Application with TELSCALE </title>
+<title> Using the Open Source OpenNMS Application with &PLATFORM_NAME; </title>
 
 <para>
 Managing web servers using SNMP can be a tedious exercise. If you have to monitor
@@ -716,7 +716,7 @@ Once the installation is completed, you must start the snmp service
 <para> Now you can perform a quick test to make sure your installation is properly completed. </para>
 
 
-<screen> Snmpget 127.0.0.1 sysUpTime.0 </screen>
+<screen> snmpget 127.0.0.1 sysUpTime.0 </screen>
 
 <para> Which should produce a result similar to </para>
 
@@ -749,26 +749,23 @@ then go into the   http://127.0.0.1:8980/opennms/ > events > all events > and yo
   </section>
   
 <section>
-<title> Downloading TELSCALE Binaries </title>
+<title> Downloading &PLATFORM_NAME; Binaries </title>
 <para>
-The configuration above is to make sure your system is ready and functional independent of TELSCALE. 
-The next step will be using the Telscale Sip Servlets  that comes   with SNMP monitoring.
+The configuration above is to make sure your system is ready and functional independent of &PLATFORM_NAME;. 
+The next step will be using the &PLATFORM_NAME; Sip Servlets  that comes with SNMP monitoring.
 
-You will need to have Telscale Sip Servlets installed on your system. It can be obtained here
+You will need to have &PLATFORM_NAME; Sip Servlets installed on your system. It can be obtained from the TeleStax Support portal at 
 </para>
 
 <screen>
-https://telestax.zendesk.com/entries/21369346-telscale-6-1-0-ga-sip-servlets-binaries
+https://support.telestax.com/
 </screen>
 <para>
-There are two versions available and you need to download the  </para>
+Download the latest version</para>
 
-<screen>
-TelScale-SIP-Servlets-6.1.0.GA-jboss-5.1.0.GA-1204271103.zip 
-</screen>
 <para>
 You need to perform the initial installation according to the user guide. 
-The Telscale Sip Servlet SNMP adaptor will allow you to monitor your server 
+The &PLATFORM_NAME; Sip Servlet SNMP adaptor will allow you to monitor your server 
 and send traps to the OpenNMS trap listener.
 </para>
 
@@ -778,7 +775,7 @@ you can run the following command to see where the snmp tool is checking for mib
 </para>
 <screen>  snmpget -Dparse-mibs 2>&amp;1 | grep directory </screen>
 
-<para> You need to start the Telscale server in order to proceed with the next section</para>
+<para> You need to start the &PLATFORM_NAME; server in order to proceed with the next section</para>
 
 <screen> $TELSCALE_HOME/bin/run.sh </screen>
 
@@ -787,7 +784,7 @@ you can run the following command to see where the snmp tool is checking for mib
 
 <para>
 
-Using version 3 of SNMP requires setting up a user and a password. When you install TELSCALE, a TEST user
+Using version 3 of SNMP requires setting up a user and a password. When you install &PLATFORM_NAME;, a TEST user
 has already been created in the $TELSCALE_SNMP_ADAPTOR/user.xml file. This means you should be able to use
 the command below: </para>
 
@@ -801,14 +798,14 @@ SNMPv2-MIB::sysDescr.0 = STRING: Mobicents Sip Servlets
 </screen>
 
 <para>
-If you get a Snmpget timeout, make sure you have the Telscale Sip Server running
+If you get a Snmpget timeout, make sure you have the &PLATFORM_NAME; Sip Server running
 </para>
 
-<para> When you start the Telscale server using the $TELSCALE_HOME/bin/run.sh has mentioned above, it will automatically 
+<para> When you start the &PLATFORM_NAME; server using the $TELSCALE_HOME/bin/run.sh has mentioned above, it will automatically 
 send a trap to the OpenNMS trap listener and you will see the following on the Events window.</para>
 
  <figure>
-<title>OpenNMS Telscale Coldstart Trap</title>
+<title>OpenNMS &PLATFORM_NAME; Coldstart Trap</title>
 <mediaobject id="opennms_telscale_coldstart_traps">
 <imageobject>
 <imagedata align="center" fileref="images/snmp-opennms-telscale-coldstart.png" format="PNG"/>
