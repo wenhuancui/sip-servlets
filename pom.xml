@@ -1,17 +1,14 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
         	<artifactId>mobicents-parent</artifactId>
         	<groupId>org.mobicents</groupId>
-<<<<<<< HEAD
-        	<version>2.23-SNAPSHOT</version>
-=======
-        	<version>6.1.0-TelScale-SNAPSHOT</version>
->>>>>>> 3e0370a5025be3a0898f917c452f1be1df0781b6
+        	<version>6.1.1-TelScale-SNAPSHOT</version>
     	</parent>
 	<groupId>org.mobicents.servlet.sip</groupId>
 	<artifactId>sip-servlets-bootstrap</artifactId>
-	<version>1.8.0-SNAPSHOT</version>
+	<version>6.1.1-TelScale-SNAPSHOT</version>
 	<packaging>pom</packaging>	
 
 	<name>Mobicents Sip Servlets</name>
@@ -93,10 +90,10 @@
 	
 	<properties>
 		<mobicents.tools.mavenplugin.eclipse.version>1.0.0.FINAL</mobicents.tools.mavenplugin.eclipse.version>
-		<mobicents.cluster.version>${project.version}</mobicents.cluster.version>
-		<mobicents.balancer.version>${project.version}</mobicents.balancer.version>
-		<mobicents.jain.sip.ha.version>${project.version}</mobicents.jain.sip.ha.version>
-		<mobicents.jain.sip.ext.version>${project.version}</mobicents.jain.sip.ext.version>		
+		<mobicents.cluster.version>6.1.0.GA-TelScale</mobicents.cluster.version>
+		<mobicents.balancer.version>6.1.1-TelScale-SNAPSHOT</mobicents.balancer.version>
+		<mobicents.jain.sip.ha.version>6.1.0.GA-TelScale</mobicents.jain.sip.ha.version>
+		<mobicents.jain.sip.ext.version>6.1.0.GA-TelScale</mobicents.jain.sip.ext.version>		
 	</properties>
 	
 	<dependencies>
@@ -140,13 +137,30 @@
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
    				<groupId>org.mobicents.tools</groupId>
-    			<version>${mobicents.tools.mavenplugin.eclipse.version}</version>
+    				<version>${mobicents.tools.mavenplugin.eclipse.version}</version>
 				<inherited>false</inherited>
 				<executions />
 				<configuration>				
 					<!--generateProjectsForModules>true</generateProjectsForModules-->	
 					<resolveTransitiveDependencies>true</resolveTransitiveDependencies>
 					<eclipseProjectName>sip-servlets-bootstrap</eclipseProjectName>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.4.1</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${basedir}</directory>
+							<includes>
+								<include>$${**}/</include>
+								<include>bin/</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
 				</configuration>
 			</plugin>
 		</plugins>		
@@ -189,14 +203,15 @@
 		</profile>
 		<profile>			
 			<id>release</id>
-			<modules>								
+			<modules>					
+				<module>docs</module>				
 				<module>management/sip-servlets-management</module>
 				<module>sip-servlets-examples</module>
-				<module>sip-servlets-test-suite</module>
-				<module>docs</module>				
+				<module>sip-servlets-test-suite</module>							
 			</modules>
 			<properties>
 				 <maven.test.skip>true</maven.test.skip>
+				<jboss4.version>4.2.3.GA</jboss4.version>
 			</properties>
 		</profile>
 		<profile>			
@@ -439,3 +454,4 @@
 		</repository>
 	</repositories>
 </project>
+
