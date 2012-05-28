@@ -1,17 +1,16 @@
-<<<<<<< HEAD
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 <!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
+
+
+
 <chapter id="telscale-snmp-adaptor">
-  <title>&PLATFORM_NAME; SNMP Adaptor User Guide</title>
+  <title>Telscale Telscale Adaptor User Guide</title>
 
   <para>
-  There are multiple ways to access the Snmp data on the &PLATFORM_NAME; server. You can use an SNMP command line tool like the Net-Snmp. 
-  For ease of use, this user guide will be based on the OpenNMS network monitoring application. The reason for this is that it allows
-  for quick setup allowing the System and Network Administrator to concentrate on getting the most out of the &PLATFORM_NAME; server. First of all,
-  let us get an overview of SNMP
+  There are multiple ways to access the Snmp and expose your application to the Telscale server. When it comes to SNMP network and devices monitoring, Nagios, Zenoss or OpenNMS are good tools of choice. This SNMP adaptor user guide will be partly based on the OpenNMS network monitoring application and the Net-SNMP tool. This will facilitate quick deployment and will allow System and Network Administrators to quickly familiarize themselves with Telscale Application Server. First of all, let us get an overview of SNMP
   </para>
   
   <section>
@@ -44,9 +43,9 @@ called "Structure of Management Information Version 2 (SMIv2)"
 <para> The IANA OID registry contains a list of registered entities that use OIDs to reference internal structures
  (e.g. directory attributes). Each entity is assigned an initial referential value (e.g. 1.3.6.1.4.1.2312 for Red Hat, see 
  <ulink url="http://www.oid-info.com/get/1.3.6.1.4.1.2312"/> and thereafter the internal numbering plan is up to the entity to define 
- (e.g. 1.3.6.1.4.1.2312.100.1.1 might refer to the "ActiveThreadCount" attribute of the JBoss Application Sever). 
+ (e.g. 1.3.6.1.4.1.2312.100.1.1 might refer to the "ActiveThreadCount" attribute of the Telscale Application Sever). 
  This allows for precise referencing of data attributes in a company or other entity. 
- See diagram below representing the JBoss Application Server hierarchy </para>
+ See diagram below representing the Telscale Application Server hierarchy </para>
 
 <para> A managed object (sometimes called a MIB object, an object, or a MIB) 
 is one of any number of specific characteristics of a managed device. 
@@ -68,914 +67,7 @@ Managed objects are made up of one or more object instances (identified by their
 <para>
 To obtain values of objects from the manager, it is necessary to specify the instance of the object. 
 The instance of an object is specified by appending an instance index to the object identifier, 
-by example for ActiveThreadCount attribute of the JBoss Application Server the OID to query would be 1.3.6.1.4.1.2312.100.1.1.0. </para>
-
-
-<para> Two types of managed objects exist: </para>
-
-
-<para> <emphasis role="color:#000000">Scalar object </emphasis> </para>
- <para>Scalar Object defines a single object instance. A scalar object by definition has only one instance as opposed to a table. 
- Therefore, an instance index of zero is always specified when retrieving the value of a scalar object. An instance index higher 
- than 0 can only be used in the case of tabular objects, which can have multiple instances.</para>
-
-
-<para> <emphasis role="color:#000000">Tabular object </emphasis> </para>
-<para> Tabular Object defines multiple related object instances that are grouped in MIB tables. 
-The &PLATFORM_NAME; SNMP Adaptor uses two types of ways to access values in a table : a separate index column 
-for tabular objects that represents arrays and java.util.List since they are indexed, but to query the 
-Java index that starts at 0 in an array or List, it will start at index .1 for SNMP as .0 is reserved for scalar objects. For tabular 
-objects whose type is a java.util.Map or a wildcard used in a MBean, the index column will be named as per the key of the data in the row. </para>
-
-</section>
-
-<section>
-<title>SNMP Adaptor's Description</title>
-    <para>
-      <emphasis role="color:#000000">JBoss Application Server and Mobicents now features a revamped SNMP Adaptor, leveraging</emphasis>
-      <emphasis role="color:#000000">
-        <ulink url="http://www.snmp4j.org/">snmp4j</ulink>
-      </emphasis>
-      <emphasis role="color:#000000">as a Java implementation of SNMP, that wraps the JMX MBean and Notifications to allow monitoring and configuration of the Application Server and applications deployed on it through the SNMP protocol.Note: the documentation for the previous version can be found here</emphasis>
-      <emphasis role="color:#000000">
-        <ulink url="http://community.jboss.org/wiki/JBossSNMPAdapter"/>
-      </emphasis>
-    </para>
-    <para>
-      <emphasis role="color:#000000">The Adaptor now supports all versions of the protocol, v1, v2c and v3 including security for v2c and v3. It also has supports for tables and both traps and informs.</emphasis>
-    </para>
-
-</section>
-
-<section>
-<title>The SNMP Adaptor &PLATFORM_NAME; Service</title>
-     
-
-
-
-<para>
-The SNMP Adaptor Servicecontains the general configuration of the SNMP service and the JMX to SNMP mapping for
- the JBoss Application Server and its subcomponents. </para>
-
-<para>The SNMP Adaptor Service Agent listen on a given UDP port (default 1161). The manager may send requests 
-from any available source port to port 1161 in the Agent. The Agent responses will be sent back to the 
-source port of the manager sent requests. TheSNMP Adaptor Servicealso provides a manager that can receive 
-notifications (Traps and Inform Requests) on port 1162. TheSNMP Adaptor Service Agentmay generate notifications
- from any available port on behalf of the JBoss Application Server or its components and applications deployed within it.
-</para>
-
-</section>
-<section>
-<title>&PLATFORM_NAME; Binaries </title>
-
-<para>
-The SNMP Adaptor &PLATFORM_NAME; Service location $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar 
-will be referred to as $TELSCALE_SNMP_ADAPTOR. The installation will be explained further down.</para>
-<para>
-The SNMP Adaptor JBoss Service offers 5 configuration files that will be described below
-<screen>
-/META-INF/jboss-service.xml
-attributes.xml
-managers.xml
-notifications.xml
-users.xml
-</screen>
-</para>
-
-
-</section>
-
-<section> 
-
-<title> &PLATFORM_NAME; Jboss-Services.xml </title>
-<para>
-
-It is located at $TELSCALE_SNMP_ADAPTOR/META-INF/jboss-service.xml managing the general configuration of the SNMP Adaptor, 
-It defines 3 MBeans : The SNMP Adaptor Manager org.jboss.jmx.adaptor.snmp.trapd.TrapdService
- The SNMP Adaptor Agent org.jboss.jmx.adaptor.snmp.agent.SnmpAgentService : It defines a set of 
- properties to override the default behavior of the Agent and the location of the other configuration 
- files used by the agent. It also defines the list of Subscriptions to JMX notifications from the 
- JBoss Application Server, its components and applications deployed within it that the agent filters 
- and will map to SNMP Notifications. This subscriptionList attribute warrants a specific section as 
- it is used in conjunction with the Notifications configuration file. It defines a list of JMX Notifications 
- emitted by MBeans (the name can use wilcard to match multiple MBeans at the same time) to intercept that will 
- be converted by the SNMP Adaptor as an SNMP Notification through the Notifications configuration file. 
- The type of the notification will be used to find in the Notifications file how to map it, which OID to 
- give it and which information will be sent. 
-</para>
-<para>
-Note : Both above MBean uses the
-</para>
-<para>
-<ulink url="https://community.jboss.org/wiki/AS5ServiceBindingManager"> JBoss Service Binding Manager </ulink> to 
-configure the ports where the JBoss SNMP Agent and Manager are listening on
- System Information as specified in RFC 1213 org.jboss.jmx.adaptor.snmp.system.MIB2SystemGroupService
-</para>
-  
-</section>
-<section>
-<title>SNMP Adaptor Attributes.xml configuration file </title>
-
-<para>
-It is located at $TELSCALE_SNMP_ADAPTOR/attributes.xml and controls the mapping of JMX
- mbean attributes to SNMP OIDs accessible through the SNMP Adaptor. It defines a list of
- MBean and their attributes to map to SNMP OID.
- </para>
-<para>
- Each mbean entry must specify : </para>
- 
- <screen>
-name : The MBean name for which its attributes need to be exposed. 
-The MBean name can be a wildcard, in which case the returned set will be 
-exposed as an SNMP Table 
-
-oid-prefix (optional) : if set it will be prepended to the attributes oid. 
-</screen>
-<para>
-a list of attribute that specifies : 
-</para>
-<screen>
-name: 
-it needs to match the one in has to be exposed from the MBean 
-
-oid:
-identifier of the attribute. It can either be the full oid or only the last part of it 
-if the oid-prefix was set above. All attributes are Scalar objects by default which means that 
-to access them you will need to add a .0 to the attribute oid to access it.
-
-table:
-if the attribute has to be exposed as a Tabular object ie a SNMP table 
-
-mode: 
-if set to *rw, *it means that the attribute is writable (can be set) otherwise by default it is read-only 
-</screen>
-
-</section>
-
-<section>
-
-<title> SNMP Adaptor Notifications.xml configuration File </title>
-
-<para>
-It is located at $JBOSS_SNMP_ADAPTOR/notifications.xml and controls the
- mapping of JMX notifications onto SNMP traps. The key for the mapping 
- is considered to be the notification type as defined in the subscriptions 
- list of the SNMP Adaptor JBoss Service configuration file. </para>
-
-<para>
-For generic SNMPv1 traps, Enterprise field contains value of 
-            <ulink url="http://tools.cisco.com/Support/SNMP/do/BrowseOID.do?local=en&amp;translate=Translate&amp;objectInput=1.3.6.1.2.1.1.2">sysObjectID</ulink> of the device that sends trap. For vendor specific traps, Generic trap type field is set to enterpriseSpecific(6 
-</para>
-<para>
-Each mapping entry must specify : 
-</para>
-
-<screen>
-notification-type : 
-The type of JMX Notifications to wrap as a SNMP Notification. Please note that the notification has to 
-be caught first by the subscription list filter defined in SNMP Adaptor JBoss Service configuration file 
-
-Note : 
-The below attributes generic, specific and enterprise varies depending on the version of the protocol 
-namely - v1 and v2. For v1, . For v2 and v3, It is essentially a concatenation of theenterprise _ parameter 
-and two additional sub-identifiers, '0' (so make sure to set generic as 0 here), and the_ specifictrap code _ parameter_ 
-
-generic : 
-Indicates one of a number of generic trap types 
-
-specific : 
-Indicates one of a number of specific trap codes. 
-
-enterprise : 
-contains value of <ulink url="http://tools.cisco.com/Support/SNMP/do/BrowseOID.do?local=en&amp;translate=Translate&amp;objectInput=1.3.6.1.2.1.1.2">sysObjectID</ulink>of the device that sends trap 
-
-inform : 
-if set to "true" , this trap will be send as an inform (acknowledged trap) 
-
-security-name : 
-the user to associate with the sending of the trap (will be used for version 3 of the protocol only) 
-
-var-bind-list :
-whose defines a wrapper-class that allows to to extract info from arbitrary notification subclasses. 
-The generated trap may contain an arbitrary payload of variable bindings ( var-bind) with explicitly specified oid 
-and values extracted from the emitted notification ( tag ). To extract those values a wrapper class implementing the 
-org.jboss.jmx.adaptor.snmp.agent.NotificationWrapper interface must be supplied. At runtime, the value specified using 
-the element is passed to the wrapper class implementation as the key to be mapped, in an implementation specific way, 
-to a corresponding value. A default implementation of this interface comes with 
-class org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport. This implementation recognizes the following set of tags
-
-</screen>
-
-  <informaltable>
-        <tgroup cols="2">
-          <thead>
-            <row>
-              <entry>
-                <para>Tag</para>
-              </entry>
-              <entry>
-                <para>Description</para>
-              </entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>
-                <para>
-                  n:message
-                  
-                </para>
-              </entry>
-              <entry>
-                <para>javax.management.Notification.getMessage()</para>
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <para>
-                  n:sequenceNumber
-                  
-                </para>
-              </entry>
-              <entry>
-                <para>
-                  javax.management.Notification.getSequenceNumber()
-                  
-                </para>
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <para>
-                  n:timeStamp
-                  
-                </para>
-              </entry>
-              <entry>
-                <para>
-                  javax.management.Notification.getTimestamp()
-                  
-                </para>
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <para>
-                  n:type
-                  
-                </para>
-              </entry>
-              <entry>
-                <para>
-                  javax.management.Notification.getType()
-                  
-                </para>
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <para>
-                  n:all
-                  
-                </para>
-              </entry>
-              <entry>
-                <para>
-                  javax.management.Notification.toString()
-                  
-                </para>
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <para>
-                  n:class
-                  
-                </para>
-              </entry>
-              <entry>
-                <para>
-                  javax.management.Notification.getClass().getName()
-                  
-                </para>
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <para>
-                  a:startTime
-                  
-                </para>
-              </entry>
-              <entry>
-                <para>
-                  snmp agent/adaptor start time
-                  
-                </para>
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <para>
-                  a:uptime
-                  
-                </para>
-              </entry>
-              <entry>
-                <para>
-                  snmp agent/adaptor up time
-                  
-                </para>
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <para>
-                  a:trapCount
-                  
-                </para>
-              </entry>
-              <entry>
-                <para>
-                  snmp agent/adaptor trap count
-                  
-                </para>
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <para>u:&lt;user-defined-tag&gt;</para>
-              </entry>
-              <entry>
-                <para>
-                  looked-up in n.getUserData()
-                  
-                  
-                </para>
-              </entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
-
-
-</section>
-
-<section>
-
-
-
-<title> SNMP Adaptor Managers.xml Configuration File </title>
-<para>
-It is located at $TELSCALE_SNMP_ADAPTOR/managers.xml and is used to configure the SNMP managers 
-to which the generated SNMP traps should be forwarded.
-</para>
-
-<para>
- Each manager entry must specify: 
-</para>
-
-<screen>
-address : the manager's address (IP address or host name) 
-
-port : the listening port 
-
-local-address : the local binding address (optional) 
-
-local-port : the local binding port (optional) 
-
-version : the SNMP version to use (1 or 2 or 3) 
-
-community-string : If version is 1 or 2, the community string (public or private) 
-</screen>
-
-</section>
-
-<section>
-
-
-<title> SNMP Adaptor Users.xml Configuration File </title>
-
-<para>
-It is located at $TELSCALE_SNMP_ADAPTOR/users.xml and is used to configure the SNMP users when using version 3 of the protocol.
-</para>
-
-<para>
-Each user entry must specify:
-</para>
-
-<screen>
-
-securityName : 
-the security name of the user (typically the user name). 
-
-authenticationProtocol : 
-the authentication protcol to be associated with this user (MD5 or SHA). 
-If not set, this user only supports unauthenticated messages. 
-
-
-authenticationPassphrase : 
-If present, the authentication Protocol must also be present. RFC3414 11.2 requires passphrases 
-to have a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgumentException will be thrown. 
-
-
-privacyProtocol : 
-the privacy protcol ID to be associated with this user 
-(DES, 3DES, AES128, AES192, AES256). If not set, this user only supports unencrypted messages. 
-
-
-privacyPassphrase : 
-If present, the privacy Protocol must also be set. RFC3414 11.2 requires passphrases to have 
-a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgumentException will be thrown. 
-
-</screen>
-
-</section>
-
-<section>
-<title> The SNMP Adaptor JBoss Deployer </title>
-
-<para>
-The SNMP Adaptor Deployer dynamically looks for snmp-attributes.xml and 
-snmp-notifications.xml files in any applications deployed within JBoss 
-Application Server and register the notifications, attributes and their 
-JMX mapping with the SNMP Adaptor JBoss Service.
-</para>
-
-<para>
-The SNMP adaptor deployer is located in 
-    <code>$TELSCALE_HOME/server/&lt;profile&gt;/deployers </code> directory. 
-</para>
-
-</section>
-
-<section>
-<title> Using the Open Source OpenNMS Application with &PLATFORM_NAME; </title>
-
-<para>
-Managing web servers using SNMP can be a tedious exercise. If you have to monitor
-multiple applications servers, using a tool like OpenNMS will make your job easier. There is a lot to take 
-into consideration. One of the most important thing is to install an SNMP tool with a database. That is what
-the next section will help you achieve.
-</para>
-
-</section>
-
-
-  <section>
-  <title>Installing OpenNMS </title>
-  
-  <para>    Prepare the opennms package </para>
-   <screen> rpm -Uvh http://yum.opennms.org/repofiles/opennms-repo-stable-fc16.noarch.rpm </screen>
-  <para>  You need to make sure that you that your system is able to find the package. You can check this by doing the following: </para>
-  <screen> yum search openNMS </screen>
-  <para> This will be installed later. First, you will need to install the database that will hold the monitored information</para>
-  
-<screen> yum install postgresql postgresql-server </screen>
-
-<para>You need to initialize the database and start up postgresql </para>
-
-<screen> service postgresql initdb </screen>
-<screen> service postgresql start </screen>
-
-<para> You need to run this command so that the database will be started after reboot</para>
-<screen> chkconfig postgresql on </screen>
-
-<para> on some systems you will have to run</para>
-
-<screen> systemctl enable postgresql.service </screen>
-
-<para>Edit this file /var/lib/pgsql/data/pg_hba.conf so that the content looks like this: </para>
-
-<screen>
-local   all         all                               trust
-host    all         all         127.0.0.1/32          trust
-host    all         all         ::1/128               trust
-
-</screen>
-
-<para> At this stage, you need to make sure JDK is installed on your system and the $JAVA_HOME environment variable is set. </para>
-
-<para> The next step will be to install OpenNMS. </para>
-<screen> yum -y install opennms  </screen>
-
-
-
-<para> Once you the complete message appears, you might need to disable automatic update of openNMS in order to 
-avoid changes to your current configuration. You can do the following: </para>
-
-<para> edit the  "/etc/yum.repos.d/opennms*" file and add the  <emphasis role="color:#000000">enabled=0 </emphasis> inside each [opennms-*] section </para>
-
-<para>You can undo this later if you need to </para>
-
-<para> OpenNMS needs to know the location of your Java installation. Tell OpenNMS which java version to use. 
-In the /usr/java/ directory, you might see  multiple version. In the example below, it points to 
-</para>
-
-<para> You need to run this command as root </para>
-
-<screen> /opt/opennms/bin/runjava -S /usr/java/jdk1.7.0_04/bin/java </screen>
-
-<para> This will produce an output similar to this</para>
-<screen> runjava: checking specified JRE: "/usr/java/jdk1.7.0_04/bin/java"...
-runjava: specified JRE is good.
-runjava: value of "/usr/java/jdk1.7.0_04/bin/java" stored in configuration file
-</screen>
-
-<para>Create a  database by running the command</para>
-
-<screen> /opt/opennms/bin/install -dis
-</screen>
-
-<para> If you get an error message like this </para>
-
-<para> 
-Caused by: org.postgresql.util.PSQLException: FATAL: Ident authentication failed for user "postgres"
-</para>
-
-<para> 
-Make sure you have edited the <emphasis role="color:#000000"> /var/lib/pgsql/data/pg_hba.conf</emphasis> file as mentioned above.
-The column METHOD should be set to <emphasis role="color:#000000">trust </emphasis>
-</para>
-
-<para>
-Then retry installing your database  <emphasis role="color:#000000">  /opt/opennms/bin/install -dis </emphasis> If all goes well, you should see
-</para>
-<screen>
-....truncated....
-- checking if iplike is usable... NO
-- removing existing iplike definition (if any)... OK
-- inserting C iplike function... SKIPPED (location of iplike function not set)
-- inserting PL/pgSQL iplike function... OK
-- checking for stale eventtime.so references... OK
-Installer completed successfully!
-</screen>
-
-
-<para> Under certain circumstances (firewall), it might be necessary to configure /etc/sysconfig/iptables to allow port 8980 
-which is what OpenNMS uses. If you will only be using 127.0.0.1 on your localhost, then you don't need to to this</para>
-
-<para> Next, you will ned to start OpenNMS</para>
-
-<screen> service opennms start </screen>
-
-<para> if you get the following error whilst Starting opennms (via systemctl):  
-Job failed. See system logs and 'systemctl status' for details.[FAILED]  </para>
-
-<para> Try restarting Postgresql </para>
-<screen> service postgresql restart </screen>
-<para> then start OpenNMS like this: </para>
-
-<screen> service opennms start </screen> 
-
- 
- <para> Once the OpenNMS service is started, you should be able to access the web interface on the following address: </para>
- 
- <screen> http://127.0.0.1:8980/opennms </screen>
-
-<note>
-<title>Debian Installation</title>
-<para>
-A debian version of this OpenNMS installation guide is available at <ulink url="http://www.opennms.org/wiki/Installation:Debian"/>
-</para>
-</note>
-
- </section>
- 
- <section>
- <title> Accessing the OpenNMS Web Interface</title>
- <screen>
-Login into OpenNms with the default  username and password
-
-default user account
-username = admin
-password = admin
-
- </screen>
- 
- 
- 
- <figure>
-<title>Login Page OpenNMS</title>
-<mediaobject id="login_page_opennms">
-<imageobject>
-<imagedata align="center" fileref="images/snmp-opennms-login-page.png" format="PNG"/>
-</imageobject>
-</mediaobject>
-</figure>
- 
- <para>
- 
- You will notice that you have little to no data on your OpenNms web server. 
- You need to run the perl command to do an initial scan of your system. </para>
-<screen>
- perl $OPENNMS_HOME/bin/send-event.pl uei.opennms.org/internal/discovery/newSuspect -i 192.168.1.3
-</screen>
-
-<para>
-where 192.168.1.3 is the ip address of the OpenNms server
-</para>
-<para>
-Now go to the http://192.168.1.3:8980/opennms/  web page and click on the menu > Node List
-you should see that your server has been scanned and services are available like this screen shot below
-</para>
-
- <figure>
-<title>Scan Node Lists</title>
-<mediaobject id="scan_node_list">
-<imageobject>
-<imagedata align="center" fileref="images/snmp-opennms-scanned-services-page.png" format="PNG"/>
-</imageobject>
-</mediaobject>
-</figure> 
- 
- </section>
-  
-
-  <section>
-  
-  <title> Setting up SNMP to monitor traps </title>
-
-
-<para>
-You should have Net-Snmp installed on your system. You should be able to run the following test command.
-</para>
-<screen> snmpget 127.0.0.1 sysUpTime.0 </screen>
- <para>
-If you are not sure, you can install NET-SNMP on a linux distribution that uses Yum, as follows
-</para>
-
-<screen>
-yum install net-snmp net-snmp-libs net-snmp-utils
-</screen>
-
-<para>
-Once the installation is completed, you must start the snmp service
-</para>
-<screen> service snmpd start </screen>
-
-<para> Now you can perform a quick test to make sure your installation is properly completed. </para>
-
-
-<screen> snmpget 127.0.0.1 sysUpTime.0 </screen>
-
-<para> Which should produce a result similar to </para>
-
-<screen> DISMAN-EVENT-MIB::sysUpTimeInstance = Timeticks: (17221523) 1 day, 23:50:15.23 </screen>
-
-
-<para> You can also run this command to show all the snmp information on your location system </para>
-
-<screen> snmpwalk -v 2c localhost -c public system </screen>
-
-<para>
-In order to make sure your OpenNMS agent is receiving traps, you need to send traps to the OpenNms server by trying the following command:
-</para>
-<screen>
-<code> snmptrap -v 2c -c public localhost &quot; &quot; ucdStart sysContact s &quot;TESTTING TRAPS&quot; </code>
-</screen>
-<para>
-then go into the   http://127.0.0.1:8980/opennms/ > events > all events > and you will see the screen below
-</para>
-
- <figure>
-<title>OpenNMS Receiving Traps</title>
-<mediaobject id="opennms_receiving_traps">
-<imageobject>
-<imagedata align="center" fileref="images/snmp-opennms-testing-traps.png" format="PNG"/>
-</imageobject>
-</mediaobject>
-</figure> 
-  
-  </section>
-  
-<section>
-<title> Downloading &PLATFORM_NAME; Binaries </title>
-<para>
-The configuration above is to make sure your system is ready and functional independent of &PLATFORM_NAME;. 
-The next step will be using the &PLATFORM_NAME; Sip Servlets  that comes with SNMP monitoring.
-
-You will need to have &PLATFORM_NAME; Sip Servlets installed on your system. It can be obtained from the TeleStax Support portal at 
-</para>
-
-<screen>
-https://support.telestax.com/
-</screen>
-<para>
-Download the latest version</para>
-
-<para>
-You need to perform the initial installation according to the user guide. 
-The &PLATFORM_NAME; Sip Servlet SNMP adaptor will allow you to monitor your server 
-and send traps to the OpenNMS trap listener.
-</para>
-
-<para>
-If you don't know where to put your mib file or you are not getting any results, 
-you can run the following command to see where the snmp tool is checking for mib files:
-</para>
-<screen>  snmpget -Dparse-mibs 2>&amp;1 | grep directory </screen>
-
-<para> You need to start the &PLATFORM_NAME; server in order to proceed with the next section</para>
-
-<screen> $TELSCALE_HOME/bin/run.sh </screen>
-
-<para> This can take a little over a minute to start depending on your system. </para>
-
-
-<para>
-
-Using version 3 of SNMP requires setting up a user and a password. When you install &PLATFORM_NAME;, a TEST user
-has already been created in the $TELSCALE_SNMP_ADAPTOR/user.xml file. This means you should be able to use
-the command below: </para>
-
-<screen>
- snmpget -v 3 -u TEST -a MD5 -A &quot;maplesyrup&quot; -x DES -X &quot;maplesyrup&quot; -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0 
- </screen>
- 
- <para> This should produce the following results: </para>
-<screen>
-SNMPv2-MIB::sysDescr.0 = STRING: Mobicents Sip Servlets 
-</screen>
-
-<para>
-If you get a Snmpget timeout, make sure you have the &PLATFORM_NAME; Sip Server running
-</para>
-
-<para> When you start the &PLATFORM_NAME; server using the $TELSCALE_HOME/bin/run.sh has mentioned above, it will automatically 
-send a trap to the OpenNMS trap listener and you will see the following on the Events window.</para>
-
- <figure>
-<title>OpenNMS &PLATFORM_NAME; Coldstart Trap</title>
-<mediaobject id="opennms_telscale_coldstart_traps">
-<imageobject>
-<imagedata align="center" fileref="images/snmp-opennms-telscale-coldstart.png" format="PNG"/>
-</imageobject>
-</mediaobject>
-</figure> 
-
-</section>  
-  
-
-<section>
-<title> SNMP Walktrough</title>
-<para>
-The following sections will guide you on how to setup and test the various features of the 
-adapter on a step by step like tutorial by showing you how to access your JMX Beans and expose 
-them through SNMP. SNMPv1 specified five core protocol data units (PDUs). </para>
-<para> Two other PDUs,GetBulkRequestandInformRequestwere added in SNMPv2 and carried over to SNMPv3.</para>
-
-<screen>
-
-Response : Returns variable bindings and acknowledgement from agent to manager for belowGetRequest,
-SetRequest,GetNextRequest,GetBulkRequestandInformRequest. Error reporting is provided 
-byerror-statusanderror-indexfields. Although it was used as a response to both gets and sets, 
-this PDU was calledGetResponsein SNMPv1.
-
-
-GetRequest : A manager-to-agent request to retrieve the value of a variable or list of variables.
-
-
-SetRequest : A manager-to-agent request to change the value of a variable or list of variables.
-
-
-GetNextRequest : A manager-to-agent request to discover available variables and their values. 
-Returns aResponsewith variable binding for the lexicographically next variable in the MIB. 
-The entire MIB of an agent can be walked by iterative application ofGetNextRequeststarting 
-at OID 0. Rows of a table can be read by specifying column OIDs in the variable bindings of the request.
-
-
-GetBulkRequest : Optimized version ofGetNextRequest. A manager-to-agent request for multiple 
-iterations ofGetNextRequest. Returns aResponsewith multiple variable bindings walked from the 
-variable binding or bindings in the request. PDU specificnon-repeatersandmax-repetitionsfields 
-are used to control response behavior.
-
-
-
-Trap : Asynchronous notification from agent to manager. Includes currentsysUpTimevalue, 
-an OID identifying the type of trap and optional variable bindings.
-
-
-InformRequest : Acknowledged asynchronous notification from manager to manager. 
-This PDU uses the same format as the SNMPv2 version ofTrap. Manager-to-manager 
-notifications were already possible in SNMPv1 (using aTrap), but as SNMP commonly 
-runs over UDP where delivery is not assured and dropped packets are not reported, 
-delivery of aTrapwas not guaranteed.InformRequestfixes this by sending back an 
-acknowledgement on receipt. Receiver replies with{_}Response _parroting all 
-information in theInformRequest
-
-</screen>
-<para>
-To be able to receive SNMP Traps or INFORM from a given user, snmptrapd configuration has to be modified :
-</para>
-<para> sudo gedit /etc/snmp/snmptrapd.conf and add the following: </para>
-
-<screen>
-#User to receive TRAP
-createUser -e 0x80001370017F000101 TEST MD5 maplesyrup DES maplesyrup
-#User to receive INFORM
-createUser myuser MD5 password DES password
-#Those make snmptrapd log the TRAPs and INFORM to the console
-authUser log,execute,net TEST
-authUser log,execute,net myuser
-</screen>
-<para>
-Check the directory where the MIBs will be loaded from with the following command :
-</para>
-<screen>
-net-snmp-config --default-mibdirs
-</screen>
-<para> Edit the snmp.conf </para>
-<para> sudo gedit /etc/snmp/snmp.conf </para>
-<para> and add the following </para>
-<screen>
-#include all MIB
-mibs +ALL
-</screen>
-<para>
-Copy the MIB from JBoss Application Server to your user dir where the MIB will be loaded from
-</para>
-<screen>
-cp $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar/attributes.mib /home/&lt;user&gt;/.snmp/mibs/
-</screen>
-
-
-</section>  
-
-  
-  
-  </chapter>
-=======
-<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-<!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">
-%BOOK_ENTITIES;
-]>
-<chapter id="telscale-snmp-adaptor">
-  <title>Telscale SNMP Adaptor User Guide</title>
-
-  <para>
-  There are multiple ways to access the Snmp data on the Telscale server. You can use an SNMP command line tool like the Net-Snmp. 
-  For ease of use, this user guide will be based on the OpenNMS network monitoring application. The reason for this is that it allows
-  for quick setup allowing the System and Network Administrator to concentrate on getting the most out of the Telscale server. First of all,
-  let us get an overview of SNMP
-  </para>
-  
-  <section>
-  <title> SNMP General Information</title>
-  
-  
-  <para>
-  Simple Network Management Protocol (SNMP)is the most popular network management protocol in the 
-  TCP/IP protocol suite, using a simple request/response protocol that communicates management 
-  information about the configuration and status of nodes between two types of SNMP software entities:
-  SNMP applications, also calledSNMP managersandSNMP agents. </para>
-  
-  <para>Essentially, SNMP agents expose management data on the managed systems as variables. The protocol 
-also permits active management tasks, such as modifying and applying a new configuration through 
-remote modification of these variables. The variables accessible via SNMP are organized in hierarchies.</para>
-
-<para>
-SNMP itself does not define which information (which variables) a managed system should offer. 
-Rather, SNMP uses an extensible design, where the available information and other metadata 
-(such as type and description of the variable) is described byManagement Information Bases (MIBs). 
-MIBs describe the structure of the management data of a device subsystem </para>
-
-<para> Objects in the MIB are defined using a subset of Abstract Syntax Notation One (ASN.1) 
-called "Structure of Management Information Version 2 (SMIv2)" 
-
-      <ulink url="http://tools.ietf.org/html/rfc2578">RFC 2578</ulink>
-</para>
-<para> The MIB is hierarchical (tree-structured) and entries are addressed throughobject identifiers or OIDs </para>
-
-<para> The IANA OID registry contains a list of registered entities that use OIDs to reference internal structures
- (e.g. directory attributes). Each entity is assigned an initial referential value (e.g. 1.3.6.1.4.1.2312 for Red Hat, see 
- <ulink url="http://www.oid-info.com/get/1.3.6.1.4.1.2312"/> and thereafter the internal numbering plan is up to the entity to define 
- (e.g. 1.3.6.1.4.1.2312.100.1.1 might refer to the "ActiveThreadCount" attribute of the JBoss Application Sever). 
- This allows for precise referencing of data attributes in a company or other entity. 
- See diagram below representing the JBoss Application Server hierarchy </para>
-
-<para> A managed object (sometimes called a MIB object, an object, or a MIB) 
-is one of any number of specific characteristics of a managed device. 
-Managed objects are made up of one or more object instances (identified by their OIDs), which are essentially variables. </para>
-
-<para> Object identifiers (OID) uniquely identifies managed objects in the MIB hierarchy. </para>
-
-	  
-<figure>
-	<title>TODO InformalFigure image title empty</title>
-      <mediaobject>
-        <imageobject>
-          <imagedata fileref="images/snmp_JBOSS_MIB_Hierarchy.png"/>
-        </imageobject>
-      </mediaobject>
-    </figure>
-
-
-<para>
-To obtain values of objects from the manager, it is necessary to specify the instance of the object. 
-The instance of an object is specified by appending an instance index to the object identifier, 
-by example for ActiveThreadCount attribute of the JBoss Application Server the OID to query would be 1.3.6.1.4.1.2312.100.1.1.0. </para>
+by example for ActiveThreadCount attribute of the Telscale Application Server the OID to query would be 1.3.6.1.4.1.2312.100.1.1.0. </para>
 
 
 <para> Two types of managed objects exist: </para>
@@ -999,7 +91,7 @@ objects whose type is a java.util.Map or a wildcard used in a MBean, the index c
 <section>
 <title>SNMP Adaptor's Description</title>
     <para>
-      <emphasis role="color:#000000">JBoss Application Server and Mobicents now features a revamped SNMP Adaptor, leveraging</emphasis>
+      <emphasis role="color:#000000">Telscale Application Server and Mobicents now features a revamped SNMP Adaptor, leveraging</emphasis>
       <emphasis role="color:#000000">
         <ulink url="http://www.snmp4j.org/">snmp4j</ulink>
       </emphasis>
@@ -1022,13 +114,13 @@ objects whose type is a java.util.Map or a wildcard used in a MBean, the index c
 
 <para>
 The SNMP Adaptor Servicecontains the general configuration of the SNMP service and the JMX to SNMP mapping for
- the JBoss Application Server and its subcomponents. </para>
+ the Telscale Application Server and its subcomponents. </para>
 
 <para>The SNMP Adaptor Service Agent listen on a given UDP port (default 1161). The manager may send requests 
 from any available source port to port 1161 in the Agent. The Agent responses will be sent back to the 
 source port of the manager sent requests. TheSNMP Adaptor Servicealso provides a manager that can receive 
 notifications (Traps and Inform Requests) on port 1162. TheSNMP Adaptor Service Agentmay generate notifications
- from any available port on behalf of the JBoss Application Server or its components and applications deployed within it.
+ from any available port on behalf of the Telscale Application Server or its components and applications deployed within it.
 </para>
 
 </section>
@@ -1039,7 +131,7 @@ notifications (Traps and Inform Requests) on port 1162. TheSNMP Adaptor Service 
 The SNMP Adaptor Telscale Service location $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar 
 will be referred to as $TELSCALE_SNMP_ADAPTOR. The installation will be explained further down.</para>
 <para>
-The SNMP Adaptor JBoss Service offers 5 configuration files that will be described below
+The SNMP Adaptor Telscale Service offers 5 configuration files that will be described below
 <screen>
 /META-INF/jboss-service.xml
 attributes.xml
@@ -1062,7 +154,7 @@ It defines 3 MBeans : The SNMP Adaptor Manager org.jboss.jmx.adaptor.snmp.trapd.
  The SNMP Adaptor Agent org.jboss.jmx.adaptor.snmp.agent.SnmpAgentService : It defines a set of 
  properties to override the default behavior of the Agent and the location of the other configuration 
  files used by the agent. It also defines the list of Subscriptions to JMX notifications from the 
- JBoss Application Server, its components and applications deployed within it that the agent filters 
+ Telscale Application Server, its components and applications deployed within it that the agent filters 
  and will map to SNMP Notifications. This subscriptionList attribute warrants a specific section as 
  it is used in conjunction with the Notifications configuration file. It defines a list of JMX Notifications 
  emitted by MBeans (the name can use wilcard to match multiple MBeans at the same time) to intercept that will 
@@ -1074,8 +166,8 @@ It defines 3 MBeans : The SNMP Adaptor Manager org.jboss.jmx.adaptor.snmp.trapd.
 Note : Both above MBean uses the
 </para>
 <para>
-<ulink url="https://community.jboss.org/wiki/AS5ServiceBindingManager"> JBoss Service Binding Manager </ulink> to 
-configure the ports where the JBoss SNMP Agent and Manager are listening on
+<ulink url="https://community.jboss.org/wiki/AS5ServiceBindingManager"> Telscale Service Binding Manager </ulink> to 
+configure the ports where the Telscale SNMP Agent and Manager are listening on
  System Information as specified in RFC 1213 org.jboss.jmx.adaptor.snmp.system.MIB2SystemGroupService
 </para>
   
@@ -1124,10 +216,10 @@ if set to *rw, *it means that the attribute is writable (can be set) otherwise b
 <title> SNMP Adaptor Notifications.xml configuration File </title>
 
 <para>
-It is located at $JBOSS_SNMP_ADAPTOR/notifications.xml and controls the
+It is located at $Telscale_SNMP_ADAPTOR/notifications.xml and controls the
  mapping of JMX notifications onto SNMP traps. The key for the mapping 
  is considered to be the notification type as defined in the subscriptions 
- list of the SNMP Adaptor JBoss Service configuration file. </para>
+ list of the SNMP Adaptor Telscale Service configuration file. </para>
 
 <para>
 For generic SNMPv1 traps, Enterprise field contains value of 
@@ -1140,7 +232,7 @@ Each mapping entry must specify :
 <screen>
 notification-type : 
 The type of JMX Notifications to wrap as a SNMP Notification. Please note that the notification has to 
-be caught first by the subscription list filter defined in SNMP Adaptor JBoss Service configuration file 
+be caught first by the subscription list filter defined in SNMP Adaptor Telscale Service configuration file 
 
 Note : 
 The below attributes generic, specific and enterprise varies depending on the version of the protocol 
@@ -1400,13 +492,13 @@ a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgume
 </section>
 
 <section>
-<title> The SNMP Adaptor JBoss Deployer </title>
+<title> The SNMP Adaptor Telscale Deployer </title>
 
 <para>
 The SNMP Adaptor Deployer dynamically looks for snmp-attributes.xml and 
-snmp-notifications.xml files in any applications deployed within JBoss 
+snmp-notifications.xml files in any applications deployed within Telscale 
 Application Server and register the notifications, attributes and their 
-JMX mapping with the SNMP Adaptor JBoss Service.
+JMX mapping with the SNMP Adaptor Telscale Service.
 </para>
 
 <para>
@@ -1436,11 +528,11 @@ the next section will help you achieve.
    <screen> rpm -Uvh http://yum.opennms.org/repofiles/opennms-repo-stable-fc16.noarch.rpm </screen>
   <para>  You need to make sure that you that your system is able to find the package. You can check this by doing the following: </para>
   <screen> yum search openNMS </screen>
-  <para> This will be installed later. First, you will need to install the database that will hold the monitored information</para>
+  <para> This will be installed later. First, you must install the database that will hold the monitored information</para>
   
 <screen> yum install postgresql postgresql-server </screen>
 
-<para>You need to initialize the database and start up postgresql </para>
+<para>You must initialize the database and start up postgresql </para>
 
 <screen> service postgresql initdb </screen>
 <screen> service postgresql start </screen>
@@ -1468,7 +560,7 @@ host    all         all         ::1/128               trust
 
 
 
-<para> Once you the complete message appears, you might need to disable automatic update of openNMS in order to 
+<para> Once  the complete message appears, you might need to disable automatic update of openNMS in order to 
 avoid changes to your current configuration. You can do the following: </para>
 
 <para> edit the  "/etc/yum.repos.d/opennms*" file and add the  <emphasis role="color:#000000">enabled=0 </emphasis> inside each [opennms-*] section </para>
@@ -1476,7 +568,7 @@ avoid changes to your current configuration. You can do the following: </para>
 <para>You can undo this later if you need to </para>
 
 <para> OpenNMS needs to know the location of your Java installation. Tell OpenNMS which java version to use. 
-In the /usr/java/ directory, you might see  multiple version. In the example below, it points to 
+In the /usr/java/ directory, you might see  multiple version. 
 </para>
 
 <para> You need to run this command as root </para>
@@ -1502,7 +594,7 @@ Caused by: org.postgresql.util.PSQLException: FATAL: Ident authentication failed
 
 <para> 
 Make sure you have edited the <emphasis role="color:#000000"> /var/lib/pgsql/data/pg_hba.conf</emphasis> file as mentioned above.
-The column METHOD should be set to <emphasis role="color:#000000">trust </emphasis>
+The column METHOD should be set to <emphasis role="color:#000000"> &quot;trust&quot; </emphasis>
 </para>
 
 <para>
@@ -1600,7 +692,7 @@ you should see that your server has been scanned and services are available like
 
 
 <para>
-You should have Net-Snmp installed on your system. You should be able to run the following test command.
+You should have Net-Snmp installed on your system. You should be able to run the following test commands. These are independent of the Telscale snmp adaptor but will help you get test run generic snmp queries.
 </para>
 <screen> snmpget 127.0.0.1 sysUpTime.0 </screen>
  <para>
@@ -1619,25 +711,25 @@ Once the installation is completed, you must start the snmp service
 <para> Now you can perform a quick test to make sure your installation is properly completed. </para>
 
 
-<screen> Snmpget 127.0.0.1 sysUpTime.0 </screen>
+<screen> snmpget 127.0.0.1 sysUpTime.0 </screen>
 
 <para> Which should produce a result similar to </para>
 
 <screen> DISMAN-EVENT-MIB::sysUpTimeInstance = Timeticks: (17221523) 1 day, 23:50:15.23 </screen>
 
 
-<para> You can also run this command to show all the snmp information on your location system </para>
+<para> You can also run the snmpwalk to show more snmp data on your location system </para>
 
 <screen> snmpwalk -v 2c localhost -c public system </screen>
 
 <para>
-In order to make sure your OpenNMS agent is receiving traps, you need to send traps to the OpenNms server by trying the following command:
+In order to make sure your OpenNMS agent is receiving traps, you need to send traps to the OpenNms server. You can run the following command:
 </para>
 <screen>
 <code> snmptrap -v 2c -c public localhost &quot; &quot; ucdStart sysContact s &quot;TESTTING TRAPS&quot; </code>
 </screen>
 <para>
-then go into the   http://127.0.0.1:8980/opennms/ > events > all events > and you will see the screen below
+then go into the   http://127.0.0.1:8980/opennms/ > events > all events > and you will see a screenshot similar to the one below.
 </para>
 
  <figure>
@@ -1655,13 +747,13 @@ then go into the   http://127.0.0.1:8980/opennms/ > events > all events > and yo
 <title> Downloading TELSCALE Binaries </title>
 <para>
 The configuration above is to make sure your system is ready and functional independent of TELSCALE. 
-The next step will be using the Telscale Sip Servlets  that comes   with SNMP monitoring.
+The next step will be using the Telscale Sip Servlets  that comes with SNMP monitoring.
 
 You will need to have Telscale Sip Servlets installed on your system. It can be obtained here
 </para>
 
 <screen>
-https://telestax.zendesk.com/entries/21369346-telscale-6-1-0-ga-sip-servlets-binaries
+<ulink url="https://telestax.zendesk.com/entries/21369346-telscale-6-1-0-ga-sip-servlets-binaries"/>
 </screen>
 <para>
 There are two versions available and you need to download the  </para>
@@ -1670,7 +762,10 @@ There are two versions available and you need to download the  </para>
 TelScale-SIP-Servlets-6.1.0.GA-jboss-5.1.0.GA-1204271103.zip 
 </screen>
 <para>
-You need to perform the initial installation according to the user guide. 
+You must extract the content of the Telscale binaries to your local system.
+It can be in your /usr/share/ directory of any other location you prefer. This is the location that will later be refered to as the $TELSCALE_HOME directory.
+</para>
+<para> 
 The Telscale Sip Servlet SNMP adaptor will allow you to monitor your server 
 and send traps to the OpenNMS trap listener.
 </para>
@@ -1685,7 +780,7 @@ you can run the following command to see where the snmp tool is checking for mib
 
 <screen> $TELSCALE_HOME/bin/run.sh </screen>
 
-<para> This can take a little over a minute to start depending on your system. </para>
+<para> This can take a few seconds to start depending on your system. You will see alot of information about your Telscale server startup process on the terminal. If started successfully, you will see the STARTED and the amount of time it took to start the server. </para>
 
 
 <para>
@@ -1707,8 +802,12 @@ SNMPv2-MIB::sysDescr.0 = STRING: Mobicents Sip Servlets
 If you get a Snmpget timeout, make sure you have the Telscale Sip Server running
 </para>
 
-<para> When you start the Telscale server using the $TELSCALE_HOME/bin/run.sh has mentioned above, it will automatically 
-send a trap to the OpenNMS trap listener and you will see the following on the Events window.</para>
+<para> When you start the Telscale server using the $TELSCALE_HOME/bin/run.sh as mentioned above, it will automatically 
+send a trap to the OpenNMS trap listener and you will see the following in the Events window.</para>
+
+
+
+
 
  <figure>
 <title>OpenNMS Telscale Coldstart Trap</title>
@@ -1719,8 +818,17 @@ send a trap to the OpenNMS trap listener and you will see the following on the E
 </mediaobject>
 </figure> 
 
-</section>  
-  
+
+<para>
+
+You can check out the content of the notification.xml. It is responsible to notifying sending the coldstart trap to the SNMP monitoring application. It is located at.
+</para>
+
+<screen>
+$TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar/notifications.xml
+</screen>
+
+</section>
 
 <section>
 <title> SNMP Walktrough and Using the Sample SNMP Servlet Application</title>
@@ -1773,16 +881,43 @@ information in theInformRequest
 
 
 
+<section>
+<title> Sample SNMP Servlet</title>
+
 <para>
 
-In order to prepare for this last section and use the SNMP-Servlet, you need download the 
- <ulink url="https://www.dropbox.com/s/45k3li1l4yypdlw/snmp-servlet.zip"> Snmp-servlet.zip</ulink>
- 
+In order to help you further appreciate Telscale SNMP Adaptor, a basic web application that provides a web page that displays an incremental counter each time the page is refreshed. Alternatively, a message can be set through JMX that will display on the web page. The application also register a MBean providing the following set of monitoring information :
+<screen>
+    counter : 
+the current value of the counter
+    message : 
+allows to retrieve and set the value of the message that will be displayed on the page along with the counter
+    messageHistory : 
+all the values that have been set since the application is running returned as a java.util.List&lt;String&gt;
+    messageHistoryAsArray : all the values that have been set since the application is running returned as a String array.
+    countHistory : all the values that have been displayed since the application is running returned as a primitive int array.
+    messageCountHistory : a Map which have as a key the message and as a value the corresponding counter value that was present when the message was set.
+</screen>
+
+The application will make use of the SNMP Agent MBean Service to send a SNMP trap on when the application is deployed.
+
+All those information will be used for testing the different SNMP PDUs.
+
+
 </para>
 
 <para>
 
-Extract the content of the file to the $TELSCALE_HOME/server/default/deploy directory. </para>
+In order to prepare for this section and use the SNMP-Servlet, you need to download the 
+ <ulink url="https://www.dropbox.com/s/45k3li1l4yypdlw/snmp-servlet.zip"> Snmp-servlet.zip</ulink>
+ 
+
+</para>
+
+<para>
+
+Extract the content of the file to the $TELSCALE_HOME/server/default/deploy directory. 
+</para>
 
 <para>
 Start the Telscale server by running the start script below:
@@ -1791,14 +926,14 @@ Start the Telscale server by running the start script below:
 $TELSCALE_HOME/bin/run.sh
 </screen>
 <para>
-Once the server is started, go to your web browser and enter the follow address:
+Once the server is started, go to your web browser and enter the followng address:
 </para>
 <para>
 <ulink url="http://127.0.0.1:8080/jmx-console/" />
 </para>
 
 <para>
-This will show you a screen shot like the one below. Click on the &quot;Test.com&quot; link in the left column. </para>
+This will show you a screenshot like the one below. Click on the &quot;Test.com&quot; link in the left column. </para>
 
 
  <figure>
@@ -1811,7 +946,7 @@ This will show you a screen shot like the one below. Click on the &quot;Test.com
 </figure>
 
 <para>
- Then click on the &quot;service=SnmpTest&quot; which will show the screen shot below:
+ Then click on the &quot;service=SnmpTest&quot; which will show the screenshot below:
 </para>
 
 
@@ -1833,8 +968,9 @@ Second Message then press the &quot;Apply Changes&quot; button.
 Third Message then press the &quot;Apply Changes&quot; button.
 </screen>
 <para>
-This should produce a result similar to the following screen:
+This should produce a result similar to the screen below:
 </para>
+
 
 
  <figure>
@@ -1854,7 +990,7 @@ Make sure you have extracted the SNMP-servlet.zip file as instructed above into 
 <screen> http://127.0.0.1:8080/snmp-servlet-5.1.0.GA/snmp </screen>
 
 <para>
-You will see a screen similar to this <para>
+You will see a screen similar to this </para>
 
 
 
@@ -1869,12 +1005,149 @@ You will see a screen similar to this <para>
 </figure> 
 
 <para>
-You should now be able to access the data as follows: </para>
+Refresh the screen a few times to see the number increase. You can now proceed to the next section.  </para>
+</section>
+</section>
+
+<section id="sid-4785050_SNMPAdaptorWalkthrough-x">
+      
+      <title>SNMP set up and user configuration</title>
+      <para>
+        <emphasis role="color:#000000">To test the SNMP Adaptor, we will use v3 of the protocol as it is the current standard version of SNMP since 2004. Install Net-SNMP from</emphasis>
+        <emphasis role="color:#000000">
+          <ulink url="http://www.net-snmp.org/"/>
+        </emphasis>
+        <emphasis role="color:#000000">. The Telscale SNMP Adaptor provides a default set of users configured by default in its</emphasis>
+        <emphasis role="color:#000000">
+          <link linkend="sid-4784981">users configuration file</link>
+        </emphasis>
+        <emphasis role="color:#000000"/>
+      </para>
+      <para>This is the user that will be used throughout the walkthrough ﻿:</para>
+      <informalexample>
+        <programlisting>&lt;user&gt;
+    &lt;securityName&gt;TEST&lt;/securityName&gt;
+    &lt;authenticationProtocol&gt;MD5&lt;/authenticationProtocol&gt;
+    &lt;authenticationPassphrase&gt;maplesyrup&lt;/authenticationPassphrase&gt;
+    &lt;privacyProtocol&gt;DES&lt;/privacyProtocol&gt;
+    &lt;privacyPassphrase&gt;maplesyrup&lt;/privacyPassphrase&gt;
+  &lt;/user&gt;</programlisting>
+      </informalexample>
+      <para>The same user has to be configured on net-snmp so that net-snmp and Telscale SNMP Adaptor can communicate in a secure manner. Run the following command for a console</para>
+      <informalexample>
+        <programlisting>net-snmp-config --create-snmpv3-user -a maplesyrup TEST</programlisting>
+      </informalexample>
+      <para>
+        <emphasis role="italics">
+          Note: In linux, you will need to run it with root privileges through _
+          <emphasis role="strong"/>
+        </emphasis>
+        <emphasis role="strong">sudo{_}</emphasis>
+      </para>
+      <para>Issuing the above command should display the following output</para>
+      <para/>
+      <informalexample>
+        <programlisting>adding the following line to /var/lib/snmp/snmpd.conf:
+   createUser TEST MD5 "maplesyrup" DES
+adding the following line to /usr/share/snmp/snmpd.conf:
+   rwuser TEST</programlisting>
+      </informalexample>
+      <para>To be able to receive SNMP Traps or INFORM from a given user, snmptrapd configuration has to be modified :</para>
+      <informalexample>
+        <programlisting>sudo gedit /etc/snmp/snmptrapd.conf</programlisting>
+      </informalexample>
+      <para>And add the following</para>
+      <informalexample>
+        <programlisting>#User to receive TRAP
+createUser -e 0x80001370017F000101 TEST MD5 maplesyrup DES maplesyrup
+#User to receive INFORM
+createUser myuser MD5 password DES password
+#Those make snmptrapd log the TRAPs and INFORM to the console
+authUser log,execute,net TEST
+authUser log,execute,net myuser</programlisting>
+      </informalexample>
+      <para>
+        It is possible to make snmptrap display the name of the OID defined in the MIB of Telscale.
+      </para>
+      <para>Check the directory where the MIBs will be loaded from with the following command :</para>
+      <informalexample>
+        <programlisting>net-snmp-config --default-mibdirs</programlisting>
+      </informalexample>
+      <para>Edit the snmp.conf</para>
+      <informalexample>
+        <programlisting>sudo gedit /etc/snmp/snmp.conf</programlisting>
+      </informalexample>
+      <para>and add the following</para>
+      <informalexample>
+        <programlisting>#include all MIB
+mibs +ALL</programlisting>
+      </informalexample>
+
+</section>
+
+
+
+
+      <section id="sid-4784932_AccessingJMXBeansAttributes-ExposingaJMXAttributeasScalarObjectandreadingitsvaluethroughSNMPGetRequest">
+        
+        <title>Exposing a JMX Attribute as Scalar Object and reading its value through SNMP GetRequest</title>
+        <para>To Request the SysDescr attribute of the jboss.jmx:name=SnmpAgent,service=MIB2SystemGroup, the OID that has to be queried is the concatenation of the oid-prefix, the oid of the attribute and .0 as it is a scalar attribute so the following command should be issued</para>
+        <informalexample>
+          <programlisting>snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0</programlisting>
+        </informalexample>
+        <para>which will give the following output</para>
+        <informalexample>
+          <programlisting>iso.3.6.1.2.1.1.1.0 = STRING: "Mobicents Sip Servlets"</programlisting>
+        </informalexample>
+      </section>
+      <section id="sid-4784932_AccessingJMXBeansAttributes-ExposingaJMXAttributeasScalarObjectandsettingitsvaluethroughSNMPSetRequest">
+        
+        <title>Exposing a JMX Attribute as Scalar Object and setting its value through SNMP SetRequest</title>
+        <para>To Modify the SysDescr attribute of the jboss.jmx:name=SnmpAgent,service=MIB2SystemGroup, the OID that has to be queried is the concatenation of the oid-prefix, the oid of the attribute and .0 as it is a scalar attribute so the following command should be issued</para>
+        <informalexample>
+          <programlisting> snmpset -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0 s "Mobicents Sip Servlets is Alive"</programlisting>
+        </informalexample>
+        <para>which will give the following output</para>
+        <informalexample>
+          <programlisting>iso.3.6.1.2.1.1.1.0 = STRING: "Mobicents Sip Servlets is Alive"</programlisting>
+        </informalexample>
+      </section>
+      <section id="sid-4784932_AccessingJMXBeansAttributes-DiscoveringthenextOID%2FJMXAttributetoquerythroughSNMPGetNextRequest">
+        
+        <title>Discovering the next OID/JMX Attribute to query through SNMP GetNextRequest</title>
+        <para>
+          SNMP allows you to know what is the next OID to query through the
+          <emphasis role="strong">GetNextRequest</emphasis>
+          PDU. So to know what is the next attribute after SysDescr the following query should be issued :
+        </para>
+        <informalexample>
+          <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0</programlisting>
+        </informalexample>
+        <para>which will give the following output</para>
+        <informalexample>
+          <programlisting>iso.3.6.1.2.1.1.2.0 = OID: iso.3.6.1.4.1.2312.100.9.1.1.6</programlisting>
+        </informalexample>
+        <para>
+          Note that as opposed to the GetRequest PDU, the response does not contain the same OID as was in the query but the next OID along with its value, so through this command it is possible to iterate through the whole MIB. 
+        </para>
+      </section>
+
+<section>
+
+<title>SNMP Snmpget Snmpset and SnmpBulkget  </title>
+
+
 
 <screen>
  snmpbulkget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1
+</screen>
 
- This will produce the following result:
+<para>
+The snmpulkget is an easy we to get retrieve the data in the 3.1 column without the 
+need to iterate through each set with the snmpget. It will produce the following:
+</para>
+
+<screen>
  
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "First Message"
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.2 = STRING: "Second Message"
@@ -1882,20 +1155,39 @@ SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.3 = STRING: "Third Message"
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.3 = No more variables left in this MIB View (It is past the end of the MIB tree)
 
 </screen>
+<para>
+Now let us try using the snmpget command.
+</para>
 
 <screen>
  snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.1
+</screen>
+<para>
+It will produce the following:
+</para>
 
-  This will produce the following result:
+<screen>
  
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "First Message"
 
 </screen>
 
+<para>
+
+You can run the same snmpget command to query the second message.
+
+</para>
+
 <screen>
  snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.2
- 
- This will produce the following result:
+ </screen>
+
+<para>
+It will produce the following:
+</para>
+
+
+<screen>
   
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.2 = STRING: "Second Message"
 </screen>
@@ -1908,8 +1200,13 @@ In the example below, the page has been refreshed 6 times. </para>
 <screen>
 
 snmpbulkget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.5.1
+</screen>
+<para>
+It will produce the following:
+</para>
 
-This command will produce the following result:
+
+<screen>
 
 SNMPv2-SMI::enterprises.2312.100.10.11.5.1.2.1 = INTEGER: 1
 SNMPv2-SMI::enterprises.2312.100.10.11.5.1.2.2 = INTEGER: 2
@@ -1941,7 +1238,7 @@ Updating the First Message you set in the Jmx-Console can be done using the SNMP
 
 snmpset -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.1 s "replacing First Message"
 
-Will produce the result:
+It will produce the result:
 
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "replacing First Message"
 
@@ -1968,8 +1265,14 @@ You will see a screen similar to the one below with the updated message you set 
 
 <screen>
 snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.1 
+</screen>
 
+<para>
 It will produce the following:
+</para>
+
+
+<screen>
 
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "replacing First Message"
 
@@ -1977,44 +1280,2237 @@ SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "replacing First Messag
 
 <para>
 You can see the details of the attributes.xml file responsible for declaring the OIDs used in the above exercise. 
-The file is located in the snmp-servlet.zip you extracted to the $TELSCALE_HOME. The exact directory 
-is &quot;/server/default/deploy/example 10 - snmp-servlet/src/main/webapp/WEB-INF&quot; <para>
+The file is located in the snmp-servlet.zip you extracted to the $TELSCALE_HOME/. The exact directory 
+is &quot;/server/default/deploy/example 10 - snmp-servlet/src/main/webapp/WEB-INF&quot; </para>
 
 <para>
 The directory contains: </para>
 
 <screen>
 lib 
- snmp-attributes.xml 
- snmp-notifications.xml  
+snmp-attributes.xml 
+snmp-notifications.xml  
 SNMP-SERVLET.mib 
- web.xml
-</screen>
-
-<para> You can see the content of the attributes.xml file below.</para>
-<screen>
-WEB-INF/snmp-attributes.xml 
-
-<?xml version="1.0"?>
-
-<attribute-mappings>
-   
-   <mbean name="test.com:service=SnmpTest" oid-prefix=".1.3.6.1.4.1.2312.100.10.11" definition-name="snmpTestObjects">
-      <attribute name="Message" oid=".1" mode="rw"/>
-      <attribute name="Count" oid=".2"/>
-      <attribute name="MessageHistory" oid=".3.1" table="true" mode="rw"/>
-      <attribute name="MessageHistoryAsArray" oid=".4.1" table="true" mode="rw"/>
-      <attribute name="CountHistory" oid=".5.1" table="true" mode="rw"/>
-      <attribute name="MessageCountHistory" oid=".6.1" table="true" mode="rw"/>
-   </mbean>
-
+web.xml
 </screen>
 
 
+</section>
 
-</section>  
+ <section id="sid-4785085">
+      
+      <title>Exposing your Application metrics through SNMP</title>
+      <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-Description">
+        
+        <title>Description</title>
+        <para>
+Here is a little information about the Snmp-servlet used previously:        
+</para>
+        <itemizedlist>
+          <listitem>
+            <para>counter : the current value of the counter</para>
+          </listitem>
+          <listitem>
+            <para>message : allows to retrieve and set the value of the message that will be displayed on the page along with the counter</para>
+          </listitem>
+          <listitem>
+            <para>messageHistory : all the values that have been set since the application is running returned as a java.util.List&lt;String&gt;</para>
+          </listitem>
+          <listitem>
+            <para>messageHistoryAsArray : all the values that have been set since the application is running returned as a String array.</para>
+          </listitem>
+          <listitem>
+            <para>countHistory : all the values that have been displayed since the application is running returned as a primitive int array.</para>
+          </listitem>
+          <listitem>
+            <para>messageCountHistory : a Map which have as a key the message and as a value the corresponding counter value that was present when the message was set.</para>
+          </listitem>
+        </itemizedlist>
+        <para>The application also send will make use of the SNMP Agent MBean Service to send a SNMP trap on when the application is deployed.</para>
+        <para>All those information will be used for testing the different SNMP PDUs.</para>
+      </section>
+      <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-MappingApplicationJMXAttributesandNotificationstoSNMP">
+        
+        <title>Mapping Application JMX Attributes and Notifications to SNMP</title>
+        <para>
+          The SNMP Adaptor Telscale service allows you to make the MBean and JMX Notifications from the Telscale Application Server and its components through the Attributes and Notifications configuration files, the SNMP Adaptor Telscale Deployer  will check for applications deployed within the Telscale Application Server if they contains either a snmp-attributes.xml file or a snmp-notifications.xml or both.
+        </para>
+        <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-TheAttributesconfigurationfile">
+          
+          <title>The Attributes configuration file</title>
+          <para>
+            It is located at snmp-attributes.xml.
+          </para>
+          <para>
+            The configuration file for the example attached is the following and describes the mapping between the MBean and its attributes defined in the
+            <emphasis role="strong">Description</emphasis>
+            section above :
+          </para>
+          <informalexample>
+            <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;attribute-mappings&gt;
+   &lt;mbean name="test.com:service=SnmpTest" oid-prefix=".1.3.6.1.4.1.2312.100.10.11"&gt;
+      &lt;attribute name="Message" oid=".1" mode="rw"/&gt;
+      &lt;attribute name="Count" oid=".2"/&gt;
+      &lt;attribute name="MessageHistory" oid=".3.1" table="true" mode="rw"/&gt;
+      &lt;attribute name="MessageHistoryAsArray" oid=".4.1" table="true" mode="rw"/&gt;
+      &lt;attribute name="CountHistory" oid=".5.1" table="true" mode="rw"/&gt;
+      &lt;attribute name="MessageCountHistory" oid=".6.1" table="true" mode="rw"/&gt;
+   &lt;/mbean&gt;
+&lt;/attribute-mappings&gt;</programlisting>
+          </informalexample>
+          <para>NOTE: OIDs used in example have been created "randomly" with RedHat OID prefix and example specific OID leafs!</para>
+        </section>
+        <section id="sid-4785085_ExposingyourApplicationmetricsthroughSNMP-TheNotificationsconfigurationfile">
+          
+          <title>The Notifications configuration file</title>
+          <para>
+            It is located at snmp-notifications.xml.
+          </para>
+          <para>
+            The configuration file for the example attached is the following and describes the mapping between the notification that will be sent in the
+            <emphasis role="strong">Description</emphasis>
+            section above :
+          </para>
+          <informalexample>
+            <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;notification-map-list&gt;   
+  &lt;mapping notification-type="snmp.servlet.test.coldstart" generic="6" specific="10" enterprise="1.3.6.1.4.1.2312.100.11" security-name="TEST"&gt;
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="u:startTime" oid="1.3.6.1.4.1.2312.100.10.11.1" type="OctetString"/&gt;      
+    &lt;/var-bind-list&gt;               
+  &lt;/mapping&gt;
+&lt;/notification-map-list&gt;</programlisting>
+          </informalexample>
+        </section>
+      </section>
+    </section>
+    <section id="sid-4784932">
+      
+      <title>Accessing JMX Beans Attributes</title>
+      <section id="sid-4784932_AccessingJMXBeansAttributes-Description">
+        
+        <title>Description</title>
+        <para>
+          This section will guide through the GetRequest and SetRequest SNMP PDUs and how they map to JMX attributes and the Telscale SNMP Adaptor. Each of them will go through the scalar objects only (Long, AtomicLong, Boolean, AtomicBoolean, String, Integer, AtomicInteger) and tabular objects (java.util.List, java.util.Map and arrays the following primitive types int, long, boolean or same supported Object as for the scalar objects). net-snmp will act as a manager and Telscale Application Server SNMP Resource Adaptor as the Agent. The Telscale Application Server SNMP Adaptor is exposing out of the box a certain number of MBean and their attributes in SNMP Adaptor Attributes configuration file. The following MBean will be used as an example for scalar objects :
+        </para>
+        <informalexample>
+          <programlisting>&lt;!- system information group see RFC-1213 -&gt;
+   &lt;mbean name="jboss.jmx:name=SnmpAgent,service=MIB2SystemGroup" oid-prefix=".1.3.6.1.2.1.1"&gt;
+      &lt;attribute name="SysDescr" oid=".1" mode="rw"/&gt; &lt;!- can be modified over snmp as mode is rw -&gt;
+      &lt;attribute name="SysObjectId" oid=".2"/&gt;
+      &lt;attribute name="SysUpTime" oid=".3"/&gt;
+      &lt;attribute name="SysContact" oid=".4"/&gt;
+      &lt;attribute name="SysName" oid=".5"/&gt;
+      &lt;attribute name="SysLocation" oid=".6"/&gt;
+      &lt;attribute name="SysServices" oid=".7"/&gt;
+   &lt;/mbean&gt;</programlisting>
+        </informalexample>
+      </section>
+</section>
 
-  
-  
-  </chapter>
->>>>>>> snmp sample snmp-servlet added to adaptor doc
+
+  <section id="sid-4785173">
+      
+      <title>Accessing JMX Wildcard as a Table</title>
+      <para>
+        The Telscale SNMP Adaptor allows for the
+        SNMP Adaptor Attributes configuration file
+        to specify in the MBean
+        <emphasis role="strong">name</emphasis>
+        a mbean query by using wildcards to get back a list of MBean which can be particularly useful for Web Applications by example as shown below :
+      </para>
+      <informalexample>
+        <programlisting>&lt;!- Web Apps -&gt;
+   &lt;mbean name="jboss.web:host=localhost,path=/*,type=Manager" oid-prefix=".1.3.6.1.4.1.2312.100.1.1.12.1"&gt;
+      &lt;attribute name="distributable" oid=".1"/&gt;
+      &lt;attribute name="sessionCounter" oid=".2"/&gt;
+      &lt;attribute name="activeSessions" oid=".3"/&gt;
+      &lt;attribute name="maxActiveSessions" oid=".4" mode="rw"/&gt;
+      &lt;attribute name="sessionAverageAliveTime" oid=".5"/&gt;      
+      &lt;attribute name="expiredSessions" oid=".6"/&gt;      
+      &lt;attribute name="rejectedSessions" oid=".7"/&gt;
+      &lt;attribute name="maxInactiveInterval" oid=".8"/&gt;
+      &lt;attribute name="sessionMaxAliveTime" oid=".9"/&gt;                  
+   &lt;/mbean&gt;</programlisting>
+      </informalexample>
+      <para>
+        Here the Telscale SNMP Adaptor will detect that the mbean name is a query and will return this as a Key Based Tabular Object whose key will be the ASN.1 representation of the ObjectName of the MBean itself.
+      </para>
+      <para>So to check all web applications deployed in the Telscale Web Container, the following commands should be issued :</para>
+      <informalexample>
+        <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.1.1.12.1</programlisting>
+      </informalexample>
+      <para>which gives the following output :</para>
+      <informalexample>
+        <programlisting>iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0</programlisting>
+      </informalexample>
+      <para>
+        The OID is the concatenation of the OID prefix (.1.3.6.1.4.1.2312.100.1.1.12.1), first attribute (
+        <emphasis role="strong">distributable</emphasis>
+        , .2) and the ASN.1 representation of the following web application ObjectName "jboss.web:type=Manager,path=/,host=localhost"
+      </para>
+      <para>
+        <emphasis role="strong">Important Note: SNMP don't iterate through a full row before moving to the next one, it rather do it by column so keeping on the same attribute until all rows have been iterated before moving to the next attribute</emphasis>
+      </para>
+      <para>From the important note above it means that querying with GetNextRequest PDU will give you the same distributable attribute but for the next application :</para>
+      <informalexample>
+        <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116</programlisting>
+      </informalexample>
+      <para>which gives the following output</para>
+      <informalexample>
+        <programlisting>iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.97.100.109.105.110.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0</programlisting>
+      </informalexample>
+      <para>
+        The OID is the concatenation of the OID prefix (.1.3.6.1.4.1.2312.100.1.1.12.1), first attribute (
+        <emphasis role="strong">distributable</emphasis>
+        , .2) and the ASN.1 representation of the following web application ObjectName "jboss.web:type=Manager,path=/admin-console,host=localhost"
+      </para>
+      <para>and you can keep on going until the last row (application) for this attribute :</para>
+      <informalexample>
+        <programlisting>snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 iso.3.6.1.4.1.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.119.101.98.45.99.111.110.115.111.108.101.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116</programlisting>
+      </informalexample>
+      <para>which gives the following output</para>
+      <informalexample>
+        <programlisting>iso.3.6.1.4.1.2312.100.1.1.12.1.3.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116</programlisting>
+      </informalexample>
+      <para>
+        Notice the beginning of the OID iso.3.6.1.4.1.2312.100.1.1.12.1*.3* ends with .3 which means that it has reach the second column (
+        <emphasis role="strong">sessionCounter</emphasis>
+        attribute). And continue until the end of the table
+      </para>
+      <para>To read the full table, it is possible to issue the following command which sends the next GetNextRequest PDU automatically until it has reached the end of the table</para>
+      <informalexample>
+        <programlisting>snmpwalk -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.1.1.12.1</programlisting>
+      </informalexample>
+      <para>The command will give a verbose output (full table)</para>
+    
+</section>
+
+
+
+<section>
+
+    <title>The MIB Generator</title>
+    <para>Included in the SNMP Adaptor is a way for a user to generate an SNMP MIB file based on already defined attributes.xml and notifications.xml. This MIB file allows an SNMP manager to display metrics in a much more human readable way than would otherwise be possible, and the generator allows the user to skip the arduous task of manually creating an MIB file.</para>
+    <section id="sid-4784788_TheMIBGenerator-TheImportanceoftheMIBFile">
+      
+      <title>The Importance of the MIB File</title>
+      <para>An MIB is not necessary for the operation of an SNMP manager. However, having one defined is very helpful for getting sensible, readable information back from a given agent. As an example, see the following queries, one with a properly defined MIB, and one without:</para>
+      <section id="sid-4784788_TheMIBGenerator-WithoutMIB">
+        
+        <title>Without MIB</title>
+        <informalexample>
+          <programlisting>[thauser@tommycat mibs]$ snmpget -v1 -c public 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.1.0
+iso.3.6.1.4.1.2312.100.1.1.1.0 = INTEGER: 109</programlisting>
+        </informalexample>
+        <para>As you can see, we have to specify the OID we are interested in numerically, and we are returned the result in similar fashion.</para>
+      </section>
+      <section id="sid-4784788_TheMIBGenerator-WithMIB%3A">
+        
+        <title>With MIB:</title>
+        <informalexample>
+          <programlisting>[thauser@tommycat mibs]$ snmpget -v1 -c public 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.1.0
+JBOSS-AS-MIB::activeThreadCount.0 = INTEGER: 109</programlisting>
+        </informalexample>
+        <para>We are returned a much more readable and informative result, with a properly defined MIB. We can even query this name directly and get the correct results:</para>
+        <informalexample>
+          <programlisting>[thauser@tommycat mibs]$ snmpget -v1 -c public 127.0.0.1:1161 activeThreadCount.0
+JBOSS-AS-MIB::activeThreadCount.0 = INTEGER: 109</programlisting>
+        </informalexample>
+        <para>This is the advantage of having an MIB.</para>
+        <para>The other parts of this guide go into more detail around getting the MIB generator to generate an appropriate MIB for anyone's needs.</para>
+      </section>
+    </section>
+    <section id="sid-4784798">
+      
+      <title>MIB Generator attributes.xml Modifications</title>
+      <para>For the SNMP adaptor, the attributes.xml consists of three types of elements: the top-level &lt;attribute-mappings&gt;, &lt;mbean&gt; and &lt;attribute&gt;. The &lt;attribute-mappings&gt; tag contains a list of &lt;mbean&gt;s. Each &lt;mbean&gt; tag must have a name attribute that indicates the JMX ObjectName of the MBean to monitor. The &lt;mbean&gt; also contains a list of &lt;attribute&gt; tags. Each &lt;attribute&gt; tag requires a name, which corresponds to an MBean attribute name, and an OID, which indicates what OID this particular &lt;attribute&gt; can be queried at. The rest of these instructions assume a basic understanding of the SNMP adaptor attributes.xml format.</para>
+      <para>In addition to the standard elements and attributes that the SNMP adaptor uses in its attributes.xml, the MIB generator can make use of several additional attributes, a few of which are required for a valid MIB to be generated. The optional attributes will not interfere with the SNMP adaptor, and so the same file can be used for both purposes. There are two elements of importance in the attributes.xml that have received the changes, and we will go into them in detail here. Within this explanation, &lt;mbean&gt; means the element defined within the attributes.xml, &lt;attribute&gt; means any element defined within an &lt;mbean&gt;. MBean refers to the actual MBean on the server, and attribute (without tags) refers to the XML meaning.</para>
+      <section id="sid-4784798_MIBGeneratorattributes.xmlModifications-attributeElement">
+        
+        <title>attribute Element</title>
+        <para>The &lt;attribute&gt; is defined like this: &lt;attribute name="distributable" oid=".2"/&gt;</para>
+        <para>This element denotes an Object or Metric contained in the &lt;mbean&gt; this &lt;attribute&gt; was defined in. The valid attributes are listed below:</para>
+        <informaltable>
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Purpose
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Importance
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Default Value
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name of the metric on the MBean. Must match exactly to such a metric.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    oid
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The numeric identifier SNMP uses to identify this particular attribute. Can be a single number, or a full OID, if the &lt;mbean&gt; doesn't define a prefix.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    mode
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Indicates whether this MBean attribute should be writeable via SNMP.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ro (read only)
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    snmp-type
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. The type SNMP managers should attempt to interpret this attribute as.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    OCTET STRING (SIZE (0..255))
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    max-access
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. Set the type of access SNMP managers should have to this attribute.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    read-only
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    description
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. A description of the attribute that will be place in the MIB.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ""
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    status
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. The SNMP STATUS of this attribute.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    current
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    table
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    MIB Generator specific. Indicates that this attribute should be treated as a table. Suitable for MBean metrics that are Arrays, Lists, or Maps, if direct access to elements is desired.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    false
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>Each &lt;attribute&gt; will have its own MIB definition. What is contained in this definition depends on the attributes defined in the &lt;mbean&gt;, and the amount of optional attributes defined in the &lt;attribute&gt; itself. Here's an example MIB Object, with placeholders for each attribute in the &lt;attribute&gt;.</para>
+        <informalexample>
+          <programlisting>&lt;name&gt; OBJECT-TYPE
+        SYNTAX &lt;snmp-type&gt;
+        ACCESS &lt;max-access&gt;
+        STATUS &lt;status&gt;
+        DESCRIPTION
+                "&lt;description&gt;"
+::= { &lt;definition-name&gt; &lt;oid&gt; }</programlisting>
+        </informalexample>
+        <para>The definition-name attribute comes from the &lt;mbean&gt;, as will be seen later. All of the optional attributes are to help the MIB be more complete; they are not strictly required for a valid MIB to be produced. The &lt;attribute&gt; element is rather simple, as is the transformation from the XML into MIB form. It is necessary to understand the purpose of these optional attributes before moving on to the more complicated part, the &lt;mbean&gt; element.</para>
+      </section>
+      <section id="sid-4784798_MIBGeneratorattributes.xmlModifications-mbeanElement">
+        
+        <title>mbean Element</title>
+        <para>The &lt;mbean&gt; is defined like this:  &lt;mbean name="jboss.system:type=ServerInfo" oid-prefix=".1.3.6.1.4.1.2312.100.1.1" definition-name="jbossAsObjects"&gt;</para>
+        <para>This element denotes an MBean which you would like to monitor with SNMP. The valid attributes are listed below:</para>
+        <informaltable>
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Purpose
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Importance
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Default Value
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name of the mbean to be monitored by the snmp-adaptor. Can be a pattern / wildcard. Must be in ObjectName form.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    oid-prefix
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The value contained in this attribute will be prepended onto all of the &lt;attribute&gt; elements contained in this &lt;mbean&gt; element.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ""
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    definition-name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name to give the value contained in the oid-prefix field in the MIB, if any.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    <superscript>1</superscript>
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    table-name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Table specific. The name for the entry in the MIB if name is a wildcard.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Special
+                    <superscript>2</superscript>
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    "UNKNOWN"
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    description
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Table specific. The description about this &lt;mbean&gt; that will be placed into the MIB, if it is a table.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ""
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    status
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Table specific. The SNMP status of this object.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    "current"
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>
+          <superscript>1</superscript>
+          : This attribute must be defined if there is an oid-prefix defined, and no other &lt;mbean&gt; element with the same oid-prefix defines a definition-name, for correct MIB generation.
+        </para>
+        <para>
+          <superscript>2</superscript>
+          : This attribute must be defined if the name of the &lt;mbean&gt; is a pattern / wildcard.
+        </para>
+        <para>Example of a standard &lt;mbean&gt; definition, within a minimal attributes.xml:</para>
+        <informalexample>
+          <programlisting>&lt;attribute-mappings&gt;
+ &lt;mbean name="jboss.system:type=ServerInfo" oid-prefix=".1.3.6.1.4.1.2312.100.1.1"&gt;    
+    &lt;attribute name="ActiveThreadCount" oid=".1"/&gt;
+ &lt;/mbean&gt;
+&lt;/attribute-mappings&gt;</programlisting>
+        </informalexample>
+        <para>
+          Each &lt;mbean&gt; element contains within it any amount of &lt;attribute&gt; elements. These &lt;attribute&gt; give the name of the MBean attribute you want to monitor, as well as assign an OID to that attribute.
+          
+          With the oid-prefix defined, each &lt;attribute&gt; will have this value prepended to it. So, ActiveThreadCount's effective OID is: 1.3.6.1.4.1.2312.100.1.1.1.0 because this is not a table, thus all &lt;attributes&gt; are treated as scalar SNMP values. The above &lt;mbean&gt; definition is good enough for the snmp-adaptor. However, there is not enough information in this &lt;mbean&gt; for a proper MIB entry to be generated. This is where the additional attributes for &lt;mbean&gt; come in. If we use the generator on the above attributes.xml, we will get the following:
+        </para>
+        <informalexample>
+          <programlisting>[thauser@tommycat mibs]$ java -jar jboss-as-varia-mib-generator.jar -a attributes.xml -m TEST-MODULE -o TEST.mib
+There was no definition-name for oid-prefix: 1.3.6.1.4.1.2312.100.1.1</programlisting>
+        </informalexample>
+        <para>This is because there is no other &lt;mbean&gt; with a definition-name for that oid-prefix. Only one &lt;mbean&gt; needs a definition-name attribute defined if they have the same value in their oid-prefix attribute. The definition-name must be defined in the first &lt;mbean&gt; that uses a specific oid-prefix. Any subsequent definition-name attributes which are associated with the same oid-prefix will be ignored. As an example:</para>
+        <informalexample>
+          <programlisting>&lt;attribute-mappings&gt;
+ &lt;mbean name="jboss.system:type=ServerInfo" oid-prefix=".1.3.6.1.4.1.2312.100.1.1" definition-name="definition1"&gt;    
+    &lt;attribute name="ActiveThreadCount" oid=".1"/&gt;
+ &lt;/mbean&gt;
+ &lt;mbean name="jboss.system:type=AnotherMbean" oid-prefix=".1.3.6.1.4.1.2312.100.1.1" definition-name="definition2"&gt;
+    &lt;attribute name="AnotherAttribute" oid=".1"/&gt;
+ &lt;/mbean&gt;
+&lt;/attribute-mappings&gt;</programlisting>
+        </informalexample>
+        <para>
+          In this case, the MIB will associate the name "definition1" with 1.3.6.1.4.1.2312.100.1.1 in the MIB, and will ignore the "definition2" in the 2nd &lt;mbean&gt;, because it has the same value in its oid-prefix attribute.
+          
+          If the first &lt;mbean&gt; had no definition-name defined, the same error as above would be thrown, even though "definition2" is defined.
+        </para>
+        <para>Here is the MIB generated using the above command, with the above example attributes.xml:</para>
+        <informalexample>
+          <programlisting>-- This MIB Generated by the Telscale MIB Generator
+
+TEST-MODULE DEFINITIONS ::=BEGIN
+
+IMPORTS
+    OBJECT-TYPE,
+    NOTIFICATION-TYPE,
+    Counter32,
+    Gauge32,
+    Counter64,
+    TimeTicks
+        FROM SNMPv2-SMI
+    DisplayString,
+    TruthValue
+        FROM SNMPv2-TC;
+
+definition1        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 1 }
+
+activeThreadCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { definition1 1 }
+
+anotherAttribute OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { definition1 1 }
+
+END</programlisting>
+        </informalexample>
+        <para>The definition-name is the only required attribute for MIB generation to complete correctly. The other attributes are there to make the resulting MIB more exact and verbose, with the exception of the table-name attribute. This attribute has a special role, for use when the given &lt;mbean&gt; name is a wildcard.</para>
+        <para>Example of a wildcard &lt;mbean&gt; definition:</para>
+        <informalexample>
+          <programlisting>&lt;mbean name="jboss.web:host=localhost,path=*,type=Manager" oid-prefix="1.3.6.1.4.1.2312.100.1.1.30.1" definition-name="testTableDef" table-name="test" status="current"&gt;
+      &lt;attribute name="distributable" oid=".2" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionCounter" oid=".3" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSessions" oid=".4" snmp-type="INTEGER"/&gt;
+&lt;/mbean&gt;</programlisting>
+        </informalexample>
+        <para>Since the name attribute in this definition is a wildcard, it may match more than one MBean on the MBeanServer. The snmp-adaptor will put all values into a table, which is indexed by the ObjectName returned by a query into the MBean server on the given wildcard. In the MIB, this MBean definition will be split into three entries; one defining the table itself, one defining a table row, and one defining the SYNTAX of the table row. The way these are defined is dependent on the definition-name, table-name, and oid-prefix attributes. The list of &lt;attribute&gt; will be added to the MIB below these three entries, and their OIDs will be prefixed with the full value of the oid-prefix attribute.</para>
+        <para>An example of the three entries, with placeholders for relevant fields:</para>
+        <para>The oid-prefix is chopped up in order to have oids that make sense for every one of these entries. More detail below.</para>
+        <para>The Table entry:</para>
+        <informalexample>
+          <programlisting>&lt;table-name&gt;Table OBJECT-TYPE
+    SYNTAX    SEQUENCE OF &lt;table-name (Capitalized)&gt;Entry
+    MAX-ACCESS    not-accessible
+    STATUS    &lt;status&gt;
+    DESCRIPTION
+        "&lt;description&gt;"
+::= { &lt;definition-name&gt; &lt;2nd to last number in oid-prefix&gt; }</programlisting>
+        </informalexample>
+        <para>
+          <emphasis role="strong">Note:</emphasis>
+          This second to last number in oid-prefix must not clash with another object in the MIB, if the rest of the oid-prefix is not unique.
+        </para>
+        <para>The Row entry:</para>
+        <informalexample>
+          <programlisting>&lt;table-name&gt;Entry OBJECT-TYPE
+    SYNTAX    &lt;table-name (Capitalized)&gt;Entry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        "&lt;description&gt;"
+
+        INDEX    {
+        IMPLIED &lt;table-name&gt;ObjectName
+        }
+::= { &lt;table-name&gt;Table &lt;last number in oid-prefix&gt; }</programlisting>
+        </informalexample>
+        <para>Notice the capitalization differences in the attribute names in the next entry. This is done to make the MIB more readable, and to make sure there are no two tables with the same metric names.</para>
+        <para>The Syntax entry:</para>
+        <informalexample>
+          <programlisting>&lt;table-name (Capitalized)&gt;Entry ::= SEQUENCE {
+    &lt;table-name&gt;ObjectName    DisplayString,
+    &lt;table-name&gt;Distributable    INTEGER,
+    &lt;table-name&gt;SessionCounter    INTEGER,
+    &lt;table-name&gt;ActiveSessions    INTEGER
+}</programlisting>
+        </informalexample>
+        <para>The interpretation of the oid-prefix is modified here. The oid of the Table MIB object is taken to be oid-prefix, except for the last number. The oid of the Entry MIB object is the full oid-prefix, and the attributes contained in the table function the same as in a normal &lt;mbean&gt;. However, the repercussions are that the definition-name will be matched up against the oid-prefix short the last two dotted numbers. If no definition-name exists for that OID, the same error encountered before will occur.</para>
+        <para>In this example, we have the following OIDs:</para>
+        <para>
+          testTableDef = 1.3.6.1.4.1.2312.100.1.1
+          
+          testTable = 1.3.6.1.4.1.2312.100.1.30 or testTableDef.30
+          
+          testEntry = 1.3.6.1.4.1.2312.100.1.30.1 or testTable.1
+          
+          testObjectName = 1.3.6.1.4.1.2312.100.1.30.1.1 (this is the index of the table) or testEntry.1
+          
+          testDistributable = 1.3.6.1.4.1.2312.100.1.30.1.2 or testEntry.2
+          
+          testSessionCounter = 1.3.6.1.4.1.2312.100.1.30.1.3 or testEntry.3
+          
+          testActiveSessions = 1.3.6.1.4.1.2312.100.1.30.1.4 or testEntry.4
+        </para>
+        <para>Below is the MIB entry that will be generated from the &lt;mbean&gt; above.</para>
+        <informalexample>
+          <programlisting>testTableDef        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 1 }
+
+testTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF TestEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+::= { testTableDef 30 }
+
+testEntry OBJECT-TYPE
+    SYNTAX    TestEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+
+        INDEX    {
+        IMPLIED testObjectName
+        }
+::= { testTable 1 }
+
+TestEntry ::= SEQUENCE {
+    testObjectName    DisplayString,
+    testDistributable    INTEGER,
+    testSessionCounter    INTEGER,
+    testActiveSessions    INTEGER
+}
+
+testObjectName OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        ""
+::= { testEntry 1 }
+
+testDistributable OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { testEntry 2 }
+
+testSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { testEntry 3 }
+
+testActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { testEntry 4 }</programlisting>
+        </informalexample>
+        <para>Note that the ObjectName object will always be present, as it is the index the snmp-adaptor uses in its internal representation. Thus, the user must not define any attribute with .1, or the MIB generation will fail.</para>
+        <para>As a final example, here is the Mobicents mss-attributes.xml, modified to allow MIB generation, and the resulting MIB:</para>
+        <para>Command used:</para>
+        <informalexample>
+          <programlisting>java -jar jboss-as-varia-mib-generator.jar -a mss-attributes.xml -m TEST-MODULE -o TEST.mib</programlisting>
+        </informalexample>
+        <informalexample>
+          <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;attribute-mappings&gt;
+   
+   &lt;!-- basic system information --&gt;
+   &lt;mbean name="jboss.system:type=ServerInfo" oid-prefix=".1.3.6.1.4.1.2312.100.1" definition-name="jbossAsObjects"&gt;
+      &lt;attribute name="ActiveThreadCount" oid=".1"/&gt;
+      &lt;attribute name="FreeMemory" oid=".2"/&gt;
+      &lt;attribute name="MaxMemory" oid=".3"/&gt;
+   &lt;/mbean&gt;
+
+   &lt;!-- tomcat global http request processing --&gt;
+   &lt;!--&lt;mbean name="jboss.web:name=http-0.0.0.0-8080,type=GlobalRequestProcessor"&gt;
+      &lt;attribute name="requestCount" oid=".1.2.3.4.1.5"/&gt;
+   &lt;/mbean&gt;--&gt;
+   
+   &lt;!-- Tx Manager statistics --&gt;
+   &lt;mbean name="jboss:service=TransactionManager"&gt;
+      &lt;attribute name="CommitCount" oid=".1.3.6.1.4.1.2312.100.1.6"/&gt;
+      &lt;attribute name="RollbackCount" oid=".1.3.6.1.4.1.2312.100.1.7"/&gt;
+      &lt;attribute name="TransactionCount" oid=".1.3.6.1.4.1.2312.100.1.8"/&gt;
+   &lt;/mbean&gt;
+   
+   &lt;!-- DefaultDS statistics --&gt;
+   &lt;mbean name="jboss.jca:name=DefaultDS,service=ManagedConnectionPool" oid-prefix=".1.3.6.1.4.1.2312.100.1"&gt;
+      &lt;attribute name="InUseConnectionCount" oid=".9"/&gt;
+      &lt;attribute name="MaxConnectionsInUseCount" oid=".10"/&gt;
+   &lt;/mbean&gt;
+
+   &lt;!-- system information group see RFC-1213 --&gt;
+   &lt;mbean name="jboss.jmx:name=SnmpAgent,service=MIB2SystemGroup" oid-prefix=".1.3.6.1.2.1.1" definition-name="system"&gt;
+      &lt;attribute name="SysDescr" oid=".1" mode="rw"/&gt; &lt;!-- can be modified over snmp --&gt;
+      &lt;attribute name="SysObjectId" oid=".2"/&gt;
+      &lt;attribute name="SysUpTime" oid=".3"/&gt;
+      &lt;attribute name="SysContact" oid=".4"/&gt;
+      &lt;attribute name="SysName" oid=".5"/&gt;
+      &lt;attribute name="SysLocation" oid=".6"/&gt;
+      &lt;attribute name="SysServices" oid=".7"/&gt;
+   &lt;/mbean&gt;
+   
+   &lt;!-- sip application dispatcher --&gt;
+   &lt;mbean name="jboss.web:type=SipApplicationDispatcher" oid-prefix=".1.3.6.1.4.1.2312.100.1.11" definition-name="sipApplicationDispatcher"&gt;      
+      &lt;attribute name="baseTimerInterval" oid=".2" mode="rw"/&gt;
+      &lt;attribute name="t2Interval" oid=".3" mode="rw"/&gt;
+      &lt;attribute name="t4Interval" oid=".4" mode="rw"/&gt;
+      &lt;attribute name="timerDInterval" oid=".5" mode="rw"/&gt;
+      &lt;attribute name="memoryThreshold" oid=".6" mode="rw"/&gt;
+      &lt;attribute name="backToNormalMemoryThreshold" oid=".7" mode="rw"/&gt;
+      &lt;attribute name="gatherStatistics" oid=".8" mode="rw"/&gt;
+      &lt;attribute name="requestsProcessed" oid=".9" /&gt;
+      &lt;attribute name="responsesProcessed" oid=".10" /&gt;
+      &lt;attribute name="congestionControlCheckingInterval" oid=".11" mode="rw"/&gt;
+   &lt;/mbean&gt;
+   
+   &lt;!-- sip stack --&gt;
+   &lt;mbean name="org.mobicents.jain.sip:name=Mobicents-SIP-Servlets,type=sip-stack" oid-prefix=".1.3.6.1.4.1.2312.100.1.11.1" definition-name="mobicentsSipServlets"&gt;
+      &lt;attribute name="NumberOfClientTransactions" oid=".1"/&gt;
+      &lt;attribute name="NumberOfServerTransactions" oid=".2"/&gt;
+      &lt;attribute name="NumberOfDialogs" oid=".3"/&gt;
+      &lt;attribute name="LocalMode" oid=".4"/&gt;
+   &lt;/mbean&gt;
+   
+   &lt;!-- Web Apps --&gt;
+   &lt;mbean name="jboss.web:host=localhost,path=/*,type=Manager" oid-prefix=".1.3.6.1.4.1.2312.100.10.1" definition-name="sipManagerTableDef" table-name="manager"&gt;
+      &lt;attribute name="distributable" oid=".2" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionCounter" oid=".3" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSessions" oid=".4" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxActiveSessions" oid=".5" mode="rw" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionAverageAliveTime" oid=".6" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="expiredSessions" oid=".7" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="rejectedSessions" oid=".8" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxInactiveInterval" oid=".9" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionMaxAliveTime" oid=".10" snmp-type="INTEGER"/&gt;                  
+   &lt;/mbean&gt;
+   
+   &lt;!-- Sip or Converged Web+Sip Apps --&gt;
+   &lt;mbean name="jboss.web:host=localhost,path=/*,type=SipManager" oid-prefix=".1.3.6.1.4.1.2312.100.11.1" definition-name="sipManagerTableDef" table-name="sipManager"&gt;
+      &lt;attribute name="distributable" oid=".2" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionCounter" oid=".3" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSessions" oid=".4" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxActiveSessions" oid=".5" mode="rw" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionAverageAliveTime" oid=".6" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="expiredSessions" oid=".7" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="rejectedSessions" oid=".8" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxInactiveInterval" oid=".9" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sessionMaxAliveTime" oid=".10" snmp-type="INTEGER"/&gt;       
+      &lt;attribute name="sipSessionCounter" oid=".11" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sipApplicationSessionCounter" oid=".12" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSipSessions" oid=".13" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="activeSipApplicationSessions" oid=".14" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="expiredSipSessions" oid=".15" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="expiredSipApplicationSessions" oid=".16" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="rejectedSipSessions" oid=".17" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="rejectedSipApplicationSessions" oid=".18" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxActiveSipSessions" oid=".19" mode="rw" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="maxActiveSipApplicationSessions" oid=".20" mode="rw" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sipSessionAverageAliveTime" oid=".21" snmp-type="INTEGER"/&gt;      
+      &lt;attribute name="sipApplicationSessionAverageAliveTime" oid=".22" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sipSessionMaxAliveTime" oid=".23" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="sipApplicationSessionMaxAliveTime" oid=".24" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="numberOfSipSessionCreationPerSecond" oid=".25" snmp-type="INTEGER"/&gt;
+      &lt;attribute name="numberOfSipApplicationSessionCreationPerSecond" oid=".26" snmp-type="INTEGER"/&gt;
+   &lt;/mbean&gt;
+   
+&lt;/attribute-mappings&gt;</programlisting>
+        </informalexample>
+        <informalexample>
+          <programlisting>-- This MIB Generated by the Telscale MIB Generator
+
+TEST-MODULE DEFINITIONS ::=BEGIN
+
+IMPORTS
+    OBJECT-TYPE,
+    NOTIFICATION-TYPE,
+    Counter32,
+    Gauge32,
+    Counter64,
+    TimeTicks
+        FROM SNMPv2-SMI
+    DisplayString,
+    TruthValue
+        FROM SNMPv2-TC;
+
+mobicentsSipServlets        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 11 1 }
+jbossAsObjects        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 }
+sipManagerTableDef        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 }
+sipApplicationDispatcher        OBJECT IDENTIFIER ::= { 1 3 6 1 4 1 2312 100 1 11 }
+system        OBJECT IDENTIFIER ::= { 1 3 6 1 2 1 1 }
+
+activeThreadCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 1 }
+
+freeMemory OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 2 }
+
+maxMemory OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 3 }
+
+commitCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 6 }
+
+rollbackCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 7 }
+
+transactionCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 8 }
+
+inUseConnectionCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 9 }
+
+maxConnectionsInUseCount OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { jbossAsObjects 10 }
+
+sysDescr OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 1 }
+
+sysObjectId OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 2 }
+
+sysUpTime OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 3 }
+
+sysContact OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 4 }
+
+sysName OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 5 }
+
+sysLocation OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 6 }
+
+sysServices OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { system 7 }
+
+baseTimerInterval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 2 }
+
+t2Interval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 3 }
+
+t4Interval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 4 }
+
+timerDInterval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 5 }
+
+memoryThreshold OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 6 }
+
+backToNormalMemoryThreshold OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 7 }
+
+gatherStatistics OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 8 }
+
+requestsProcessed OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 9 }
+
+responsesProcessed OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 10 }
+
+congestionControlCheckingInterval OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipApplicationDispatcher 11 }
+
+numberOfClientTransactions OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { mobicentsSipServlets 1 }
+
+numberOfServerTransactions OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { mobicentsSipServlets 2 }
+
+numberOfDialogs OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { mobicentsSipServlets 3 }
+
+localMode OBJECT-TYPE
+    SYNTAX OCTET STRING (SIZE(0..255))
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { mobicentsSipServlets 4 }
+
+managerTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF ManagerEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+::= { sipManagerTableDef 10 }
+
+managerEntry OBJECT-TYPE
+    SYNTAX    ManagerEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+
+        INDEX    {
+        IMPLIED managerObjectName
+        }
+::= { managerTable 1 }
+
+ManagerEntry ::= SEQUENCE {
+    managerObjectName    DisplayString,
+    managerDistributable    INTEGER,
+    managerSessionCounter    INTEGER,
+    managerActiveSessions    INTEGER,
+    managerMaxActiveSessions    INTEGER,
+    managerSessionAverageAliveTime    INTEGER,
+    managerExpiredSessions    INTEGER,
+    managerRejectedSessions    INTEGER,
+    managerMaxInactiveInterval    INTEGER,
+    managerSessionMaxAliveTime    INTEGER
+}
+
+managerObjectName OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 1 }
+
+managerDistributable OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 2 }
+
+managerSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 3 }
+
+managerActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 4 }
+
+managerMaxActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 5 }
+
+managerSessionAverageAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 6 }
+
+managerExpiredSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 7 }
+
+managerRejectedSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 8 }
+
+managerMaxInactiveInterval OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 9 }
+
+managerSessionMaxAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { managerEntry 10 }
+
+
+sipManagerTable OBJECT-TYPE
+    SYNTAX    SEQUENCE OF SipManagerEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+::= { sipManagerTableDef 11 }
+
+sipManagerEntry OBJECT-TYPE
+    SYNTAX    SipManagerEntry
+    MAX-ACCESS    not-accessible
+    STATUS    current
+    DESCRIPTION
+        ""
+
+        INDEX    {
+        IMPLIED sipManagerObjectName
+        }
+::= { sipManagerTable 1 }
+
+SipManagerEntry ::= SEQUENCE {
+    sipManagerObjectName    DisplayString,
+    sipManagerDistributable    INTEGER,
+    sipManagerSessionCounter    INTEGER,
+    sipManagerActiveSessions    INTEGER,
+    sipManagerMaxActiveSessions    INTEGER,
+    sipManagerSessionAverageAliveTime    INTEGER,
+    sipManagerExpiredSessions    INTEGER,
+    sipManagerRejectedSessions    INTEGER,
+    sipManagerMaxInactiveInterval    INTEGER,
+    sipManagerSessionMaxAliveTime    INTEGER,
+    sipManagerSipSessionCounter    INTEGER,
+    sipManagerSipApplicationSessionCounter    INTEGER,
+    sipManagerActiveSipSessions    INTEGER,
+    sipManagerActiveSipApplicationSessions    INTEGER,
+    sipManagerExpiredSipSessions    INTEGER,
+    sipManagerExpiredSipApplicationSessions    INTEGER,
+    sipManagerRejectedSipSessions    INTEGER,
+    sipManagerRejectedSipApplicationSessions    INTEGER,
+    sipManagerMaxActiveSipSessions    INTEGER,
+    sipManagerMaxActiveSipApplicationSessions    INTEGER,
+    sipManagerSipSessionAverageAliveTime    INTEGER,
+    sipManagerSipApplicationSessionAverageAliveTime    INTEGER,
+    sipManagerSipSessionMaxAliveTime    INTEGER,
+    sipManagerSipApplicationSessionMaxAliveTime    INTEGER,
+    sipManagerNumberOfSipSessionCreationPerSecond    INTEGER,
+    sipManagerNumberOfSipApplicationSessionCreationPerSecond    INTEGER
+}
+
+sipManagerObjectName OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS not-accessible
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 1 }
+
+sipManagerDistributable OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 2 }
+
+sipManagerSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 3 }
+
+sipManagerActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 4 }
+
+sipManagerMaxActiveSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 5 }
+
+sipManagerSessionAverageAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 6 }
+
+sipManagerExpiredSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 7 }
+
+sipManagerRejectedSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 8 }
+
+sipManagerMaxInactiveInterval OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 9 }
+
+sipManagerSessionMaxAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 10 }
+
+sipManagerSipSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 11 }
+
+sipManagerSipApplicationSessionCounter OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 12 }
+
+sipManagerActiveSipSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 13 }
+
+sipManagerActiveSipApplicationSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 14 }
+
+sipManagerExpiredSipSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 15 }
+
+sipManagerExpiredSipApplicationSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 16 }
+
+sipManagerRejectedSipSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 17 }
+
+sipManagerRejectedSipApplicationSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 18 }
+
+sipManagerMaxActiveSipSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 19 }
+
+sipManagerMaxActiveSipApplicationSessions OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 20 }
+
+sipManagerSipSessionAverageAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 21 }
+
+sipManagerSipApplicationSessionAverageAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 22 }
+
+sipManagerSipSessionMaxAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 23 }
+
+sipManagerSipApplicationSessionMaxAliveTime OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 24 }
+
+sipManagerNumberOfSipSessionCreationPerSecond OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 25 }
+
+sipManagerNumberOfSipApplicationSessionCreationPerSecond OBJECT-TYPE
+    SYNTAX INTEGER
+    ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+::= { sipManagerEntry 26 }
+
+
+END</programlisting>
+        </informalexample>
+      </section>
+    </section>
+    <section id="sid-4784801">
+      
+      <title>MIB Generator notifications.xml Modifications</title>
+      <para>The notifications.xml file is responsible for indicating how a given JMX notification should be transformed into an equivalent SNMP trap. The driver behind this transformation is the notification-type attribute, which indicates the type of JMX notification to transform using a given definition. Here is an example notifications.xml file:</para>
+      <informalexample>
+        <programlisting>&lt;notification-map-list&gt;
+ &lt;mapping notification-type="jboss.snmp.agent.heartbeat" generic="3" specific="0" enterprise="1.2.3.4.5.6.7"&gt;
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="a:uptime" oid="1.2.3.4.5.6.7.5"/&gt;
+      &lt;var-bind tag="a:trapCount" oid="1.2.3.4.5.6.7.6"/&gt;
+      &lt;var-bind tag="n:message" oid="1.2.3.4.5.6.7.7"/&gt;
+      &lt;var-bind tag="n:sequenceNumber" oid="1.2.3.4.5.6.7.8"/&gt;
+    &lt;/var-bind-list&gt;
+  &lt;/mapping&gt;
+&lt;/notification-map-list&gt;</programlisting>
+      </informalexample>
+      <para>
+        This notification would catch the "jboss.snmp.agent.heartbeat" notification, and create an SNMP trap with the payload described in each var-bind, according to the var-bind-list wrapper-class. This class defines how such objects are retrieved.
+        
+        The values contained in generic and specific are to identify the trap, and the OID in enterprise should be the OID of the object that is emitting this trap. The trap can contain an arbitrary amount of &lt;var-bind&gt;s in its payload.. It is in these &lt;var-bind&gt; tags that the binding of values to OIDs gets tricky.
+      </para>
+      <section id="sid-4784801_MIBGeneratornotifications.xmlModifications-Thevarbindelement">
+        
+        <title>The var-bind element</title>
+        <para>The &lt;var-bind&gt; element, which is much like the &lt;attribute&gt; element inside attributes.xml, is defined like this: &lt;var-bind tag="a:uptime" oid="1.2.3.4.5.6.7.5"/&gt;</para>
+        <para>A &lt;var-bind&gt; element has two required attributes, and a single optional attribute, for use by the MIB Generator.</para>
+        <informaltable>
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Purpose
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Importance
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Default Value
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    tag
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Used by the default wrapper class to indicate what value to retrieve.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    oid
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The OID that should be assigned to the retrieved value.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    type
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The SNMP type of this variable binding. Used by the MIB generator
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    DisplayString
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>There are two different actions the MIB generator may take, based on the value of the tag attribute.</para>
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Value
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Result
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    a:*
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The OID paired with a tag that has value a:* MUST correspond to an &lt;attirbute&gt; in attributes.xml.
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    n:*, u:*
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    A new MIB Entry is defined for each of these var-binds, with OIDs as defined. They are then included in the notification's definition in the MIB.
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>The oid of an a:* tag must have a definition in the MIB, and thus for the MIB Generator's purposes, must have a definition in the attributes.xml. An SNMP trap cannot contain, in its payload, an object which is not defined either in an imported MIB, or in the MIB where the definition of the trap resides. Since it is the only way to have such a definition exist in the generated MIB, this requirement is enforced. This OID is assumed to be a scalar object. There is currently no support for including a table cell's value in the Trap for the snmp-adaptor.</para>
+        <para>If the tag is n:* or u:*, a new entry in the MIB is defined, using the prefix "jmxNotification" for the name and modifying capitalization for readability. The SYNTAX of this new entry is defined by the type attribute.</para>
+      </section>
+      <section id="sid-4784801_MIBGeneratornotifications.xmlModifications-Themappingelement">
+        
+        <title>The mapping element</title>
+        <para>This element contains most of the required attributes for the MIB generator. A minimal definition for the snmp-adaptor looks like this:</para>
+        <informalexample>
+          <programlisting>&lt;mapping notification-type="jboss.snmp.agent.coldstart" generic="0" specific="0" enterprise="1.2.3.4.5.6.7"&gt;
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="a:trapCount" oid="1.2.3.4.5.6.7.6"/&gt;
+    &lt;/var-bind-list&gt;
+  &lt;/mapping&gt;</programlisting>
+        </informalexample>
+        <para>The MIB Generator requires more information about the trap in order to create a meaningful entry. Here's an example of a notification.xml that has enough meta-data for proper MIB generation:</para>
+        <informalexample>
+          <programlisting>&lt;mapping name="jbossAsHeartbeatNotification" notification-type="jboss.snmp.agent.heartbeat" generic="0" specific="3" enterprise="1.3.6.1.4.1.2312.100.1.2" definition-name="jbossAsTraps"&gt;
+    &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
+      &lt;var-bind tag="a:trapCount" oid="1.3.6.1.4.1.2312.100.1.1.11"/&gt;
+    &lt;/var-bind-list&gt;
+  &lt;/mapping&gt;</programlisting>
+        </informalexample>
+        <para>A table of additional attributes for the &lt;mapping&gt; element is as follows. All values in the "Importance" column are for the MIB Generator, not the snmp-adaptor.</para>
+        <informaltable>
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry>
+                  <para>
+                    Name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Purpose
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Importance
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Default Value
+                    
+                  </para>
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <para>
+                    name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name of the notification as it should appear in the MIB
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    notification-type
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The actual class name of the JMX notification to be intercepted
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    generic
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Part of the identification of the trap
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    specific
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Part of the OID of the trap
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    enterprise
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Part of the OID of the trap.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    inform
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    A boolean for indicating whether this trap should be an INFORM.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    False
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    security-name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Indicates the user to be associated with this trap. V3 only.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    definition-name
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    The name to associate with the value in the enterprise attribute.
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Required
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Not Applicable
+                    
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <para>
+                    description
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    A description about what the notification is for or contains, to be placed into the MIB
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    Optional
+                    
+                  </para>
+                </entry>
+                <entry>
+                  <para>
+                    ""
+                    
+                  </para>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+        <para>The MIB generator requires more information, and is more strict about this information, than with the attributes.xml. The most important thing is that the oids in the &lt;var-binds&gt; match up to the oids in the attributes.xml. Otherwise, the MIB generator will not generate a valid MIB, and generation will fail.</para>
+        <para>The OID of a given notification is in the following form, for v2c and v3 traps:</para>
+        <para>&lt;enterprise&gt;.0.&lt;specific&gt;</para>
+        <para>Here is an example of the MIB generator's ouput for the notifications.xml given above:</para>
+        <informalexample>
+          <programlisting>jbossAsHeartbeatNotification NOTIFICATION-TYPE
+        OBJECTS {
+                trapCount
+        }
+        STATUS current
+        DESCRIPTION
+                ""
+::= { jbossAsTraps 3 }</programlisting>
+        </informalexample>
+        <para>Since the oid associated with the a:trapCount tag exists in the MIB, the name of that attribute in the MIB is defined as being part of the notification. The OID of this jbossAsHeartbeatNotification is equal to</para>
+        <para>1.3.6.1.4.1.2312.100.1.2.0.3</para>
+        <para>
+          jbossAsTraps = &lt;enterprise&gt;.&lt;generic&gt;
+          
+          and the final number comes from the &lt;specific&gt; attribute.
+        </para>
+        <para>As an example, here is output of the heartbeat notification (a simple notification sent every so often, indicating that the server is still alive).The notifications.xml defining this SNMP notification has been included in the MIB generation, so the names of the fields have the correct human-readable name listed:</para>
+        <informalexample>
+          <programlisting>2011-07-14 16:18:53 localhost.localdomain [UDP: [127.0.0.1]:1161-&gt;[127.0.0.1]]:
+DISMAN-EVENT-MIB::sysUpTimeInstance = Timeticks: (536372) 1:29:23.72    
+SNMPv2-MIB::snmpTrapOID.0 = OID: JBOSS-AS-VARIA::jbossAsHeartbeatNotification    
+SNMPv2-MIB::sysUpTime = STRING: 536372   
+JBOSS-AS-VARIA::trapCount = STRING: 805    
+JBOSS-AS-VARIA::jbossJmxNotificationMessage = STRING: heartbeat report    
+JBOSS-AS-VARIA::jbossJmxNotificationSequenceNumber = STRING: 269</programlisting>
+        </informalexample>
+      </section>
+    </section>
+    <section id="sid-4784803">
+      
+      <title>Using the Generator</title>
+      <para>Currently, there are two ways to use the MIB Generator. The first is to simply use the executable jar, with the desired files, to output an MIB of your choosing. The second is to use the maven plugin that will invoke the MIB Generator on given files at compile time, allowing you to have an MIB for your web application which is designed to run on the TelscaleAS.</para>
+      <section id="sid-4784803_UsingtheGenerator-UsingtheJAR">
+        
+        <title>Using the JAR</title>
+        <para>The jar has a very simple set of commands. They are as follows:</para>
+        <itemizedlist>
+          <listitem>
+            <para>-a : The attributes file to be used, if any.</para>
+          </listitem>
+          <listitem>
+            <para>-n : The notifications file to be used, if any.</para>
+          </listitem>
+          <listitem>
+            <para>-m : The Module Name to be used. This Module Name is how the SNMP manager will identify the definitions in the MIB, it is not done by filename.</para>
+          </listitem>
+          <listitem>
+            <para>-o : The output file name.</para>
+          </listitem>
+        </itemizedlist>
+        <para>The JAR can be used with both attributes / notifications files, or just the attributes file. It is also possible to use it with just the notifications file, but the tags in such a notifications file must not include a:* tags. It must only contain tags for attributes whose definitions can be generated, such as n:* and u:* tags. The -m and -o flags are required. The -o can include the path you would like to put the final MIB.</para>
+        <para>Example usage:</para>
+        <informalexample>
+          <programlisting>[thauser@tommycat snmp-adaptor.sar]$ java -jar jboss-snmp-5.1.1.GA-mib-generator.jar -a attributes.xml -n notifications.xml -m JBOSS-AS-VARIA -o ~/.snmp/mibs/TEST.mib</programlisting>
+        </informalexample>
+      </section>
+      <section id="sid-4784803_UsingtheGenerator-UsingtheMavenPlugin">
+        
+        <title>Using the Maven Plugin</title>
+        <para>There is also a Maven Plugin available. Instead of specifying these files on the command line, they are included in the plugin descriptor inside your project's pom.xml. Here's an example of such a descriptor:</para>
+        <informalexample>
+          <programlisting>&lt;plugin&gt;
+ &lt;groupId&gt;org.jboss&lt;/groupId&gt;
+ &lt;artifactId&gt;mibgen-maven-plugin&lt;/artifactId&gt;
+ &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+  &lt;configuration&gt;
+   &lt;attributesFile&gt;workspace/snmp4j-int/varia/src/resources/services/snmp/deploy/attributes.xml&lt;/attributesFile&gt;
+   &lt;notificationsFile&gt;workspace/snmp4j-int/varia/src/resources/services/snmp/deploy/notifications.xml&lt;/notificationsFile&gt;
+   &lt;moduleName&gt;TEST-MIB&lt;/moduleName&gt;
+   &lt;outputFile&gt;/home/yyz/thauser/.snmp/mibs/JBOSS-AS-VARIA.mib&lt;/outputFile&gt;
+  &lt;/configuration&gt;
+ &lt;executions&gt;
+  &lt;execution&gt;
+   &lt;phase&gt;compile&lt;/phase&gt;
+    &lt;goals&gt;
+     &lt;goal&gt;generate-mib&lt;/goal&gt;
+    &lt;/goals&gt;
+   &lt;/execution&gt;
+ &lt;/executions&gt;
+&lt;/plugin&gt;</programlisting>
+        </informalexample>
+      </section>
+    </section>
+
+
+
+
+
+
+</section>
+
+</chapter>
+
+
