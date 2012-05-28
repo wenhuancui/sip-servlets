@@ -1,8 +1,10 @@
-﻿<?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 <!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
+
 <chapter id="emom-Enterprise-Monitoring-Operations-Management">
   <title>Enterprise Monitoring and Management</title>
   <para>There is two ways of monitoring &PLATFORM_NAME; Sip Servlets :
@@ -24,7 +26,13 @@
   		<title>&PLATFORM_NAME; SIP Servlets SNMP Monitoring and Management</title>
   		<para>This chapter provides information on how to enable the management of
 	    &PLATFORM_NAME; SIP Servlets Servers through SNMP. It also allows applications to expose their metrics and management through SNMP</para>
-	    <para>See <ulink url="https://docs.jboss.org/author/display/MOBICENTS/SNMP+Adaptor">the full guide presents SNMP Monitoring for JBoss Application Server</ulink></para>
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SNMP-1-General_Information.xml"/>
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SNMP-2-SNMP_Adaptor_s_Description.xml"/>
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SNMP-3-SNMP_Adaptor_WalkThrough.xml"/>
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SNMP-4-The_SNMP_Adaptor_JBoss_Service.xml"/>
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SNMP-5-The_SNMP_Adaptor_JBoss_Deployer.xml"/>
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SNMP-6-SNMP_Adaptor_Walkthrough.xml"/>
+		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-SNMP-7-The_MIB_Generator.xml"/>
   </section>
   <section>
     <title>&PLATFORM_NAME; SIP Servlets Jopr Monitoring and Management</title>
