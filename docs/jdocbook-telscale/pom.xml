@@ -59,7 +59,9 @@
 				    	</dependency>
 				</dependencies>
 				<configuration>					
+
 					<sourceDocumentName>SIP_Servlets_Server_User_Guide.xml</sourceDocumentName>
+
 					<sourceDirectory>${project.build.directory}/docbook/resources</sourceDirectory>
 					<imageResource>
 						<directory>${project.build.directory}/docbook/resources/en-US</directory>

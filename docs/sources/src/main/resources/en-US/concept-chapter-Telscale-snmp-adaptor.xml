@@ -3,25 +3,12 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
-<<<<<<< HEAD
-
-
 
 <chapter id="telscale-snmp-adaptor">
-  <title>Telscale Telscale Adaptor User Guide</title>
+  <title>Telscale Adaptor User Guide</title>
 
   <para>
-  There are multiple ways to access the Snmp and expose your application to the Telscale server. When it comes to SNMP network and devices monitoring, Nagios, Zenoss or OpenNMS are good tools of choice. This SNMP adaptor user guide will be partly based on the OpenNMS network monitoring application and the Net-SNMP tool. This will facilitate quick deployment and will allow System and Network Administrators to quickly familiarize themselves with Telscale Application Server. First of all, let us get an overview of SNMP
-=======
-<chapter id="telscale-snmp-adaptor">
-  <title>&PLATFORM_NAME; SNMP Adaptor User Guide</title>
-
-  <para>
-  There are multiple ways to access the Snmp data on the &PLATFORM_NAME; server. You can use an SNMP command line tool like the Net-Snmp. 
-  For ease of use, this user guide will be based on the OpenNMS network monitoring application. The reason for this is that it allows
-  for quick setup allowing the System and Network Administrator to concentrate on getting the most out of the &PLATFORM_NAME; server. First of all,
-  let us get an overview of SNMP
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+  There are multiple ways to access the Snmp and expose your application to the Telscale server. When it comes to SNMP network and devices monitoring, Nagios, Zenoss or OpenNMS are good tools of choice. This SNMP adaptor user guide will be partly based on the OpenNMS network monitoring application and the Net-SNMP tool. This will facilitate quick deployment and will allow System and Network Administrators to quickly familiarize themselves with  &PLATFORM_NAME; First of all, let us get an overview of SNMP
   </para>
   
   <section>
@@ -54,15 +41,9 @@ called "Structure of Management Information Version 2 (SMIv2)"
 <para> The IANA OID registry contains a list of registered entities that use OIDs to reference internal structures
  (e.g. directory attributes). Each entity is assigned an initial referential value (e.g. 1.3.6.1.4.1.2312 for Red Hat, see 
  <ulink url="http://www.oid-info.com/get/1.3.6.1.4.1.2312"/> and thereafter the internal numbering plan is up to the entity to define 
-<<<<<<< HEAD
- (e.g. 1.3.6.1.4.1.2312.100.1.1 might refer to the "ActiveThreadCount" attribute of the Telscale Application Sever). 
+ (e.g. 1.3.6.1.4.1.2312.100.1.1 might refer to the "ActiveThreadCount" attribute of the  &PLATFORM_NAME;). 
  This allows for precise referencing of data attributes in a company or other entity. 
- See diagram below representing the Telscale Application Server hierarchy </para>
-=======
- (e.g. 1.3.6.1.4.1.2312.100.1.1 might refer to the "ActiveThreadCount" attribute of the JBoss Application Sever). 
- This allows for precise referencing of data attributes in a company or other entity. 
- See diagram below representing the JBoss Application Server hierarchy </para>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+ See diagram below representing the  &PLATFORM_NAME; hierarchy </para>
 
 <para> A managed object (sometimes called a MIB object, an object, or a MIB) 
 is one of any number of specific characteristics of a managed device. 
@@ -84,11 +65,7 @@ Managed objects are made up of one or more object instances (identified by their
 <para>
 To obtain values of objects from the manager, it is necessary to specify the instance of the object. 
 The instance of an object is specified by appending an instance index to the object identifier, 
-<<<<<<< HEAD
-by example for ActiveThreadCount attribute of the Telscale Application Server the OID to query would be 1.3.6.1.4.1.2312.100.1.1.0. </para>
-=======
-by example for ActiveThreadCount attribute of the JBoss Application Server the OID to query would be 1.3.6.1.4.1.2312.100.1.1.0. </para>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+by example for ActiveThreadCount attribute of the  &PLATFORM_NAME; the OID to query would be 1.3.6.1.4.1.2312.100.1.1.0. </para>
 
 
 <para> Two types of managed objects exist: </para>
@@ -102,11 +79,7 @@ by example for ActiveThreadCount attribute of the JBoss Application Server the O
 
 <para> <emphasis role="color:#000000">Tabular object </emphasis> </para>
 <para> Tabular Object defines multiple related object instances that are grouped in MIB tables. 
-<<<<<<< HEAD
-The Telscale SNMP Adaptor uses two types of ways to access values in a table : a separate index column 
-=======
-The &PLATFORM_NAME; SNMP Adaptor uses two types of ways to access values in a table : a separate index column 
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+The &PLATFORM_NAME; SNMP Adaptor uses two ways to access values in a table : a separate index column 
 for tabular objects that represents arrays and java.util.List since they are indexed, but to query the 
 Java index that starts at 0 in an array or List, it will start at index .1 for SNMP as .0 is reserved for scalar objects. For tabular 
 objects whose type is a java.util.Map or a wildcard used in a MBean, the index column will be named as per the key of the data in the row. </para>
@@ -116,11 +89,7 @@ objects whose type is a java.util.Map or a wildcard used in a MBean, the index c
 <section>
 <title>SNMP Adaptor's Description</title>
     <para>
-<<<<<<< HEAD
-      <emphasis role="color:#000000">Telscale Application Server and Mobicents now features a revamped SNMP Adaptor, leveraging</emphasis>
-=======
-      <emphasis role="color:#000000">JBoss Application Server and Mobicents now features a revamped SNMP Adaptor, leveraging</emphasis>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+      <emphasis role="color:#000000">  &PLATFORM_NAME; and Mobicents now features a revamped SNMP Adaptor, leveraging</emphasis>
       <emphasis role="color:#000000">
         <ulink url="http://www.snmp4j.org/">snmp4j</ulink>
       </emphasis>
@@ -136,45 +105,25 @@ objects whose type is a java.util.Map or a wildcard used in a MBean, the index c
 </section>
 
 <section>
-<<<<<<< HEAD
-<title>The SNMP Adaptor TELSCALE Service</title>
-=======
-<title>The SNMP Adaptor &PLATFORM_NAME; Service</title>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+<title>The SNMP Adaptor &PLATFORM_NAME;; Service</title>
      
 
 
 
 <para>
 The SNMP Adaptor Servicecontains the general configuration of the SNMP service and the JMX to SNMP mapping for
-<<<<<<< HEAD
- the Telscale Application Server and its subcomponents. </para>
-=======
- the JBoss Application Server and its subcomponents. </para>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+ the &PLATFORM_NAME; and its subcomponents. </para>
 
 <para>The SNMP Adaptor Service Agent listen on a given UDP port (default 1161). The manager may send requests 
 from any available source port to port 1161 in the Agent. The Agent responses will be sent back to the 
 source port of the manager sent requests. TheSNMP Adaptor Servicealso provides a manager that can receive 
 notifications (Traps and Inform Requests) on port 1162. TheSNMP Adaptor Service Agentmay generate notifications
-<<<<<<< HEAD
- from any available port on behalf of the Telscale Application Server or its components and applications deployed within it.
-=======
- from any available port on behalf of the JBoss Application Server or its components and applications deployed within it.
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+ from any available port on behalf of the  &PLATFORM_NAME;, its components and applications deployed within it.
 </para>
 
 </section>
 <section>
-<<<<<<< HEAD
-<title>Telscale Binaries </title>
 
-<para>
-The SNMP Adaptor Telscale Service location $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar 
-will be referred to as $TELSCALE_SNMP_ADAPTOR. The installation will be explained further down.</para>
-<para>
-The SNMP Adaptor Telscale Service offers 5 configuration files that will be described below
-=======
 <title>&PLATFORM_NAME; Binaries </title>
 
 <para>
@@ -182,7 +131,6 @@ The SNMP Adaptor &PLATFORM_NAME; Service location $TELSCALE_HOME/server/default/
 will be referred to as $TELSCALE_SNMP_ADAPTOR. The installation will be explained further down.</para>
 <para>
 The SNMP Adaptor JBoss Service offers 5 configuration files that will be described below
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 <screen>
 /META-INF/jboss-service.xml
 attributes.xml
@@ -197,11 +145,7 @@ users.xml
 
 <section> 
 
-<<<<<<< HEAD
-<title> Telscale Jboss-Services.xml </title>
-=======
 <title> &PLATFORM_NAME; Jboss-Services.xml </title>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 <para>
 
 It is located at $TELSCALE_SNMP_ADAPTOR/META-INF/jboss-service.xml managing the general configuration of the SNMP Adaptor, 
@@ -209,11 +153,7 @@ It defines 3 MBeans : The SNMP Adaptor Manager org.jboss.jmx.adaptor.snmp.trapd.
  The SNMP Adaptor Agent org.jboss.jmx.adaptor.snmp.agent.SnmpAgentService : It defines a set of 
  properties to override the default behavior of the Agent and the location of the other configuration 
  files used by the agent. It also defines the list of Subscriptions to JMX notifications from the 
-<<<<<<< HEAD
- Telscale Application Server, its components and applications deployed within it that the agent filters 
-=======
- JBoss Application Server, its components and applications deployed within it that the agent filters 
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+  &PLATFORM_NAME;, its components and applications deployed within it that the agent filters 
  and will map to SNMP Notifications. This subscriptionList attribute warrants a specific section as 
  it is used in conjunction with the Notifications configuration file. It defines a list of JMX Notifications 
  emitted by MBeans (the name can use wilcard to match multiple MBeans at the same time) to intercept that will 
@@ -225,13 +165,8 @@ It defines 3 MBeans : The SNMP Adaptor Manager org.jboss.jmx.adaptor.snmp.trapd.
 Note : Both above MBean uses the
 </para>
 <para>
-<<<<<<< HEAD
 <ulink url="https://community.jboss.org/wiki/AS5ServiceBindingManager"> Telscale Service Binding Manager </ulink> to 
 configure the ports where the Telscale SNMP Agent and Manager are listening on
-=======
-<ulink url="https://community.jboss.org/wiki/AS5ServiceBindingManager"> JBoss Service Binding Manager </ulink> to 
-configure the ports where the JBoss SNMP Agent and Manager are listening on
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
  System Information as specified in RFC 1213 org.jboss.jmx.adaptor.snmp.system.MIB2SystemGroupService
 </para>
   
@@ -280,17 +215,10 @@ if set to *rw, *it means that the attribute is writable (can be set) otherwise b
 <title> SNMP Adaptor Notifications.xml configuration File </title>
 
 <para>
-<<<<<<< HEAD
 It is located at $Telscale_SNMP_ADAPTOR/notifications.xml and controls the
  mapping of JMX notifications onto SNMP traps. The key for the mapping 
  is considered to be the notification type as defined in the subscriptions 
  list of the SNMP Adaptor Telscale Service configuration file. </para>
-=======
-It is located at $JBOSS_SNMP_ADAPTOR/notifications.xml and controls the
- mapping of JMX notifications onto SNMP traps. The key for the mapping 
- is considered to be the notification type as defined in the subscriptions 
- list of the SNMP Adaptor JBoss Service configuration file. </para>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 
 <para>
 For generic SNMPv1 traps, Enterprise field contains value of 
@@ -303,11 +231,7 @@ Each mapping entry must specify :
 <screen>
 notification-type : 
 The type of JMX Notifications to wrap as a SNMP Notification. Please note that the notification has to 
-<<<<<<< HEAD
 be caught first by the subscription list filter defined in SNMP Adaptor Telscale Service configuration file 
-=======
-be caught first by the subscription list filter defined in SNMP Adaptor JBoss Service configuration file 
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 
 Note : 
 The below attributes generic, specific and enterprise varies depending on the version of the protocol 
@@ -567,23 +491,11 @@ a minimum length of 8 bytes. If the length is less than 8 bytes an IllegalArgume
 </section>
 
 <section>
-<<<<<<< HEAD
-<title> The SNMP Adaptor Telscale Deployer </title>
+<title> The SNMP Adaptor  &PLATFORM_NAME; Deployer </title>
 
 <para>
 The SNMP Adaptor Deployer dynamically looks for snmp-attributes.xml and 
-snmp-notifications.xml files in any applications deployed within Telscale 
-Application Server and register the notifications, attributes and their 
-JMX mapping with the SNMP Adaptor Telscale Service.
-=======
-<title> The SNMP Adaptor JBoss Deployer </title>
-
-<para>
-The SNMP Adaptor Deployer dynamically looks for snmp-attributes.xml and 
-snmp-notifications.xml files in any applications deployed within JBoss 
-Application Server and register the notifications, attributes and their 
-JMX mapping with the SNMP Adaptor JBoss Service.
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+snmp-notifications.xml files in any applications deployed within  &PLATFORM_NAME; and register the notifications, attributes and their 
 </para>
 
 <para>
@@ -594,11 +506,7 @@ The SNMP adaptor deployer is located in
 </section>
 
 <section>
-<<<<<<< HEAD
-<title> Using the Open Source OpenNMS Application with TELSCALE </title>
-=======
 <title> Using the Open Source OpenNMS Application with &PLATFORM_NAME; </title>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 
 <para>
 Managing web servers using SNMP can be a tedious exercise. If you have to monitor
@@ -612,24 +520,27 @@ the next section will help you achieve.
 
   <section>
   <title>Installing OpenNMS </title>
-  
+ 
+<note>
+<title> Yum OpenNMS repository </title>
+<para>
+You can check out the OpenNMS repository to download the binaries for your Linux OS version: 
+<ulink url="http://yum.opennms.org"> Download OpenNMS for Linux Redhat and Fedora</ulink>
+</para>
+</note>
+
+ 
   <para>    Prepare the opennms package </para>
    <screen> rpm -Uvh http://yum.opennms.org/repofiles/opennms-repo-stable-fc16.noarch.rpm </screen>
   <para>  You need to make sure that you that your system is able to find the package. You can check this by doing the following: </para>
   <screen> yum search openNMS </screen>
-<<<<<<< HEAD
   <para> This will be installed later. First, you must install the database that will hold the monitored information</para>
   
 <screen> yum install postgresql postgresql-server </screen>
 
 <para>You must initialize the database and start up postgresql </para>
-=======
-  <para> This will be installed later. First, you will need to install the database that will hold the monitored information</para>
   
-<screen> yum install postgresql postgresql-server </screen>
 
-<para>You need to initialize the database and start up postgresql </para>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 
 <screen> service postgresql initdb </screen>
 <screen> service postgresql start </screen>
@@ -657,11 +568,7 @@ host    all         all         ::1/128               trust
 
 
 
-<<<<<<< HEAD
 <para> Once  the complete message appears, you might need to disable automatic update of openNMS in order to 
-=======
-<para> Once you the complete message appears, you might need to disable automatic update of openNMS in order to 
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 avoid changes to your current configuration. You can do the following: </para>
 
 <para> edit the  "/etc/yum.repos.d/opennms*" file and add the  <emphasis role="color:#000000">enabled=0 </emphasis> inside each [opennms-*] section </para>
@@ -669,11 +576,7 @@ avoid changes to your current configuration. You can do the following: </para>
 <para>You can undo this later if you need to </para>
 
 <para> OpenNMS needs to know the location of your Java installation. Tell OpenNMS which java version to use. 
-<<<<<<< HEAD
 In the /usr/java/ directory, you might see  multiple version. 
-=======
-In the /usr/java/ directory, you might see  multiple version. In the example below, it points to 
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 </para>
 
 <para> You need to run this command as root </para>
@@ -691,19 +594,18 @@ runjava: value of "/usr/java/jdk1.7.0_04/bin/java" stored in configuration file
 <screen> /opt/opennms/bin/install -dis
 </screen>
 
-<para> If you get an error message like this </para>
+<note>
 
-<para> 
-Caused by: org.postgresql.util.PSQLException: FATAL: Ident authentication failed for user "postgres"
-</para>
+   <para> If you get an error message like this </para>
+
+  <para> 
+  Caused by: org.postgresql.util.PSQLException: FATAL: Ident authentication failed for user "postgres"
+  </para>
+</note>
 
 <para> 
 Make sure you have edited the <emphasis role="color:#000000"> /var/lib/pgsql/data/pg_hba.conf</emphasis> file as mentioned above.
-<<<<<<< HEAD
 The column METHOD should be set to <emphasis role="color:#000000"> &quot;trust&quot; </emphasis>
-=======
-The column METHOD should be set to <emphasis role="color:#000000">trust </emphasis>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 </para>
 
 <para>
@@ -727,8 +629,12 @@ which is what OpenNMS uses. If you will only be using 127.0.0.1 on your localhos
 
 <screen> service opennms start </screen>
 
+<note>
+
 <para> if you get the following error whilst Starting opennms (via systemctl):  
 Job failed. See system logs and 'systemctl status' for details.[FAILED]  </para>
+
+</note>
 
 <para> Try restarting Postgresql </para>
 <screen> service postgresql restart </screen>
@@ -741,8 +647,6 @@ Job failed. See system logs and 'systemctl status' for details.[FAILED]  </para>
  
  <screen> http://127.0.0.1:8980/opennms </screen>
 
-<<<<<<< HEAD
-=======
 <note>
 <title>Debian Installation</title>
 <para>
@@ -750,7 +654,6 @@ A debian version of this OpenNMS installation guide is available at <ulink url="
 </para>
 </note>
 
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
  </section>
  
  <section>
@@ -790,10 +693,7 @@ where 192.168.1.3 is the ip address of the OpenNms server
 Now go to the http://192.168.1.3:8980/opennms/  web page and click on the menu > Node List
 you should see that your server has been scanned and services are available like this screen shot below
 </para>
-<<<<<<< HEAD
  
-=======
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 
  <figure>
 <title>Scan Node Lists</title>
@@ -803,10 +703,6 @@ you should see that your server has been scanned and services are available like
 </imageobject>
 </mediaobject>
 </figure> 
-<<<<<<< HEAD
-
-=======
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
  
  </section>
   
@@ -817,11 +713,7 @@ you should see that your server has been scanned and services are available like
 
 
 <para>
-<<<<<<< HEAD
-You should have Net-Snmp installed on your system. You should be able to run the following test commands. These are independent of the Telscale snmp adaptor but will help you get test run generic snmp queries.
-=======
-You should have Net-Snmp installed on your system. You should be able to run the following test command.
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+You must have Net-Snmp installed on your system. You should be able to run the following test commands. These are independent of the Telscale snmp adaptor but will help you get test run generic snmp queries.
 </para>
 <screen> snmpget 127.0.0.1 sysUpTime.0 </screen>
  <para>
@@ -847,30 +739,18 @@ Once the installation is completed, you must start the snmp service
 <screen> DISMAN-EVENT-MIB::sysUpTimeInstance = Timeticks: (17221523) 1 day, 23:50:15.23 </screen>
 
 
-<<<<<<< HEAD
 <para> You can also run the snmpwalk to show more snmp data on your location system </para>
-=======
-<para> You can also run this command to show all the snmp information on your location system </para>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 
 <screen> snmpwalk -v 2c localhost -c public system </screen>
 
 <para>
-<<<<<<< HEAD
-In order to make sure your OpenNMS agent is receiving traps, you need to send traps to the OpenNms server. You can run the following command:
-=======
-In order to make sure your OpenNMS agent is receiving traps, you need to send traps to the OpenNms server by trying the following command:
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
+In order to make sure your OpenNMS installation is receiving traps, you need to send traps to the OpenNms server. You can run the following command:
 </para>
 <screen>
 <code> snmptrap -v 2c -c public localhost &quot; &quot; ucdStart sysContact s &quot;TESTTING TRAPS&quot; </code>
 </screen>
 <para>
-<<<<<<< HEAD
 then go into the   http://127.0.0.1:8980/opennms/ > events > all events > and you will see a screenshot similar to the one below.
-=======
-then go into the   http://127.0.0.1:8980/opennms/ > events > all events > and you will see the screen below
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 </para>
 
  <figure>
@@ -885,31 +765,6 @@ then go into the   http://127.0.0.1:8980/opennms/ > events > all events > and yo
   </section>
   
 <section>
-<<<<<<< HEAD
-<title> Downloading TELSCALE Binaries </title>
-<para>
-The configuration above is to make sure your system is ready and functional independent of TELSCALE. 
-The next step will be using the Telscale Sip Servlets  that comes with SNMP monitoring.
-
-You will need to have Telscale Sip Servlets installed on your system. It can be obtained here
-</para>
-
-<screen>
-<ulink url="https://telestax.zendesk.com/entries/21369346-telscale-6-1-0-ga-sip-servlets-binaries"/>
-</screen>
-<para>
-There are two versions available and you need to download the  </para>
-
-<screen>
-TelScale-SIP-Servlets-6.1.0.GA-jboss-5.1.0.GA-1204271103.zip 
-</screen>
-<para>
-You must extract the content of the Telscale binaries to your local system.
-It can be in your /usr/share/ directory of any other location you prefer. This is the location that will later be refered to as the $TELSCALE_HOME directory.
-</para>
-<para> 
-The Telscale Sip Servlet SNMP adaptor will allow you to monitor your server 
-=======
 <title> Downloading &PLATFORM_NAME; Binaries </title>
 <para>
 The configuration above is to make sure your system is ready and functional independent of &PLATFORM_NAME;. 
@@ -927,7 +782,6 @@ Download the latest version</para>
 <para>
 You need to perform the initial installation according to the user guide. 
 The &PLATFORM_NAME; Sip Servlet SNMP adaptor will allow you to monitor your server 
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 and send traps to the OpenNMS trap listener.
 </para>
 
@@ -937,28 +791,14 @@ you can run the following command to see where the snmp tool is checking for mib
 </para>
 <screen>  snmpget -Dparse-mibs 2>&amp;1 | grep directory </screen>
 
-<<<<<<< HEAD
-<para> You need to start the Telscale server in order to proceed with the next section</para>
-
-<screen> $TELSCALE_HOME/bin/run.sh </screen>
-
-<para> This can take a few seconds to start depending on your system. You will see alot of information about your Telscale server startup process on the terminal. If started successfully, you will see the STARTED and the amount of time it took to start the server. </para>
-=======
 <para> You need to start the &PLATFORM_NAME; server in order to proceed with the next section</para>
 
 <screen> $TELSCALE_HOME/bin/run.sh </screen>
 
-<para> This can take a little over a minute to start depending on your system. </para>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
-
-
+<para> This can take a few seconds to start depending on your system. You will see alot of information about your Telscale server startup process on the terminal. If started successfully, you will see the STARTED and the amount of time it took to start the server. </para>
 <para>
 
-<<<<<<< HEAD
-Using version 3 of SNMP requires setting up a user and a password. When you install TELSCALE, a TEST user
-=======
 Using version 3 of SNMP requires setting up a user and a password. When you install &PLATFORM_NAME;, a TEST user
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 has already been created in the $TELSCALE_SNMP_ADAPTOR/user.xml file. This means you should be able to use
 the command below: </para>
 
@@ -972,20 +812,6 @@ SNMPv2-MIB::sysDescr.0 = STRING: Mobicents Sip Servlets
 </screen>
 
 <para>
-<<<<<<< HEAD
-If you get a Snmpget timeout, make sure you have the Telscale Sip Server running
-</para>
-
-<para> When you start the Telscale server using the $TELSCALE_HOME/bin/run.sh as mentioned above, it will automatically 
-send a trap to the OpenNMS trap listener and you will see the following in the Events window.</para>
-
-
-
-
-
- <figure>
-<title>OpenNMS Telscale Coldstart Trap</title>
-=======
 If you get a Snmpget timeout, make sure you have the &PLATFORM_NAME; Sip Server running
 </para>
 
@@ -994,7 +820,6 @@ send a trap to the OpenNMS trap listener and you will see the following on the E
 
  <figure>
 <title>OpenNMS &PLATFORM_NAME; Coldstart Trap</title>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 <mediaobject id="opennms_telscale_coldstart_traps">
 <imageobject>
 <imagedata align="center" fileref="images/snmp-opennms-telscale-coldstart.png" format="PNG"/>
@@ -1002,7 +827,6 @@ send a trap to the OpenNMS trap listener and you will see the following on the E
 </mediaobject>
 </figure> 
 
-<<<<<<< HEAD
 
 <para>
 
@@ -1017,13 +841,6 @@ $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar/notifications.xml
 
 <section>
 <title> SNMP Walktrough and Using the Sample SNMP Servlet Application</title>
-=======
-</section>  
-  
-
-<section>
-<title> SNMP Walktrough</title>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
 <para>
 The following sections will guide you on how to setup and test the various features of the 
 adapter on a step by step like tutorial by showing you how to access your JMX Beans and expose 
@@ -1070,8 +887,6 @@ acknowledgement on receipt. Receiver replies with{_}Response _parroting all
 information in theInformRequest
 
 </screen>
-<<<<<<< HEAD
-
 
 
 <section>
@@ -1202,7 +1017,7 @@ Refresh the screen a few times to see the number increase. You can now proceed t
 </section>
 </section>
 
-<section id="sid-4785050_SNMPAdaptorWalkthrough-x">
+<section >
       
       <title>SNMP set up and user configuration</title>
       <para>
@@ -1252,21 +1067,6 @@ adding the following line to /usr/share/snmp/snmpd.conf:
       <para>And add the following</para>
       <informalexample>
         <programlisting>#User to receive TRAP
-=======
-<para>
-To be able to receive SNMP Traps or INFORM from a given user, snmptrapd configuration has to be modified :
-</para>
-<para> sudo gedit /etc/snmp/snmptrapd.conf and add the following: </para>
-
-<screen>
-#User to receive TRAP
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
-createUser -e 0x80001370017F000101 TEST MD5 maplesyrup DES maplesyrup
-#User to receive INFORM
-createUser myuser MD5 password DES password
-#Those make snmptrapd log the TRAPs and INFORM to the console
-authUser log,execute,net TEST
-<<<<<<< HEAD
 authUser log,execute,net myuser</programlisting>
       </informalexample>
       <para>
@@ -3715,35 +3515,3 @@ JBOSS-AS-VARIA::jbossJmxNotificationSequenceNumber = STRING: 269</programlisting
 </section>
 
 </chapter>
-
-
-=======
-authUser log,execute,net myuser
-</screen>
-<para>
-Check the directory where the MIBs will be loaded from with the following command :
-</para>
-<screen>
-net-snmp-config --default-mibdirs
-</screen>
-<para> Edit the snmp.conf </para>
-<para> sudo gedit /etc/snmp/snmp.conf </para>
-<para> and add the following </para>
-<screen>
-#include all MIB
-mibs +ALL
-</screen>
-<para>
-Copy the MIB from JBoss Application Server to your user dir where the MIB will be loaded from
-</para>
-<screen>
-cp $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar/attributes.mib /home/&lt;user&gt;/.snmp/mibs/
-</screen>
-
-
-</section>  
-
-  
-  
-  </chapter>
->>>>>>> 6459537955a5b4becd448629dcfc9890990ee91f
