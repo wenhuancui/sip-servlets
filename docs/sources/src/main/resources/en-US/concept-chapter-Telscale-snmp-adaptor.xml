@@ -293,7 +293,9 @@ You can see an extract from the notification.xml file below. This configuration 
 $TELSCALE_SNMP_ADAPTOR_HOME/notifications.xml
 </screen>
 
+<para>
 Here is an extract from the file:
+</para>
 
 <screen>
 &lt;mapping name=&quot;jbossAsColdstartNotification&quot; notification-type=&quot;jboss.snmp.agent.coldstart&quot; generic=&quot;0&quot; specific=&quot;1&quot; enterprise=&quot;1.3.6.1.4.1.2312.100.1.2&quot; inform=&quot;false&quot; security-name=&quot;TEST&quot;&gt;
@@ -312,7 +314,9 @@ You can run an snmpget command to query the OID from the notifications.xml file 
  snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.5.0
 </screen>
 
+<para>
 produces this output:
+</para>
 
 <screen>
 SNMPv2-SMI::enterprises.2312.100.1.1.5.0 = STRING: "6"
@@ -322,7 +326,9 @@ SNMPv2-SMI::enterprises.2312.100.1.1.5.0 = STRING: "6"
 snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.4.0
 </screen>
 
+<para>
 Gives the following result:
+</para>
 
 <screen>
 SNMPv2-SMI::enterprises.2312.100.1.1.4.0 = STRING: "1338820394732"
@@ -613,7 +619,9 @@ Updating the First Message you set in the Jmx-Console can be done using the SNMP
 snmpset -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.1 s "replacing First Message"
 </screen>
 
+<para>
 It will produce the result:
+</para>
 
 <screen>
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "replacing First Message"
@@ -906,13 +914,17 @@ The &SHORT_PLATFORM_NAME; SNMP adaptor comes configured with a default trap that
 If you are unable to see the hearbeat trap in the OpenNMS application, make sure the hearbeatPeriod variable is set to a value higher than zero. You need to go to the $TELSCALE_SNMP_ADAPTOR_HOME/META-INF/jboss-service.xml file. There is an attribute in this file that you will need to update
 </para>
  
+ <para>
 If the value is as follows:
+</para>
 
 <screen>
     &lt;attribute name=&quot;HeartBeatPeriod&quot;&gt;0&lt;/attribute&gt;
 </screen>
 
+<para>
 Change it to:
+</para>
 
 <screen>
     &lt;attribute name=&quot;HeartBeatPeriod&quot;&gt;20&lt;/attribute&gt;
