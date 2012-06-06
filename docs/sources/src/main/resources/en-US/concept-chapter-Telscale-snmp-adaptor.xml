@@ -10,11 +10,11 @@
   <title>Monitoring &SHORT_PLATFORM_NAME; with SNMP</title>
 
 <para>
-Any System and Application Administrator will not truly feel at ease without know what is going on with his servers. The same thing goes for those who have to manage an application server like the &SHORT_PLATFORM_NAME;. You need to be able to get an overview of what has been going on in order to proactively fix issues before you get a phone call from users. With this in mind, the Simple Network Management Protocol was developed (SNMP). The fact that it says simple, doesn’t mean it is simplistic. The protocl is very comprehensive and it has become an industry standard through i’ts many iterations. 
+Any System and Application Administrator will not truly feel at ease without knowing what is going on with his servers. The same thing goes for those who have to manage an application server like &SHORT_PLATFORM_NAME; in a production environment. You need to be able to get an overview of what is going on in order to proactively fix issues before you get a phone call from users. With this in mind, the Simple Network Management Protocol was developed (SNMP). The fact that it says simple, doesn’t mean it is simplistic. The protocol is very comprehensive and it has become an industry standard through it's many iterations. 
 </para>
 
 <formalpara>
-<title>Understanding SNMP </title>
+<title>Understanding SNMP</title>
 <para>
 It is important to understand that SNMP is not just an application monitoring protocol but comprehensive network protocol that can be configured to keep an eye on both hardware and software. That means that an Administrator can get an overview of all the components on a local and remote network from a single interface. There are a few things that must be defined in order to get a working understanding of how SNMP can help you monitor &PLATFORM_NAME;. There are three important components to understand:
 </para>
@@ -32,7 +32,7 @@ It is important to understand that SNMP is not just an application monitoring pr
 <?dbhtml list-presentation="table"?>
 <segtitle>Name</segtitle>
 <segtitle>Description</segtitle>
-<seglistitem><seg>Managed Devices</seg><seg> These are applications like the &SHORT_PLATFORM_NAME; and devices like routers, switches, UPS, etc..</seg></seglistitem>
+<seglistitem><seg>Managed Devices</seg><seg> These are applications like &SHORT_PLATFORM_NAME; and devices like routers, switches, UPS, etc..</seg></seglistitem>
 <seglistitem><seg>Agents</seg><seg> Software that runs on Managed devices. Agents gather information about the local system and send it to the Manager (NMS). It acts as an intermediate between the Managed devices and the Manager (NMS)</seg></seglistitem>
 <seglistitem><seg>Manager (NMS)</seg><seg>This is the central application from which the System/Network Administrator will interact with all the managed devices. Some common Network Managed Systems (NMS) applications are Zenoss, OpenNMS, Nagios, SNMPC, HPOpenView, PRTG, OpManager, etc.</seg></seglistitem>
 </segmentedlist>
@@ -43,7 +43,7 @@ It is important to understand that SNMP is not just an application monitoring pr
 
 <para>
 
-Diagram of managed device, Agent and Manager component within the framwork of SNMP.
+Diagram of managed device, Agent and Manager component within the framework of SNMP.
 
 <figure>
 	<title>Manager, Agent and Managed Object Interactionsy</title>
@@ -59,9 +59,9 @@ Diagram of managed device, Agent and Manager component within the framwork of SN
 
 
 <formalpara>
-<title> SNMP Versions </title>
+<title> SNMP Versions</title>
 <para>
-There are 3 versions that are currently in use in the SNMP protocol framwork. From version 1 to the current version 3, improvements have been made to the protocol to make it more robust and suitable for enterprise use, providing cryptographic security. Version 3 is of particular interest in the &SHORT_PLATFORM_NAME; scheme because it provides for better security. SNMP version 3 offers a form of security that requires a  username, password and MD5,SHA authentication protocol to safely interact with Managed Devices. This is a better security layer than the Community String password that was used in previous versions. It is still possible to user all three versions simultanously depending on your current system configuration.
+There are 3 versions that are currently in use in the SNMP protocol framework. From version 1 to the current version 3, improvements have been made to the protocol to make it more robust and suitable for enterprise use, providing cryptographic security. Version 3 is of particular interest in &SHORT_PLATFORM_NAME; scheme because it provides for better security. SNMP version 3 offers a form of security that requires a  username, password and MD5, SHA authentication protocols to safely interact with Managed Devices. This is a better security layer than the Community String password that was used in previous versions. It is still possible to use all three versions simultanously depending on your current system configuration.
 </para>
 </formalpara>
 
@@ -126,7 +126,7 @@ PDUs can be seen as packets used to interact with objects within the scope of SN
 <listitem > <para>GetNextRequest: A Manger to an Agent requesting the next element from the current OID variable index.  </para> </listitem>
 <listitem> <para> GetBulkRequest: Similar to the above but in multiple iterations</para></listitem>
 <listitem> <para> Response: The acknowledgement from an Agent to a Manager afer the Get, Set, Next and Bulk requests</para></listitem>
-<listitem> <para> Trap: Notification from an Agent to a Manage activated after certain conditions are met.</para></listitem>
+<listitem> <para> Trap: Notification from an Agent to a Manager activated after certain conditions are met.</para></listitem>
 </itemizedlist>
 
 </para>
@@ -149,10 +149,7 @@ Before you proceed with the next &PLATFORM_NAME; SNMP section, you must install 
 </para>
 <para>If you are running on a Linux system like Fedora, you can run the following command to install NET-SNMP: </para>
 </note>
-<screen>
-<para> yum install net-snmp net-snmp-libs net-snmp-utils
-</para>
-</screen>
+<screen>yum install net-snmp net-snmp-libs net-snmp-utils</screen>
 
 <para>
 Once the installation is completed, you must start the snmp service
@@ -220,7 +217,7 @@ At this point, you will need to make sure you have Java running on your system.
 
 <para>
 The SNMP examples above are given to help you setup your system to work with &SHORT_PLATFORM_NAME;.
-You will need get a copy &SHORT_PLATFORM_NAME; binaries and have it installed on your system. The latest version is available for download at TeleStax Support portal at <ulink url="https://support.telestax.com"> Download &SHORT_PLATFORM_NAME; Binaries </ulink>
+You will need get a copy of &SHORT_PLATFORM_NAME; binaries and have it installed on your system. The latest version is available for download at TeleStax Support portal at <ulink url="https://support.telestax.com"> Download &SHORT_PLATFORM_NAME; Binaries </ulink>
 </para>
 
 
@@ -256,10 +253,10 @@ The $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar/ directory will be ref
 
 <screen> $TELSCALE_HOME/bin/run.sh </screen>
 
-<para> This can take a few seconds to start depending on your system. You will see alot of information about the &PLATFORM_NAME; server startup process on the terminal. If started successfully, you will see the STARTED and the amount of time it took to start the &PLATFORM_NAME; server. </para>
+<para> This can take a few seconds to start depending on your system. You will see a lot of information about the &PLATFORM_NAME; server startup process on the terminal. If started successfully, you will see a STARTED message and the amount of time it took to start the &PLATFORM_NAME; server. </para>
 <para>
 
-Using version 3 of SNMP requires setting up a user and a password. When you install &PLATFORM_NAME;, a TEST user and password have already been created in the $TELSCALE_SNMP_ADAPTOR_HOME/user.xml file. You can change the username and password as you wish in a production setting. Try the command below: </para>
+Using version 3 of SNMP requires setting up a user and a password. When you install &PLATFORM_NAME;, a TEST user and password have already been created in the $TELSCALE_SNMP_ADAPTOR_HOME/user.xml file. You can change the username and password at your convenience for a production environment. Try the command below: </para>
 
 <screen>
  snmpget -v 3 -u TEST -a MD5 -A &quot;maplesyrup&quot; -x DES -X &quot;maplesyrup&quot; -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0 
@@ -267,11 +264,11 @@ Using version 3 of SNMP requires setting up a user and a password. When you inst
  
  <para> This should produce the following results: </para>
 <screen>
-SNMPv2-MIB::sysDescr.0 = STRING: Mobicents Sip Servlets 
+SNMPv2-MIB::sysDescr.0 = STRING: TelScale Sip Servlets 
 </screen>
 
 <para>
-If you get an Snmpget timeout, make sure you have the &PLATFORM_NAME; Server is running
+If you get an Snmpget timeout, make sure you have the &PLATFORM_NAME; Server running.
 </para>
 
 <para> When you start the &PLATFORM_NAME; server using the $TELSCALE_HOME/bin/run.sh as mentioned above, it will automatically 
@@ -288,18 +285,17 @@ send a trap to any SNMP manager configured to receive traps on the default SNMP 
     to a corresponding SNMP OID trap</seg></seglistitem>
 </segmentedlist>
 
-
-
 <para>
-
-You can see the an extract from the notification.xml file below. This configuration file controls the mapping of JMX notification onto SNMP traps. It is responsible for automatic coldstart trap sent to the SNMP monitoring applications. There will be more on that later. The file is located at.
+You can see an extract from the notification.xml file below. This configuration file controls the mapping of JMX notification onto SNMP traps. It is responsible for automatic coldstart trap sent to the SNMP monitoring applications. There will be more on that later. The file is located at.
 </para>
 
 <screen>
 $TELSCALE_SNMP_ADAPTOR_HOME/notifications.xml
+</screen>
 
 Here is an extract from the file:
 
+<screen>
 &lt;mapping name=&quot;jbossAsColdstartNotification&quot; notification-type=&quot;jboss.snmp.agent.coldstart&quot; generic=&quot;0&quot; specific=&quot;1&quot; enterprise=&quot;1.3.6.1.4.1.2312.100.1.2&quot; inform=&quot;false&quot; security-name=&quot;TEST&quot;&gt;
     &lt;var-bind-list wrapper-class=&quot;org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport&quot;&gt;
       &lt;var-bind tag=&quot;a:startTime&quot; oid=&quot;1.3.6.1.4.1.2312.100.1.1.4&quot;/&gt;
@@ -313,16 +309,22 @@ Here is an extract from the file:
 You can run an snmpget command to query the OID from the notifications.xml file as follows: 
 </para>
 <screen>
-
  snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.5.0
+</screen>
 
 produces this output:
 
+<screen>
 SNMPv2-SMI::enterprises.2312.100.1.1.5.0 = STRING: "6"
+</screen>
 
+<screen>
 snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.4.0
+</screen>
 
 Gives the following result:
+
+<screen>
 SNMPv2-SMI::enterprises.2312.100.1.1.4.0 = STRING: "1338820394732"
 </screen>
 
@@ -355,7 +357,7 @@ The default configuration below points to the localhost and will work out of the
 <formalpara>
 <title> The attributes.xml file</title>
 <para>
-This file is of particular interest to those who which to use &SHORT_PLATFORM_NAME; to run web applications. It provides an easy way to map MBeans attributes to SNMP OIDs. This will allow System Administrators to set metrics for monitoring their web application server.
+This file is of particular interest to those who wish to use &SHORT_PLATFORM_NAME; to run web applications. It provides an easy way to map MBeans attributes to SNMP OIDs. This will allow System Administrators to set metrics for monitoring their web application server.
 </para>
 </formalpara>
 
@@ -608,13 +610,13 @@ The same data can be seen in the jmx-console snmp servlet page as follows:  </pa
 Updating the First Message you set in the Jmx-Console can be done using the SNMPSET command as follows: </para>
 
 <screen>
-
 snmpset -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1.2.1 s "replacing First Message"
+</screen>
 
 It will produce the result:
 
+<screen>
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "replacing First Message"
-
 </screen>
 
 
@@ -904,15 +906,16 @@ The &SHORT_PLATFORM_NAME; SNMP adaptor comes configured with a default trap that
 If you are unable to see the hearbeat trap in the OpenNMS application, make sure the hearbeatPeriod variable is set to a value higher than zero. You need to go to the $TELSCALE_SNMP_ADAPTOR_HOME/META-INF/jboss-service.xml file. There is an attribute in this file that you will need to update
 </para>
  
-<screen>
 If the value is as follows:
 
+<screen>
     &lt;attribute name=&quot;HeartBeatPeriod&quot;&gt;0&lt;/attribute&gt;
+</screen>
 
 Change it to:
 
+<screen>
     &lt;attribute name=&quot;HeartBeatPeriod&quot;&gt;20&lt;/attribute&gt;
-
 </screen>
 
 <para> The HeartBeatPeriod variable is in seconds and the above change will send a trap message every 20 seconds. 
@@ -935,7 +938,7 @@ The $TELSCALE_SNMP_ADAPTOR_HOME contains 2 notifications files. There is the mss
     <para>Included in the SNMP Adaptor is a way for a user to generate an SNMP MIB file based on already defined attributes in the attributes.xml and the notifications.xml. This MIB file allows an SNMP manager to display metrics with easy to read OID descriptions. The MIB generator makes it straight forward to produce MIB files.</para>
  
 
-     <para>An MIB is not necessary for the operation of an SNMP manager. However, it makes a System Administrators task easier when it comes to troubleshooting traps recieved on the Network Management System (NMS) interface.</para>
+     <para>A MIB is not necessary for the operation of an SNMP manager. However, it makes a System Administrators task easier when it comes to troubleshooting traps recieved on the Network Management System (NMS) interface.</para>
 
         <para>
 Snmpget results without a MIB:
@@ -1797,7 +1800,7 @@ Below is an extract from the notifications.xml file:</formalpara>
       <formalpara>
 <title>Ways of Generating a MIB</title>
 
-<para>Currently, there are two ways to use the MIB Generator. The first is to use the executable jar with the attributes.xml and notifications.xml files as input. The output file is an MIB that can be named as desired. 
+<para>Currently, there are two ways to use the MIB Generator. The first is to use the executable jar with the attributes.xml and notifications.xml files as input. The output file is a MIB that can be named as desired. 
 </para>
 <para>
 The second is to use the maven plugin that will invoke the MIB Generator on given files at compile time, allowing you to have an MIB for your web application which is designed to run on the &PLATFORM_NAME; AS.
