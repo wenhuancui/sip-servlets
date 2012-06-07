@@ -10,6 +10,10 @@
   <title>Monitoring &SHORT_PLATFORM_NAME; with SNMP</title>
 
 <para>
+This chapter provides information on how to enable the management of &SHORT_PLATFORM_NAME; Servers through SNMP. It also allows applications to expose their metrics and management through SNMP.
+</para>
+
+<para>
 Any System and Application Administrator will not truly feel at ease without knowing what is going on with his servers. The same thing goes for those who have to manage an application server like &SHORT_PLATFORM_NAME; in a production environment. You need to be able to get an overview of what is going on in order to proactively fix issues before you get a phone call from users. With this in mind, the Simple Network Management Protocol was developed (SNMP). The fact that it says simple, doesn’t mean it is simplistic. The protocol is very comprehensive and it has become an industry standard through it's many iterations. 
 </para>
 
@@ -905,7 +909,8 @@ Up until now, you have used a command line program to interact with SNMP and &PL
 In order to facilitate quick deployment and allow System and Network Administrators to quickly familiarize themselves with  &SHORT_PLATFORM_NAME;, this guide will use the OpenNMS application
 </para>
 
-
+<section>
+<title> Installing OpenNMS</title>
 
 <note>
 <title> Yum OpenNMS repository </title>
@@ -1172,7 +1177,7 @@ The $TELSCALE_SNMP_ADAPTOR_HOME contains 2 notifications files. There is the mss
 </note>
 
   </section>
-
+</section>
 <section>
 <title> Generating MIB Files</title>
 
@@ -1197,7 +1202,7 @@ Snmpget with a MIB file gives a better description of the value generated:
 JBOSS-AS-MIB::activeThreadCount.0 = INTEGER: 109</screen>
         
 
-<formalpara>
+<section>
 <title> Understanding Attributes.xml and MIB Files</title>
 
 
@@ -1222,13 +1227,6 @@ Below is an extract from the $TELSCALE_SNMP_ADAPTOR_HOME/attributes.xml file
 
 
 </screen>
-
-
-</formalpara>
-
-
-
-
 
         <para> In order to be able to understand and expose &PLATFORM_NAME; applications variables to the SNMP adaptor through MBeans, you need to take a look at the tag description used in the attributes.xml as explained below:</para>
         <informaltable>
@@ -1474,9 +1472,9 @@ Below is an extract from the $TELSCALE_SNMP_ADAPTOR_HOME/attributes.xml file
           </tgroup>
         </informaltable>
         
+   </section>     
         
-        
-<formalpara>
+<section>
 <title>Manually Generating a MIB </title>
 
 <para>
@@ -1484,7 +1482,6 @@ The command below will generate a MIB file called TEST.mib based on the content 
 
 </para>
 
-</formalpara>
           <screen>  java -jar $TELSCALE_HOME/client/mibgen-generator-1.0-executable.jar -a attributes.xml -m TEST-MODULE -o TEST.mib</screen>
         
    
@@ -1570,11 +1567,13 @@ sipManagerNumberOfSipApplicationSessionCreationPerSecond OBJECT-TYPE
 
 END</screen>
         
+</section>
+      <section>
+<title> The notifications.xml and MIB </title> 
 
-      <formalpara>
-<title> The notifications.xml and MIB </title> The file is responsible for indicating how a given JMX notification should be transformed into an equivalent SNMP trap. The notification-type attribute indicates the type of JMX notification to transform. 
-Below is an extract from the notifications.xml file:</formalpara>
-      
+<para>The file is responsible for indicating how a given JMX notification should be transformed into an equivalent SNMP trap. The notification-type attribute indicates the type of JMX notification to transform. 
+Below is an extract from the notifications.xml file:</para>
+
         <screen>&lt;notification-map-list&gt;
  &lt;mapping notification-type="jboss.snmp.agent.heartbeat" generic="3" specific="0" enterprise="1.2.3.4.5.6.7"&gt;
     &lt;var-bind-list wrapper-class="org.jboss.jmx.adaptor.snmp.agent.NotificationWrapperSupport"&gt;
@@ -2039,8 +2038,8 @@ Below is an extract from the notifications.xml file:</formalpara>
         </informaltable>
         
         
-            
-      <formalpara>
+            </section>
+      <section>
 <title>How to Generate an MIB</title>
 
 <para>Currently, there are two ways to use the MIB Generator. The first is to use the executable jar with the attributes.xml and notifications.xml files as input. The output file is a MIB that can be named as desired. 
@@ -2048,7 +2047,6 @@ Below is an extract from the notifications.xml file:</formalpara>
 <para>
 The second is to use the maven plugin that will invoke the MIB Generator on given files at compile time, allowing you to have an MIB for your web application which is designed to run on the &PLATFORM_NAME; AS.
 </para>
-</formalpara>
       
         
         <para>Using the JAR</para>
@@ -2095,7 +2093,7 @@ The second is to use the maven plugin that will invoke the MIB Generator on give
    &lt;/execution&gt;
  &lt;/executions&gt;
 &lt;/plugin&gt;</screen>
-
+</section>
 </section>
 
 

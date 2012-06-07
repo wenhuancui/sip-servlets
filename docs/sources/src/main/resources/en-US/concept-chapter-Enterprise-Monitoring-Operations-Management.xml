@@ -22,12 +22,6 @@
 		  </listitem>
   </itemizedlist>
   </para>
-  <section>
-  		<title>&PLATFORM_NAME; SIP Servlets SNMP Monitoring and Management</title>
-  		<para>This chapter provides information on how to enable the management of
-    &PLATFORM_NAME; SIP Servlets Servers through SNMP. It also allows applications to expose their metrics and management through SNMP</para>
-
- </section>
 
 		<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-chapter-Telscale-snmp-adaptor.xml"/>
  
