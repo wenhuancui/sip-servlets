@@ -271,7 +271,7 @@ SNMPv2-MIB::sysDescr.0 = STRING: TelScale Sip Servlets
 </screen>
 
 <para>
-If you get an Snmpget timeout, make sure the &PLATFORM_NAME; Server running.
+If you get a Snmpget timeout, make sure the &PLATFORM_NAME; Server is running.
 </para>
 
 <para> When you start the &PLATFORM_NAME; server using the $TELSCALE_HOME/bin/run.sh as mentioned above, it will automatically 
@@ -714,7 +714,7 @@ SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "replacing First Messag
 <section>
 <title>Accessing MBeans JMX - Scalar, Tabular and Wildcards Objects </title>
 
-<formalpara>
+<section>
 <title> Scalar Objects </title>
 <para>
 Scalar OID objects as mentioned previously, can only hold a single value at at time. The OIDs ends in zero (0) as shown in the example below with the snmpget command. If you remove the zero from the OID like this (.1.3.6.1.2.1.1.1), it will produce an error message saying (SNMPv2-MIB::sysDescr = No Such Object available on this agent at this OID)
@@ -722,11 +722,13 @@ Scalar OID objects as mentioned previously, can only hold a single value at at t
 <screen>
 snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0
 </screen>
-</formalpara>
+</section>
 
-<formalpara>
+<section>
 <title> Tabular Objects</title>
 
+<formalpara>
+<title> Index Based Tabular Objects</title>
 <para>
 The examples that have been used in the SNMP-servlet are all based on tables and arrays with primitive types like int, long, boolean,etc are used for scalar objects. If you take a close look at the SNMP-servlet in the jmx-console, you would have noticed that tabular objects use the java.util.map and java.util.list. The java.util.Map is used for key based tables. More on that further down.
 
@@ -751,20 +753,37 @@ SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.3 = No more variables left in this 
 </screen>
 
 <para>
-the SNMPv2-SMI::enterprises.2312.100.10.11 is the table, (3.1) is the column and (2.1) is the row
+Notice that the the result produced a different OID than for scalar objects.
 </para>
 
+<screen>
+The output is a concatenation of the oid prefix (.1.3.6.1.4.1.2312.100.10.11) + the MessageCountHistory OID (6.1) + the value column (.2) + the index of the value to retrieve
+</screen>
 
+<para></para>
+
+<note>
+<title>Index Based Table reminder</title>
+<para>to access the index 0, .1 should be used because .0 are reserved for scalar objects
+</para>
+</note>
+</formalpara>
+
+<formalpara>
+<title>Key Based Tabular Objects</title>
 <para>
-As opposed to an index based Tabular Object, key based tables cannot immediateley directly accessed just by looking at the content of the attribute.xml file. You will need to perform an snmpgetnext on the based OID and then do a direct snmpget on the resulting OID. For example, the  MessageCountHistory table attribute has the OID .1.3.6.1.4.1.2312.100.10.11.6.1. It is actually possible to iterate through the full table by issuing a set of GetNextRequest SNMP PDU. To iterate through the MessageCountHistory table the following commands should be issued:
-
+As opposed to an index based Tabular Object, key based tables cannot be directly accessed just by looking at the content of the attribute.xml file. You will need to perform an snmpgetnext on the based OID and then do a direct snmpget on the resulting OID. For example, the  MessageCountHistory table attribute has the OID .1.3.6.1.4.1.2312.100.10.11.6.1. It is actually possible to iterate through the full table by issuing a set of GetNextRequest SNMP PDU. To iterate through the MessageCountHistory table the following commands should be issued:
 </para>
 
 <screen>
 snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.6.1
+</screen>
 
+<para>
 Produces the result below:
+</para>
 
+<screen>
 SNMPv2-SMI::enterprises.2312.100.10.11.6.1.2.109.101.115.115.97.103.101.32.53 = INTEGER: 8
 </screen>
 
@@ -774,13 +793,17 @@ SNMPv2-SMI::enterprises.2312.100.10.11.6.1.2.109.101.115.115.97.103.101.32.53 = 
 The output is a concatenation of the oid prefix (.1.3.6.1.4.1.2312.100.10.11) + the MessageCountHistory OID (6.1) + the value column (.2) + the ASN.1 representation of the key of the table
 </screen>
 <para>
- Because the data type of the data type of MessageCountHistory mbean attribute name is java.util.map (key based table) trying to access the OID directly with snmpget like an indexed table (OID.6.1)will fail as can be seen below. That is the difference between an indexd based table and an key based table.
+ Because the data type of the data type of MessageCountHistory mbean attribute name is java.util.map (key based table) trying to access the OID directly with snmpget like an indexed table (OID.6.1 )will fail as can be seen below. That is the difference between an indexed based table and an key based table.
 </para>
 <screen>
 snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.6.1
+</screen>
 
+<para>
 Produces the result below:
+</para>
 
+<screen>
 Error in packet
 Reason: (genError) A general failure occured
 Failed object: SNMPv2-SMI::enterprises.2312.100.10.11.6.1
@@ -793,16 +816,20 @@ If you want to access the value of the (OID 6.1) directly, you need to first use
 
 <screen>
 snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 enterprises.2312.100.10.11.6.1.2.109.101.115.115.97.103.101.32.53
-
-This will generate the following result:
-
-SNMPv2-SMI::enterprises.2312.100.10.11.6.1.2.109.101.115.115.97.103.101.32.53 = INTEGER: 8
 </screen>
 
+<para>
+This will generate the following result:
+</para>
+
+<screen>
+SNMPv2-SMI::enterprises.2312.100.10.11.6.1.2.109.101.115.115.97.103.101.32.53 = INTEGER: 8
+</screen>
 </formalpara>
+</section>
 
 
-<formalpara>
+<section>
 <title> Wildcards MBean Names</title>
 
 <screen>
@@ -820,7 +847,7 @@ SNMPv2-SMI::enterprises.2312.100.10.11.6.1.2.109.101.115.115.97.103.101.32.53 = 
    &lt;/mbean&gt;
 </screen>
 <para>
-The above is an extract from the attributes.xml that can be found in the $TELSCALE_SNMP_ADAPTOR_HOME. Using wildcards to specify the mbean name can be convenient when you want to access attribues from a list of JMX objects. The example above tells JMX to search for mbean names having these values &quot;jboss.web:host=localhost,path=/*, type=Manager&quot; the wildcard is  (*). The wildcard can be seen as a filter. 
+The above is an extract from the attributes.xml that can be found in the $TELSCALE_SNMP_ADAPTOR_HOME. Using wildcards to specify the mbean name can be convenient when you want to access attribues from a list of JMX objects. The example above tells JMX to search for all web applications deployed in the server through the mbean names having these values &quot;jboss.web:host=localhost,path=/*, type=Manager&quot; the wildcard is  (*). The wildcard can be seen as a filter. 
 </para>
 <para>
 You can access the values like you did previously for a key based table.
@@ -840,23 +867,28 @@ You can use the OID of the above results to access the value directly through sn
 </para>
 <screen>
 snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 enterprises.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116
+</screen>
 
+<para>
 It will produce the result below:
+</para>
 
+<screen>
 SNMPv2-SMI::enterprises.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+</screen>
 
+<para> Notice that the the result produced an OID similar to key based table.</para>
 
+<screen>
+The OID is the concatenation of the OID prefix (.1.3.6.1.4.1.2312.100.1.1.12.1), first attribute (distributable, .2) and the ASN.1 representation of the following web application ObjectName "jboss.web:type=Manager,path=/,host=localhost"
 </screen>
 <para>
-The OID is the concatenation of the OID prefix (.1.3.6.1.4.1.2312.100.1.1.12.1), first attribute (distributable, .2) and the ASN.1 representation of the following web application ObjectName "jboss.web:type=Manager,path=/,host=localhost"
-</para>
-<para>
-You can use snmpbulkget and snmpwalk to iterate through the rest of the table.
+You can use <literal>snmpbulkget</literal> and <literal>snmpwalk</literal> to iterate through the rest of the table.
 
 </para>
 
 
-</formalpara>
+</section>
 
 </section>
 
@@ -1453,7 +1485,7 @@ The command below will generate a MIB file called TEST.mib based on the content 
 </para>
 
 </formalpara>
-          <screen>  java -jar jboss-as-varia-mib-generator.jar -a attributes.xml -m TEST-MODULE -o TEST.mib</screen>
+          <screen>  java -jar $TELSCALE_HOME/client/mibgen-generator-1.0-executable.jar -a attributes.xml -m TEST-MODULE -o TEST.mib</screen>
         
    
 
