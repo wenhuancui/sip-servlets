@@ -16,7 +16,7 @@ Any System and Application Administrator will not truly feel at ease without kno
 <formalpara>
 <title>Understanding SNMP</title>
 <para>
-It is important to understand that SNMP is not just an application monitoring protocol but comprehensive network protocol that can be configured to keep an eye on both hardware and software. That means that an Administrator can get an overview of all the components on a local and remote network from a single interface. There are a few things that must be defined in order to get a working understanding of how SNMP can help you monitor &PLATFORM_NAME;. There are three important components to understand:
+It is important to understand that SNMP is not just an application monitoring protocol but comprehensive network protocol that can be configured to keep an eye on both hardware and software. That means, an Administrator can get an overview of all the components on a local and remote network from a single interface. There are a few things that must be defined in order to get a working understanding of how SNMP can help you monitor &PLATFORM_NAME;. There are three important components to understand:
 </para>
 <para>
 
@@ -46,7 +46,7 @@ It is important to understand that SNMP is not just an application monitoring pr
 Diagram of managed device, Agent and Manager component within the framework of SNMP.
 
 <figure>
-	<title>Manager, Agent and Managed Object Interactionsy</title>
+	<title>Manager, Agent and Managed Object Interactions</title>
       <mediaobject>
         <imageobject>
           <imagedata fileref="images/snmp_diagram_overview.png"/>
@@ -61,17 +61,17 @@ Diagram of managed device, Agent and Manager component within the framework of S
 <formalpara>
 <title> SNMP Versions</title>
 <para>
-There are 3 versions that are currently in use in the SNMP protocol framework. From version 1 to the current version 3, improvements have been made to the protocol to make it more robust and suitable for enterprise use, providing cryptographic security. Version 3 is of particular interest in &SHORT_PLATFORM_NAME; scheme because it provides for better security. SNMP version 3 offers a form of security that requires a  username, password and MD5, SHA authentication protocols to safely interact with Managed Devices. This is a better security layer than the Community String password that was used in previous versions. It is still possible to use all three versions simultanously depending on your current system configuration.
+There are 3 versions that are currently in use in the SNMP protocol framework. From version 1 to the current version 3, improvements have been made to the protocol to make it more robust and suitable for enterprise use, providing cryptographic security. Version 3 is of particular interest in &SHORT_PLATFORM_NAME; scheme because it provides for better security. SNMP version 3 offers a form of security that requires a  username, password and MD5, SHA authentication protocols to safely interact with Managed Devices. This is a better security layer than the Community String password that was used in previous versions. It is still possible to use all three versions simultaneously depending on your current system configuration.
 </para>
 </formalpara>
 
 <formalpara>
 <title> SNMP Object Identifier (OID)</title>
 <para>
-An OID is a set of variables that uniquely identifiers Managed objects in a Management Information Base (MIB) within the SNMP protocol framework. An OID hierachy looks like the following:
+An OID is a set of variables that uniquely identifiers Managed objects in a Management Information Base (MIB) within the SNMP protocol framework. An OID hierarchy looks like the following:
 
 <screen> 
-ISO(1).Orginazation(3).Department of Defense(6).Internet(1).Private(4).Enterprises(1).Redhat(2132).JBOSS(100).Application Server(1)
+ISO(1).Organization(3).Department of Defense(6).Internet(1).Private(4).Enterprises(1).Redhat(2132).JBOSS(100).Application Server(1)
  </screen>
 
 <para>
@@ -99,7 +99,7 @@ Another form of presenting the above OID is as follows:
 <formalpara>
 <title> Management Information Base (MIB) </title>
 <para>
-The MIB in SNMP defines a list of variables that describe specific information about managed devices. An example will be a MIB variable that measures the temparature of a network device. This temperature sensor variable can later be exposed to the Manager(NMS) through the SNMP Agent. The variables in a MIB are organized in a hierarchy that makes accessing needed information easier. The variables in a MIB are presented in two forms, Scalar and Tabular.
+The MIB in SNMP defines a list of variables that describe specific information about managed devices. An example will be a MIB variable that measures the temperature of a network device. This temperature sensor variable can later be exposed to the Manager(NMS) through the SNMP Agent. The variables in a MIB are organized in a hierarchy that makes accessing needed information easier. The variables in a MIB are presented in two forms, Scalar and Tabular.
 </para>
 </formalpara>
 <itemizedlist mark='opencircle'>
@@ -125,7 +125,7 @@ PDUs can be seen as packets used to interact with objects within the scope of SN
 <listitem> <para> SetRequest: A PDU request from a Manager to an Agent updating the value of an OID variable. </para> </listitem>
 <listitem > <para>GetNextRequest: A Manger to an Agent requesting the next element from the current OID variable index.  </para> </listitem>
 <listitem> <para> GetBulkRequest: Similar to the above but in multiple iterations</para></listitem>
-<listitem> <para> Response: The acknowledgement from an Agent to a Manager afer the Get, Set, Next and Bulk requests</para></listitem>
+<listitem> <para> Response: The acknowledgment from an Agent to a Manager after the Get, Set, Next and Bulk requests</para></listitem>
 <listitem> <para> Trap: Notification from an Agent to a Manager activated after certain conditions are met.</para></listitem>
 </itemizedlist>
 
@@ -188,7 +188,7 @@ produces : .1.3.6.1.2.1.1.9.1.2.1
 
 snmptranslate -On SNMPv2-MIB::sysLocation.0
 
-Prodocues: .1.3.6.1.2.1.1.6.0
+Produces: .1.3.6.1.2.1.1.6.0
 
 snmpget -v 2c localhost -c public .1.3.6.1.2.1.1.6.0
 Produces: SNMPv2-MIB::sysLocation.0 = STRING: Costa Rica
@@ -217,7 +217,7 @@ At this point, you will need to make sure you have Java running on your system.
 
 <para>
 The SNMP examples above are given to help you setup your system to work with &SHORT_PLATFORM_NAME;.
-You will need get a copy of &SHORT_PLATFORM_NAME; binaries and have it installed on your system. The latest version is available for download at TeleStax Support portal at <ulink url="https://support.telestax.com"> Download &SHORT_PLATFORM_NAME; Binaries </ulink>
+You will need to get a copy of &SHORT_PLATFORM_NAME; binaries and have it installed on your system. The latest version is available for download at TeleStax Support portal at <ulink url="https://support.telestax.com"> Download &SHORT_PLATFORM_NAME; Binaries </ulink>
 </para>
 
 
@@ -240,7 +240,7 @@ you can run the following command to see where the NET-SNMP tool is checking for
 <screen>  snmpget -Dparse-mibs 2>&amp;1 | grep directory </screen>
 
 <para>
-Please see the note below in order to better understand this guide.
+In order to better understand this guide, please see the note below.
 </para>
 <note>
 <title> SNMP Adaptor</title>
@@ -256,7 +256,10 @@ The $TELSCALE_HOME/server/default/deploy/snmp-adaptor.sar/ directory will be ref
 <para> This can take a few seconds to start depending on your system. You will see a lot of information about the &PLATFORM_NAME; server startup process on the terminal. If started successfully, you will see a STARTED message and the amount of time it took to start the &PLATFORM_NAME; server. </para>
 <para>
 
-Using version 3 of SNMP requires setting up a user and a password. When you install &PLATFORM_NAME;, a TEST user and password have already been created in the $TELSCALE_SNMP_ADAPTOR_HOME/user.xml file. You can change the username and password at your convenience for a production environment. Try the command below: </para>
+Using version 3 of SNMP requires setting up a user and a password. When you install &PLATFORM_NAME;, a TEST user and password have already been created in the $TELSCALE_SNMP_ADAPTOR_HOME/user.xml file. You can change the username and password at your convenience when working in a production environment.
+</para>
+
+<para> Try the command below: </para>
 
 <screen>
  snmpget -v 3 -u TEST -a MD5 -A &quot;maplesyrup&quot; -x DES -X &quot;maplesyrup&quot; -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0 
@@ -268,13 +271,54 @@ SNMPv2-MIB::sysDescr.0 = STRING: TelScale Sip Servlets
 </screen>
 
 <para>
-If you get an Snmpget timeout, make sure you have the &PLATFORM_NAME; Server running.
+If you get an Snmpget timeout, make sure the &PLATFORM_NAME; Server running.
 </para>
 
 <para> When you start the &PLATFORM_NAME; server using the $TELSCALE_HOME/bin/run.sh as mentioned above, it will automatically 
-send a trap to any SNMP manager configured to receive traps on the default SNMP trap port.</para>
+send a trap to any SNMP manager configured to receive traps on the default SNMP trap port. There will be more about sending traps later.</para>
 
+</section>
+
+<section>
+<title>Exposing Applications Through SNMP</title>
  
+
+<para>
+
+In order to prepare for this section and use the sample SNMP-Servlet, you need to download the sample SNMP application here: 
+ <ulink url="https://www.dropbox.com/s/45k3li1l4yypdlw/snmp-servlet.zip"> Snmp-servlet.zip.</ulink>
+ 
+
+</para>
+
+<para>
+
+Extract the content of the file to the $TELSCALE_HOME/server/default/deploy directory. 
+</para>
+
+
+
+<para>
+
+This basic web application provides a web page that displays an incremental counter each time the page is refreshed. Alternatively, a message can be set through JMX that will be displayed on the web page. The application also registers a MBean, thus, providing a way to expose data to SNMP. This is achieved through the snmp-notifications.xml and snmp-attributes.xml files that are included in the SNMP-Servlet sample application. 
+
+<note>
+<title>&PLATFORM_NAME; SNMP Deployer</title>
+
+<para>
+Any web application deploy in the $TELSCALE_HOME/server/&lt;profile&gt;/deploy directory will be scanned by the $TELSCALE_HOME/server/&lt;profile&gt;/deployers/snmp.deployer. The deployer will try to locate any attributes.xml and notifications.xml files in a deployed application and register them with the &PLATFORM_NAME; SNMP service.
+</para>
+</note>
+
+</para>
+
+
+<para>
+There are 3 important files needed to expose your applications metrics and send SNMP traps.
+</para>
+
+
+
 <segmentedlist><title>SNMP Main Components</title>
 <?dbhtml list-presentation="table"?>
 <segtitle>Name</segtitle>
@@ -285,9 +329,10 @@ send a trap to any SNMP manager configured to receive traps on the default SNMP 
     to a corresponding SNMP OID trap</seg></seglistitem>
 </segmentedlist>
 
-<para>
-You can see an extract from the notification.xml file below. This configuration file controls the mapping of JMX notification onto SNMP traps. It is responsible for automatic coldstart trap sent to the SNMP monitoring applications. There will be more on that later. The file is located at.
-</para>
+<formalpara>
+<title>notification.xml and traps</title>
+You can see an extract from the notification.xml file below. This configuration file controls the mapping of JMX notification onto SNMP traps. It is responsible for the automatic coldstart trap sent to the SNMP monitoring applications. There will be more on that later. The file is located at.
+</formalpara>
 
 <screen>
 $TELSCALE_SNMP_ADAPTOR_HOME/notifications.xml
@@ -321,13 +366,15 @@ produces this output:
 <screen>
 SNMPv2-SMI::enterprises.2312.100.1.1.5.0 = STRING: "6"
 </screen>
-
+<para>
+Try the next command:
+</para>
 <screen>
 snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.4.0
 </screen>
 
 <para>
-Gives the following result:
+The output will be as follows:
 </para>
 
 <screen>
@@ -335,7 +382,7 @@ SNMPv2-SMI::enterprises.2312.100.1.1.4.0 = STRING: "1338820394732"
 </screen>
 
 <formalpara>
-<title>Sending &SHORT_PLATFORM_NAME; SNMP Traps to a Manager</title>
+<title> manager.xml file</title>
 
 <para>
 SNMP adaptor can be configured to send traps to a Network Management Systems (NMS) like Zenoss, OpenNMS, and Nagios. It can be done in the $TELSCALE_SNMP_ADAPTOR_HOME/manager.xml file. The default configuration sends traps to the localhost.
@@ -361,37 +408,39 @@ The default configuration below points to the localhost and will work out of the
 </screen>
 
 <formalpara>
-<title> The attributes.xml file</title>
+<title> attributes.xml file</title>
 <para>
 This file is of particular interest to those who wish to use &SHORT_PLATFORM_NAME; to run web applications. It provides an easy way to map MBeans attributes to SNMP OIDs. This will allow System Administrators to set metrics for monitoring their web application server.
 </para>
 </formalpara>
 
-
-
 <para>
-
-In order to prepare for this section and use the sample SNMP-Servlet, you need to download the 
- <ulink url="https://www.dropbox.com/s/45k3li1l4yypdlw/snmp-servlet.zip"> Snmp-servlet.zip.</ulink>
- 
-
+An snmp-attributes.xmlfile is included in the SNMP-Servlet application. There is a default attributes.xml file that is included in the $TELSCALE_SNMP_ADAPTOR_HOME. For the purpose of this guide, the snmp-attributes.xml will be reviewed below.
 </para>
 
+<screen>
+
+&lt;attribute-mappings&gt;
+   
+   &lt;mbean name=&quot;test.com:service=SnmpTest&quot; oid-prefix=&quot;.1.3.6.1.4.1.2312.100.21.11&quot; definition-name=&quot;snmpTestObjects&quot;&gt;
+      &lt;attribute name=&quot;Message&quot; oid=&quot;.1&quot; mode=&quot;rw&quot;/&gt;
+      &lt;attribute name=&quot;Count&quot; oid=&quot;.2&quot;/&gt;
+      &lt;attribute name=&quot;MessageHistory&quot; oid=&quot;.3.1&quot; table=&quot;true&quot; mode=&quot;rw&quot;/&gt;
+      &lt;attribute name=&quot;MessageHistoryAsArray&quot; oid=&quot;.4.1&quot; table=&quot;true&quot; mode=&quot;rw&quot;/&gt;
+      &lt;attribute name=&quot;CountHistory&quot; oid=&quot;.5.1&quot; table=&quot;true&quot; mode=&quot;rw&quot;/&gt;
+      &lt;attribute name=&quot;MessageCountHistory&quot; oid=&quot;.6.1&quot; table=&quot;true&quot; mode=&quot;rw&quot;/&gt;
+   &lt;/mbean&gt;
+   
+&lt;/attribute-mappings&gt;
+
+
+
+</screen>
+
+
 <para>
 
-Extract the content of the file to the $TELSCALE_HOME/server/default/deploy directory. 
-</para>
-
-
-
-
-<para>
-
-This basic web application provides a web page that displays an incremental counter each time the page is refreshed. Alternatively, a message can be set through JMX that will be displayed on the web page. The application also register a MBean, thus, providing a way to expose data to SNMP:
-
-
-
-<segmentedlist><title> Sample SNMP Servlet - Exposing MBeans Attributes</title>
+<segmentedlist><title> Sample SNMP Servlet - Understanding MBeans Attributes</title>
 <?dbhtml list-presentation="table"?>
 <segtitle>Attribute Name</segtitle>
 <segtitle>Description</segtitle>
@@ -417,7 +466,7 @@ This basic web application provides a web page that displays an incremental coun
 
 
 
-The servket will make use of the SNMP Agent MBean Service to send a SNMP trap (coldStart) when the application is deployed and &PLATFORM_NAME;. The servlet attributes listed above will be used for testing the different SNMP PDUs.
+The sample application will make use of the SNMP Agent MBean Service to send an SNMP trap (coldStart) when the application is deployed within &PLATFORM_NAME;. The SNMP-servlet attributes listed above will be used for testing the different SNMP PDUs.
 
 
 </para>
@@ -492,7 +541,7 @@ This should produce a result similar to the screen below:
 <para>
 Make sure you have extracted the SNMP-servlet.zip file as instructed above into the $TELSCALE_HOME/server/default/deploy directory.
 </para>
-<para> You should be able to access the sample servlet in your browswer as follows: </para>
+<para> You should be able to access the sample servlet in your browser as follows: </para>
 
 <screen> http://127.0.0.1:8080/snmp-servlet-5.1.0.GA/snmp </screen>
 
@@ -524,7 +573,7 @@ Refresh the screen a few times to see the number increase. Run the command below
 </screen>
 
 <para>
-The snmpulkget is an easy we to retrieve the data in the 3.1 column without the 
+The snmpulkget is an easy way to retrieve the data in the 3.1 column without the 
 need to iterate through each set with the snmpget. It will produce the following:
 </para>
 
@@ -660,9 +709,159 @@ It will produce the following:
 SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "replacing First Message"
 
 </screen>
+</section>
 
+<section>
+<title>Accessing MBeans JMX - Scalar, Tabular and Wildcards Objects </title>
+
+<formalpara>
+<title> Scalar Objects </title>
+<para>
+Scalar OID objects as mentioned previously, can only hold a single value at at time. The OIDs ends in zero (0) as shown in the example below with the snmpget command. If you remove the zero from the OID like this (.1.3.6.1.2.1.1.1), it will produce an error message saying (SNMPv2-MIB::sysDescr = No Such Object available on this agent at this OID)
+</para>
+<screen>
+snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.2.1.1.1.0
+</screen>
+</formalpara>
+
+<formalpara>
+<title> Tabular Objects</title>
+
+<para>
+The examples that have been used in the SNMP-servlet are all based on tables and arrays with primitive types like int, long, boolean,etc are used for scalar objects. If you take a close look at the SNMP-servlet in the jmx-console, you would have noticed that tabular objects use the java.util.map and java.util.list. The java.util.Map is used for key based tables. More on that further down.
+
+</para>
+<para>
+Let's revisit the SNMP-servlet we used previously. 
+</para>
+<screen>
+ snmpbulkget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.3.1
+</screen>
+
+<para>
+The snmpbulkget command will produce a list of value that you entered using the jmx-console. The result will be something similar to the one below:
+</para>
+
+<screen>
+SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.1 = STRING: "First Message"
+SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.2 = STRING: "Second Message"
+SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.3 = STRING: "Third Message"
+SNMPv2-SMI::enterprises.2312.100.10.11.3.1.2.3 = No more variables left in this MIB View (It is past the end of the MIB tree)
+
+</screen>
+
+<para>
+the SNMPv2-SMI::enterprises.2312.100.10.11 is the table, (3.1) is the column and (2.1) is the row
+</para>
+
+
+<para>
+As opposed to an index based Tabular Object, key based tables cannot immediateley directly accessed just by looking at the content of the attribute.xml file. You will need to perform an snmpgetnext on the based OID and then do a direct snmpget on the resulting OID. For example, the  MessageCountHistory table attribute has the OID .1.3.6.1.4.1.2312.100.10.11.6.1. It is actually possible to iterate through the full table by issuing a set of GetNextRequest SNMP PDU. To iterate through the MessageCountHistory table the following commands should be issued:
+
+</para>
+
+<screen>
+snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.6.1
+
+Produces the result below:
+
+SNMPv2-SMI::enterprises.2312.100.10.11.6.1.2.109.101.115.115.97.103.101.32.53 = INTEGER: 8
+</screen>
+
+<para> Notice that the the result produced a different OID.</para>
+
+<screen>
+The output is a concatenation of the oid prefix (.1.3.6.1.4.1.2312.100.10.11) + the MessageCountHistory OID (6.1) + the value column (.2) + the ASN.1 representation of the key of the table
+</screen>
+<para>
+ Because the data type of the data type of MessageCountHistory mbean attribute name is java.util.map (key based table) trying to access the OID directly with snmpget like an indexed table (OID.6.1)will fail as can be seen below. That is the difference between an indexd based table and an key based table.
+</para>
+<screen>
+snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.10.11.6.1
+
+Produces the result below:
+
+Error in packet
+Reason: (genError) A general failure occured
+Failed object: SNMPv2-SMI::enterprises.2312.100.10.11.6.1
+
+</screen>
+
+<para>
+If you want to access the value of the (OID 6.1) directly, you need to first use the snmpgetnext. This will give you the extended OID that you can then query like below:
+</para>
+
+<screen>
+snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 enterprises.2312.100.10.11.6.1.2.109.101.115.115.97.103.101.32.53
+
+This will generate the following result:
+
+SNMPv2-SMI::enterprises.2312.100.10.11.6.1.2.109.101.115.115.97.103.101.32.53 = INTEGER: 8
+</screen>
+
+</formalpara>
+
+
+<formalpara>
+<title> Wildcards MBean Names</title>
+
+<screen>
+&lt;!- Web Apps -&gt;
+   &lt;mbean name=&quot;jboss.web:host=localhost,path=/*,type=Manager&quot; oid-prefix=&quot;.1.3.6.1.4.1.2312.100.1.1.12.1&quot;&gt;
+      &lt;attribute name=&quot;distributable&quot; oid=&quot;.1&quot;/&gt;
+      &lt;attribute name=&quot;sessionCounter&quot; oid=&quot;.2&quot;/&gt;
+      &lt;attribute name=&quot;activeSessions&quot; oid=&quot;.3&quot;/&gt;
+      &lt;attribute name=&quot;maxActiveSessions&quot; oid=&quot;.4&quot; mode=&quot;rw&quot;/&gt;
+      &lt;attribute name=&quot;sessionAverageAliveTime&quot; oid=&quot;.5&quot;/&gt;      
+      &lt;attribute name=&quot;expiredSessions&quot; oid=&quot;.6&quot;/&gt;      
+      &lt;attribute name=&quot;rejectedSessions&quot; oid=&quot;.7&quot;/&gt;
+      &lt;attribute name=&quot;maxInactiveInterval&quot; oid=&quot;.8&quot;/&gt;
+      &lt;attribute name=&quot;sessionMaxAliveTime&quot; oid=&quot;.9&quot;/&gt;                  
+   &lt;/mbean&gt;
+</screen>
+<para>
+The above is an extract from the attributes.xml that can be found in the $TELSCALE_SNMP_ADAPTOR_HOME. Using wildcards to specify the mbean name can be convenient when you want to access attribues from a list of JMX objects. The example above tells JMX to search for mbean names having these values &quot;jboss.web:host=localhost,path=/*, type=Manager&quot; the wildcard is  (*). The wildcard can be seen as a filter. 
+</para>
+<para>
+You can access the values like you did previously for a key based table.
+</para>
+
+<screen>
+ snmpgetnext -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 .1.3.6.1.4.1.2312.100.1.1.12.1
+</screen>
+<para>
+The output will be as follows: 
+</para>
+<screen>
+SNMPv2-SMI::enterprises.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+</screen>
+<para>
+You can use the OID of the above results to access the value directly through snmpget
+</para>
+<screen>
+snmpget -v 3 -u TEST -a MD5 -A "maplesyrup" -x DES -X "maplesyrup" -l authPriv 127.0.0.1:1161 enterprises.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116
+
+It will produce the result below:
+
+SNMPv2-SMI::enterprises.2312.100.1.1.12.1.2.106.98.111.115.115.46.119.101.98.58.116.121.112.101.61.77.97.110.97.103.101.114.44.112.97.116.104.61.47.44.104.111.115.116.61.108.111.99.97.108.104.111.115.116 = INTEGER: 0
+
+
+</screen>
+<para>
+The OID is the concatenation of the OID prefix (.1.3.6.1.4.1.2312.100.1.1.12.1), first attribute (distributable, .2) and the ASN.1 representation of the following web application ObjectName "jboss.web:type=Manager,path=/,host=localhost"
+</para>
+<para>
+You can use snmpbulkget and snmpwalk to iterate through the rest of the table.
+
+</para>
+
+
+</formalpara>
 
 </section>
+
+
+
 
 <section>
 <title> Using a Network Management System (NMS) with &SHORT_PLATFORM_NAME;</title>
@@ -959,7 +1158,7 @@ Snmpget results without a MIB:
 iso.3.6.1.4.1.2312.100.1.1.1.0 = INTEGER: 109</screen>
 
 <para>
-Snmpget with a MIB give a better description of the value generated:
+Snmpget with a MIB file gives a better description of the value generated:
 </para>        
 
           <screen>[thauser@tommycat mibs]$ snmpget -v1 -c public 127.0.0.1:1161 1.3.6.1.4.1.2312.100.1.1.1.0
@@ -1810,7 +2009,7 @@ Below is an extract from the notifications.xml file:</formalpara>
         
             
       <formalpara>
-<title>Ways of Generating a MIB</title>
+<title>How to Generate an MIB</title>
 
 <para>Currently, there are two ways to use the MIB Generator. The first is to use the executable jar with the attributes.xml and notifications.xml files as input. The output file is a MIB that can be named as desired. 
 </para>

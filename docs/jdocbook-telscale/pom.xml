@@ -58,9 +58,11 @@
 				      		<version>1.1.0.FINAL</version>
 				    	</dependency>
 				</dependencies>
-				<configuration>					
+				<configuration>			
+		
 <sourceDocumentName>SIP_Servlets_Server_User_Guide.xml</sourceDocumentName> 
-					<sourceDirectory>${project.build.directory}/docbook/resources</sourceDirectory>
+
+				<sourceDirectory>${project.build.directory}/docbook/resources</sourceDirectory>
 					<imageResource>
 						<directory>${project.build.directory}/docbook/resources/en-US</directory>
 						<includes>
