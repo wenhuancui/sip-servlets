@@ -2094,8 +2094,340 @@ The second is to use the maven plugin that will invoke the MIB Generator on give
  &lt;/executions&gt;
 &lt;/plugin&gt;</screen>
 </section>
+
+
 </section>
 
+
+<section>
+<title>SNMP Graphs with OpenNMS </title>
+
+<para>
+When using any type of Network Monitoring System (NMS), you will no doubt be interested in seeing some visual representation of traffic and other important system data. This is also available for those interested in using &SHORT_PLATFORM_NAME;. The current version (at the time of writing this guide) of OpenNMS comes with predefined graphs that you can quickly tap into. The idea is to give you an overview of how to monitor your system using JMX. You can collect JMX data through the Jsr160Plugin that comes built into the OpenNMS system. That said, not everyone will be interested in the approach. You can still get to build graphs using SNMP which can contribute to applications and system management homogeneity through a common protocol. Here is a quick way to query the sample counter servlets that comes bundled with &SHORT_PLATFORM_NAME;
+</para>
+
+<para>
+There are times you might need to start OpenNMS before starting Telscale in order to avoid conflicts with port numbers. Generally speaking, this should not be an issue. You can use a different port setting by using an offset when starting the &SHORT_PLATFORM_NAME; server.  See the CONFLICTING PORTS, under the Troubleshooting section further down.
+</para>
+<para>
+In order to start &SHORT_PLATFORM_NAME; do the following:
+</para>
+<screen>
+$TELSCALE_HOME/bin/run.sh
+</screen>
+
+<para>
+In order to graph SNMP information, you will need to modify the following files in the $OPENNMS_HOME/etc directory.
+</para>
+
+<formalpara>
+<title> snmp-config.xml</title>
+<para>
+Make sure the content of the snmp-config.xml is like the one below.
+</para>
+
+<screen>
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;yes&quot;?&gt;
+&lt;snmp-config retry=&quot;2&quot; timeout=&quot;3000&quot; read-community=&quot;public&quot; version=&quot;v2c&quot; xmlns=&quot;http://xmlns.opennms.org/xsd/config/snmp&quot;&gt;
+    &lt;definition port=&quot;1161&quot; retry=&quot;3&quot; timeout=&quot;3000&quot; read-community=&quot;public&quot; version=&quot;v2c&quot;&gt;
+        &lt;specific&gt;127.0.0.1&lt;/specific&gt;
+    &lt;/definition&gt;
+&lt;/snmp-config&gt;
+</screen>
+</formalpara>
+
+<formalpara>
+<title> poller-configuration.xml</title>
+<para>
+Add the following to the poller-configuration.xml file
+</para>
+
+<screen>
+&lt;service name=&quot;Telscale-SNMP&quot; interval=&quot;300000&quot; user-defined=&quot;false&quot; status=&quot;on&quot;&gt;
+      &lt;parameter key=&quot;retry&quot; value=&quot;2&quot; /&gt;
+      &lt;parameter key=&quot;timeout&quot; value=&quot;3000&quot; /&gt;
+      &lt;parameter key=&quot;port&quot; value=&quot;1161&quot; /&gt;
+     &lt;parameter key=&quot;oid&quot; value=&quot;.1.3.6.1.4.1.2312.100.21.11.2.0&quot; /&gt;
+   &lt;/service&gt;
+</screen>
+<para>
+The oid above is derived from the sample application of &SHORT_PLATFORM_NAME;.  The value will be empty (zero) by default. You will need to refresh the sample counter servlet multiple times to increment the value that will be retrieved by the poller oid. Refresh this link multiple times http://127.0.0.1:8080/snmp-servlet-5.1.0.GA/snmp. (this will only work if &SHORT_PLATFORM_NAME; is running and the 127.0.0.1 represents the server IP address)
+</para>
+
+<para>
+In the same poller-configuration.xml, you need to add a monitor section at the end of the file like this:
+</para>
+<screen>
+  &lt;monitor service=&quot;Telscale-SNMP&quot; class-name=&quot;org.opennms.netmgt.poller.monitors.SnmpMonitor&quot; /&gt;
+</screen>
+
+</formalpara>
+
+
+<formalpara>
+<title> capsd-configuration.xml</title>
+<para>
+Next you need to configure the capsd-configuration.xml. Add the following into the file just above the SNMP protocol (this file is responsible for showing monitored services in the Web interface). You can access the web interface like this http://127.0.0.1:8980/opennms/index.jsp (127.0.0.1 is you server IP address). You can click on the "Node Lists" tab and select localhost to see the list of monitored service. Telscale-SNMP (you configured as seen below) should be visible after a rescan or a restart of OpenNMS.
+</para>
+
+<screen>
+&lt;protocol-plugin protocol=&quot;Telscale-SNMP&quot; class-name=&quot;org.opennms.netmgt.capsd.plugins.SnmpPlugin&quot; scan=&quot;on&quot;&gt;
+        &lt;property key=&quot;timeout&quot; value=&quot;3000&quot; /&gt;
+    &lt;property key=&quot;retry&quot; value=&quot;2&quot;/&gt;
+&lt;/protocol-plugin&gt;
+</screen>
+
+
+</formalpara>
+
+
+<formalpara>
+
+<title> collectd-configuration.xml</title>
+
+<para>
+The next configuration file you need to modify is $OPENNMS_HOME/etc/collectd-configuration.xml. Add the  following:
+</para>
+
+<screen>
+
+        &lt;service name=&quot;Telscale-SNMP&quot; interval=&quot;300000&quot; user-defined=&quot;false&quot; status=&quot;on&quot;&gt;
+           &lt;parameter key=&quot;collection&quot; value=&quot;default&quot;/&gt;
+            &lt;parameter key=&quot;port&quot; value=&quot;1161&quot;/&gt;
+            &lt;parameter key=&quot;retry&quot; value=&quot;3&quot;/&gt;
+            &lt;parameter key=&quot;timeout&quot; value=&quot;3000&quot;/&gt;
+            &lt;parameter key=&quot;thresholding-enabled&quot; value=&quot;true&quot;/&gt;
+             &lt;parameter key=&quot;vbname&quot; value=&quot;.1.3.6.1.4.1.2312.100.21.11.2.0&quot; /&gt;
+        &lt;/service&gt;
+</screen>
+
+<para>
+At the end of the file add the following:
+</para>
+<screen>
+	&lt;collector service=&quot;Telscale-SNMP&quot; class-name=&quot;org.opennms.netmgt.collectd.SnmpCollector&quot;/&gt;
+</screen>
+
+</formalpara>
+
+
+<formalpara>
+
+<title>telscale.xml</title>
+
+
+<para>
+Next you need to go into the $OPENNMS_HOME/etc/datacollection directory and create a new file called telscale.xml (you can use any name you want).
+</para>
+<para>
+Copy the content below into the telscale.xml file and save. 
+</para>
+<screen>
+
+&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;datacollection-group name=&quot;Telscale-SNMP&quot;&gt;
+
+      &lt;!--Telscale MIBs --&gt;
+      &lt;group  name=&quot;telscale-snmp&quot; ifType=&quot;ignore&quot;&gt;
+        &lt;mibObj oid=&quot;.1.3.6.1.4.1.2312.100.21.11.2&quot; instance=&quot;0&quot; alias=&quot;telscalesnmp&quot; type=&quot;integer&quot; /&gt;
+      &lt;/group&gt;
+     
+      &lt;systemDef name =&quot;telscale&quot;&gt;
+        &lt;sysoid&gt;.1.3.6.1.4.1.2312.100.9.1.1.6&lt;/sysoid&gt;
+        &lt;collect&gt;
+          &lt;includeGroup&gt;telscale-snmp&lt;/includeGroup&gt;
+        &lt;/collect&gt;
+      &lt;/systemDef&gt;
+
+&lt;/datacollection-group&gt;
+</screen>
+
+<para>
+The oid is the same oid you polled in the poller-configuration.xml file. The alias will be used to name the .jrb file. In this case, the .jrb file will be created in $OPENNMS_HOME/share/rrd/snmp/&tt;nodeID&gt;/telscalesnmp.jrb. Another important data is the sysoid as stated below. You need to run an snmpget  command against a running Telscale server in order to get the sysObjectID. You can do that as follows:
+</para>
+<screen>
+snmpget -On -c public -v 2c 127.0.0.1:1161  sysObjectID.0 
+</screen>
+<para>
+That will produce the result : .1.3.6.1.2.1.1.2.0 = OID: .1.3.6.1.4.1.2312.100.9.1.1.6
+</para>
+
+
+
+</formalpara>
+
+<formalpara>
+<title>datacollection-config.xml </title>
+<para>
+In the datacollection-config.xml file, add the line below. Note that the dataCollectionGroup=&quot;Telscale-SNMP&quot; is the same as in the telscale.xml file you created above.
+</para>
+
+<screen>
+    &lt;include-collection dataCollectionGroup=&quot;Telscale-SNMP&quot;/&gt;
+</screen>
+
+
+</formalpara>
+
+<para>
+You will need to restart the OpenNMS service. If you are running on a system like Fedora, do the following:
+</para>
+<screen>
+sudo service opennms stop
+sudo service opennms start
+</screen>
+<para>
+You need to go to the $OPENNMS_HOME/etc/share/rrd/snmp/&lt;nodeID&gt; to make sure a file named telscalensmp.jrb has been created. If this file doesn't exist, you will not be able to see graphs in the Web interface reports page.
+</para>
+<para>
+You can make sure you are able to see default graphs by going to
+ http://127.0.0.1:8980/opennms/index.jsp > reports > Resource Graphs > Localhost > Select All > Graph Selection
+
+</para>
+
+
+<formalpara>
+<title>snmp-graph.properties</title>
+
+<para>
+Once you have your telscalesnmp.jrb files, you need to config the $OPENNMS_HOME/etc/snmp-graph.properties files
+</para>
+
+<para>
+Add the line below at the top, inside the reports variable
+</para>
+<screen>
+telscale.counter, \
+</screen>
+
+<para>
+then further down add the following:
+</para>
+
+<screen>
+
+######
+###### Telscale SNMP Counter
+######
+
+report.telscale.counter.name=Telscale Counter
+report.telscale.counter.columns=telscalesnmp
+report.telscale.counter.type=nodeSnmp
+report.telscale.counter.command=--title=&quot;Telscale SNMP Sample Counter&quot; \
+ DEF:telcounter={rrd1}:telscalesnmp:AVERAGE \
+ LINE1:telcounter#0000ff:&quot;Completed Updates&quot; \
+ GPRINT:telcounter:AVERAGE:&quot; Avg \\: %8.2lf %s\\n&quot;
+</screen>
+
+<para>
+Note that the telscale.counter is needed inside the reports variable (at the top of the file) for the graphs to be displayed in the Web Interface of OpenNMS. The columns=telscalesnmp refers to the generated .jrb file (without the extension) as seen in the $OPENNMS_HOME/share/rrd/snmp&lt;nodeID&gt;/ *.jrb
+</para>
+
+</formalpara>
+
+<para>
+Once you have gone through the steps above, you should see a &SHORT_PLATFORM_NAME; appear like the screenshot below:
+</para>
+
+
+ <figure>
+<title>&SHORT_PLATFORM_NAME; SNMP Graph</title>
+<mediaobject id="snmp-opennms-graph">
+<imageobject>
+<imagedata align="center" fileref="images/Snmp-opennms-graph.png" format="PNG"/>
+</imageobject>
+</mediaobject>
+</figure>
+
+
+
+<formalpara>
+
+<title>Troubleshooting</title>
+
+<screen>
+
+
+I don't see Telscale-SNMP in the node list of services in the Web Interface
+
+ - Click on the rescan tab if that doesn't help, try the following:
+ - Click on the tab Admin
+ under Node Provisioning > Manage Provisioning Requisitions
+ - Add a new group (choose a name ex. Telscale_server)
+under the Telscale_server, 
+ - Click on the Requisition &quot;Edit&quot; link
+ - Click on Add Node (give the node a name and press &quot;save&quot;)
+on the newly added node, 
+ - Click on &quot;
+ - Add Interface&quot;
+ - Add the ip address of the localhost 127.0.0.1
+make sure the &quot;SNMP Primary&quot; value is set to &quot;P&quot; (OpenNMS will not create .jrb files if your IP address is not set to primary)
+under the 127.0.0.1 interface, 
+ - Click on 'Add Service&quot;
+in the dropdown menu list, scroll down and select Telscale-SNMP
+ - Click on &quot;Save&quot; and 
+ - Click on &quot;Done&quot; at the upper right corner of the screen
+ - Click Synchronize.
+You should now see the Telscale-SNMP service and also .jrb files created.
+
+----------------------------------------------DEBUGGING OPENNMS-------------------------------------------------------------
+
+I still don't get .jrb files what can I do next?
+
+- You can turn on debug to catch more exceptions.
+
+Go to the $OPENMS_HOME/etc/log4j.properties
+
+turn on debug in the collected section by changing
+
+log4j.category.OpenNMS.Collectd=WARN, COLLECTD
+
+to
+
+log4j.category.OpenNMS.Collectd=DEBUG, COLLECTD
+
+It is always good to restart OPenNMS
+
+Then go and take a look at the logs in $OPENNMS_HOME/logs/daemon/collected.logs
+
+-------------------------------------------CONFLICTING PORTS-------------------------------------------------------
+
+
+To avoid any conflicts with &SHORT_PLATFORM_NAME; you can start &SHORT_PLATFORM_NAME; like this : 
+
+sh bin/run.sh -Djboss.service.binding.set=ports-02
+
+This command offset all the ports used by JBoss by 200.
+This can also be useful when running in a clustered environment of &SHORT_PLATFORM_NAME; on a single server.
+
+
+You will need to modify the opennms $OPENNMS_HOME/etc/service_configuration.xml file :
+
+&lt;service&gt;
+    &lt;name&gt;:Name=HttpAdaptor&lt;/name&gt;
+    &lt;class-name&gt;mx4j.tools.adaptor.http.HttpAdaptor&lt;/class-name&gt;
+    &lt;attribute&gt;
+      &lt;name&gt;Port&lt;/name&gt;
+      &lt;value type=&quot;java.lang.Integer&quot;&gt;8180&lt;/value&gt;
+    &lt;/attribute&gt;
+
+
+Change the line 
+      &lt;value type=&quot;java.lang.Integer&quot;&gt;8180&lt;/value&gt;
+to 
+      &lt;value type=&quot;java.lang.Integer&quot;&gt;8380&lt;/value&gt;
+
+
+This will reflect the 200 offset used above.
+</screen>
+
+
+
+</formalpara>
+
+
+
+</section>
 
 </section>
 
