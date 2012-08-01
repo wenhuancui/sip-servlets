@@ -3,302 +3,462 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
-<!-- chapter id nickname: ssfjcs --><section id="ssfjcs-SS_for_JBoss-Clustering_Support">
-  <title>&PLATFORM_NAME; SIP Servlets for JBoss: Clustering Support</title>
+<!-- chapter id nickname: ssfjcs -->
+<section id="ssfjcs-SS_for_JBoss-Clustering_Support">
+  <title> Understanding &PLATFORM_NAME; High Availabilty </title>
+
+
+
+
+
+
+<para> High Availability </para>
+
+<para>
+Is a term used to describe software and hardware based strategies that are implemented to ensure optimal performance and continuous system operation in case of failure. High availability encompasses, clustering, failover and load balancing
+</para>
+
+
+
+<para>  Clustering </para>  
+<para>
+Is a technique used to ensure continuous service availability by having two or more servers communicate with each other and share configuration and application data (replication) on  fixed, predetermined intervals. This produces two or more application servers with identical setup. There is often a primary server within a clustered cloud from which data is replicated to the secondary. The application servers within a clustered environment will use what is called a heartbeat to ensure that all servers within are alive and functioning. In the case of failure, another server (secondary) will take over the task of responding to client's requests without impacting user experience. In some clustered ecosystem, load balancing is used as explained below.
+
+</para>
+
+<para> Load Balancing</para> 
+<para>
+This is ultimately about performance. All request from clients  are evenly distributed by the (load balancer) to multiple application servers that are running similar configurations.This type of setup often includes fault tolerance or failover. When one of the nodes, application server instance is not available, all traffic will be directed to the remaining servers. This ensures continuity albeit performance can degrade. Load balacing allows a single point of entry for multiple clients.
+</para>
+
+
+<para> Failover </para>  
+
+<para>
+Failover is a way to provide continuous service to clients connecting to an application server in case of system, software or hardware failure. Connections to an unresponsive server is directed (failed over) to a backup server. This is often done within the scope of a clustered configuration aided by a load balancer.
+</para>
+
+<para>
+It is important to note that clustering is also a way to provide failover and enhance server performance. The same can be said of load balancing. The idea behind all the above mentioned techniques is to provide high availability to connecting clients connecting to applications running on &PLATFORM_NAME;. In a nutshell, high availability englobes all the above mentioned techniques.
+</para>
+
   <para>&PLATFORM_NAME; supports the clustering of SIP Servlets-enabled JBoss Application Servers for performance, reliability and failover purposes. Note that only &SHORT_PLATFORM_NAME; for JBoss Servers can be used as cluster nodes; &SHORT_PLATFORM_NAME; for Tomcat Containers are not supported.</para>
+
   <para>The SIP Servlets Server uses the  JBoss Application Server as its servlet container, and takes advantage of its capabilities, including clustering and failover.  For detailed background information about JBoss Application Server clustering refer to the <ulink url="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Clustering_Guide/beta422/html/index.html">JBoss Application Server Clustering Guide</ulink>.</para>
-<!-- SIP Servlets Server Cluster -->  <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-Installing_Configuring_and_Running">
-    <title>SIP Servlets Server Cluster: Installing, Configuring and Running</title>
-    <para>&nbsp;</para>
-    <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-PreInstall_Requirements_and_Prerequisites">
-      <title>Pre-Install Requirements and Prerequisites</title>
-      <para>&nbsp;</para>
-      <variablelist id="ssfjcs-binary-SIP_Servlets_Server_Cluster-Software_Prerequisites">
-        <title>Software Prerequisites</title>
-        <varlistentry>
-          <term>A SIP Servlets-enabled JBoss Application Server</term>
-          <listitem>
-            <para>Before proceeding, ensure you have correctly configured your JBoss Application Server, according to SIP Servlet Server requirements:</para>
-            <itemizedlist>
-              <listitem>
-                <para>
-         <xref linkend="bssswjicar-binary-SIP_Servlets_Server_with_JBoss-Installing_Configuring_and_Running"/>
-        </para>
-              </listitem>
-            </itemizedlist>
-            <para>The easiest way to set up a cluster of SIP Servlets-enabled JBoss Application Servers is to install, configure and test the binary distribution on one machine, and then  copy the entire installation (directory) to the other machines in the cluster. This is the approach taken in this chapter.</para>
-            <para>Install a SIP Servlets Server with JBoss by following the instructions detailed in <xref linkend="bssswjicar-binary-SIP_Servlets_Server_with_JBoss-Installing_Configuring_and_Running"/>. </para>
-            <para>Afer meeting the requirement you can begin to configure the server  <xref linkend="ssfjcs-binary-SIP_Servlets_Server_Cluster-Configuring"/> below.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
-    </section>
-   <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-Configuring">
-      <title>Configuring</title>
-      <para>Once installed, the &SHORT_PLATFORM_NAME; for JBoss binary distribution requires only minor configuration in order to enable clustering. </para>
-      <para>SIP, and HTTP session state clustering is  pre-configured straight out of the binary distribution. However, to enable session replication in a node, you must tag it as <literal>&lt;distributable/&gt;</literal> both in the <filename>web.xml</filename> and <filename>sip.xml</filename> descriptors. This can be done only individually (per application).</para>
-    </section>
-    <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-Running">
-      <title>Running</title>
-      <para>Clustering with &SHORT_PLATFORM_NAME; for JBoss nodes requires running all of the nodes using the &quot;all&quot; Server Configuration Profile, which is specified when you invoke <command>run.sh</command> or <command>run.bat</command>.</para>
-      <formalpara>
-        <title>Running &SHORT_PLATFORM_NAME; for JBoss with the &quot;all&quot; Configuration Profile, on Linux</title>
-        <para>To run the server on Linux using the &quot;all&quot; Configuration Profile, start the server with the following command:</para>
-      </formalpara>
-      <screen>&SHORT_PLATFORM_NAME;-jboss-&lt;version&gt;]$ ./bin/run.sh -c all</screen>
-      <formalpara>
-        <title>Running &SHORT_PLATFORM_NAME; for JBoss with the &quot;all&quot; Configuration Profile, on Windows</title>
-        <para>To run the server on Windows using the &quot;all&quot; Configuration Profile, open the Command Prompt, change your folder to the topmost folder of your &SHORT_PLATFORM_NAME; for JBoss installation, and issue the following command:</para>
-      </formalpara>
-      <screen>C:&bsol;Users&bsol;user\&lt;username&gt;&bsol;My Downloads&bsol;&SHORT_PLATFORM_NAME;-jboss-&lt;version&gt;&gt;bin&bsol;run.bat -c all</screen>
-      <formalpara>
-        <title>Distributing requests between nodes</title>
-        <para>Together with the application server nodes, it is advised to run a SIP load-balancer or an IP load-balancer.  The IP load balancer will distribute the traffic evenly between the nodes. A load-balancer is a single entry-point to all nodes. All calls should be made through the load balancer if  High Availability is required. For more information about load balancing, refer to  <xref linkend="sslb-SIP_Servlets_Load_Balancer-Implementation"/>.</para>
-      </formalpara>
-      <para>By default, the servers are configured with one SIP load-balancer set to the  IP address <literal>127.0.0.1</literal>. This is specified in the <literal>balancers</literal> attribute in the <filename>server.xml</filename> configuration file as follows:</para>
-      <programlisting role="XML">&lt;Service name=&quot;jboss.web&quot; 
-      className=&quot;org.mobicents.servlet.sip.startup.failover.SipStandardBalancerNodeService&quot;
-  balancers=&quot;127.0.0.1&quot;  
-  sipPathName=&quot;org.mobicents.ha&quot;  
-  sipApplicationDispatcherClassName=&quot;org.mobicents.servlet.sip.core.SipApplicationDispatcherImpl&quot;
-concurrencyControlMode=&quot;None&quot; 
-  darConfigurationFileLocation=&quot;conf/dars/mobicents-dar.properties&quot;
-  sipStackPropertiesFile=&quot;conf/mss-sip-stack.properties&quot;&gt;
-</programlisting>
-      <para>Multiple load balancers can be specified and all of them will be updated on the health status of the node. The complete syntax for the balancers string is the following:</para>
-      <programlisting role="XML">&lt;Service name=&quot;jboss.web&quot; 
-      ...
-  balancers=&quot;ipAddress1:sipPort1:rmiPort1;ipAddress2:sipPort2:rmiPort2;..3...4..&quot;  
-  ...&gt;
-</programlisting>
-      <para>If the RMI port is omitted, port 2000 is assumed, and if the SIP port is omitted, 5065 is assumed.</para>
-      <warning>
-        <para>The SIP port  specified in the balancers string for each balancer refers to the internal SIP port of the SIP balancer. That is because the internal port faces the cluster nodes directly. Requests coming through the internal port will go to the external port and vice versa. If you put the external port in the <literal>balancers</literal> string, then the SIP LB will assume that the requests comes from outside the cluster and it will route it back to some cluster node instead of routing it outside the cluster as expected. Always use the SIP internal port in the <literal>balancers</literal> string. The exception to this rule is when a single port is used for internal and external ports in the SIP load balancer. In that case, the direction analysis is done based on <literal>Via</literal> headers and the requests are routed correctly without extra settings.</para>
-        <para/>
-      </warning>
-      <para>When multiple SIP load balancers are specified, the outgoing requests will always go through the first one, or an IP load balancer can be used and the requests will be distributed based on the IP balancer policy. To route the outgoing requests to a particular IP address (the IP load balancer address for example) the <literal>outboundProxy</literal> property can be used:</para>
-      <programlisting role="XML">&lt;Service name=&quot;jboss.web&quot; 
-      ...
-  balancers=&quot;127.0.0.1:5060:2000;127.0.0.1:5160:2100&quot;  
-outboundProxy=&quot;127.0.0.1:5500&quot;
-  ...&gt;
-</programlisting>
-      <para>In this example configuration, all outbound requests will go through 127.0.0.1:5500, while the node will perform the health checks against two SIP load balancers. If the 127.0.0.1:5500 machine is an IP load balancer, it should be configured to spray the  SIP load balancers, and they will route the requests outside the cluster reliably.</para>
-      <para>The <literal>outboundProxy</literal> attribute overrides the default effect of specifying a SIP port for SIP load balancers in the <literal>balancers</literal> string.</para>
-    </section>
-<section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-Stopping">
-      <title>Stopping</title>
-      <para>Individual nodes in the cluster should be stopped one-by-one, followed by the SIP load balancer. Refer to:</para>
-      <itemizedlist>
-        <listitem>
-          <para>Stopping the SIP load balancer: <xref linkend="sslb-binary-SIP_Load_Balancer-Stopping"/>
-     </para>
-        </listitem>
-        <listitem>
-          <para>Stopping &SHORT_PLATFORM_NAME; for JBoss: <xref linkend="bssswjicar-binary-SIP_Servlets_Server_with_JBoss-Stopping"/>
-     </para>
-        </listitem>
-        <listitem>
-          <para>Stopping &SHORT_PLATFORM_NAME; for Tomcat: <xref linkend="bssswticar-binary-SIP_Servlets_Server_with_Tomcat-Stopping"/>
-     </para>
-        </listitem>
-      </itemizedlist>
-    </section>
-    <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-Testing">
-      <title>Testing</title>
-      <para>To test your JBoss cluster setup for mid-call failover (Established SIP Dialog), refer to:</para>
-      <itemizedlist>
-        <listitem>
-          <para>
-      <xref linkend="ssfjfs-SS_for_JBoss-Failover_Support"/>
-     </para>
-        </listitem>
-      </itemizedlist>
-    </section>
-    <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-Uninstalling">
-      <title>Uninstalling</title>
-      <para>Uninstalling a SIP Servlets Cluster would entail deleting the &PLATFORM_NAME; SIP Servlets Servers directories, the SIP Load Balancer directory, and possibly removing the unused <envar>JBOSS_HOME</envar> environment variable.</para>
-    </section>
-  </section>
-  <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-SIP-Passivation">
-    <title>SIP Sessions Passivation/Activation</title>
-    <para>&nbsp;</para>
-     <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-SIP-Passivation-Description">
-    <title>Description of SIP Sessions passivation</title>
-    <para>
-    	Passivation is the process of controlling memory usage by removing relatively unused sessions from memory while storing them in persistent storage. 
-    	If a passivated session is requested by a client, it can be "activated" back into memory and removed from the persistent store. 
-    	&PLATFORM_NAME; Sip Servlets supports passivation of SipSessions (and by extension SIP Dialogs) and SipApplicationSessions  sipapps whose sip.xml includes the <literal>distributable</literal> tag (i.e. clustered sipapps).
- </para>
- <para>
-		Passivation occurs at 2 points during the lifecycle of a sip application:
+
+
+
+<section>
+
+<title> How to start &SHORT_PLATFORM_NAME; in a Clustered mode</title>
+
+<note>
+   <para>SIP, and HTTP session state clustering is  pre-configured straight out of the binary distribution. However, to enable session replication in a node, you must tag it as <literal>&lt;distributable/&gt;</literal> both in the <filename>web.xml</filename> and <filename>sip.xml</filename> descriptors. This can be done only individually (per application).</para>
+</note>
+
+<para>
+There is a pre-packed sample click2call-distributable application that can be found in the $TELSCALE_HOME/server/all/deploy directory. This sample application will be used in this guide to test sip clustering. load balancing and failover. 
 </para>
- <itemizedlist>
- 	<listitem><para>
-When the container requests the creation of a new SIP Session or SIP Application Session. 
-If the number of currently active session exceeds a configurable limit, an attempt is made to passivate sessions to make room in memory.
+<para>
+You will need to start 2 instances of &PLATFORM_NAME; in order to work in clustered mode. That must be done on two different shell terminals.
 </para>
- </listitem>
- <listitem><para>
-Periodically (by default, every ten seconds) as the JBoss Web background thread runs.
+
+<para>
+Starting the first instance. This instant will use the default port 8080 as 127.0.0.1:8080
 </para>
- </listitem>
- </itemizedlist>
- <para>
-A session will be passivated if one of the following holds true:
+
+<screen>
+$TELSCALE_HOME/bin/run.sh -c all
+</screen>
+
+<para>
+Starting the second instance. You need to avoid port conflict by using an offset. The example below will offset the default 8080 port by 200 to 8280 so that you will have 127.0.0.1:8280
 </para>
- <itemizedlist>
- 	<listitem><para>
-The session hasn't been used in greater than a configurable maximum idle time.
+
+<screen>
+$TELSCALE_HOME/bin/run.sh -c all -Djboss.service.binding.set=ports-02
+</screen>
+
+<para>
+Once the &PLATFORM_NAME; instances are started, you will see an output similar to the one below in the first terminal. This is an overview of all nodes in the cluster. Note that the second node which is tagged as New Members gets 127.0.0.1:1299. The default is 1099 which is already used by the first node. The offset used above changes the node id port to 1299.
 </para>
- </listitem>
- <listitem><para>
-The number of active sessions exceeds a configurable maximum and the session hasn't been used in greater than a configurable minimum idle time.
+
+<screen>
+10:46:22,991 INFO  [DefaultPartition] I am (127.0.0.1:1099) received membershipChanged event:
+10:46:23,004 INFO  [DefaultPartition] Dead members: 0 ([])
+10:46:23,004 INFO  [DefaultPartition] New Members : 1 ([127.0.0.1:1299])
+10:46:23,004 INFO  [DefaultPartition] All Members : 2 ([127.0.0.1:1099, 127.0.0.1:1299])
+10:46:24,046 INFO  [RPCManagerImpl] Received new cluster view: [127.0.0.1:37952|1] [127.0.0.1:37952, 127.0.0.1:50413]
+10:47:13,360 INFO  [RPCManagerImpl] Received new cluster view: [127.0.0.1:37952|1] [127.0.0.1:37952, 127.0.0.1:50413]
+
+</screen>
+
+
+
+<para>
+To run the server on Windows using the &quot;all&quot; Configuration Profile, open the Command Prompt, change your folder to the topmost folder of your &SHORT_PLATFORM_NAME; for JBoss installation, and issue the following command:
 </para>
- </listitem>
- </itemizedlist>
- <para> 
-In both cases, sessions are passivated on a Least Recently Used (LRU) basis.
-    </para>
-    </section>
-     <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-SIP-Passivation-Configuration">
-		    <title>Configuring Distributable SIP Session Passivation in your SIP Application</title>
-		    <para>
-		    &nbsp;
-		    </para>
-		     <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-SIP-Passivation-Configuration-Step1">
-			    <title>Step 1: Add the following to jboss-web.xml for your sip application</title>
-			    <para>&nbsp;</para>
-			    <programlisting role="XML">
-				   &lt;max-active-sessions&gt;20&lt;/max-active-sessions&gt;
-				   &lt;passivation-config&gt;
-				      &lt;use-session-passivation&gt;true&lt;/use-session-passivation&gt;
-				      &lt;passivation-min-idle-time&gt;60&lt;/passivation-min-idle-time&gt;
-				      &lt;passivation-max-idle-time&gt;600&lt;/passivation-max-idle-time&gt;
-				   &lt;/passivation-config&gt;
-				</programlisting>
-				<itemizedlist>
-				 	<listitem>
-				 		<para>
-							<literal>max-active-sessions</literal>  Determines the maximum number of active sessions allowed. If the number of sessions managed by the session manager exceeds this value and passivation is enabled, the excess will be passivated based on the configured passivation-min-idle-time. If after passivation is completed (or if passivation is disabled), the number of active sessions still exceeds this limit, attempts to create new sessions will be rejected. If set to -1 (the default), there is no limit.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>passivation-min-idle-time</literal>  Determines the minimum time (in seconds) that a session must have been inactive before the container will consider passivating it in order to reduce the active session count below max-active-sessions. A value of -1 (the default) disables passivating sessions before passivation-max-idle-time.  Neither a value of -1 nor a high value are recommended if max-active-sessions is set.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>passivation-max-idle-time</literal> Determines the maximum time (in seconds) that a session can be inactive before the container should attempt to passivate it to save memory. Passivation of such sessions will take place regardless of whether the active session count exceeds max-active-sessions.  Should be less than the sip.xml session-timeout setting. A value of -1 (the default) disables passivation based on maximum inactivity.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>use-session-passivation</literal>  Determines whether session passivation will be enabled for the web application. Default is false.
-						</para>
-				 	</listitem>
-				 </itemizedlist>
-		    </section>
-		    <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-SIP-Passivation-Configuration-Step2">
-			    <title>Step 2 : Configure the JBoss Cache cache loader</title>
-			    <para>In most cases you don't need to do anything for Step 2; the standard JBoss AS configuration for distributable session caching should suit your needs.  The following is a bit more detail in case you're interested or want to change from the defaults.</para>
-			    <para>SIP Session passivation relies on JBoss Cache's Cache Loader passivation for storing and retrieving the passivated sessions. 
-			    Therefore the cache instance used by your sipapps clustered session manager must be configured to enable Cache Loader passivaton.
-			    
-				The Cache Loader configuration for the <literal>standard-session-cache</literal> config is as follows:</para>
-			    <programlisting role="XML">
-					   &lt;property name=&quot;cacheLoaderConfig&quot;&gt;
-			             &lt;bean class=&quot;org.jboss.cache.config.CacheLoaderConfig&quot;&gt;
-			                    &lt;!-- Do not change these --&gt;
-			                    &lt;property name=&quot;passivation&quot;&gt;true &lt;/property&gt;			                   
-			                    &lt;property name=&quot;shared&quot;&gt;false &lt;/property&gt;
-			                   
-			                    &lt;property name=&quot;individualCacheLoaderConfigs&quot;&gt;
-			                      &lt;list&gt;
-			                         &lt;bean class=&quot;org.jboss.cache.loader.FileCacheLoaderConfig&quot;&gt;
-			                            &lt;!-- Where passivated sessions are stored --&gt;
-			                            &lt;property name=&quot;location&quot;&gt;${jboss.server.data.dir}${/}session &lt;/property&gt;
-			                            &lt;!-- Do not change these --&gt;
-			                            &lt;property name=&quot;async&quot;&gt;false &lt;/property&gt;
-			                            &lt;property name=&quot;fetchPersistentState&quot;&gt;true &lt;/property&gt;
-			                            &lt;property name=&quot;purgeOnStartup&quot;&gt;true &lt;/property&gt;
-			                            &lt;property name=&quot;ignoreModifications&quot;&gt;false &lt;/property&gt;
-			                            &lt;property name=&quot;checkCharacterPortability&quot;&gt;false &lt;/property&gt;
-			                         &lt;/bean&gt;
-			                      &lt;/list&gt;
-			                    &lt;/property&gt;
-			             &lt;/bean&gt;
-			          &lt;/property&gt;
-				</programlisting>
-				<itemizedlist>
-				 	<listitem>
-				 		<para>
-							<literal>passivation</literal> property MUST be true.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>shared</literal> property MUST be false. Do not passivate sessions to a shared persistent store, otherwise if another node activates the session, it will be gone from the persistent store and also gone from memory on other nodes that have passivated it. Backup copies will be lost.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>individualCacheLoaderConfigs</literal> property accepts a list of Cache Loader configurations. JBC allows you to chain cache loaders; see the JBC docs. For the session passivation use case a single cache loader is sufficient.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>class</literal> attribute on a cache loader config bean MUST refer to the configuration class for a cache loader implementation (e.g. org.jboss.cache.loader.FileCacheLoaderConfig, org.jboss.cache.loader.JDBCCacheLoaderConfig). See the JBoss Cache documentation for more on the available CacheLoader implementations. If you wish to use JDBCCacheLoader (to persist to a database rather than the filesystem used by FileCacheLoader) note the comment above about the shared property.  Don't use a shared database, or at least not a shared table in the database.  Each node in the cluster must have its own storage location.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>location</literal>  property for FileCacheLoaderConfig defines the root node of the filesystem tree where the passivated session should be stored. The default is to store them in your JBoss AS configuration's data directory.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>async</literal>  MUST be false to ensure passivated sessions are promptly written to the persistent store.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>fetchPersistentState</literal>  MUST be true to ensure passivated sessions are included in the set of session backup copies transferred over from other nodes when the cache starts.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>purgeOnStartup</literal>  should be true to ensure out-of-date session data left over from a previous shutdown of a server doesn't pollute the current data set.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>ignoreModifications</literal>  should be false.
-						</para>
-				 	</listitem>
-				 	<listitem>
-				 		<para>
-							<literal>checkCharacterPortability</literal> should be false as a minor performance optimization.
-						</para>
-				 	</listitem>
-				 </itemizedlist>
-				 <para>Refer to the JBossCache documentation for further details about Cache Loader configuration.</para>
-		    </section>
-    </section>
-     <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-SIP-Passivation-Server-Wide-Configuration">
-		    <title>Configuring Server-Wide Passivation Defaults</title>
-		    <para>
-		    The section on jboss-web.xml configuration above described how to configure passivation on a sipapp-by-sipapp basis.
-		     If you are deploying several sipapps and each uses the same set of passivation configurations, you may wish to skip the jboss-web.xml configuration and just change the server-wide defaults.  This can be done by uncommenting the following section in the $JBOSS_HOME/server/xxx/deployers/jbossweb.deployer/META-INF/war-deployers-jboss-beans.xml file's WebAppClusteringDefaultsDeployer and setting the values you desire:
-		    </para>
-		     <programlisting role="XML">
-						  &lt;!--
-					       &lt;property name=&quot;useSessionPassivation&quot;&gt;false &lt;/property&gt;
-					       &lt;property name=&quot;passivationMaxIdleTime&quot;&gt;-1 &lt;/property&gt;
-					       &lt;property name=&quot;passivationMinIdleTime&quot;&gt;-1 &lt;/property&gt;
-					      --&gt;
-				</programlisting>
-	</section>
-    </section>
+
+<screen>run.bat -c all</screen>
+
+
+<para>
+At this stage, it will be a good idea to test the above configuration with a sample application. the <literal> click2call-distributable.war</literal> file can be found at $TELSCALE_HOME/server/all/deploy directory. The application is already in the deploy directory so it will be available for immediately use.
+</para>
+
+<para>
+Once you've started the two &PLATFORM_NAME; instances as mentioned above, you will need to also start load balancing. This is essential in order to understand failover. 
+</para>
+
+
 </section>
+
+
+
+<section>
+
+<title>Configuring Load Balancing</title>
+<para>
+The best way to quickly get started with load balancing is by using the default configuration. The SIP load-balancer is set to the loopback ip address 127.0.0.1 . That will be used to test the clic2call-distributable.war sample application mentioned previously.
+</para>
+
+<para>
+In order to start the load balancer, go to the $TELSCALE_HOME/sip-balancer directory, then, type the command below and press Enter.
+</para>
+
+<screen>
+
+java -jar sip-balancer-jar-with-dependencies.jar -mobicents-balancer-config=lb-configuration.properties
+
+</screen>
+
+<para>
+You should see a lot of system data scrolling on the screen. The final part of the message should be something similar to the one below:
+</para>
+
+<screen>
+1328 (RMI TCP Connection(2)-192.168.0.102) INFO [NodeRegisterImpl] NodeExpirationTimerTask Run NSync[SIPNode hostname[localhost] ip[127.0.0.1] httpPort[8080] tcpPort[5080] udpPort[5080] version[0] ] added
+1814 (main) INFO [SIPBalancerForwarder] Sip Balancer started on external address 127.0.0.1, external port : 5060, internalPort : 5065
+1921 (main) INFO [HttpBalancerForwarder] HTTP LB listening on port 2080
+4455 (RMI TCP Connection(6)-192.168.0.102) INFO [NodeRegisterImpl] NodeExpirationTimerTask Run NSync[SIPNode hostname[localhost] ip[127.0.0.1] httpPort[8280] tcpPort[5280] udpPort[5280] version[0] ] added
+
+</screen>
+
+
+<para>
+You will see that the load-balancer is listening on port 2080. You can now access the 2  &PLATFORM_NAME; instances you started earlier through a single ip address as follows:
+</para>
+
+<screen>
+http://127.0.0.1:2080/click2call-distributable/
+</screen>
+
+
+
+</section>
+
+<para>
+This will show a screenshot like the one below. This will be used to make a test sip call. The sample application is very basic but should help you understand how to setup sip clustering for load balancing and failover.
+</para>
+
+<para>
+            <figure>
+              <title>Click2Call-Distributable Sample Application</title>
+              <mediaobject>
+                <imageobject>
+                  <imagedata width="700" fileref="images/Clustering-click2call-sample.png"/>
+                </imageobject>
+              </mediaobject>
+            </figure>
+
+</para>
+
+
+<para>
+In the above window, you can make a call by pressing the (Call) button.
+
+</para>
+
+<para>
+You will notice  sip log information like the one below (in the server terminal), indicating that the client is communicating with the server. If you check the second instance of your &PLATFORM_NAME; server, there will be no sip message INVITE. That is because the load balancer on which you sent the (Call) on port(2080) directs the traffic to the first server. 
+</para>
+<para>
+Notice also in the log below that the Route uses  127.0.0.1:5065. This is the sip port used by the load balancer and all clients need to configure their proxy to use port 5056 (clustered mode). If you are not using a load balancer, you will be using port 5080 to register your sip softphone clients.
+</para>
+
+<screen>
+&lt;message&gt;
+
+12:59:46,558 INFO  [SIPTransactionStack] &lt;message&gt;
+from=&quot;127.0.0.1:5080&quot; 
+to=&quot;127.0.0.1:5065&quot; 
+time=&quot;1343588386557&quot;
+isSender=&quot;true&quot; 
+transactionId=&quot;z9hg4bke595faad-ed24-4767-bff5-4a9675853e33_6f97354c_48676194243131&quot; 
+callId=&quot;1fd39e9ac9895882a6a8aa1677398040@127.0.0.1&quot; 
+firstLine=&quot;INVITE sip:to@127.0.0.1:5050 SIP/2.0&quot; 
+&gt;
+&lt;![CDATA[INVITE sip:to@127.0.0.1:5050 SIP/2.0
+Call-ID: 1fd39e9ac9895882a6a8aa1677398040@127.0.0.1
+CSeq: 1 INVITE
+From: &lt;sip:from@127.0.0.1:5060&gt;;tag=42345569_6f97354c_e595faad-ed24-4767-bff5-4a9675853e33
+To: &lt;sip:to@127.0.0.1:5050&gt;
+Max-Forwards: 70
+Contact: &lt;sip:from@127.0.0.1:5080;transport=udp&gt;
+Via: SIP/2.0/UDP 127.0.0.1:5080;branch=z9hG4bKe595faad-ed24-4767-bff5-4a9675853e33_6f97354c_48676194243131
+Route: &lt;sip:127.0.0.1:5065;lr;transport=udp;node_host=127.0.0.1;node_port=5080&gt;
+Content-Length: 0
+
+
+</screen>
+
+
+<para>
+The call you made through the application will eventually timeout and you will see another set of information log on the terminal that is worth noting. The session ID in the log is the same as the one you see in the click2call-distributable sample application. This is for debug purposes. It shows that the call is coming from the sample application and it avoids ambiguity when troubleshooting.  The distributed configuration of the sample application is used for session replication. This is important as it helps maintain similar session information in case a server failovers to another. 
+</para>
+
+<screen>
+13:00:11,120 INFO  [SipSessionImpl] Invalidating the sip session 
+(42345569_6f97354c_e595faad-ed24-4767-bff5-4a9675853e33:
+1fd39e9ac9895882a6a8aa1677398040@127.0.0.1:e595faad-ed24-4767-bff5-4a9675853e33:DistributableClick2Call)
+13:00:11,122 INFO  [SipStandardContext] We are now after the servlet invocation, We replicate no matter what
+</screen>
+
+<para>
+This will not be a true load balancer if all calls were to go through the first &PLATFORM_NAME; server. If you wait a while and make another call through the click2call-distributable sample application, you will notice that the second server will start to receive calls. This is what you should expect from a functioning load balancer. This will ultimately improve performance as load is evenly distributed through all servers within the cluster partition. 
+
+</para>
+
+<section> 
+
+<title>Testing Failover within &PLATFORM_NAME; </title>
+
+<para> 
+We have been making sip calls using the sample click2call-distributable application and using the load balancer interface 127.0.0.1:2080. At this stage, it is important to note that the two instances of &PLATFORM_NAME; that were started previously could have been accessed directly without the need for a load balancer. Below is how the two instances were started:
+</para>
+
+<screen>
+Instance One
+$TELSCALE_HOME/bin/run.sh -c all 
+
+Instance Two
+$TELSCALE_HOME/bin/run.sh -c all -Djboss.service.binding.set=ports-02
+
+</screen>
+
+<para>
+You can access click2call-distributable sample application on the first server instance  on port 8080 as follows
+</para>
+
+<screen>
+http://127.0.0.1:8080/click2call-distributable
+</screen>
+
+
+<para>
+You can access click2call-distributable sample application on the second server instance  on port 8280 (offset) as follows
+</para>
+
+<screen>
+http://127.0.0.1:8280/click2call-distributable
+</screen>
+
+<para>
+If you were to make calls directly using any of these server instances, the calls will go through as expected. However, if the server becomes unvailable, you will have to manually configure your client to use the other server. In this case, you will configure your browser to point to the other server. That is possible if you are aware of another server. In a production environment, with hundreds of clients making simultaneous calls, it will not be practical to manually shift all the clients to another server. That is why most clustered configuration come with a load balancer. 
+</para>
+
+<para>
+In order to test sip failover, you need to set your browser to the load balancer sip port. You can use the sample click2call-distributable application. 
+</para>
+
+
+<screen>
+http://127.0.0.1:2080/click2call-distributable
+</screen>
+
+<para>
+Make a call and check the shell terminal (logs) to see which of the instances you started earlier is receiving the sip connection (INVITE).  Once you determine the instance, stop the server by typing:
+</para>
+
+<screen>
+CTRL-C
+
+</screen>
+<para>
+The terminate command will generate the following output on the second server terminal:
+</para>
+
+
+
+<screen>
+
+INFO  [DefaultPartition] New cluster view for partition DefaultPartition (id: 10, delta: -1) : [127.0.0.1:1299]
+19:54:32,786 INFO  [DefaultPartition] I am (127.0.0.1:1299) received membershipChanged event:
+19:54:32,787 INFO  [DefaultPartition] Dead members: 1 ([127.0.0.1:1099])
+19:54:32,787 INFO  [DefaultPartition] New Members : 0 ([])
+19:54:32,787 INFO  [DefaultPartition] All Members : 1 ([127.0.0.1:1299])
+19:54:32,898 INFO  [RPCManagerImpl] Received new cluster view: [127.0.0.1:36818|10] [127.0.0.1:36818]
+19:54:32,906 INFO  [JBossCacheSipManager] SipApplicationSession cc6b7739-f72e-4f32-b5f8-59a2ad90c294:DistributableClick2Call has just been recreated and concurrency control is set to SipApplicationSession, colocating the timers here to ensure no concurrent access across the cluster
+
+</screen>
+
+<para>
+In the output above, you see that the cluster instance (member) that was terminated is identified. However, because the application is running behind a load balancer all calls are failed over to the remaining server. You will still be able to make calls through the (http://127.0.0.1:8280/click2call-distributable), which is the load balancer interface. Once you restart the terminated server. It will be inserted back into the cluster partition and the load balancer will begin to distribute calls between all member servers in the cluster. 
+</para>
+
+
+
+</section>
+
+
+<section>
+<title>Testing Load Balancing with a Softphone</title>
+
+<para>
+If you want to test load balancing with a softphone, it is possible using the sample click2call application that is provided with &SHORT_PLATFORM_NAME;. This is different from the click2call-distributable used previously. Here is a screen shot of what the application looks like when you access it through your web browser. This program is not developped to use replication as you would expect in a clustered setup. However, it will help you quickly get started when you need to configure a softphone to use load balancing.  
+</para>
+
+
+
+
+<para>
+            <figure>
+              <title>Load balancing click2call test</title>
+              <mediaobject>
+                <imageobject>
+                  <imagedata width="700" fileref="images/Load-balancing-click2call-test.png"/>
+                </imageobject>
+              </mediaobject>
+            </figure>
+
+</para>
+
+<para>
+First, you will need to start two instances of &PLATFORM_NAME; and then start the load balancer as follows:
+</para>
+
+<screen>
+Start first server
+
+$TELSCALE_HOME/bin/run.sh -c all
+
+Start second server
+
+$TELSCALE_HOME/bin/run.sh -c all -Djboss.service.binding.set=ports-02
+
+Once both servers are started, start the load balancer located in the $TELSCALE_HOME/sip-balancer directory
+
+
+java -jar sip-balancer-jar-with-dependencies.jar -mobicents-balancer-config=lb-configuration.properties
+</screen>
+
+<para>
+Once the servers are up and running, you will need to get a softphone and configure it to use the load balancer interface. In this example, we shall be using a linux softphone called linphone. You can donwload this onto your system or you can use another softphone you prefer. The section below will show you how to configure the phone to use port 5065. This is the load balancer sip interface that you need for your softphone proxy
+</para>
+
+<para>
+Configure linphone as follows:
+</para>
+
+<screen>
+(You will need to configure two intances of linphone)
+
+start linphone 
+go to the Options menu
+
+On the Network Settings tab, 
+	SIP (UDP) port to 5061. (leave the rest as default)
+On the Manage SIP Accounts tab, 
+	click the add button
+	Your SIP identity: = sip:linphone1@127.0.0.1:5061
+	SIP Proxy address: = sip 127.0.0.1:5065
+
+Leave the rest of the setting as default.
+	
+
+start linphone (on another shell)
+
+go to the Options menu
+
+On the Network Settings tab, 
+	SIP (UDP) port to 5062. (leave the rest as default)
+On the Manage SIP Accounts tab, 
+	click the add button
+	Your SIP identity: = sip:linphone2@127.0.0.1:5062
+	SIP Proxy address: = sip 127.0.0.1:5065
+
+Leave the rest of the setting as default.
+
+
+</screen>
+
+
+
+<para>
+The screenshot below shows that the linphone softphone is correctly configured and it has registered with the load balancer interface.
+</para>
+
+
+
+<para>
+            <figure>
+              <title>Load balancing linphone configuration</title>
+              <mediaobject>
+                <imageobject>
+                  <imagedata width="700" fileref="images/Load-balancer-linphone-config.png"/>
+                </imageobject>
+              </mediaobject>
+            </figure>
+
+</para>
+
+<para>
+When the two linphone softphone instances are registered with the load balancer server, they will become visible in the  click2call sip sample application in your browser at this address http://127.0.0.1:2080/click2call. Here is a sccreenshot of what you should see.
+</para>
+
+
+
+<para>
+            <figure>
+              <title>Load balancing register phones</title>
+              <mediaobject>
+                <imageobject>
+                  <imagedata width="700" fileref="images/Load-balancer-click2call-registered.png"/>
+                </imageobject>
+              </mediaobject>
+            </figure>
+
+</para>
+
+<para>
+You can make call the click2call web browser interface. The softphone being called will ring and you can answer the call. If you check the server terminals, you should see that one of the server is receiving the call you have just made. The logs will give you information about the calls and its origin. If you wait a while and make another call from the click2call application, the load balancer will send the call to the other server. The calls are evenly disbributed between all the servers in the cluster.
+</para>
+
+
+
+<para>
+            <figure>
+              <title>Load balancer linphone incoming calls</title>
+              <mediaobject>
+                <imageobject>
+                  <imagedata width="700" fileref="images/Load-balancing-linphone-calls.png"/>
+                </imageobject>
+              </mediaobject>
+            </figure>
+
+</para>
+
+<para>
+If you were to terminate one of the servers by pressing CTRL-C, on the terminal, the http://127.0.0.1:2080/click2call will still be availble and you will still be able to make calls because the configuring is using a single point of entry (load balancer). As long as there is a server in the cluster partition, the load balancer will know where to direct the calls. This is also a form of failover and high availabitliy.
+</para>
+
+<para>
+In a production environment, the click2call sample application will not be sufficient during failover. It is not design to smoothly transition calls from a server that is shutting down to an active server in the cluster partition. That said, it is a good example for you to get an overview of how you can use high availability, failover and load balancing within the &SPLATFORM_NAME; framework.
+</para>
+
+
+</section>
+
+
+</section>
+

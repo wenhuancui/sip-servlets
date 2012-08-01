@@ -3,8 +3,11 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
-<!-- chapter id nickname: ssfjfs --><section id="ssfjfs-SS_for_JBoss-Failover_Support">
-  <title>&PLATFORM_NAME; SIP Servlets for JBoss: Transparent Failover</title>
+<!-- chapter id nickname: ssfjfs -->
+
+
+<section id="ssfjfs-SS_for_JBoss-Failover_Support">
+  <title>Detailed Information About &PLATFORM_NAME; SIP Servlets for JBoss: Transparent Failover</title>
   <para>A &PLATFORM_NAME; SIP Servlets Server for JBoss cluster does not employ any standby nodes. 
   Typically, proxies and registrars must share the user location table by using a database cluster.</para>
   <para>The &PLATFORM_NAME; SIP Load Balancer, which is a SIP Call ID-aware load balancer, is used as the intermediary. 
@@ -71,7 +74,10 @@
     </listitem>    
   </itemizedlist> 
     </section>
-<!--<remark>These are the remaining steps, which I'm listing from README-network.txt:
+
+<!--
+
+<remark>These are the remaining steps, which I'm listing from README-network.txt:
   run sh prepare-jboss-server-for-clustering-failover-network.sh uas (or proxy or b2bua if you want to test something else) from this directory on both machines
 run sh start-lb-network.sh from this directory
 run sh start-jboss-server-all.sh from this directory on both machines
@@ -134,7 +140,11 @@ name="jboss.system:service=ServiceBindingManager" >
 Limitations
 
 &PLATFORM_NAME; Sip Servlets doesn't currently support mid call failover for converged applications only pure sip applications (Uas, Uac, B2BUA, Proxy).
-</remark>-->  <section id="ssfjfs-binary-Testing_SS_for_JBoss_Cluster_Failover--Installing_Configuring_and_Running">
+</remark>-->  
+
+
+<!--
+<section id="ssfjfs-binary-Testing_SS_for_JBoss_Cluster_Failover-Installing_Configuring_and_Running">
     <title>&SHORT_PLATFORM_NAME; for JBoss Cluster: Installing, Configuring and Running</title>
     <para>There are a number of options you can specify for &SHORT_PLATFORM_NAME; clustering. By default, most of them are configured in the &quot;all&quot; server configuration, which is ready to use. In this chapter we will cover the most common configuration options you might need.</para>
     <section id="ssfjfs-binary-Testing_SS_for_JBoss_Cluster_Failover-Downloading">
@@ -157,11 +167,15 @@ Limitations
       <title>Using</title>
       <para>&nbsp;</para>
     </section>
-<!-- <section
+
+<section
   id="ssfjfs-binary-Testing_SS_for_JBoss_Cluster_Failover-Stopping">
   <title>Stopping</title>
   <para>&nbsp;</para>
- </section> -->    <section id="ssfjfs-binary-Testing_SS_for_JBoss_Cluster_Failover-Testing">
+ </section>   
+
+
+ <section id="ssfjfs-binary-Testing_SS_for_JBoss_Cluster_Failover-Testing">
       <title>Testing</title>
       <para>&nbsp;</para>
     </section>
@@ -169,5 +183,8 @@ Limitations
       <title>Uninstalling</title>
       <para>&nbsp;</para>
     </section>
-  </section>
+
+-->
+
+
 </section>
