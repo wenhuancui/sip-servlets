@@ -60,7 +60,10 @@ It is important to note that clustering is also a way to provide failover and en
 There is a pre-packed sample click2call-distributable application that can be found in the $TELSCALE_HOME/server/all/deploy directory. This sample application will be used in this guide to test sip clustering. load balancing and failover. 
 </para>
 <para>
-You will need to start 2 instances of &PLATFORM_NAME; in order to work in clustered mode. That must be done on two different shell terminals.
+JBoss comes bundled with a <literal>all</literal> profile that, at the difference of the <literal>default</literal> profile, is pre configured for clustering. 
+</para>
+<para>
+You will need to start 2 instances of &PLATFORM_NAME; in order to work in clustered mode. For that, you need first to create 2 copies of the <literal>all</literal> profile, and name them, respectively, <literal>node1</literal> and <literal>node2</literal>. That must be done on two different shell terminals.
 </para>
 
 <para>
@@ -68,15 +71,16 @@ Starting the first instance. This instant will use the default port 8080 as 127.
 </para>
 
 <screen>
-$TELSCALE_HOME/bin/run.sh -c all
+$TELSCALE_HOME/bin/run.sh -c node1
 </screen>
 
 <para>
-Starting the second instance. You need to avoid port conflict by using an offset. The example below will offset the default 8080 port by 200 to 8280 so that you will have 127.0.0.1:8280
+Starting the second instance. You need to avoid port conflict by using an offset. The example below will offset the default 8080 port by 200 to 8280 so that you will have 127.0.0.1:8280.
+You also need to avoid conflicts for JBoss Messaging. All JBoss Messaging services are rooted at the server peer so the ID needs to be unique and defaults to 0. The example below set it explicitly to one for the second node.
 </para>
 
 <screen>
-$TELSCALE_HOME/bin/run.sh -c all -Djboss.service.binding.set=ports-02
+$TELSCALE_HOME/bin/run.sh -c node2 -Djboss.service.binding.set=ports-02 -Djboss.messaging.ServerPeerID=1
 </screen>
 
 <para>
@@ -180,10 +184,10 @@ In the above window, you can make a call by pressing the (Call) button.
 </para>
 
 <para>
-You will notice  sip log information like the one below (in the server terminal), indicating that the client is communicating with the server. If you check the second instance of your &PLATFORM_NAME; server, there will be no sip message INVITE. That is because the load balancer on which you sent the (Call) on port(2080) directs the traffic to the first server. 
+You will notice  sip log information like the one below (in the server terminal), indicating that the client is communicating with the server. If you check the second instance of your &PLATFORM_NAME; server, there will be no sip message INVITE. That is because the load balancer on which you made the HTTP request( on port 2080) to create the Call directs the traffic to the first server. 
 </para>
 <para>
-Notice also in the log below that the Route uses  127.0.0.1:5065. This is the sip port used by the load balancer and all clients need to configure their proxy to use port 5056 (clustered mode). If you are not using a load balancer, you will be using port 5080 to register your sip softphone clients.
+Notice also in the log below that the Route uses  127.0.0.1:5065. This is the sip port used by the node to send the SIP Message through the load balancer (the internal port used by the nodes in the cluster). All external facing clients need to configure their proxy to use port 5060 instead which is the external port of the Load Balancer (clustered mode). If you are not using a load balancer, you will be using port 5080 to register your sip softphone clients.
 </para>
 
 <screen>
@@ -238,11 +242,11 @@ We have been making sip calls using the sample click2call-distributable applicat
 </para>
 
 <screen>
-Instance One
-$TELSCALE_HOME/bin/run.sh -c all 
+#Instance One
+$TELSCALE_HOME/bin/run.sh -c node1 
 
-Instance Two
-$TELSCALE_HOME/bin/run.sh -c all -Djboss.service.binding.set=ports-02
+#Instance Two
+$TELSCALE_HOME/bin/run.sh -c node2 -Djboss.service.binding.set=ports-02 -Djboss.messaging.ServerPeerID=1
 
 </screen>
 
@@ -337,23 +341,27 @@ If you want to test load balancing with a softphone, it is possible using the sa
 First, you will need to start two instances of &PLATFORM_NAME; and then start the load balancer as follows:
 </para>
 
-<screen>
+<para>
 Start first server
-
-$TELSCALE_HOME/bin/run.sh -c all
-
+</para>
+<screen>
+$TELSCALE_HOME/bin/run.sh -c node1
+</screen>
+<para>
 Start second server
-
-$TELSCALE_HOME/bin/run.sh -c all -Djboss.service.binding.set=ports-02
-
+</para>
+<screen>
+$TELSCALE_HOME/bin/run.sh -c node2 -Djboss.service.binding.set=ports-02 -Djboss.messaging.ServerPeerID=1
+</screen>
+<para>
 Once both servers are started, start the load balancer located in the $TELSCALE_HOME/sip-balancer directory
-
-
+</para>
+<screen>
 java -jar sip-balancer-jar-with-dependencies.jar -mobicents-balancer-config=lb-configuration.properties
 </screen>
 
 <para>
-Once the servers are up and running, you will need to get a softphone and configure it to use the load balancer interface. In this example, we shall be using a linux softphone called linphone. You can donwload this onto your system or you can use another softphone you prefer. The section below will show you how to configure the phone to use port 5065. This is the load balancer sip interface that you need for your softphone proxy
+Once the servers are up and running, you will need to get a softphone and configure it to use the load balancer interface. In this example, we shall be using a linux softphone called linphone. You can donwload this onto your system or you can use another softphone you prefer. The section below will show you how to configure the phone to use port 5060. This is the load balancer sip interface that you need for your softphone proxy
 </para>
 
 <para>
@@ -371,7 +379,7 @@ On the Network Settings tab,
 On the Manage SIP Accounts tab, 
 	click the add button
 	Your SIP identity: = sip:linphone1@127.0.0.1:5061
-	SIP Proxy address: = sip 127.0.0.1:5065
+	SIP Proxy address: = sip 127.0.0.1:5060
 
 Leave the rest of the setting as default.
 	
@@ -385,7 +393,7 @@ On the Network Settings tab,
 On the Manage SIP Accounts tab, 
 	click the add button
 	Your SIP identity: = sip:linphone2@127.0.0.1:5062
-	SIP Proxy address: = sip 127.0.0.1:5065
+	SIP Proxy address: = sip 127.0.0.1:5060
 
 Leave the rest of the setting as default.
 
