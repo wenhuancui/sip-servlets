@@ -104,7 +104,7 @@
               <title>SIP Application Dispatcher Congestion Control Parameters Configuration</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-embjopr-config.png"/>
+                  <imagedata width="400" fileref="images/mss-embjopr-config.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -116,7 +116,7 @@
               <title>SIP Application Dispatcher Congestion Control Parameters Configuration</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-embjopr-control.png"/>
+                  <imagedata width="400" fileref="images/mss-embjopr-control.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -130,7 +130,7 @@
               <title>Selected Application Metrics</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-embjopr-metrics.png"/>
+                  <imagedata width="400" fileref="images/mss-embjopr-metrics.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -143,7 +143,7 @@
               <title>Specific Application Metrics</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-applications.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-applications.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -154,7 +154,7 @@
               <title>Specific Application Metrics Detail</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-embjopr-session-metrics.png"/>
+                  <imagedata width="400" fileref="images/mss-embjopr-session-metrics.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -173,7 +173,7 @@
               <title>Server Import for Monitoring</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-auto-disc.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-auto-disc.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -185,7 +185,7 @@
               <title>Selecting the Server for Monitoring</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-resources.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-resources.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -197,7 +197,7 @@
               <title>Servlet Container Monitoring</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-monitor.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-monitor.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -208,7 +208,7 @@
               <title>&PLATFORM_NAME; SIP Servlets Server Metrics</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-jboss-web.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-jboss-web.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -220,7 +220,7 @@
               <title>SIP Application Dispatcher Configuration</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-queue.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-queue.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -232,7 +232,7 @@
               <title>SIP Application Dispatcher Congestion Control Parameters Configuration</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-concurrency.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-concurrency.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -246,7 +246,7 @@
               <title>Selected Application Metrics</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-metrics.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-metrics.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -258,7 +258,7 @@
               <title>Specific Application Metrics</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-sip-apps.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-sip-apps.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -269,7 +269,7 @@
               <title>Specific Application Metrics Detail</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-applications.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-applications.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -281,7 +281,7 @@
               <title>Selecting Application Metrics</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-configure-metrics.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-configure-metrics.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -293,7 +293,7 @@
               <title>Selected Application Metrics Detail</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/mss-jopr-session-metrics.png"/>
+                  <imagedata width="400" fileref="images/mss-jopr-session-metrics.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -349,7 +349,7 @@
             <title/>
             <mediaobject>
               <imageobject>
-                <imagedata width="700" fileref="images/mss-jopr-lb-dashboard.png"/>
+                <imagedata width="400" fileref="images/mss-jopr-lb-dashboard.png"/>
               </imageobject>
             </mediaobject>
           </figure>
@@ -361,7 +361,7 @@
             <title/>
             <mediaobject>
               <imageobject>
-                <imagedata width="700" fileref="images/mss-jopr-lb-dash-added.png"/>
+                <imagedata width="400" fileref="images/mss-jopr-lb-dash-added.png"/>
               </imageobject>
             </mediaobject>
           </figure>

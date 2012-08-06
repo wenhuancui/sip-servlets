@@ -43,8 +43,14 @@
       <para>Extensions, including SUBSCRIBE/NOTIFY</para>
     </listitem>
   </itemizedlist>
+
+
+<!--
+
   <section id="ittsss-High-Availability-SIP_Servlets_Server_Load_Balancing_Clustering_and_Failover">
-    <title>High-Availability: SIP Servlets Server Load Balancing, Clustering and Failover</title>
+ 
+
+   <title>High-Availability: SIP Servlets Server Load Balancing, Clustering and Failover</title>
     <para>Telecommunications applications demand High-Availability (HA), fault tolerance, scalability and performance. Providing highly-available end-user applications that are tolerant of faults is commonly achieved through the use of clustering technologies.</para>
     <para>Clustering is a complex subject that is often used to collectively address a variety of techniques aimed at improving the high-availability and scalability of services and applications. Such techniques include distributed state replication, load balancing, and failover capabilities. The usage of any one of these techniques improves either reliability or performance, but at the expense of the other. It requires careful analysis of real-world scenarios to arrive at an architecture that represents the optimal balance of performance and reliability.</para>
     <para>Based on experience with production deployments and extensive feedback from the Open Source community, &PLATFORM_NAME; HA has undergone several iterations of refinement. In its current incarnation, the architecture can be described as a &quot;star topology&quot; with symmetric application servers and a smart, lightweight load-balancing element with built-in failover logic. The amount of state replication is kept to a minimum for maximum scalability with sufficiently-high reliability.</para>
@@ -92,5 +98,9 @@
       </varlistentry>
     </variablelist>
   </section>
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-Working_with_the_SIP_Servlets_Management_Console.xml"/>
+
+-->
+
+
+
 </chapter>

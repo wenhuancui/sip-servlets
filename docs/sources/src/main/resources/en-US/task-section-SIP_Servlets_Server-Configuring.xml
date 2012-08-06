@@ -3,11 +3,21 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "SIP_Servlets_Server_User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
-<!-- chapter id nickname: bsssc --><section id="bsssc-binary-SIP_Servlets_Server-Configuring">
-  <title>Configuring</title>
+<!-- chapter id nickname: bsssc -->
+
+<section id="bsssc-binary-SIP_Servlets_Server-Configuring">
+<title> Sip Connectors </title>
+ 
+<para>
+&PLATFORM_NAME; comes with default settings that are designed to get your system up and running without the need to know about all the detailed configurations. That said, there are situations in which you might like to fine-tune your setttings to adapt it to your needs. That is what the following section will help you achieve. You will get a better understand of SIP connectors and how to make them work for you.
+</para>
+
   <para>&nbsp;</para>
+
   <section id="bsssc-binary-SIP_Servlets_Server-Adding_SIP_Connectors">
-    <title>Configuring SIP Connectors</title>
+
+   <title>Configuring SIP Connectors</title>
+
     <para>SIP Connectors are added by adding a <emphasis>&lt;Connector&gt;</emphasis> element under the <emphasis>&lt;Service&gt;</emphasis> element in the container's <filename>server.xml</filename> configuration file.</para>
     <para>Three SIP Connectors are configured for SIP Servlets:</para>
     <itemizedlist>
@@ -324,5 +334,8 @@ ipAddress="127.0.0.1"
 	 	</programlisting>
  	</example>
 	<para>For this category to be used in MSS, you need to specify it in <filename>JBOSS_HOME/server/default/conf/mss-sip-stack.properties</filename>, add the <literal>gov.nist.javax.sip.LOG4J_LOGGER_NAME=gov.nist</literal> property, and set the <literal>gov.nist.javax.sip.TRACE_LEVEL=LOG4J</literal> property.</para>
+
   </section>
+
+
 </section>

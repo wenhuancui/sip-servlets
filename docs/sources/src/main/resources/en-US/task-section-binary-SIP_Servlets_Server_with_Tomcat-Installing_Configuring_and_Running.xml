@@ -24,7 +24,28 @@
     </listitem>
   </itemizedlist>
   <bridgehead id="bssswticar-Installing_the_Java_Development_Kit">Installing the Java Development Kit</bridgehead>
+
+
+
+<para>
+See the links below for detailed information about downloading,installing and configuring JDK. There is also a section about choosing between JRE, JDK, 32 Bits and 64 Bits configurations.
+</para>
+
+<para> <xref linkend="install-configure-JDK"/></para>
+<para> <xref linkend="JRE-or-JDK-32Bit-or-64Bit"/></para>
+<para> <xref linkend="Downloading-JDK"/></para>
+<para> <xref linkend="install-JDK-on-windows"/></para>
+<para> <xref linkend="setting-ENV-linux"/></para>
+<para> <xref linkend="setting-correct-java-version"/></para>
+<para> <xref linkend="setting-ENV-windows"/></para>
+<para> <xref linkend="install-JDK-linux-windows"/></para>
+
+<!--
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="Common_Content/Java_Development_Kit-Installing_Configuring_and_Running.xml"/>
+-->
+
+
+
   <section id="bssswticar-binary-SIP_Servlets_Server_with_Tomcat-PreInstall_Requirements_and_Prerequisites">
     <title>Pre-Install Requirements and Prerequisites</title>
     <variablelist id="bssswticar-binary-SIP_Servlets_Server_with_Tomcat-Hardware_Requirements">
@@ -150,7 +171,13 @@
         <para>If you are installing a &PLATFORM_NAME; server from source which uses the Tomcat servlet container, then you <emphasis>must</emphasis> set <envar>CATALINA_HOME</envar>.</para>
       </listitem>
     </itemizedlist>
-    <para>The following instructions detail how to set <envar>CATALINA_HOME</envar> on both Linux and Windows.</para>
+    <para>See the link below for detailed instruction on how to set <envar>CATALINA_HOME</envar> on both Linux and Windows.</para>
+
+<para> <xref linkend="setting-CATALINA_HOME-ENV-linux-windows"/></para>
+
+
+<!--
+
     <procedure id="bssswticar-Setting_the_CATALINA_HOME_Environment_Variable_on_Linux">
       <title>Setting the <envar>CATALINA_HOME</envar> Environment Variable on Linux</title>
       <step>
@@ -179,7 +206,16 @@
         <para>For information on how to set environment variables in Windows, refer to <ulink url="http://support.microsoft.com/kb/931715"/>.</para>
       </step>
     </procedure>
+
+
+-->
   </section>
+
+
+
+
+
+
   <section id="bssswticar-binary-SIP_Servlets_Server_with_Tomcat-Configuring">
     <title>Configuring</title>
     <para>Configuring &SHORT_PLATFORM_NAME; for Tomcat consists in setting the <envar>CATALINA_HOME</envar> environment variable and then, optionally, customizing your &SHORT_PLATFORM_NAME; for Tomcat container by adding SIP Connectors, configuring the application router, and configuring logging. See <xref linkend="bsssc-binary-SIP_Servlets_Server-Configuring"/> to learn what and how to configure &SHORT_PLATFORM_NAME; for Tomcat.</para>
@@ -260,17 +296,24 @@ Using JRE_HOME:       /etc/java-config-2/current-system-vm]]></screen>
       </step>
     </procedure>
   </section>
+
   <section id="bssswticar-binary-SIP_Servlets_Server-Using">
     <title>Using</title>
     <para>After starting the server successfully, you can access the default web applications included with &SHORT_PLATFORM_NAME; for Tomcat by opening the following URL in your browser: <ulink url="http://localhost:8080/"/>.</para>
     <para>You can also access the SIP Servlets Management Console by opening <ulink url="http://localhost:8080/sip-servlets-management/"/> in your browser.</para>
+    <para>To uninstall &SHORT_PLATFORM_NAME; for Tomcat, simply delete the directory you decompressed the binary distribution archive into.</para>
+
   </section>
+<!--
   <section id="bssswticar-binary-SIP_Servlets_Server_with_Tomcat-Testing">
     <title>Testing</title>
     <para>&nbsp;</para>
   </section>
-  <section id="bssswticar-binary-SIP_Servlets_Server_with_Tomcat-Uninstalling">
+
+ <section id="bssswticar-binary-SIP_Servlets_Server_with_Tomcat-Uninstalling">
     <title>Uninstalling</title>
     <para>To uninstall &SHORT_PLATFORM_NAME; for Tomcat, simply delete the directory you decompressed the binary distribution archive into.</para>
   </section>
+
+-->
 </section>

@@ -30,11 +30,14 @@
     deployer maintains subscriber information and this information is often
     private and valuable.</para>
   </section>
+<!--
   <section id="tsdar-Mobicents-Default-Application-Router">
     <title>&PLATFORM_NAME; Default Application Router</title>
     <para>&PLATFORM_NAME; SIP Servlets provides an implementation of the Default
     Application Router (DAR) as defined in the SIP Servlets 1.1 specification,
     Appendix C.</para>
+-->
+
     <section id="tsdar-DAR-Configuration-File">
       <title>The DAR Configuration File</title>
       <para>The Default Application Router (DAR) obtains its operational parameters from a 
@@ -307,7 +310,7 @@ Any questions regarding this, give me a yell and we can work through it.-->     
         Blocking, and finally to the callee.</para>
       </section>
     </section>
-  </section>
+
   <section id="tsdar-Limitations">
     <title>Limitations of the Default Application Router</title>
     <para>The DAR  is a minimalist Application Router implementation that is part of the reference implementation.  While it could be used instead of a production Application Router, it offers no

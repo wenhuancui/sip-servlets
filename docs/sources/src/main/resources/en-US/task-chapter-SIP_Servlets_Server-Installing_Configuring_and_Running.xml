@@ -11,6 +11,8 @@
 	<xi:include href="task-section-binary-SIP_Servlets_Server_with_Tomcat-Installing_Configuring_and_Running.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 	
 	<xi:include href="task-section-SIP_Servlets_Server-Configuring.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-	
+
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="concept-section-Working_with_the_SIP_Servlets_Management_Console.xml"/>	
+
 </chapter>
 
