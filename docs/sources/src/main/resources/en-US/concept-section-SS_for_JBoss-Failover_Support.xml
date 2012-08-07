@@ -7,7 +7,7 @@
 
 
 <section id="ssfjfs-SS_for_JBoss-Failover_Support">
-  <title>Detailed Information About &PLATFORM_NAME; SIP Servlets for JBoss: Transparent Failover</title>
+  <title>Transparent Failover in &PLATFORM_NAME; SIP Servlets for JBoss</title>
   <para>A &PLATFORM_NAME; SIP Servlets Server for JBoss cluster does not employ any standby nodes. 
   Typically, proxies and registrars must share the user location table by using a database cluster.</para>
   <para>The &PLATFORM_NAME; SIP Load Balancer, which is a SIP Call ID-aware load balancer, is used as the intermediary. 
