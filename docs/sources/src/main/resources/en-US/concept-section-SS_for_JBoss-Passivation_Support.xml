@@ -192,11 +192,11 @@ In both cases, sessions are passivated on a Least Recently Used (LRU) basis.
 		    </para>
 
 <screen>
-						  &lt;!--
-					       &lt;property name=&quot;useSessionPassivation&quot;&gt;false &lt;/property&gt;
-					       &lt;property name=&quot;passivationMaxIdleTime&quot;&gt;-1 &lt;/property&gt;
-					       &lt;property name=&quot;passivationMinIdleTime&quot;&gt;-1 &lt;/property&gt;
-					      --&gt;
+ &lt;!--
+ &lt;property name=&quot;useSessionPassivation&quot;&gt;false &lt;/property&gt;
+ &lt;property name=&quot;passivationMaxIdleTime&quot;&gt;-1 &lt;/property&gt;
+ &lt;property name=&quot;passivationMinIdleTime&quot;&gt;-1 &lt;/property&gt;
+ --&gt;
 
 </screen>
 
