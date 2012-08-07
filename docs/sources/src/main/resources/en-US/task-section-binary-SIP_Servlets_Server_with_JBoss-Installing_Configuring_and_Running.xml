@@ -56,17 +56,6 @@
 For detailed information about installing JDK, and setting environment variables, click on one of the links belows.
 
 <para> <xref linkend="install-configure-JDK"/></para>
-<para> <xref linkend="JRE-or-JDK-32Bit-or-64Bit"/></para>
-<para> <xref linkend="Downloading-JDK"/></para>
-<para> <xref linkend="install-JDK-on-windows"/></para>
-<para> <xref linkend="setting-ENV-linux"/></para>
-<para> <xref linkend="setting-correct-java-version"/></para>
-<para> <xref linkend="setting-ENV-windows"/></para>
-<para> <xref linkend="install-JDK-linux-windows"/></para>
-<para> <xref linkend="diff-Jboss-telscale-sip"/></para>
-<para> <xref linkend="setting-jboss-ENV-variable-windows-unix"/></para>
-
-
 
 </para>
 
