@@ -28,7 +28,7 @@ Is a technique used to ensure continuous service availability by having two or m
 
 <para> Load Balancing</para> 
 <para>
-This is ultimately about performance. All request from clients  are evenly distributed by the (load balancer) to multiple application servers that are running similar configurations.This type of setup often includes fault tolerance or failover. When one of the nodes, application server instance is not available, all traffic will be directed to the remaining servers. This ensures continuity albeit performance can degrade. Load balacing allows a single point of entry for multiple clients.
+This is ultimately about performance. All request from clients  are evenly distributed by the (load balancer) to multiple application servers that are running similar configurations.This type of setup often includes fault tolerance or failover. When one of the nodes, application server instance is not available, all traffic will be directed to the remaining servers. This ensures continuity albeit performance can degrade. Load balancing allows a single point of entry for multiple clients.
 </para>
 
 
@@ -50,20 +50,21 @@ It is important to note that clustering is also a way to provide failover and en
 
 <section>
 
-<title> How to start &SHORT_PLATFORM_NAME; in a Clustered mode</title>
+<title> How to start &PLATFORM_NAME; in a Clustered mode</title>
 
 <note>
+
    <para>SIP, and HTTP session state clustering is  pre-configured straight out of the binary distribution. However, to enable session replication in a node, you must tag it as <literal>&lt;distributable/&gt;</literal> both in the <filename>web.xml</filename> and <filename>sip.xml</filename> descriptors. This can be done only individually (per application).</para>
 </note>
 
 <para>
-There is a pre-packed sample click2call-distributable application that can be found in the $TELSCALE_HOME/server/all/deploy directory. This sample application will be used in this guide to test sip clustering. load balancing and failover. 
+There is a pre-packaged sample click2call-distributable application that can be found in the $TELSCALE_HOME/server/all/deploy directory. This sample application will be used in this guide to test sip clustering, load balancing and failover. 
 </para>
 <para>
-JBoss comes bundled with a <literal>all</literal> profile that, at the difference of the <literal>default</literal> profile, is pre configured for clustering. 
+There are two profiles worth noting when deploying applications in JBOSS. There is the (all) and the (default) profiles. In a clustered environment, you will deploy your applications within the (all) profile.
 </para>
 <para>
-You will need to start 2 instances of &PLATFORM_NAME; in order to work in clustered mode. For that, you need first to create 2 copies of the <literal>all</literal> profile, and name them, respectively, <literal>node1</literal> and <literal>node2</literal>. That must be done on two different shell terminals.
+You must start two instances of &PLATFORM_NAME; to work in clustered mode. For that, you need to create 2 copies of the (all) profile, and name them, respectively, <literal>node1</literal> and <literal>node2</literal>. That must be done on two different shell terminals.
 </para>
 
 <para>
@@ -100,19 +101,206 @@ Once the &PLATFORM_NAME; instances are started, you will see an output similar t
 
 
 <para>
-To run the server on Windows using the &quot;all&quot; Configuration Profile, open the Command Prompt, change your folder to the topmost folder of your &SHORT_PLATFORM_NAME; for JBoss installation, and issue the following command:
+To run the server on Windows using the &quot;all&quot; Configuration Profile, open the Command Prompt, change your folder to the top folder of your &SHORT_PLATFORM_NAME; for JBoss installation, and issue the following command:
 </para>
 
 <screen>run.bat -c all</screen>
 
 
 <para>
-At this stage, it will be a good idea to test the above configuration with a sample application. the <literal> click2call-distributable.war</literal> file can be found at $TELSCALE_HOME/server/all/deploy directory. The application is already in the deploy directory so it will be available for immediately use.
+At this stage, it will be a good idea to test the above configuration with a sample application. The <literal> click2call-distributable.war</literal> file can be found at $TELSCALE_HOME/server/all/deploy directory. The application is already in the deploy directory so it will be available for immediate use.
+</para>
+</section>
+
+
+
+<section>
+
+<title>Testing &PLATFORM_NAME; Clustering with Softphones </title>
+<para> 
+It is important to note that the two instances of &PLATFORM_NAME; that were started previously could be accessed directly without the need for a load balancer. 
+</para>
+
+
+<para>
+To access the two servers configured and started above, we shall be using a softphone called Linphone. You can use other softphones of your choice. Below is a sample configuration:
+</para>
+
+
+<note>
+<title>Multiple Linphones Instances </title>
+<para>
+On some systems, starting multiple instances of Linphone can be a little problematic. To work around this, make sure you start the two instance of Linphone before starting &PLATFORM_NAME;. Once they are started, you should have not problem registering the phones to the sample click2call-distributable application. 
+</para>
+</note>
+
+<screen>
+(configuring two instances of Linphone)
+
+start Linphone 
+go to the Options menu
+
+On the Network Settings tab, 
+	SIP (UDP) port to 5061. (leave the rest as default)
+On the Manage SIP Accounts tab, 
+	click the add button
+	Your SIP identity: = sip:linphone1@127.0.0.1:5080
+	SIP Proxy address: = sip 127.0.0.1:5080
+
+Leave the rest of the settings as default.
+	
+
+Configuring Linphone (on the second shell)
+
+go to the Options menu
+
+On the Network Settings tab, 
+	SIP (UDP) port to 5062. (leave the rest as default)
+On the Manage SIP Accounts tab, 
+	click the add button
+	Your SIP identity: = sip:linphone2@127.0.0.1:5080
+	SIP Proxy address: = sip 127.0.0.1:5080
+
+Leave the rest of the settings as default.
+
+
+</screen>
+
+
+
+
+<para>
+The Linphone will show a line at the bottom of the softphones telling you that the registration was successful. 
+
 </para>
 
 <para>
-Once you've started the two &PLATFORM_NAME; instances as mentioned above, you will need to also start load balancing. This is essential in order to understand failover. 
+            <figure>
+              <title>Successfully Registered Linphone</title>
+              <mediaobject>
+                <imageobject>
+                  <imagedata width="700" fileref="images/linphone-registration-port-5080.png"/>
+                </imageobject>
+              </mediaobject>
+            </figure>
+
 </para>
+
+
+
+
+<para>
+You can access click2call-distributable sample application on the first server instance  on port 8080 as follows
+</para>
+
+
+<screen>
+http://127.0.0.1:8080/click2call-distributable
+</screen>
+
+
+<para>
+You will see a screenshot similar to the one below with the registered softphones you configured previously. 
+</para>
+
+
+<para>
+            <figure>
+              <title>Click2Call-Distributable with Registered Sip Phones</title>
+              <mediaobject>
+                <imageobject>
+                  <imagedata width="700" fileref="images/click2call-distributable-registered-phones8080.png"/>
+                </imageobject>
+              </mediaobject>
+            </figure>
+
+</para>
+
+
+
+
+<para>
+If you check the terminal in node1 was started, you will see the logs (below) showing the registration details from the softphones. 
+</para>
+
+<screen>
+
+14:04:49,039 INFO  [InitialRequestDispatcher] Request event dispatched to DistributableClick2Call
+14:04:49,039 INFO  [SipStandardContext] We are now after the servlet invocation for request REGISTER sip:127.0.0.1 SIP/2.0
+Via: SIP/2.0/UDP 192.168.0.102:5061;rport=5061;branch=z9hG4bK42229077;received=127.0.0.1
+From: &lt;sip:linphone2@127.0.0.1:5080&gt;;tag=508105455
+To: &lt;sip:linphone2@127.0.0.1:5080&gt;
+Call-ID: 1688683896
+CSeq: 2 REGISTER
+Contact: &lt;sip:linphone2@127.0.0.1:5061;line=4bff31fbd0ed01c&gt;
+Max-Forwards: 70
+User-Agent: Linphone/3.5.2 (eXosip2/3.6.0)
+Expires: 3600
+Content-Length: 0
+
+
+</screen>
+
+
+
+<para>
+You can make calls directly through the web browser by clicking on the (Call) link in the click2call-distributable application. The Linphones you configured will ring and you can either answer of deny the calls.
+</para>
+
+<para>
+When you click to make a call through the http://127.0.0.1:8080/click2call-distributable url, you will also notice that the terminal in which the first cluster server instance was started (node1) will show logs that can be useful for troubleshooting.  The sample logs below show that a call is in progress. That is when you make a call with the click2call-distributable application and answer it using the Linphone interface.
+</para>
+
+<screen>
+14:15:03,802 INFO  [SipStandardContext] We are now after the servlet invocation for request SIP/2.0 200 OK
+Via: SIP/2.0/UDP 127.0.0.1:5080;branch=z9hG4bK40f60dfb-5220-41e3-86d2-e1b248157003_6f97354c_119997208344006
+Record-Route: &lt;sip:127.0.0.1:5060;transport=udp;lr;node_host=127.0.0.1;node_port=5080;version=0&gt;
+Record-Route: &lt;sip:127.0.0.1:5065;transport=udp;lr;node_host=127.0.0.1;node_port=5080;version=0&gt;
+From: &lt;sip:linphone@127.0.0.1:5062;line=98e40e810d02937&gt;;tag=05747926_6f97354c_40f60dfb-5220-41e3-86d2-e1b248157003
+To: &lt;sip:linphone2@127.0.0.1:5061;line=ef0ab93f231ac1c&gt;;tag=1571541555
+Call-ID: 588c954c619607c3eb2d27de473a160d@127.0.0.1
+CSeq: 1 INVITE
+Contact: &lt;sip:linphone2@127.0.0.1:5061&gt;
+Content-Type: application/sdp
+User-Agent: Linphone/3.5.2 (eXosip2/3.6.0)
+Content-Length: 370
+
+v=0
+o=linphone2 2332 2332 IN IP4 192.168.0.102
+s=Talk
+c=IN IP4 192.168.0.102
+t=0 0
+m=audio 7078 RTP/AVP 112 111 110 97 96 3 0 8 101
+a=rtpmap:112 speex/32000
+a=fmtp:112 vbr=on
+a=rtpmap:111 speex/16000
+a=fmtp:111 vbr=on
+a=rtpmap:110 speex/8000
+a=fmtp:110 vbr=on
+a=rtpmap:97 GSM/22050
+a=rtpmap:96 GSM/11025
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-11
+
+</screen>
+
+
+<para>
+
+The configuration used above for the SIP softphones  can also be used for the second server instance started on port 8280 (offset). It can be accessed by using the click2call-distributable application as follows:
+</para>
+
+<screen>
+http://127.0.0.1:8280/click2call-distributable
+</screen>
+
+
+
+<para>
+
+From the sample test above, it is easy to see how you can make calls by accessing individuals servers configured within a cluster partition.  However, in a production environment, with hundreds of clients making simultaneous calls, it will not be practical to manually shift from one server to another. That is why most clustered configuration come with a load balancer that can be used to transparently failover in the case of a server downtime. The load balancer is also designed to improve performance by using an intelligent mechanism to evenly distribute sip calls within a given clustered partition.
+</para>
+
 
 
 </section>
@@ -121,9 +309,9 @@ Once you've started the two &PLATFORM_NAME; instances as mentioned above, you wi
 
 <section>
 
-<title>Configuring Load Balancing</title>
+<title>Starting the Load Balancer </title>
 <para>
-The best way to quickly get started with load balancing is by using the default configuration. The SIP load-balancer is set to the loopback ip address 127.0.0.1 . That will be used to test the clic2call-distributable.war sample application mentioned previously.
+The best way to quickly get started with load balancing is by using the default configuration (detailed information can be obtained further down). The SIP load-balancer is set to the loopback ip address 127.0.0.1 . This is what will be used to test the click2call-distributable.war sample application mentioned previously.
 </para>
 
 <para>
@@ -150,241 +338,32 @@ You should see a lot of system data scrolling on the screen. The final part of t
 
 
 <para>
-You will see that the load-balancer is listening on port 2080. You can now access the 2  &PLATFORM_NAME; instances you started earlier through a single ip address as follows:
+You can see that the load-balancer is listening on port 2080 from the startup log. You can now access the two  &PLATFORM_NAME; clustered server instances you started earlier. This time around, through a single ip address. First, you must configure two Softphones to perform the test.
+</para>
+
+
+
+<para>
+You can configure two instances of Linphone as follows:
 </para>
 
 <screen>
-http://127.0.0.1:2080/click2call-distributable/
-</screen>
+(Configuring two instances of Linphone)
 
-
-
-</section>
-
-<para>
-This will show a screenshot like the one below. This will be used to make a test sip call. The sample application is very basic but should help you understand how to setup sip clustering for load balancing and failover.
-</para>
-
-<para>
-            <figure>
-              <title>Click2Call-Distributable Sample Application</title>
-              <mediaobject>
-                <imageobject>
-                  <imagedata width="700" fileref="images/Clustering-click2call-sample.png"/>
-                </imageobject>
-              </mediaobject>
-            </figure>
-
-</para>
-
-
-<para>
-In the above window, you can make a call by pressing the (Call) button.
-
-</para>
-
-<para>
-You will notice  sip log information like the one below (in the server terminal), indicating that the client is communicating with the server. If you check the second instance of your &PLATFORM_NAME; server, there will be no sip message INVITE. That is because the load balancer on which you made the HTTP request( on port 2080) to create the Call directs the traffic to the first server. 
-</para>
-<para>
-Notice also in the log below that the Route uses  127.0.0.1:5065. This is the sip port used by the node to send the SIP Message through the load balancer (the internal port used by the nodes in the cluster). All external facing clients need to configure their proxy to use port 5060 instead which is the external port of the Load Balancer (clustered mode). If you are not using a load balancer, you will be using port 5080 to register your sip softphone clients.
-</para>
-
-<screen>
-&lt;message&gt;
-
-12:59:46,558 INFO  [SIPTransactionStack] &lt;message&gt;
-from=&quot;127.0.0.1:5080&quot; 
-to=&quot;127.0.0.1:5065&quot; 
-time=&quot;1343588386557&quot;
-isSender=&quot;true&quot; 
-transactionId=&quot;z9hg4bke595faad-ed24-4767-bff5-4a9675853e33_6f97354c_48676194243131&quot; 
-callId=&quot;1fd39e9ac9895882a6a8aa1677398040@127.0.0.1&quot; 
-firstLine=&quot;INVITE sip:to@127.0.0.1:5050 SIP/2.0&quot; 
-&gt;
-&lt;![CDATA[INVITE sip:to@127.0.0.1:5050 SIP/2.0
-Call-ID: 1fd39e9ac9895882a6a8aa1677398040@127.0.0.1
-CSeq: 1 INVITE
-From: &lt;sip:from@127.0.0.1:5060&gt;;tag=42345569_6f97354c_e595faad-ed24-4767-bff5-4a9675853e33
-To: &lt;sip:to@127.0.0.1:5050&gt;
-Max-Forwards: 70
-Contact: &lt;sip:from@127.0.0.1:5080;transport=udp&gt;
-Via: SIP/2.0/UDP 127.0.0.1:5080;branch=z9hG4bKe595faad-ed24-4767-bff5-4a9675853e33_6f97354c_48676194243131
-Route: &lt;sip:127.0.0.1:5065;lr;transport=udp;node_host=127.0.0.1;node_port=5080&gt;
-Content-Length: 0
-
-
-</screen>
-
-
-<para>
-The call you made through the application will eventually timeout and you will see another set of information log on the terminal that is worth noting. The session ID in the log is the same as the one you see in the click2call-distributable sample application. This is for debug purposes. It shows that the call is coming from the sample application and it avoids ambiguity when troubleshooting.  The distributed configuration of the sample application is used for session replication. This is important as it helps maintain similar session information in case a server failovers to another. 
-</para>
-
-<screen>
-13:00:11,120 INFO  [SipSessionImpl] Invalidating the sip session 
-(42345569_6f97354c_e595faad-ed24-4767-bff5-4a9675853e33:
-1fd39e9ac9895882a6a8aa1677398040@127.0.0.1:e595faad-ed24-4767-bff5-4a9675853e33:DistributableClick2Call)
-13:00:11,122 INFO  [SipStandardContext] We are now after the servlet invocation, We replicate no matter what
-</screen>
-
-<para>
-This will not be a true load balancer if all calls were to go through the first &PLATFORM_NAME; server. If you wait a while and make another call through the click2call-distributable sample application, you will notice that the second server will start to receive calls. This is what you should expect from a functioning load balancer. This will ultimately improve performance as load is evenly distributed through all servers within the cluster partition. 
-
-</para>
-
-<section> 
-
-<title>Testing Failover within &PLATFORM_NAME; </title>
-
-<para> 
-We have been making sip calls using the sample click2call-distributable application and using the load balancer interface 127.0.0.1:2080. At this stage, it is important to note that the two instances of &PLATFORM_NAME; that were started previously could have been accessed directly without the need for a load balancer. Below is how the two instances were started:
-</para>
-
-<screen>
-#Instance One
-$TELSCALE_HOME/bin/run.sh -c node1 
-
-#Instance Two
-$TELSCALE_HOME/bin/run.sh -c node2 -Djboss.service.binding.set=ports-02 -Djboss.messaging.ServerPeerID=1
-
-</screen>
-
-<para>
-You can access click2call-distributable sample application on the first server instance  on port 8080 as follows
-</para>
-
-<screen>
-http://127.0.0.1:8080/click2call-distributable
-</screen>
-
-
-<para>
-You can access click2call-distributable sample application on the second server instance  on port 8280 (offset) as follows
-</para>
-
-<screen>
-http://127.0.0.1:8280/click2call-distributable
-</screen>
-
-<para>
-If you were to make calls directly using any of these server instances, the calls will go through as expected. However, if the server becomes unvailable, you will have to manually configure your client to use the other server. In this case, you will configure your browser to point to the other server. That is possible if you are aware of another server. In a production environment, with hundreds of clients making simultaneous calls, it will not be practical to manually shift all the clients to another server. That is why most clustered configuration come with a load balancer. 
-</para>
-
-<para>
-In order to test sip failover, you need to set your browser to the load balancer sip port. You can use the sample click2call-distributable application. 
-</para>
-
-
-<screen>
-http://127.0.0.1:2080/click2call-distributable
-</screen>
-
-<para>
-Make a call and check the shell terminal (logs) to see which of the instances you started earlier is receiving the sip connection (INVITE).  Once you determine the instance, stop the server by typing:
-</para>
-
-<screen>
-CTRL-C
-
-</screen>
-<para>
-The terminate command will generate the following output on the second server terminal:
-</para>
-
-
-
-<screen>
-
-INFO  [DefaultPartition] New cluster view for partition DefaultPartition (id: 10, delta: -1) : [127.0.0.1:1299]
-19:54:32,786 INFO  [DefaultPartition] I am (127.0.0.1:1299) received membershipChanged event:
-19:54:32,787 INFO  [DefaultPartition] Dead members: 1 ([127.0.0.1:1099])
-19:54:32,787 INFO  [DefaultPartition] New Members : 0 ([])
-19:54:32,787 INFO  [DefaultPartition] All Members : 1 ([127.0.0.1:1299])
-19:54:32,898 INFO  [RPCManagerImpl] Received new cluster view: [127.0.0.1:36818|10] [127.0.0.1:36818]
-19:54:32,906 INFO  [JBossCacheSipManager] SipApplicationSession cc6b7739-f72e-4f32-b5f8-59a2ad90c294:DistributableClick2Call has just been recreated and concurrency control is set to SipApplicationSession, colocating the timers here to ensure no concurrent access across the cluster
-
-</screen>
-
-<para>
-In the output above, you see that the cluster instance (member) that was terminated is identified. However, because the application is running behind a load balancer all calls are failed over to the remaining server. You will still be able to make calls through the (http://127.0.0.1:8280/click2call-distributable), which is the load balancer interface. Once you restart the terminated server. It will be inserted back into the cluster partition and the load balancer will begin to distribute calls between all member servers in the cluster. 
-</para>
-
-
-
-</section>
-
-
-<section>
-<title>Testing Load Balancing with a Softphone</title>
-
-<para>
-If you want to test load balancing with a softphone, it is possible using the sample click2call application that is provided with &SHORT_PLATFORM_NAME;. This is different from the click2call-distributable used previously. Here is a screen shot of what the application looks like when you access it through your web browser. This program is not developped to use replication as you would expect in a clustered setup. However, it will help you quickly get started when you need to configure a softphone to use load balancing.  
-</para>
-
-
-
-
-<para>
-            <figure>
-              <title>Load balancing click2call test</title>
-              <mediaobject>
-                <imageobject>
-                  <imagedata width="700" fileref="images/Load-balancing-click2call-test.png"/>
-                </imageobject>
-              </mediaobject>
-            </figure>
-
-</para>
-
-<para>
-First, you will need to start two instances of &PLATFORM_NAME; and then start the load balancer as follows:
-</para>
-
-<para>
-Start first server
-</para>
-<screen>
-$TELSCALE_HOME/bin/run.sh -c node1
-</screen>
-<para>
-Start second server
-</para>
-<screen>
-$TELSCALE_HOME/bin/run.sh -c node2 -Djboss.service.binding.set=ports-02 -Djboss.messaging.ServerPeerID=1
-</screen>
-<para>
-Once both servers are started, start the load balancer located in the $TELSCALE_HOME/sip-balancer directory
-</para>
-<screen>
-java -jar sip-balancer-jar-with-dependencies.jar -mobicents-balancer-config=lb-configuration.properties
-</screen>
-
-<para>
-Once the servers are up and running, you will need to get a softphone and configure it to use the load balancer interface. In this example, we shall be using a linux softphone called linphone. You can donwload this onto your system or you can use another softphone you prefer. The section below will show you how to configure the phone to use port 5060. This is the load balancer sip interface that you need for your softphone proxy
-</para>
-
-<para>
-Configure linphone as follows:
-</para>
-
-<screen>
-(You will need to configure two intances of linphone)
-
-start linphone 
+start Linphone 
 go to the Options menu
 
 On the Network Settings tab, 
 	SIP (UDP) port to 5061. (leave the rest as default)
 On the Manage SIP Accounts tab, 
 	click the add button
-	Your SIP identity: = sip:linphone1@127.0.0.1:5061
-	SIP Proxy address: = sip 127.0.0.1:5060
+	Your SIP identity: = sip:linphone@127.0.0.1:5065
+	SIP Proxy address: = sip 127.0.0.1:5065
 
-Leave the rest of the setting as default.
+Leave the rest of the settings as default.
 	
 
-start linphone (on another shell)
+start Linphone (on second shell terminal)
 
 go to the Options menu
 
@@ -392,28 +371,36 @@ On the Network Settings tab,
 	SIP (UDP) port to 5062. (leave the rest as default)
 On the Manage SIP Accounts tab, 
 	click the add button
-	Your SIP identity: = sip:linphone2@127.0.0.1:5062
-	SIP Proxy address: = sip 127.0.0.1:5060
+	Your SIP identity: = sip:linphone2@127.0.0.1:5065
+	SIP Proxy address: = sip 127.0.0.1:5065
 
-Leave the rest of the setting as default.
+Leave the rest of the settings as default.
 
 
 </screen>
 
 
-
 <para>
-The screenshot below shows that the linphone softphone is correctly configured and it has registered with the load balancer interface.
+Once the Linphone instances are configured, go to the url below:
 </para>
 
+
+<screen>
+http://127.0.0.1:2080/click2call-distributable/
+</screen>
+
+
+<para>
+You will see that the registered SIP phones are listed by the sample click2call-distributable application.
+</para>
 
 
 <para>
             <figure>
-              <title>Load balancing linphone configuration</title>
+              <title>Click2Call-Distributable with Registered Sip Phones</title>
               <mediaobject>
                 <imageobject>
-                  <imagedata width="700" fileref="images/Load-balancer-linphone-config.png"/>
+                  <imagedata width="700" fileref="images/click2call-distributable-registered-clients.png"/>
                 </imageobject>
               </mediaobject>
             </figure>
@@ -421,51 +408,192 @@ The screenshot below shows that the linphone softphone is correctly configured a
 </para>
 
 <para>
-When the two linphone softphone instances are registered with the load balancer server, they will become visible in the  click2call sip sample application in your browser at this address http://127.0.0.1:2080/click2call. Here is a sccreenshot of what you should see.
-</para>
-
-
-
-<para>
-            <figure>
-              <title>Load balancing register phones</title>
-              <mediaobject>
-                <imageobject>
-                  <imagedata width="700" fileref="images/Load-balancer-click2call-registered.png"/>
-                </imageobject>
-              </mediaobject>
-            </figure>
-
+In order to see the load balancer distribute the load between all the member servers within the clustered environment. Make a call through the the sample click2call-application. Next, check the shell terminals to see which one received the call. End the call and make another. You will notice that the load balancer will try to alternate the load amongst the servers available. That is what will ultimately improve performance. 
 </para>
 
 <para>
-You can make call the click2call web browser interface. The softphone being called will ring and you can answer the call. If you check the server terminals, you should see that one of the server is receiving the call you have just made. The logs will give you information about the calls and its origin. If you wait a while and make another call from the click2call application, the load balancer will send the call to the other server. The calls are evenly disbributed between all the servers in the cluster.
-</para>
-
-
-
-<para>
-            <figure>
-              <title>Load balancer linphone incoming calls</title>
-              <mediaobject>
-                <imageobject>
-                  <imagedata width="700" fileref="images/Load-balancing-linphone-calls.png"/>
-                </imageobject>
-              </mediaobject>
-            </figure>
-
-</para>
-
-<para>
-If you were to terminate one of the servers by pressing CTRL-C, on the terminal, the http://127.0.0.1:2080/click2call will still be availble and you will still be able to make calls because the configuring is using a single point of entry (load balancer). As long as there is a server in the cluster partition, the load balancer will know where to direct the calls. This is also a form of failover and high availabitliy.
-</para>
-
-<para>
-In a production environment, the click2call sample application will not be sufficient during failover. It is not design to smoothly transition calls from a server that is shutting down to an active server in the cluster partition. That said, it is a good example for you to get an overview of how you can use high availability, failover and load balancing within the &SPLATFORM_NAME; framework.
+Apart from the performance gain of using a load balancer as provided within the &PLATFORM_NAME; framework, there is also high availability through the failover mechanism. If a server becomes unavailable, sip clients will still be able to make calls as long as there is an available server in the cluster partition.  Here is how to test the failover with the sample sip application.
 </para>
 
 
 </section>
+
+
+
+<section> 
+
+<title>Testing Failover within &PLATFORM_NAME; </title>
+
+<para> 
+In order to test failover with the load balancer that was started above, go to the url http://127.0.0.1:2080/click2call-distributable/
+</para>
+
+<para>
+Make a call using the web interface of the click2call-distributable application. When the phone rings, answer the call. The Linphone connected call interface will look similar to the one below:
+</para>
+
+<para>
+            <figure>
+              <title>Click2Call-Distributable Linphone Connected Call</title>
+              <mediaobject>
+                <imageobject>
+                  <imagedata width="700" fileref="images/linphone-connected-call.png"/>
+                </imageobject>
+              </mediaobject>
+            </figure>
+
+</para>
+
+
+
+<para>
+Check the terminals (node1 or node2) in which you started the &PLATFORM_NAME; cluster. Because you are using the 2080 load balancing port, the calls will be distributed evenly between all servers in the clustered partition. In the example of the two servers in the test environment, the terminal with logs similar to the one below is the active server currently processing the call you made through the click2call-distributable application. The logs indicate that there is an active connected call in progress.
+</para>
+
+
+<screen>
+09:50:25,896 INFO  [SipStandardContext] We are now after the servlet invocation for request SIP/2.0 200 OK
+Via: SIP/2.0/UDP 127.0.0.1:5280;branch=z9hG4bKa42185e4-5953-49e9-9649-c20cbb4aca7f_6f97354c_145967177895165
+Record-Route: &lt;sip:127.0.0.1:5060;transport=udp;lr;node_host=127.0.0.1;node_port=5280;version=0&gt;
+Record-Route: &lt;sip:127.0.0.1:5065;transport=udp;lr;node_host=127.0.0.1;node_port=5280;version=0&gt;
+From: &lt;sip:linphone2@127.0.0.1:5062;line=f2b6754440c7f43&gt;;tag=70431032_6f97354c_a42185e4-5953-49e9-9649-c20cbb4aca7f
+To: &lt;sip:linphone@127.0.0.1:5061;line=7698b72dc103217&gt;;tag=1425501422
+Call-ID: f033c568db45e417e52bc705e5da9e0d@127.0.0.1
+CSeq: 1 INVITE
+Contact: &lt;sip:linphone@127.0.0.1:5061&gt;
+Content-Type: application/sdp
+User-Agent: Linphone/3.5.2 (eXosip2/3.6.0)
+Content-Length: 369
+
+v=0
+o=linphone 3733 3733 IN IP4 192.168.0.102
+s=Talk
+c=IN IP4 192.168.0.102
+t=0 0
+m=audio 7078 RTP/AVP 112 111 110 97 96 3 0 8 101
+a=rtpmap:112 speex/32000
+a=fmtp:112 vbr=on
+a=rtpmap:111 speex/16000
+a=fmtp:111 vbr=on
+a=rtpmap:110 speex/8000
+a=fmtp:110 vbr=on
+a=rtpmap:97 GSM/22050
+a=rtpmap:96 GSM/11025
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-11
+
+</screen>
+
+<para>
+The active call that is going through the server needs to be failed over to the other server. In the active server terminal, type the following command to stop the server.
+</para>
+
+<screen>
+CTRL-C
+</screen>
+
+
+
+<para>
+The load balancer terminal interface will show that a server within the clustered partition has been shutdown as indicated in the log below.
+</para>
+
+<screen>
+
+76085740 (RMI TCP Connection(1783)-192.168.0.102) INFO [NodeRegisterImpl]
+ NodeExpirationTimerTask Run NSync[SIPNode hostname[localhost] ip[127.0.0.1] 
+httpPort[8080] tcpPort[5080] udpPort[5080] version[0] ] 
+forcibly removed due to a clean shutdown of a node. 
+Numbers of nodes present in the balancer : 1
+
+</screen>
+
+
+<para>
+The remaining server in the clustered partition will show a log indicating the current status of member servers as in the log below.
+</para>
+
+<screen>
+...
+10:33:26,779 INFO  [DefaultPartition] I am (127.0.0.1:1299) received membershipChanged event:
+10:33:26,780 INFO  [DefaultPartition] Dead members: 1 ([127.0.0.1:1099])
+10:33:26,780 INFO  [DefaultPartition] New Members : 0 ([])
+10:33:26,780 INFO  [DefaultPartition] All Members : 1 ([127.0.0.1:1299])
+10:33:26,959 INFO  [RPCManagerImpl] Received new cluster view: [127.0.0.1:51075|2] [127.0.0.1:51075]
+10:33:27,035 INFO  [JBossCacheSipManager] SipApplicationSession 69ff81cd-6450-4280-ba2e-ed6e81ea7caa:DistributableClick2Call has just been recreated and concurrency control is set to SipApplicationSession, colocating the timers here to ensure no concurrent access across the cluster
+
+</screen>
+
+<para>
+At this stage, you can pause the call from the Linphone interface. This will generate the log below showing that the load balancer failed over the call from the server that went down to the remaining active server in the cluster partition. Note that the subject says (Call on hold). This is now the active server and will continue to handle the future calls.
+</para>
+
+
+<screen>
+&lt;![CDATA[INVITE sip:linphone2@127.0.0.1:5080;transport=udp SIP/2.0
+Via: SIP/2.0/UDP 127.0.0.1:5280;branch=z9hG4bK-343539-9ad7b74aa56f73628695519d041304fa
+Via: SIP/2.0/UDP 127.0.0.1:5065;branch=z9hG4bK619108347472dazsd_0
+Via: SIP/2.0/UDP 127.0.0.1:5060;branch=z9hG4bK619108347472da_0
+Via: SIP/2.0/UDP 192.168.0.102:5061;rport=5061;branch=z9hG4bK619108347;received=127.0.0.1
+From: &lt;sip:linphone@127.0.0.1:5061;line=1a03eb10ed62b4e&gt;;tag=1386911572
+To: &lt;sip:linphone2@127.0.0.1:5062;line=774b0ae001385f7&gt;;tag=63626235_6f97354c_69ff81cd-6450-4280-ba2e-ed6e81ea7caa
+Call-ID: 472dac394fa3da9fbd69a809a5709122@127.0.0.1
+CSeq: 2 INVITE
+Contact: &lt;sip:linphone@192.168.0.102:5061&gt;
+Content-Type: application/sdp
+Allow: INVITE,ACK,CANCEL,OPTIONS,BYE,REFER,NOTIFY,MESSAGE,SUBSCRIBE,INFO
+Max-Forwards: 68
+User-Agent: Linphone/3.5.2 (eXosip2/3.6.0)
+Subject: Call on hold
+Content-Length: 375
+
+</screen>
+
+
+
+
+
+</section>
+
+
+
+
+    <section id="sslb-binary-SIP_Load_Balancer-Stopping">
+      <title>Stopping the Load Balancer and the Cluster Instances</title>
+      <para>Assuming that you started the &PLATFORM_NAME; cluster and load balancer as a foreground process in a Linux terminal, the easiest way to stop it is by pressing the <keycombo action="simul">
+          <keycap>Ctrl</keycap>
+          <keycap>C</keycap>
+        </keycombo> key combination in the same terminal in which you started it.</para>
+      <para>For the load balancer, you will see an output similar to the following:</para>
+<screen>
+
+
+^C174891540 (Thread-146) INFO [BalancerRunner] Stopping the sip forwarder
+174891579 (Thread-146) INFO [SIPBalancerForwarder] Removing the following Listening Point gov.nist.javax.sip.ListeningPointImpl@1a0d6c9
+174891819 (Thread-146) INFO [SIPBalancerForwarder] Removing the following Listening Point gov.nist.javax.sip.ListeningPointImpl@1d6768f
+174892535 (NioSelector-TCP-127.0.0.1/5060) INFO [NioTcpMessageProcessor] Selector is closed
+174892563 (Thread-146) INFO [SIPBalancerForwarder] Removing the sip provider
+174892563 (Thread-146) INFO [SIPBalancerForwarder] Removing the following Listening Point gov.nist.javax.sip.ListeningPointImpl@1976a55
+174892564 (Thread-146) INFO [SIPBalancerForwarder] Removing the following Listening Point gov.nist.javax.sip.ListeningPointImpl@11ab4ec
+
+... (truncated)...
+174894759 (Thread-146) INFO [SIPBalancerForwarder] Sip forwarder SIP stack stopped
+174894759 (Thread-146) INFO [BalancerRunner] Stopping the http forwarder
+174895913 (Thread-146) INFO [BalancerRunner] Unregistering the node registry
+174896241 (Thread-146) INFO [BalancerRunner] Stopping the node registry
+174896244 (Thread-146) INFO [NodeRegisterImpl] Stopping node registry...
+174896246 (Thread-146) INFO [NodeRegisterImpl] Node Expiration Task cancelled true
+174896249 (Thread-146) INFO [NodeRegisterImpl] Node registry stopped.
+
+</screen>
+
+<para>
+The overview above about high availability, clustering, load balancing and failover is meant as a quick guide to help you understand how you can implement these technology in your production environment. The sample click2-call-distributable application is designed to help you understand how you can use SIP softphones to simulate calls in a controlled setting. For detailed setting that will be necessary in a production environment; for fine-tuning your configuration, the sections below will provide more information.
+</para>
+
+
+    </section>
+
 
 
 </section>

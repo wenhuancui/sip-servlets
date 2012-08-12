@@ -4,10 +4,9 @@
 %BOOK_ENTITIES;
 ]>
 
-<section>
 
 <section id="sslb-SIP_Load_Balancing_Basics">
-    <title>SIP Load Balancing Basics</title>
+    <title>SIP Load Balancing: Detailed Information</title>
 
     <para>All User Agents send SIP messages, such as <literal>INVITE</literal> and <literal>MESSAGE</literal>, to the same SIP URI (the IP address and port number of the SIP Load Balancer on the WAN). The Load Balancer then parses, alters, and forwards those messages to an available node in the cluster. If the message was sent as a part of an existing SIP session, it will be forwarded to the cluster node which processed that User Agent's original transaction request.
     </para>
@@ -17,13 +16,13 @@
     </para>
     <para>The SIP Load Balancer is also able to failover requests mid-call from unavailable nodes to available ones, thus increasing the reliability of the SIP service or application. The Load Balancer increases throughput and reliability by dynamically provisioning SIP service requests and responses across responsive nodes in a cluster. This enables SIP applications to meet the real-time demand for SIP services.
     </para>
-  </section>
+
 
 
 <section id="sslb-MSS_Load_Balancer">
-<!--
-<title> Detailed Load-balancer Overview </title>
--->
+
+<title>Load-balancer within a Network Topology </title>
+
 
 <para>The SIP Load Balancer is used to balance the load of SIP service requests and responses between nodes in a SIP Servlets Server cluster. Both &SHORT_PLATFORM_NAME; for JBoss and &SHORT_PLATFORM_NAME; for Tomcat servers can be used in conjunction with the SIP Load Balancer to increase the performance and availability of SIP services and applications. </para>
   <para>In terms of functionality, the SIP Load Balancer is a simple stateless proxy server that intelligently forwards SIP session requests and responses between User Agents (UAs) on a Wide Area Network (WAN), and SIP Servlets Server nodes, which are almost always located on a Local Area Network (LAN). All SIP requests and responses pass through the SIP Load Balancer.</para>
@@ -41,9 +40,42 @@
 </section>
 
 
+ <section>
+    <title>SIP Message Flow with Failover and Load Balancing</title>
+    <para>The SIP Load Balancer appends itself to the <literal>Via</literal> header of each request, so that returned responses are sent to the SIP Balancer before they are sent to the originating endpoint.
+    </para>
+    <para>The Load Balancer also adds itself to the path of subsequent requests by adding Record-Route headers. It can subsequently handle mid-call failover by forwarding requests to a different node in the cluster if the node that originally handled the request fails or becomes unavailable. The SIP load balancer immediately fails over if it receives an unhealthy status, or irregular heartbeats from a node.
+    </para>
+    <para>In advanced configurations, it is possible to run more than one SIP Load Balancer. Simply edit the balancers connection string in your SIP Server - the list is separated with semi-colon. <!--Issue #822 Editor Comment - is there more information regarding how to enable this?--></para>
+    <para><xref linkend="figure-mss-Basic_IP_and_Port_Cluster_Configuration"/> describes a basic IP and Port Cluster Configuration. In the diagram, the SIP Load balancer is the server with the IP address of <literal>192.168.1.1</literal>.</para>
+    <figure id="figure-mss-Basic_IP_and_Port_Cluster_Configuration">
+      <title>Basic IP and Port Cluster Configuration</title>
+      <mediaobject id="sslb-mss-MSSSIPLoadBalancer-dia-ClusterIPsAndPorts">
+        <imageobject>
+          <imagedata width="532" align="center" fileref="images/mss-MSSSIPLoadBalancer-dia-ClusterIPsAndPorts.jpg" format="JPG"/>
+        </imageobject>
+      </mediaobject>
+    </figure>
+  </section>
+
+
+
+  <section id="sslb-SIP_Load_Balancer-Implementation">
+    <title>Implementation of the &PLATFORM_NAME; Load Balancer</title>
+    <para>Each individual &PLATFORM_NAME; SIP Server in the cluster is responsible for contacting the SIP load balancer and relaying its health status and regular &quot;heartbeats&quot;.  <!--Issue #822 Editor Comment - would it be worthwhile describing heartbeats in more detail here?  Can you link to another area in the guide which discusses heartbeats in more detail (to avoid duplicating information)?-->
+    </para>
+    <para>From these health status reports and heartbeats, the SIP Load Balancer creates and maintains a list of all available and healthy nodes in the cluster. The Load Balancer forwards SIP requests between these cluster nodes, providing that the provisioning algorithm reports that each node is healthy and is still sending heartbeats.
+    </para>
+    <para>If an abnormality is detected, the SIP Load Balancer removes the unhealthy or unresponsive node from the list of available nodes. In addition, mid-session and mid-call messages are failed over to a healthy node.
+    </para>
+    <para>The SIP Load Balancer first receives SIP requests from endpoints on a port that is specified in its Configuration Properties configuration file. The SIP Load Balancer, using a round-robin algorithm, then selects a node to which it forwards the SIP requests. The Load Balancer forwards all same-session requests to the first node selected to initiate the session, providing that the node is healthy and available.
+    </para>
+  </section>
+
+
 
   <section id="sslb-binary-SIP_Load_Balancer-Installing_Configuring_and_Running">
-    <title>SIP Load Balancer: Downloading, Installing, Configuring and Running</title>
+    <title> Understanding SIP Load Balancer: lb.properties configuration file</title>
     <para>&nbsp;</para>
 <!--
     <section id="sslb-binary-SIP_Load_Balancer-PreInstall_Requirements_and_Prerequisites">
@@ -89,7 +121,7 @@ Or something similar to that.  Do you agree?-->
 -->
  <varlistentry>
 
-	<term>Downloading</term>
+	<term>Downloading and Installing</term>
 
  </varlistentry>
 
@@ -124,9 +156,9 @@ Or something similar to that.  Do you agree?-->
  
 -->
 
- <varlistentry>
-<term>Installing </term>	
- </varlistentry>
+
+<para>Installing </para>	
+
 
      <para>The SIP load balancer executable JAR file can be extracted anywhere in the file system. It is recommended that the file is placed in the directory containing other JAR executables, so it can be easily located in the future.</para>
  
@@ -371,7 +403,7 @@ gov.nist.javax.sip.REENTRANT_LISTENER = true
         </step>
         <step>
           <title>Configure logging</title>
-          <para>The SIP load balancer uses <ulink url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/overview.html">Java Logging</ulink> as a logging mechanism. You can configure it through a property file and specify the property file to be used by using the following command <literal>-Djava.util.logging.config.file=./lb-logging.properties</literal>. Please refer to JDK logging for more informationon how to configure the Java logging.</para>
+          <para>The SIP load balancer uses <ulink url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/overview.html">Java Logging</ulink> as a logging mechanism. You can configure it through a property file and specify the property file to be used by using the following command <literal>-Djava.util.logging.config.file=./lb-logging.properties</literal>. Please refer to JDK logging for more information on how to configure the Java logging.</para>
         </step>
         <step>
           <title>Configure the <filename>server.xml</filename> configuration file</title>
@@ -396,10 +428,10 @@ gov.nist.javax.sip.REENTRANT_LISTENER = true
 			    <para>The <literal>org.mobicents.ha.javax.sip.BALANCERS</literal> property must be configured with the list of load balancer IP address and internal ports. As an example, suppose a single &THIS.PLATFORM; SIP Load Balancer is running with IP <literal>192.168.0.1</literal> and internal port <literal>5065</literal>, the property would be set with value <literal>192.168.0.1:5065</literal>. To specify multiple balancers use <literal>;</literal> as separator. If this property is used the balancers attribute located in server.xml should not be used as it is a replacement for it.</para>
 			</listitem>
 		    <listitem>
-    			<para>The <literal>org.mobicents.ha.javax.sip.LoadBalancerHeartBeatingServiceClassName</literal> property is optional, it defines the class name of the HeartBeating service implementation, currently the only one available is <literal>org.mobicents.ha.javax.sip.LoadBalancerHeartBeatingServiceImpl</literal></para>
+    			<para>The <literal>org.mobicents.ha.javax.sip.LoadBalancerHeartBeatingServiceClassName</literal> property is optional, it defines the class name of the HeartBeat service implementation, currently the only one available is <literal>org.mobicents.ha.javax.sip.LoadBalancerHeartBeatingServiceImpl</literal></para>
    			</listitem>   
 			<listitem>
-			    <para>The <literal>org.mobicents.ha.javax.sip.LoadBalancerElector</literal> property is optional, it defines the class of the load balancer elector from JAIN SIP HA Stack. The elector is used to define which load balancer will receive outgoing requests, which are out of dialog or in dialog with null state. Currently only one elector implementation is available, <literal>org.mobicents.ha.javax.sip.RoundRobinLoadBalancerElector</literal>, which, as the class name says, uses round robin algorythm to select the balancer.</para>
+			    <para>The <literal>org.mobicents.ha.javax.sip.LoadBalancerElector</literal> property is optional, it defines the class of the load balancer elector from JAIN SIP HA Stack. The elector is used to define which load balancer will receive outgoing requests, which are out of dialog or in dialog with null state. Currently only one elector implementation is available, <literal>org.mobicents.ha.javax.sip.RoundRobinLoadBalancerElector</literal>, which, as the class name says, uses round robin algorithm to select the balancer.</para>
 			</listitem>
           </itemizedlist>
         </step>
@@ -409,13 +441,18 @@ gov.nist.javax.sip.REENTRANT_LISTENER = true
 
 
  <section>
+<title> JMX Console and Load Balancing </title>
       <note>
         <title>Configuration File Locations</title>
         <para>On &SHORT_PLATFORM_NAME; for Tomcat server installations, <filename>server.xml</filename> is located in <filename>&lt;install_directory&gt;/conf</filename>.</para>
         <para>On &SHORT_PLATFORM_NAME; for JBoss server installations, the default <filename>server.xml</filename> configuration file is located
          in <filename>server/default/deploy/jboss-web.sar</filename> (or <filename>server/default/deploy/jboss-web.deployer</filename> for JBoss Application Server 4.x and EAP 4.x).</para>
         <para>On &SHORT_PLATFORM_NAME; for JBoss installations, with JBoss clustering support enabled, the &quot;all&quot; <filename>server.xml</filename> file must be configured.  It is located in <filename>server/all/deploy/jboss-web.deployer</filename>.</para>
+
+<!--
         <para>To determine what profile should be altered for each &SHORT_PLATFORM_NAME; for JBoss installation, refer to <xref linkend="ssfjcs-SS_for_JBoss-Clustering_Support"/>.</para>
+
+-->
       </note>
       <formalpara>
         <title>Easy Node Configuration with JMX</title>
@@ -437,17 +474,117 @@ gov.nist.javax.sip.REENTRANT_LISTENER = true
             </listitem>
           </varlistentry>
         </variablelist>
-      </section>
 
+
+
+</section>
+
+<!--
+
+<section id="sslb-binary-SIP_Load_Balancer-Running">
+      <title>Running</title>
+      <procedure id="sslb-Running_the_SIP_Load_Balancer_and_Servlet_Server_Nodes">
+        <title>Running the SIP Load Balancer and SIP Server Nodes</title>
+        <step>
+          <title>Start the SIP Load Balancer</title>
+          <para>Start the SIP load balancer, ensuring the Configuration Properties file (<filename>lb.properties</filename> in this example) is specified.  In the Linux terminal, or using the Windows Command Prompt, the SIP Load Balancer is started by issuing a command similar to this one:</para>
+          <screen>java -jar sip-balancer-jar-with-dependencies.jar lb-configuration.properties</screen>
+          <para>Executing the SIP load balancer produces  output similar to the following example:</para>
+          <screen>home]$ java -jar sip-balancer-jar-with-dependencies.jar lb-configuration.properties 
+Oct 21, 2008 1:10:58 AM org.mobicents.tools.sip.balancer.SIPBalancerForwarder start
+INFO: Sip Balancer started on address 127.0.0.1, external port : 5060, port : 5065
+Oct 21, 2008 1:10:59 AM org.mobicents.tools.sip.balancer.NodeRegisterImpl startServer
+INFO: Node registry starting...
+Oct 21, 2008 1:10:59 AM org.mobicents.tools.sip.balancer.NodeRegisterImpl startServer
+INFO: Node expiration task created
+Oct 21, 2008 1:10:59 AM org.mobicents.tools.sip.balancer.NodeRegisterImpl startServer
+INFO: Node registry started</screen>
+          <para>The output shows the IP address on which the SIP Load Balancer is listening, as well as the external and internal listener ports.</para>
+        </step>
+        <step>
+          <title>Configure SIP Server Nodes</title>
+          <para>SIP Servlets Server nodes can run on the JBoss Application Server, or the Tomcat Servlet Container.  The SIP Servlets Server binary distributions define the type of SIP Servlets Server nodes used, and should already be installed from <xref linkend="sslb-binary-SIP_Load_Balancer-Software_Prerequisites"/>.</para>
+          <para>The <filename>server.xml</filename> file specifies the nodes used.  Because there is more then one client node specified, unique listener ports must be specified for each node to monitor HTTP and/or SIP connections.  See below for the server.xml section that needs to be modified.
+          <note>
+            <title>Configuration File Location</title>
+            <para>For the JBoss SIP Servlets Server binary distribution, <filename>server.xml</filename> is located in the  <filename>&lt;install_directory&gt;/server/all/deploy/jboss-web.deployer/</filename> directory (for JBoss Application Server 4.x or EAP 4.x <filename>&lt;install_directory&gt;/server/all/deploy/jboss-web.deployer/</filename>).  For the Tomcat binary distribution, <filename>server.xml</filename> is located in the <filename>&lt;install_directory&gt;/conf/</filename> directory.</para>
+          </note>
+
+
+
+<screen>
+Changing the SIP Connector Port for Servlet Server Nodes in server.xml</title>
+
+
+Define a SIP Connector 
+
+&lt;Connector port=&quot;5080&quot;
+</screen>
+
+
+
+<formalpara>
+<title>Start Load Balancer Client Nodes</title>
+          <para>Start all SIP load balancer client nodes.</para>
+      
+</formalpara>
+
+    </section>
+-->
+
+<!--Issue #822 Editor Comment - What command would you execute to start all the client nodes?-->  
+
+
+
+<!--<section
+   id="sslb-binary-SIP_Load_Balancer-Using">
+   <title>Using</title>
+   <para>&nbsp;</para>
+  </section-->    
+
+<!--
+
+<section id="sslb-binary-SIP_Load_Balancer-Testing">
+      <title>Testing</title>
+      <para>To test load balancing, the same application must be deployed manually on each node, and two SIP Softphones must be installed.</para>
+      <procedure>
+        <title>Testing Load Balancing</title>
+        <step>
+          <title>Deploy an Application</title>
+          <para>Ensure that for each node, the DAR file location is specified in the <filename>server.xml</filename> file.</para>
+          <para>Deploy the Location service manually on both nodes.</para>
+        </step>
+        <step>
+          <title>Start the &quot;Sender&quot; SIP softphone</title>
+          <para>Start a SIP softphone client with the SIP address of <userinput>sip:sender@sip-servlets-com</userinput>, listening on port 5055. The outbound proxy must be specified as the sip-balancer (http://127.0.0.1:5060)</para>
+        </step>
+        <step>
+          <title>Start the &quot;Receiver&quot; SIP softphone</title>
+          <para>Start a SIP softphone client with the SIP address of <userinput>sip:receiver-failover@sip-servlets-com</userinput>, listening on port 5090.</para>
+        </step>
+        <step>
+          <title>Initiate two calls from &quot;Sender&quot; SIP softphone</title>
+          <para>Initiate one call from <userinput>sip:sender@sip-servlets-com</userinput> to <userinput>sip:receiver-failover@sip-servlets-com</userinput>.  Tear down the call once completed.</para>
+          <para>Initiate a second call using the same SIP address, and tear down the call once completed.  Notice that the call is handled by the second node.</para>
+        </step>
+      </procedure>
+    </section>
+
+-->
 
 <section>
 
-<title>Load Balancer Server.xml Settings </title>
+<title> Server.xml File and Load Balancing</title>
+
 
 <para>
 By default, the servers are configured with one SIP load-balancer set to the  IP address <literal>127.0.0.1</literal>. This is specified in the balancers attribute in the <filename>server.xml</filename> configuration file as follows:
-
 </para>
+
+ <note>
+            <title>Configuration File Location</title>
+            <para>For the JBoss SIP Servlets Server binary distribution, <filename>server.xml</filename> is located in the  <filename>&lt;install_directory&gt;/server/all/deploy/jboss-web.deployer/</filename> directory (for JBoss Application Server 4.x or EAP 4.x <filename>&lt;install_directory&gt;/server/all/deploy/jboss-web.deployer/</filename>).  For the Tomcat binary distribution, <filename>server.xml</filename> is located in the <filename>&lt;install_directory&gt;/conf/</filename> directory.</para>
+          </note>
 
 
 <screen>
@@ -494,7 +631,7 @@ outboundProxy=&quot;127.0.0.1:5500&quot;
 
 
 
-
+<!--
 <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-Stopping">
       <title>How to Stop &SHORT_PLATFORM_NAME;</title>
       <para>Individual nodes in the cluster should be stopped one-by-one, followed by the SIP load balancer. Refer to:</para>
@@ -514,9 +651,12 @@ outboundProxy=&quot;127.0.0.1:5500&quot;
       </itemizedlist>
     </section>
 
+
+
+
     <section id="ssfjcs-binary-SIP_Servlets_Server_Cluster-Testing">
       <title>Uninstalling SIP</title>
-<!--
+
       <para>To test your JBoss cluster setup for mid-call failover (Established SIP Dialog), refer to:</para>
       <itemizedlist>
         <listitem>
@@ -525,11 +665,12 @@ outboundProxy=&quot;127.0.0.1:5500&quot;
      </para>
         </listitem>
       </itemizedlist>
--->
+
 
       <para>Uninstalling a SIP Servlets Cluster would entail deleting the &PLATFORM_NAME; SIP Servlets Servers directories, the SIP Load Balancer directory, and possibly removing the unused <envar>JBOSS_HOME</envar> environment variable.</para>
 
 </section>
+-->
 
 
 
@@ -565,13 +706,13 @@ outboundProxy=&quot;127.0.0.1:5500&quot;
           <title>The httpFollowsSip flag</title>
           <para>The <literal>httpFollowsSip</literal> flag in the service configuration makes the application server aware of how different mod_jk and SIP load balancers have assigned 
           request affinity for each application session. The application servers assign exactly one node to each Sip Servlets application session and this node is the node where the
-           last SIP request associated with the application session has landed (decised by the SIP load balancer). Then the application server will actively update the session ID
+           last SIP request associated with the application session has landed (decided by the SIP load balancer). Then the application server will actively update the session ID
             cookie (the jvmRoute part) of any HTTP request that arrives at 
           the wrong node. The application server will do so with a specially composed HTTP redirect response or with a HTML refresh hint. As a backup strategy, if the request is bound to seek
            non-existing node forever and it will let the request be served by a new node. This avoids having a client stuck reloading the same page over and over.</para>
            <para>One problem with this flag is that if you have two or more SIP sessions associated with the same application session and the load balancer has decided to send SIP requests
-           to different nodes, which might happend if you use Call-ID based affinity, then the application server will have to change the jvmRoute very often for every SIP request resulting
-            in significant overhead. It is generally not adviced to enable this flag if you have more than 1 SIP session per application session and the means to guarantee all SIP sessions
+           to different nodes, which might happen if you use Call-ID based affinity, then the application server will have to change the jvmRoute very often for every SIP request resulting
+            in significant overhead. It is generally not advised to enable this flag if you have more than 1 SIP session per application session and the means to guarantee all SIP sessions
             from the application session will land on the same node.</para>
             <para>This is an example how to enable the option. It is disabled by default.</para>
                   <programlisting>&lt;Connector port=&quot;5080&quot; 
@@ -600,105 +741,14 @@ outboundProxy=&quot;127.0.0.1:5500&quot;
     </section>
 
 
-    <section id="sslb-binary-SIP_Load_Balancer-Running">
-      <title>Running</title>
-      <procedure id="sslb-Running_the_SIP_Load_Balancer_and_Servlet_Server_Nodes">
-        <title>Running the SIP Load Balancer and SIP Server Nodes</title>
-        <step>
-          <title>Start the SIP Load Balancer</title>
-          <para>Start the SIP load balancer, ensuring the Configuration Properties file (<filename>lb.properties</filename> in this example) is specified.  In the Linux terminal, or using the Windows Command Prompt, the SIP Load Balancer is started by issuing a command similar to this one:</para>
-          <screen>java -jar sip-balancer-jar-with-dependencies.jar lb-configuration.properties</screen>
-          <para>Executing the SIP load balancer produces  output similar to the following example:</para>
-          <screen>home]$ java -jar sip-balancer-jar-with-dependencies.jar lb-configuration.properties 
-Oct 21, 2008 1:10:58 AM org.mobicents.tools.sip.balancer.SIPBalancerForwarder start
-INFO: Sip Balancer started on address 127.0.0.1, external port : 5060, port : 5065
-Oct 21, 2008 1:10:59 AM org.mobicents.tools.sip.balancer.NodeRegisterImpl startServer
-INFO: Node registry starting...
-Oct 21, 2008 1:10:59 AM org.mobicents.tools.sip.balancer.NodeRegisterImpl startServer
-INFO: Node expiration task created
-Oct 21, 2008 1:10:59 AM org.mobicents.tools.sip.balancer.NodeRegisterImpl startServer
-INFO: Node registry started</screen>
-          <para>The output shows the IP address on which the SIP Load Balancer is listening, as well as the external and internal listener ports.</para>
-        </step>
-        <step>
-          <title>Configure SIP Server Nodes</title>
-          <para>SIP Servlets Server nodes can run on the JBoss Application Server, or the Tomcat Servlet Container.  The SIP Servlets Server binary distributions define the type of SIP Servlets Server nodes used, and should already be installed from <xref linkend="sslb-binary-SIP_Load_Balancer-Software_Prerequisites"/>.</para>
-          <para>The <filename>server.xml</filename> file specifies the nodes used.  Because there is more then one client node specified, unique listener ports must be specified for each node to monitor HTTP and/or SIP connections.  <xref linkend="sslb-Changing_the_SIP_Connector_Port_for_Servlet_Server_Nodes"/> describes the affected element in the <filename>server.xml</filename> file.</para>
-          <note>
-            <title>Configuration File Location</title>
-            <para>For the JBoss SIP Servlets Server binary distribution, <filename>server.xml</filename> is located in the  <filename>&lt;install_directory&gt;/server/all/deploy/jboss-web.deployer/</filename> directory (for JBoss Application Server 4.x or EAP 4.x <filename>&lt;install_directory&gt;/server/all/deploy/jboss-web.deployer/</filename>).  For the Tomcat binary distribution, <filename>server.xml</filename> is located in the <filename>&lt;install_directory&gt;/conf/</filename> directory.</para>
-          </note>
-          <example id="sslb-Changing_the_SIP_Connector_Port_for_Servlet_Server_Nodes">
-            <title>Changing the SIP Connector Port for Servlet Server Nodes in server.xml</title>
-            <programlisting linenumbering="unnumbered" role="XML">
-<![CDATA[<!-- Define a SIP Connector -->
-<Connector port="5080"]]>
-            </programlisting>
-          </example>
-        </step>
-        <step>
-          <title>Start Load Balancer Client Nodes</title>
-          <para>Start all SIP load balancer client nodes.</para>
-<!--Issue #822 Editor Comment - What command would you execute to start all the client nodes?-->        </step>
-      </procedure>
-    </section>
-<!--<section
-   id="sslb-binary-SIP_Load_Balancer-Using">
-   <title>Using</title>
-   <para>&nbsp;</para>
-  </section-->    
-
-
-<section id="sslb-binary-SIP_Load_Balancer-Testing">
-      <title>Testing</title>
-      <para>To test load balancing, the same application must be deployed manually on each node, and two SIP Softphones must be installed.</para>
-      <procedure>
-        <title>Testing Load Balancing</title>
-        <step>
-          <title>Deploy an Application</title>
-          <para>Ensure that for each node, the DAR file location is specified in the <filename>server.xml</filename> file.</para>
-          <para>Deploy the Location service manually on both nodes.</para>
-        </step>
-        <step>
-          <title>Start the &quot;Sender&quot; SIP softphone</title>
-          <para>Start a SIP softphone client with the SIP address of <userinput>sip:sender@sip-servlets-com</userinput>, listening on port 5055. The outbound proxy must be specified as the sip-balancer (http://127.0.0.1:5060)</para>
-        </step>
-        <step>
-          <title>Start the &quot;Receiver&quot; SIP softphone</title>
-          <para>Start a SIP softphone client with the SIP address of <userinput>sip:receiver-failover@sip-servlets-com</userinput>, listening on port 5090.</para>
-        </step>
-        <step>
-          <title>Initiate two calls from &quot;Sender&quot; SIP softphone</title>
-          <para>Initiate one call from <userinput>sip:sender@sip-servlets-com</userinput> to <userinput>sip:receiver-failover@sip-servlets-com</userinput>.  Tear down the call once completed.</para>
-          <para>Initiate a second call using the same SIP address, and tear down the call once completed.  Notice that the call is handled by the second node.</para>
-        </step>
-      </procedure>
-    </section>
-
-
-    <section id="sslb-binary-SIP_Load_Balancer-Stopping">
-      <title>Stopping</title>
-      <para>Assuming that you started the JBoss Application Server as a foreground process in the Linux terminal, the easiest way to stop it is by pressing the <keycombo action="simul">
-          <keycap>Ctrl</keycap>
-          <keycap>C</keycap>
-        </keycombo> key combination in the same terminal in which you started it.</para>
-      <para>This should produce similar output to the following:</para>
-      <screen>^COct 21, 2008 1:11:57 AM org.mobicents.tools.sip.balancer.SipBalancerShutdownHook run
-INFO: Stopping the sip forwarder</screen>
-    </section>
-
-    <section id="sslb-binary-SIP_Load_Balancer-Uninstalling">
-      <title>Uninstalling</title>
-      <para>To uninstall the SIP load balancer, delete the JAR file you installed.</para>
-    </section>
-
+    
 
 
     <section>
       <title>IP Load Balancers</title>
       <para>An IP load-balancer is a network appliance that distributes traffic to an application server (or actual servers) using a  load-balancing algorithm.  IP load-balancing is often used when the other load-balancers&apos; capacity is exceeded and can not scale further without hardware upgrades.</para>
       <para>Routing decisions are made  based on OSI Layer 2, 3 or 4 data. This type of load balancer only examines low-level TCP, UDP or ethernet packet structures including MAC addresses, IP addresses, ports, and protocol types (TCP or UDP or other). </para>
-      <para>An IP  load balancer never reads the payload of the TCP/IP packets and therefore never parses SIP or HTTP (or any protocol above OSI Layer 4).  Because an IP load balancing device is not SIP or HTTP aware in any way, it is much more performant than <literal>mod_jk</literal> or the &SHORT_PLATFORM_NAME; SIP load-balancer.
+      <para>An IP  load balancer never reads the payload of the TCP/IP packets and therefore never parses SIP or HTTP (or any protocol above OSI Layer 4).  Because an IP load balancing device is not SIP or HTTP aware in any way, it give better performance than <literal>mod_jk</literal> or the &SHORT_PLATFORM_NAME; SIP load-balancer.
 
 </para>
     </section>
@@ -713,12 +763,9 @@ INFO: Stopping the sip forwarder</screen>
     <section>
       <title>Configuring &SHORT_PLATFORM_NAME; Cluster for pure IP Load Balancing</title>
 <!--Issue #822 Editor Comment - This paragraph block needs to be converted into a <procedure>.-->      <warning>
-        <para>Pure IP load balancing is not a recommented option. It is advised to use a distributed load balancer instead. Proper operation with pure IP load balancing depends on the ability of the IP load balancer to establish request affinity based on IP addresses and ports.</para>
+        <para>Pure IP load balancing is not a recommended option. It is advised to use a distributed load balancer instead. Proper operation with pure IP load balancing depends on the ability of the IP load balancer to establish request affinity based on IP addresses and ports.</para>
       </warning>
-    </section>
 
-    <section>
-      <title></title>
       <para>First you need to remove the SIP load balancers from any configuration in &SHORT_PLATFORM_NAME;. In particular the <literal>balancers</literal> 
       attribute in <filename>server.xml</filename>.   and edit the jboss.web  engine tag. You should remove the balancers attribute from the Service tag of 
       jboss.web service. This simply removes the default load balancer from the system and the traffic bypasses the SIP load-balancer. Next you must configure
@@ -787,7 +834,7 @@ useStaticAddress=&quot;true&quot;/&gt;
                the IP addresses of the nodes. The groups are enclosed in parentheses and the IP 
                addresses are separate by commas as follows:</para>
                <screen>subclusterMap=( 192.168.1.1, 192.168.1.2 ) ( 10.10.10.10,  20.20.20.20,  30.30.30.30)</screen>
-               <para>The nodes specified in a group do not have to alive and nodes that are not specified are still allowed to join the cluster. Otherwise the algorthim behaves exactly as the default Call-ID affinity algorthim.</para>
+               <para>The nodes specified in a group do not have to alive and nodes that are not specified are still allowed to join the cluster. Otherwise the algorithm behaves exactly as the default Call-ID affinity algorithm.</para>
           </listitem>
         </varlistentry>
       </variablelist></para>
@@ -808,36 +855,8 @@ useStaticAddress=&quot;true&quot;/&gt;
   </section>
 
 
-  <section id="sslb-SIP_Load_Balancer-Implementation">
-    <title>Implementation of the &PLATFORM_NAME; Load Balancer</title>
-    <para>Each individual &PLATFORM_NAME; SIP Server in the cluster is responsible for contacting the SIP load balancer and relaying its health status and regular &quot;heartbeats&quot;.  <!--Issue #822 Editor Comment - would it be worthwhile describing heartbeats in more detail here?  Can you link to another area in the guide which discusses heartbeats in more detail (to avoid duplicating information)?-->
-    </para>
-    <para>From these health status reports and heartbeats, the SIP Load Balancer creates and maintains a list of all available and healthy nodes in the cluster. The Load Balancer forwards SIP requests between these cluster nodes, providing that the provisioning algorithm reports that each node is healthy and is still sending heartbeats.
-    </para>
-    <para>If an abnormality is detected, the SIP Load Balancer removes the unhealthy or unresponsive node from the list of available nodes. In addition, mid-session and mid-call messages are failed over to a healthy node.
-    </para>
-    <para>The SIP Load Balancer first receives SIP requests from endpoints on a port that is specified in its Configuration Properties configuration file. The SIP Load Balancer, using a round-robin algorithm, then selects a node to which it forwards the SIP requests. The Load Balancer forwards all same-session requests to the first node selected to initiate the session, providing that the node is healthy and available.
-    </para>
-  </section>
 
 
-  <section>
-    <title>SIP Message Flow</title>
-    <para>The SIP Load Balancer appends itself to the <literal>Via</literal> header of each request, so that returned responses are sent to the SIP Balancer before they are sent to the originating endpoint.
-    </para>
-    <para>The Load Balancer also adds itself to the path of subsequent requests by adding Record-Route headers. It can subsequently handle mid-call failover by forwarding requests to a different node in the cluster if the node that originally handled the request fails or becomes unavailable. The SIP load balancer immediately fails over if it receives an unhealthy status, or irregular heartbeats from a node.
-    </para>
-    <para>In advanced configurations, it is possible to run more than one SIP Load Balancer. Simply edit the balancers connection string in your SIP Server - the list is separated with semi-colon. <!--Issue #822 Editor Comment - is there more information regarding how to enable this?--></para>
-    <para><xref linkend="figure-mss-Basic_IP_and_Port_Cluster_Configuration"/> describes a basic IP and Port Cluster Configuration. In the diagram, the SIP Load balancer is the server with the IP address of <literal>192.168.1.1</literal>.</para>
-    <figure id="figure-mss-Basic_IP_and_Port_Cluster_Configuration">
-      <title>Basic IP and Port Cluster Configuration</title>
-      <mediaobject id="sslb-mss-MSSSIPLoadBalancer-dia-ClusterIPsAndPorts">
-        <imageobject>
-          <imagedata width="532" align="center" fileref="images/mss-MSSSIPLoadBalancer-dia-ClusterIPsAndPorts.jpg" format="JPG"/>
-        </imageobject>
-      </mediaobject>
-    </figure>
-  </section>
-
+ 
 
 </section>
