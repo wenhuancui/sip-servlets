@@ -502,7 +502,7 @@ Java HotSpot(TM) Client VM (build 1.5.0_16-b03, mixed mode, sharing)</screen>
 
 
 
-
+<!--
 
 <section id="diff-Jboss-telscale-sip">
     <title>Differences Between a Standard JBoss Installation and the &PLATFORM_NAME; SIP Servlets Version</title>
@@ -542,7 +542,7 @@ Java HotSpot(TM) Client VM (build 1.5.0_16-b03, mixed mode, sharing)</screen>
   </itemizedlist>
 
 </section>
-
+-->
 
 
 </section>

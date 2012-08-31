@@ -7,8 +7,13 @@
 <section id="ssfjcs-SS_for_JBoss-Clustering_Support">
   <title> Understanding &PLATFORM_NAME; High Availabilty </title>
 
+<note>
+<title>High Availability in &SHORT_PLATFORM_NAME; for JBoss AS7 </title>
+<para>
+This feature is not yet implemented in &SHORT_PLATFORM_NAME; for JBoss AS7. This guide will be updated when the feature becomes available.
+</para>
 
-
+</note>
 
 
 
