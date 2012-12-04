@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:jboss:bean-deployer:2.0 bean-deployer_2_0.xsd"
+	xmlns="urn:jboss:bean-deployer:2.0">
+
+
+
+	<!-- Dedicated definition of the RTP stuff-->
+	<bean name="rtsp.rtp"
+		class="org.mobicents.media.server.impl.rtp.RtpFactory">
+		<property name="bindAddress">${mms.bind.address}</property>
+                <property name="localPorts">
+                    <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="java.lang.Integer">
+                        <entry>
+                            <key>audio</key><value>9205</value>
+                        </entry>
+                        <entry>
+                            <key>video</key><value>9207</value>
+                        </entry>
+                    </map>
+                </property>
+		<property name="jitter">120</property>
+		<property name="timer">
+			<inject bean="Timer" />
+		</property>
+		<property name="period">20</property>
+	</bean>
+	<bean name="avplayer"
+		class="org.mobicents.media.server.impl.resource.video.AVPlayerFactory">
+		<property name="name">player</property>
+	</bean>
+
+	<!-- Endpoint definition  -->
+	<bean name="RtspEndpoint"
+		class="org.mobicents.media.server.RtspEndpointImpl">
+		<property name="localName">
+			/mobicents/media/mms/[1..10]
+		</property>
+		<property name="timer">
+			<inject bean="Timer" />
+		</property>
+		<property name="player">
+			<inject bean="avplayer" />
+		</property>
+		<property name="rtpFactory">
+                    <inject bean="rtsp.rtp"/>
+		</property>
+	</bean>
+
+</deployment>

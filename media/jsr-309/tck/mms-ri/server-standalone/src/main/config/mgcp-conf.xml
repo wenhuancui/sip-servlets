@@ -1,0 +1,14 @@
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+    <bean name="MgcpController"
+		class="org.mobicents.media.server.ctrl.mgcp.MgcpController">
+        <property name="namingService">
+            <inject bean="MediaServer" />
+        </property>
+        <property name="defaultNotifiedEntity">client@localhost</property>
+        <property name="bindAddress">${mms.bind.address}</property>
+        <property name="port">2427</property>
+        <incallback method="addPackage" />
+        <uncallback method="removePackage" />
+    </bean>
+</deployment>

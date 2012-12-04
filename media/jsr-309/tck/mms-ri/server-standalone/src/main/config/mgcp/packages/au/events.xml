@@ -1,0 +1,17 @@
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+	<bean name="au.oc"
+		class="org.mobicents.media.server.ctrl.mgcp.evt.DefaultDetectorFactory">
+		<property name="eventName">oc</property>
+		<property name="resourceName">advanced.audio.player</property>
+		<property name="eventID">20000</property>
+	</bean>
+
+	<bean name="au.of"
+		class="org.mobicents.media.server.ctrl.mgcp.evt.DefaultDetectorFactory">
+		<property name="eventName">of</property>
+		<property name="resourceName">advanced.audio.player</property>
+		<property name="eventID">10001</property>
+	</bean>
+
+</deployment>

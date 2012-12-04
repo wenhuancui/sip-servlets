@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:jboss:bean-deployer:2.0 bean-deployer_2_0.xsd"
+	xmlns="urn:jboss:bean-deployer:2.0">
+
+    <!-- Connetion definition -->    
+
+    <bean name="ann-pipe-1"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="outlet">audio.mixer</property>
+    </bean>
+    
+    <bean name="ann-pipe-2"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="inlet">audio.player</property>
+        <property name="outlet">audio.mixer</property>
+    </bean>
+    
+    <bean name="ann-pipe-3"
+		class="org.mobicents.media.server.resource.PipeFactory">
+        <property name="inlet">audio.mixer</property>
+    </bean>
+    
+    
+    <bean name="ann-tx-channel" class="org.mobicents.media.server.resource.ChannelFactory">
+        <property name="components">
+            <list>
+                <inject bean="audio.mixer" />
+                <inject bean="audio.player" />
+            </list>
+        </property>
+        <property name="pipes">
+            <list>
+                <inject bean="ann-pipe-1" />
+                <inject bean="ann-pipe-2" />
+                <inject bean="ann-pipe-3" />
+            </list>
+        </property>
+    </bean>
+
+    <bean name="ann-connection" class="org.mobicents.media.server.ConnectionFactory">
+            <property name="txChannelFactory">
+                <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="org.mobicents.media.server.resource.ChannelFactory">
+                    <entry><key>audio</key><value><inject bean="ann-tx-channel"/></value></entry>
+                </map>
+            </property>
+    </bean>    
+
+    <!-- Endpoint definition  -->
+    <bean name="Announcement-Access-Point"
+		class="org.mobicents.media.server.EndpointImpl">
+		<property name="localName">
+			/mobicents/media/aap/[1..10]
+		</property>
+		<property name="timer">
+			<inject bean="Timer" />
+		</property>
+		<property name="sourceFactory">
+                    <map class="java.util.Hashtable" keyClass="java.lang.String" 
+                    valueClass="org.mobicents.media.ComponentFactory">
+                        <entry>
+                            <key>audio</key>
+                            <value><inject bean="AudioNoise"/></value>
+                        </entry>
+                    </map>
+		</property>
+		<property name="rtpFactory">
+                    <inject bean="RTPFactory"/>
+		</property>
+		<property name="connectionFactory">
+			<inject bean="ann-connection" />
+		</property>
+    </bean>
+
+</deployment>

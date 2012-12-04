@@ -1,0 +1,55 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011, Red Hat, Inc. and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jdiameter.api.auth.events;
+
+import org.jdiameter.api.AvpDataException;
+import org.jdiameter.api.app.AppRequestEvent;
+
+/**
+ * A ReAuthentication Request is a request from a client to a server
+ * 
+ * @version 1.5.1 Final
+ */
+
+public interface ReAuthRequest extends AppRequestEvent {
+
+  public static final String _SHORT_NAME = "RAR";
+  public static final String _LONG_NAME = "Re-Auth-Request";
+
+  public static final int code = 258;
+
+  /**
+   * Return re-authentication request type
+   * @return re-authentication request type
+   * @throws org.jdiameter.api.AvpDataException if avp is not integer
+   */
+  int getReAuthRequestType() throws AvpDataException;
+
+  /**
+   * Return Auth-Application-Id value of request
+   * @return Auth-Application-Id value of request
+   * @throws AvpDataException if avp is not integer
+   */
+  long getAuthApplicationId()  throws AvpDataException;
+
+}

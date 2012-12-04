@@ -1,0 +1,60 @@
+Original Mobicents versions
+================================
+cluster:1.6
+tools/maven-du-plugin:2.0.0.BETA4
+tools/maven-eclipse-plugin:1.0.0.BETA2
+
+Build order:
+==============
+
+Slee,Diameter,RA's
+-------------------
+parent
+tools (maven du,eclipse,library plugins)
+cluster
+jainslee/core
+jdiameter
+diameter-mux
+slee diameter resources (base,cca,cx-dx,rf,ro,sh-client,sh-server)
+load-balancer
+jain-sip-ha
+slee other resources(sip11,http-servlet,mgcp,xcap-client,xmpp,jcc,map)
+
+SIP servlets
+----------------
+[All nodes]
+copy config files
+sip-servlets/pom.xml -Pjboss-5-distro
+sip-servlets-management/pom.xml
+jopr-plugin-as-5/pom.xml
+[Cluster nodes (All,production)]
+copy cluster config files
+sip-servlets/pom.xml -Pjboss-5-cluster-distro
+simple-sip-servlet-distributable/pom.xml
+click2call-distributable/pom.xml
+[Default node]
+diameter-event-charging/pom.xml
+click-to-call/pom.xml
+
+Media
+----------
+media/jain-mgcp
+protocols/ss7
+protocols/ss7/mtp
+protocols/jain-mgcp
+media/core
+media/jsr-309/core
+media/jsr-309/tck/mms-ri
+media/rtsp
+
+
+
+ 
+
+parents:
+=========
+12
+16
+1.19
+2.2
+2.6

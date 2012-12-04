@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="var" path="M2_REPO/javax/sip/jain-sip-api/1.2/jain-sip-api-1.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jain-sip-ext"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/sip-balancer"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jain-sip"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>

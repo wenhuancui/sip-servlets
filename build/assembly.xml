@@ -1,0 +1,40 @@
+<assembly>
+    <formats>
+        <format>tar</format>
+    </formats>
+    <includeBaseDirectory>no</includeBaseDirectory>
+    <includeSiteDirectory>no</includeSiteDirectory>
+    
+    <fileSets>
+        <fileSet>
+            <directory>../sip-servlets/sip-servlets-all-beans/target/sip-servlets-all-beans-${project.version}-distribution/jbossweb.sar</directory>
+            <outputDirectory>/</outputDirectory>
+            <excludes>
+                <exclude>servlet-api*.jar</exclude>
+            </excludes>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+            <useDefaultExcludes>true</useDefaultExcludes>
+        </fileSet>
+
+        <fileSet>
+            <directory>../sip-servlets/sip-servlets-all-deployer/target/sip-servlets-all-deployer-${project.version}-distribution/jbossweb.deployer</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>sip-servlets-jboss5-deployer-${project.version}.jar</include>
+            </includes>
+            <useDefaultExcludes>true</useDefaultExcludes>
+        </fileSet>
+
+        <fileSet>
+            <directory>../sip-servlets/sip-servlets-jboss5-ha-server-cache/target</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>sip-servlets-jboss5-ha-server-cache-${project.version}.jar</include>
+            </includes>
+            <useDefaultExcludes>true</useDefaultExcludes>
+        </fileSet>
+    </fileSets>
+    
+</assembly>

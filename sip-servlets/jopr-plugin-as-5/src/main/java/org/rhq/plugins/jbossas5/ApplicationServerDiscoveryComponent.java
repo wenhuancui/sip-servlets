@@ -1,0 +1,451 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011, Red Hat, Inc. and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+/*
+* Jopr Management Platform
+* Copyright (C) 2005-2009 Red Hat, Inc.
+* All rights reserved.
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License, version 2, as
+* published by the Free Software Foundation, and/or the GNU Lesser
+* General Public License, version 2.1, also as published by the Free
+* Software Foundation.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License and the GNU Lesser General Public License
+* for more details.
+*
+* You should have received a copy of the GNU General Public License
+* and the GNU Lesser General Public License along with this program;
+* if not, write to the Free Software Foundation, Inc.,
+* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+*/
+package org.rhq.plugins.jbossas5;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
+
+import org.rhq.core.domain.configuration.Configuration;
+import org.rhq.core.domain.configuration.PropertyList;
+import org.rhq.core.domain.configuration.PropertyMap;
+import org.rhq.core.domain.configuration.PropertySimple;
+import org.rhq.core.pluginapi.event.log.LogFileEventResourceComponentHelper;
+import org.rhq.core.pluginapi.inventory.ClassLoaderFacet;
+import org.rhq.core.pluginapi.inventory.DiscoveredResourceDetails;
+import org.rhq.core.pluginapi.inventory.InvalidPluginConfigurationException;
+import org.rhq.core.pluginapi.inventory.ProcessScanResult;
+import org.rhq.core.pluginapi.inventory.ResourceDiscoveryComponent;
+import org.rhq.core.pluginapi.inventory.ResourceDiscoveryContext;
+import org.rhq.core.pluginapi.util.FileUtils;
+import org.rhq.core.system.ProcessInfo;
+import org.rhq.core.util.exception.ThrowableUtil;
+import org.rhq.plugins.jbossas5.helper.JBossInstallationInfo;
+import org.rhq.plugins.jbossas5.helper.JBossInstanceInfo;
+import org.rhq.plugins.jbossas5.helper.JBossProperties;
+import org.rhq.plugins.jbossas5.helper.JBossProductType;
+import org.rhq.plugins.jbossas5.util.JnpConfig;
+
+import org.jboss.on.common.jbossas.JmxInvokerServiceConfiguration;
+import org.jboss.on.common.jbossas.SecurityDomainInfo;
+import org.jboss.on.common.jbossas.JBossASDiscoveryUtils;
+
+/**
+ * A Resource discovery component for JBoss AS, 5.1.0.CR1 or later, and JBoss EAP, 5.0.0.Beta or later, Servers.
+ *
+ * @author Ian Springer
+ * @author Mark Spritzler
+ */
+public class ApplicationServerDiscoveryComponent implements ResourceDiscoveryComponent, ClassLoaderFacet {
+    private static final String CHANGE_ME = "***CHANGE_ME***";
+    private static final String JBOSS_SERVICE_XML = "conf" + File.separator + "jboss-service.xml";
+    private static final String JBOSS_NAMING_SERVICE_XML = "deploy" + File.separator + "naming-service.xml";
+    private static final String ANY_ADDRESS = "0.0.0.0";
+    private static final String LOCALHOST = "127.0.0.1";
+    private static final String JAVA_HOME_ENV_VAR = "JAVA_HOME";
+    private static final ComparableVersion AS_MINIMUM_VERSION = new ComparableVersion("5.1.0.CR1");
+    private static final ComparableVersion EAP_MINIMUM_VERSION = new ComparableVersion("5.0.0.Beta");
+
+    private static final String[] CLIENT_JARS = new String[] {
+            "client/jbossall-client.jar",
+            "common/lib/jboss-security-aspects.jar",
+            "lib/jboss-managed.jar",
+            "lib/jboss-metatype.jar",
+            "lib/jboss-dependency.jar"
+    };
+
+    private final Log log = LogFactory.getLog(this.getClass());
+
+    public Set<DiscoveredResourceDetails> discoverResources(ResourceDiscoveryContext discoveryContext) {
+        log.trace("Discovering " + discoveryContext.getResourceType().getName() + " Resources...");
+
+        Set<DiscoveredResourceDetails> resources = new HashSet<DiscoveredResourceDetails>();
+        // NOTE: The PC will never actually pass in more than one plugin config...
+        List<Configuration> manuallyAddedJBossAsPluginConfigs = discoveryContext.getPluginConfigurations();
+        if (!manuallyAddedJBossAsPluginConfigs.isEmpty()) {
+            Configuration pluginConfig = manuallyAddedJBossAsPluginConfigs.get(0);
+            DiscoveredResourceDetails manuallyAddedJBossAS = createDetailsForManuallyAddedJBossAS(discoveryContext,
+                pluginConfig);
+            resources.add(manuallyAddedJBossAS);
+        } else {
+            DiscoveredResourceDetails inProcessJBossAS = discoverInProcessJBossAS(discoveryContext);
+            if (inProcessJBossAS != null) {
+                // If we're running inside a JBoss AS JVM, that's the only AS instance we want to discover.
+                resources.add(inProcessJBossAS);
+            } else {
+                // Otherwise, scan the process table for external AS instances.
+                resources.addAll(discoverExternalJBossAsProcesses(discoveryContext));
+            }
+        }
+        log
+            .trace("Discovered " + resources.size() + " " + discoveryContext.getResourceType().getName()
+                + " resources.");
+
+        return resources;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<URL> getAdditionalClasspathUrls(ResourceDiscoveryContext context, DiscoveredResourceDetails details) throws Exception {
+        Configuration pluginConfig = details.getPluginConfiguration();
+        String homeDir = pluginConfig.getSimple(ApplicationServerPluginConfigurationProperties.HOME_DIR).getStringValue();
+
+        List<URL> clientJars = new ArrayList<URL>();
+
+        for (String jarFileName : CLIENT_JARS) {
+            File clientJar = new File(homeDir, jarFileName);
+            if (!clientJar.exists()) {
+                throw new FileNotFoundException("Cannot find [" + clientJar + "]; unable to manage server");
+            }
+            if (!clientJar.canRead()) {
+                throw new IOException("Cannot read [" + clientJar + "]; unable to manage server");
+            }
+            clientJars.add(clientJar.toURI().toURL());
+        }
+
+        return clientJars;
+    }
+
+    private Set<DiscoveredResourceDetails> discoverExternalJBossAsProcesses(ResourceDiscoveryContext discoveryContext) {
+        Set<DiscoveredResourceDetails> resources = new HashSet<DiscoveredResourceDetails>();
+        List<ProcessScanResult> autoDiscoveryResults = discoveryContext.getAutoDiscoveredProcesses();
+
+        for (ProcessScanResult autoDiscoveryResult : autoDiscoveryResults) {
+            ProcessInfo processInfo = autoDiscoveryResult.getProcessInfo();
+            if (log.isDebugEnabled())
+                log.debug("Discovered JBossAS process: " + processInfo);
+
+            JBossInstanceInfo cmdLine;
+            try {
+                cmdLine = new JBossInstanceInfo(processInfo);
+            } catch (Exception e) {
+                log.error("Failed to process JBossAS command line: " + Arrays.asList(processInfo.getCommandLine()), e);
+                continue;
+            }
+
+            // See if this JBAS instance's version is less than 5.1.0.CR1 - if so, skip it.
+            JBossInstallationInfo installInfo = cmdLine.getInstallInfo();
+            ComparableVersion version = new ComparableVersion(installInfo.getVersion());
+
+            JBossProductType productType = installInfo.getProductType();
+
+            // Check if this is a compatible JBoss AS instance.
+            if (productType == JBossProductType.AS && version.compareTo(AS_MINIMUM_VERSION) < 0) {
+                if (log.isDebugEnabled())
+                    log.debug("JBoss AS version " + version + " is not supported by this plugin (minimum version is "
+                        + AS_MINIMUM_VERSION + ") - skipping...");
+                continue;
+            }
+            // Check if this is a compatible JBoss EAP instance.
+            if (productType == JBossProductType.EAP && version.compareTo(EAP_MINIMUM_VERSION) < 0) {
+                if (log.isDebugEnabled())
+                    log.debug("JBoss EAP version " + version + " is not supported by this plugin (minimum version is "
+                        + EAP_MINIMUM_VERSION + ") - skipping...");
+                continue;
+            }
+            File installHome = new File(cmdLine.getSystemProperties().getProperty(JBossProperties.HOME_DIR));
+            File configDir = new File(cmdLine.getSystemProperties().getProperty(JBossProperties.SERVER_HOME_DIR));
+
+            // The config dir might be a symlink - call getCanonicalFile() to resolve it if so, before
+            // calling isDirectory() (isDirectory() returns false for a symlink, even if it points at
+            // a directory).
+            try {
+                if (!configDir.getCanonicalFile().isDirectory()) {
+                    log.warn("Skipping discovery for process " + processInfo + ", because JBAS configuration dir '"
+                        + configDir + "' does not exist or is not a directory.");
+                    continue;
+                }
+            } catch (IOException e) {
+                log.error("Skipping discovery for process " + processInfo + ", because JBAS configuration dir '"
+                    + configDir + "' could not be canonicalized.", e);
+                continue;
+            }
+
+            Configuration pluginConfiguration = discoveryContext.getDefaultPluginConfiguration();
+
+            String jnpURL = getJnpURL(cmdLine, installHome, configDir);
+
+            // TODO? Set the connection type - local or remote
+
+            // Set the required props...
+            pluginConfiguration.put(new PropertySimple(ApplicationServerPluginConfigurationProperties.NAMING_URL,
+                jnpURL));
+            pluginConfiguration.put(new PropertySimple(ApplicationServerPluginConfigurationProperties.HOME_DIR,
+                installHome.getAbsolutePath()));
+            pluginConfiguration.put(new PropertySimple(
+                ApplicationServerPluginConfigurationProperties.SERVER_HOME_DIR, configDir));
+
+            // Set the optional props...
+            pluginConfiguration.put(new PropertySimple(ApplicationServerPluginConfigurationProperties.SERVER_NAME,
+                cmdLine.getSystemProperties().getProperty(JBossProperties.SERVER_NAME)));
+            pluginConfiguration.put(new PropertySimple(ApplicationServerPluginConfigurationProperties.BIND_ADDRESS,
+                cmdLine.getSystemProperties().getProperty(JBossProperties.BIND_ADDRESS)));
+
+            JBossASDiscoveryUtils.UserInfo userInfo = JBossASDiscoveryUtils.getJmxInvokerUserInfo(configDir);
+            if (userInfo != null) {
+                pluginConfiguration.put(
+                        new PropertySimple(ApplicationServerPluginConfigurationProperties.PRINCIPAL,
+                                userInfo.getUsername()));
+                pluginConfiguration.put(
+                        new PropertySimple(ApplicationServerPluginConfigurationProperties.CREDENTIALS,
+                                userInfo.getPassword()));
+            }
+
+            String javaHome = processInfo.getEnvironmentVariable(JAVA_HOME_ENV_VAR);
+            if (javaHome == null && log.isDebugEnabled()) {
+                log.debug("JAVA_HOME environment variable not set in JBossAS process - defaulting "
+                    + ApplicationServerPluginConfigurationProperties.JAVA_HOME
+                    + "connection property to the plugin container JRE dir.");
+                javaHome = System.getenv(JAVA_HOME_ENV_VAR);
+            }
+
+            pluginConfiguration.put(new PropertySimple(ApplicationServerPluginConfigurationProperties.JAVA_HOME,
+                javaHome));
+
+            initLogEventSourcesConfigProp(configDir, pluginConfiguration);
+
+            // TODO: Init props that have static defaults.
+            //setPluginConfigurationDefaults(pluginConfiguration);
+
+            DiscoveredResourceDetails resourceDetails = createResourceDetails(discoveryContext, pluginConfiguration,
+                processInfo, installInfo);
+            resources.add(resourceDetails);
+        }
+        return resources;
+    }
+
+    private DiscoveredResourceDetails createDetailsForManuallyAddedJBossAS(ResourceDiscoveryContext discoveryContext,
+        Configuration pluginConfig) {
+        // Set default values on any props that are not set.
+        //setPluginConfigurationDefaults(pluginConfiguration);
+
+        ProcessInfo processInfo = null;
+        String jbossHomeDir = pluginConfig.getSimple(ApplicationServerPluginConfigurationProperties.HOME_DIR)
+            .getStringValue();
+        JBossInstallationInfo installInfo;
+        try {
+            installInfo = new JBossInstallationInfo(new File(jbossHomeDir));
+        } catch (IOException e) {
+            throw new InvalidPluginConfigurationException(e);
+        }
+        DiscoveredResourceDetails resourceDetails = createResourceDetails(discoveryContext, pluginConfig, processInfo,
+            installInfo);
+        return resourceDetails;
+    }
+
+    @Nullable
+    private DiscoveredResourceDetails discoverInProcessJBossAS(ResourceDiscoveryContext discoveryContext) {
+        try {
+            return new InProcessJBossASDiscovery().discoverInProcessJBossAS(discoveryContext);
+        } catch (Throwable t) {
+            log.debug("In-process JBossAS discovery failed - we are probably not running embedded within JBossAS", t);
+            return null;
+        }
+    }
+
+    private DiscoveredResourceDetails createResourceDetails(ResourceDiscoveryContext discoveryContext,
+        Configuration pluginConfig, @Nullable ProcessInfo processInfo, JBossInstallationInfo installInfo) {
+        String serverHomeDir = pluginConfig.getSimple(
+            ApplicationServerPluginConfigurationProperties.SERVER_HOME_DIR).getStringValue();
+        File absoluteConfigPath = resolvePathRelativeToHomeDir(pluginConfig, serverHomeDir);
+
+        // Canonicalize the config path, so it's consistent no matter how it's entered.
+        // This prevents two servers with different forms of the same config path, but
+        // that are actually the same server, from ending up in inventory.
+        // JON: fix for JBNADM-2634 - do not resolve symlinks (ips, 12/18/07)
+        String key = FileUtils.getCanonicalPath(absoluteConfigPath.getPath());
+
+        String bindAddress = pluginConfig.getSimple(
+            ApplicationServerPluginConfigurationProperties.BIND_ADDRESS).getStringValue();
+        String namingUrl = pluginConfig.getSimple(ApplicationServerPluginConfigurationProperties.NAMING_URL)
+            .getStringValue();
+
+        // Only include the JNP port in the Resource name if its value is not "***CHANGE_ME***".
+        String namingPort = null;
+        //noinspection ConstantConditions
+        int colonIndex = namingUrl.lastIndexOf(':');
+        if ((colonIndex != -1) && (colonIndex != (namingUrl.length() - 1))) {
+            // NOTE: We assume the JNP URL does not have a trailing slash.
+            String port = namingUrl.substring(colonIndex + 1);
+            if (!port.equals(CHANGE_ME))
+                namingPort = port;
+        }
+
+        String configName = absoluteConfigPath.getName();
+        String baseName = discoveryContext.getSystemInformation().getHostname();
+        String description = installInfo.getProductType().DESCRIPTION;
+        File deployDir = new File(absoluteConfigPath, "deploy");
+        File rhqInstallerWar = new File(deployDir, "rhq-installer.war");
+        File rhqInstallerWarUndeployed = new File(deployDir, "rhq-installer.war.rej");
+        boolean isRhqServer = rhqInstallerWar.exists() || rhqInstallerWarUndeployed.exists();
+        if (isRhqServer) {
+            baseName += " Jopr Server, ";
+            description += " hosting the Jopr Server";
+            // We know this is an RHQ Server. Let's add an event source for its server log file, but disable it by default.
+            configureEventSourceForServerLogFile(pluginConfig);
+        }
+        String name = formatServerName(baseName, bindAddress, namingPort, configName, installInfo);
+
+        return new DiscoveredResourceDetails(discoveryContext.getResourceType(), key, name, installInfo.getVersion(),
+            description, pluginConfig, processInfo);
+    }
+
+    private String formatServerName(String baseName, String bindingAddress, String jnpPort, String configName,
+        JBossInstallationInfo installInfo) {
+        baseName = baseName + " " + installInfo.getProductType().NAME + " " + installInfo.getVersion() + " "
+            + configName;
+        String details = null;
+        if ((bindingAddress != null) && (jnpPort != null && !jnpPort.equals(CHANGE_ME))) {
+            details = bindingAddress + ":" + jnpPort;
+        } else if ((bindingAddress == null) && (jnpPort != null && !jnpPort.equals(CHANGE_ME))) {
+            details = jnpPort;
+        } else if (bindingAddress != null) {
+            details = bindingAddress;
+        }
+
+        return baseName + ((details != null) ? (" (" + details + ")") : "");
+    }
+
+    private void configureEventSourceForServerLogFile(Configuration pluginConfig) {
+        File rhqLogFile = resolvePathRelativeToHomeDir(pluginConfig, "../logs/rhq-server-log4j.log");
+        if (rhqLogFile.exists() && !rhqLogFile.isDirectory()) {
+            try {
+                PropertyMap serverLogEventSource = new PropertyMap("serverLog");
+                serverLogEventSource.put(new PropertySimple(
+                    LogFileEventResourceComponentHelper.LogEventSourcePropertyNames.LOG_FILE_PATH, rhqLogFile
+                        .getCanonicalPath()));
+                serverLogEventSource.put(new PropertySimple(
+                    LogFileEventResourceComponentHelper.LogEventSourcePropertyNames.ENABLED, Boolean.FALSE));
+                serverLogEventSource.put(new PropertySimple(
+                    LogFileEventResourceComponentHelper.LogEventSourcePropertyNames.MINIMUM_SEVERITY, "info"));
+                PropertyList logEventSources = pluginConfig
+                    .getList(LogFileEventResourceComponentHelper.LOG_EVENT_SOURCES_CONFIG_PROP);
+                logEventSources.add(serverLogEventSource);
+            } catch (IOException e) {
+                log.warn("Unable to setup RHQ Server log file monitoring.", e);
+            }
+        }
+    }
+
+    private String getJnpURL(JBossInstanceInfo cmdLine, File installHome, File configDir) {
+        File urlStore = new File(configDir, "data/jnp-service.url");
+        if (urlStore.exists() && urlStore.canRead()) {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(urlStore));
+                String jnpUrl = br.readLine();
+                if (jnpUrl != null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Read JNP URL from jnp-service.url file: " + jnpUrl);
+                    }
+                    return jnpUrl;
+                }
+            } catch (IOException ioe) {
+                // Nothing to do
+            }
+        }
+
+        log.warn("Failed to read jnp-service.url from " + configDir + "/data");
+
+        // Above did not work, so fall back to our previous scheme
+        JnpConfig jnpConfig = getJnpConfig(installHome, configDir, cmdLine.getSystemProperties());
+        String jnpAddress = (jnpConfig.getJnpAddress() != null) ? jnpConfig.getJnpAddress() : CHANGE_ME;
+        if (ANY_ADDRESS.equals(jnpAddress)) {
+            jnpAddress = LOCALHOST;
+        }
+        String jnpPort = (jnpConfig.getJnpPort() != null) ? String.valueOf(jnpConfig.getJnpPort()) : CHANGE_ME;
+        return "jnp://" + jnpAddress + ":" + jnpPort;
+    }
+
+    private static JnpConfig getJnpConfig(File installHome, File configDir, Properties props) {
+        File serviceXML = new File(configDir, JBOSS_SERVICE_XML);
+        JnpConfig config = JnpConfig.getConfig(installHome, serviceXML, props);
+        if ((config == null) || (config.getJnpPort() == null)) {
+            File namingServiceFile = new File(configDir, JBOSS_NAMING_SERVICE_XML);
+            if (namingServiceFile.exists()) {
+                config = JnpConfig.getConfig(installHome, namingServiceFile, props);
+            }
+        }
+        return config;
+    }
+
+    private void initLogEventSourcesConfigProp(File configDir, Configuration pluginConfig) {
+        File logDir = new File(configDir, "log");
+        File serverLogFile = new File(logDir, "server.log");
+        if (serverLogFile.exists() && !serverLogFile.isDirectory()) {
+            PropertyMap serverLogEventSource = new PropertyMap("serverLog");
+            serverLogEventSource.put(new PropertySimple(
+                LogFileEventResourceComponentHelper.LogEventSourcePropertyNames.LOG_FILE_PATH, serverLogFile));
+            serverLogEventSource.put(new PropertySimple(
+                LogFileEventResourceComponentHelper.LogEventSourcePropertyNames.ENABLED, Boolean.FALSE));
+            PropertyList logEventSources = pluginConfig
+                .getList(LogFileEventResourceComponentHelper.LOG_EVENT_SOURCES_CONFIG_PROP);
+            logEventSources.add(serverLogEventSource);
+        }
+    }
+
+    @NotNull
+    private static File resolvePathRelativeToHomeDir(Configuration pluginConfig, @NotNull String path) {
+        File configDir = new File(path);
+        if (!configDir.isAbsolute()) {
+            String homeDir = pluginConfig.getSimple(ApplicationServerPluginConfigurationProperties.HOME_DIR).getStringValue();
+            configDir = new File(homeDir, path);
+        }
+        return configDir;
+    }
+}

@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven
+Built-By: pslegr
+Build-Jdk: 1.6.0_17
+Implementation-Title: org.mobicents.protocols.ss7.mtp.docs:mobicents-m
+ tp-docs-sources
+Implementation-URL: http://www.mobicents.org
+Implementation-Vendor-Id: JBoss, a Red Hat division
+Implementation-Version: 5.0.1.GA-JBCP5
+SVN-Revision: 
+

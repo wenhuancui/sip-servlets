@@ -1,0 +1,112 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.mobicents.media.server.impl.dsp.audio.g711.ulaw;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.mobicents.media.Buffer;
+import org.mobicents.media.Frame;
+
+/**
+ *
+ * @author Oleg Kulikov
+ */
+public class CodecTest  {
+
+    private static short muLawDecompressTable[] = new short[]{
+        -32124, -31100, -30076, -29052, -28028, -27004, -25980, -24956,
+        -23932, -22908, -21884, -20860, -19836, -18812, -17788, -16764,
+        -15996, -15484, -14972, -14460, -13948, -13436, -12924, -12412,
+        -11900, -11388, -10876, -10364, -9852, -9340, -8828, -8316,
+        -7932, -7676, -7420, -7164, -6908, -6652, -6396, -6140,
+        -5884, -5628, -5372, -5116, -4860, -4604, -4348, -4092,
+        -3900, -3772, -3644, -3516, -3388, -3260, -3132, -3004,
+        -2876, -2748, -2620, -2492, -2364, -2236, -2108, -1980,
+        -1884, -1820, -1756, -1692, -1628, -1564, -1500, -1436,
+        -1372, -1308, -1244, -1180, -1116, -1052, -988, -924,
+        -876, -844, -812, -780, -748, -716, -684, -652,
+        -620, -588, -556, -524, -492, -460, -428, -396,
+        -372, -356, -340, -324, -308, -292, -276, -260,
+        -244, -228, -212, -196, -180, -164, -148, -132,
+        -120, -112, -104, -96, -88, -80, -72, -64,
+        -56, -48, -40, -32, -24, -16, -8, 0,
+        32124, 31100, 30076, 29052, 28028, 27004, 25980, 24956,
+        23932, 22908, 21884, 20860, 19836, 18812, 17788, 16764,
+        15996, 15484, 14972, 14460, 13948, 13436, 12924, 12412,
+        11900, 11388, 10876, 10364, 9852, 9340, 8828, 8316,
+        7932, 7676, 7420, 7164, 6908, 6652, 6396, 6140,
+        5884, 5628, 5372, 5116, 4860, 4604, 4348, 4092,
+        3900, 3772, 3644, 3516, 3388, 3260, 3132, 3004,
+        2876, 2748, 2620, 2492, 2364, 2236, 2108, 1980,
+        1884, 1820, 1756, 1692, 1628, 1564, 1500, 1436,
+        1372, 1308, 1244, 1180, 1116, 1052, 988, 924,
+        876, 844, 812, 780, 748, 716, 684, 652,
+        620, 588, 556, 524, 492, 460, 428, 396,
+        372, 356, 340, 324, 308, 292, 276, 260,
+        244, 228, 212, 196, 180, 164, 148, 132,
+        120, 112, 104, 96, 88, 80, 72, 64,
+        56, 48, 40, 32, 24, 16, 8, 0
+    };
+    
+    private byte[] src = new byte[512];
+    private byte[] srcOriginal = new byte[512];
+    
+    public CodecTest() {
+    }            
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+        int k = 0;
+        int j = 0;
+        for (int i = 0; i < 256; i++) {
+            short s = muLawDecompressTable[i];
+            src[k++] = (byte)(s);
+            srcOriginal[j++] = (byte)(s);
+            
+            src[k++] = (byte)(s >> 8);
+            srcOriginal[j++] = (byte)(s >> 8);             
+        }
+    }
+
+    @After
+    public void tearDown() {
+    }
+    
+    /**
+     * Test of process method, of class Decoder.
+     */
+    @Test
+    public void testCodec() {
+        Buffer buffer = new Buffer();
+        buffer.setData(src);
+        
+        org.mobicents.media.server.spi.dsp.Codec compressor = new Encoder();
+        compressor.process(buffer);
+
+        org.mobicents.media.server.spi.dsp.Codec decompressor = new Decoder();
+        decompressor.process(buffer);
+        
+        byte[] res = buffer.getData();
+        for (int i = 0; i < buffer.getLength(); i++) {
+            if (srcOriginal[i] != res[i]) {
+                fail("mismatch found at " + i);
+            }
+        }
+    }
+
+}

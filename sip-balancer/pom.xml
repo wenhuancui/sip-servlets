@@ -1,0 +1,119 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+		<artifactId>mobicents-parent</artifactId>
+		<groupId>org.mobicents</groupId>
+		<version>MSS-1.6.2-SNAPSHOT</version>
+	</parent>
+	
+	<packaging>pom</packaging>
+	
+	<groupId>org.mobicents.tools</groupId>
+	<artifactId>sip-balancer</artifactId>
+	<version>MSS-1.6.2-SNAPSHOT</version>
+
+	<url>http://mobicents.org/</url>
+	
+	<modules>
+		<module>jar</module>
+		<module>assemble</module>		
+	</modules>
+	
+	<profiles>
+		<profile>
+			<id>maven-release</id>
+			<modules>
+				<module>docs</module>
+			</modules>
+		</profile>		
+	</profiles>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<tagBase>
+						https://mobicents.googlecode.com/svn/tags/tools/sip-balancer
+					</tagBase>
+					<preparationGoals>clean install</preparationGoals>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<arguments>-Dmaven.test.skip</arguments>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<groupId>org.mobicents.tools</groupId>
+				<inherited>false</inherited>
+				<executions />
+				<configuration>
+					<!--generateProjectsForModules>true</generateProjectsForModules-->
+					<resolveTransitiveDependencies>
+						true
+					</resolveTransitiveDependencies>
+					<eclipseProjectName>
+						sip-balancer
+					</eclipseProjectName>
+				</configuration>
+			</plugin>	
+		</plugins>
+		<!-- extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-webdav</artifactId>
+				<version>RELEASE</version>
+			</extension>
+		</extensions-->
+	</build>
+	
+	<!-- repositories -->
+	
+	<repositories>
+		<!-- repository>
+		  <id>jboss-public-repository-group</id>
+		  <name>JBoss Public Maven Repository Group</name>
+		  <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+		  <layout>default</layout>
+		  <releases>
+		    <enabled>true</enabled>
+		    <updatePolicy>never</updatePolicy>
+		  </releases>
+		  <snapshots>
+		    <enabled>true</enabled>
+		    <updatePolicy>never</updatePolicy>
+		  </snapshots>
+		</repository -->
+		<!-- repository>
+			<id>JbossRepository</id>
+			<name>Jboss Repository</name>
+			<url>http://repository.jboss.org/maven2
+			</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository -->
+		<!-- repository>
+			<id>jboss-snapshots</id>
+			<name>JBoss Snapshot Repository</name>
+			<url>http://snapshots.jboss.org/maven2
+			</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository -->
+	</repositories>
+
+  <!-- scm>
+    <connection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/MSS-1.6.2-SNAPSHOT</connection>
+    <developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/tools/sip-balancer/MSS-1.6.2-SNAPSHOT</developerConnection>
+    <url>http://mobicents.googlecode.com/svn/tags/tools/sip-balancer/MSS-1.6.2-SNAPSHOT</url>
+  </scm -->
+</project>

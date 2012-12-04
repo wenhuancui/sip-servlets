@@ -1,0 +1,80 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <packaging>jar</packaging>
+
+  <parent>
+    <groupId>org.mobicents.servers.diameter.resources</groupId>
+    <artifactId>sh-server-parent</artifactId>
+    <version>5.1.1.GA-JBCP5</version>
+  </parent>
+
+  <artifactId>sh-server-ra-DU</artifactId>
+
+  <name>Mobicents :: Diameter Resources :: ${project.artifactId}</name>
+
+  <dependencies>
+    <!-- common library -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sh-common-library</artifactId>
+      <version>${mobicents.diameter.resources.sh-common.version}</version>
+    </dependency>
+    <!-- components -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sh-server-events</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sh-server-ratype</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sh-server-ra</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>diameter-${project.artifactId}-${project.version}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.mobicents.tools</groupId>
+        <artifactId>maven-du-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration />
+        <executions>
+          <execution>
+            <phase>generate-resources</phase>
+			<goals>
+				<goal>copy-dependencies</goal>
+				<goal>generate-descriptor</goal>
+				<goal>generate-ant-management-script</goal>
+			</goals>
+          </execution>
+        </executions>
+      </plugin>
+    		<plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<configuration>
+				<descriptors>
+					<descriptor>src/main/assemble/descriptor.xml</descriptor>
+				</descriptors>
+			</configuration>
+			<executions>
+				<execution>
+					<id>make-assembly</id>
+					<phase>package</phase>
+					<goals>
+						<goal>single</goal>
+						<goal>directory-single</goal>							
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+    </plugins>
+  </build>
+
+</project>

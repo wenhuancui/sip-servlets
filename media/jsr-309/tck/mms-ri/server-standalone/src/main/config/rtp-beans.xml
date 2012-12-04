@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : rtp.xml
+    Created on : 20 Январь 2010 г., 9:35
+    Author     : kulikov
+    Description:
+        Purpose of the document follows.
+-->
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+    <bean name="RTPFactory" class="org.mobicents.media.server.impl.rtp.RtpFactory">
+	<property name="bindAddress">${mms.bind.address}</property>
+        <property name="localPorts">
+            <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="java.lang.Integer">
+                <entry>
+                    <key>audio</key><value>9201</value>
+                </entry>
+                <entry>
+                    <key>video</key><value>9203</value>
+                </entry>
+            </map>
+        </property>
+        <property name="jitter">100</property>
+        <property name="timer">
+            <inject bean="Timer" />
+        </property>
+        <property name="period">20</property>
+        <property name="codecs">
+            <map class="java.util.Hashtable" keyClass="java.lang.String" valueClass="java.util.List">
+                <entry>
+                    <key>audio</key>
+                    <value>
+                        <list>
+                            <inject bean="G711.ulaw.encoder" />
+                            <inject bean="G711.ulaw.decoder" />
+                            <inject bean="G711.alaw.encoder" />
+                            <inject bean="G711.alaw.decoder" />
+                            <inject bean="Speex.encoder" />
+                            <inject bean="Speex.decoder" />
+                            <inject bean="GSM.encoder" />
+                            <inject bean="GSM.decoder" />
+                            <inject bean="G729.encoder" />
+                            <inject bean="G729.decoder" />
+                        </list>
+                    </value>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+</deployment>

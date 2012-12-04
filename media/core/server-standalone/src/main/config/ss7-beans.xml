@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:jboss:bean-deployer:2.0 bean-deployer_2_0.xsd"
+	xmlns="urn:jboss:bean-deployer:2.0">
+
+	<bean name="SChannel1"
+		class="org.mobicents.media.server.impl.resource.zap.Channel">
+		<property name="span">1</property>
+		<property name="channelID">16</property>
+		<property name="code">0</property>
+	</bean>
+	<bean name="SChannel2"
+		class="org.mobicents.media.server.impl.resource.zap.Channel">
+		<property name="span">1</property>
+		<property name="channelID">17</property>
+		<property name="code">1</property>
+	</bean>
+
+	<!-- bean name="M3UserAgent" class="org.mobicents.protocols.ss7.stream.tcp.M3UserAgent">
+		<property name="port">1345</property>
+		<property name="address">127.0.0.1</property>
+		</bean -->
+
+
+	<bean name="MTP"
+		class="org.mobicents.media.server.impl.resource.zap.MTPUser">
+		<property name="name">TEST_1</property>
+		<property name="opc">14133</property>
+		<property name="dpc">14150</property>
+		<property name="localAddress">127.0.0.1</property>
+		<property name="localPort">3434</property>
+		<property name="remoteAddress">127.0.0.1</property>
+		<property name="remotePort">3435</property>
+		<property name="channels">
+			<list>
+				<inject bean="SChannel1" />
+				<!-- inject bean="SChannel2"/ -->
+			</list>
+		</property>
+	</bean>
+</deployment>

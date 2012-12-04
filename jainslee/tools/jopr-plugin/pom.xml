@@ -1,0 +1,99 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>org.mobicents</groupId>
+		<artifactId>mobicents-parent</artifactId>
+		<version>5.1.1.GA-JBCP5</version>
+	</parent>
+
+	<groupId>org.mobicents.servers.jainslee.tools</groupId>
+	<artifactId>mobicents-slee-jopr-as-5-plugin-parent</artifactId>
+	<version>5.1.1.GA-JBCP5</version>
+
+	<name>Jopr Mobicents JAIN SLEE Plugin For JBoss 5</name>
+	<description>A plugin for managing Mobicents JAIN SLEE on JBoss 5 servers</description>
+
+	<repositories>
+		<!-- repository>
+			<id>jboss-public-repository-group</id>
+			<name>JBoss Public Maven Repository Group</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository -->
+	</repositories>
+
+	<properties>
+		<rhq.groupId>org.rhq</rhq.groupId>
+		<rhq.version>1.2.0.GA</rhq.version>
+		<jbossas.version>5.1.0.GA</jbossas.version>
+		<jopr-version>2.2.0.GA</jopr-version>
+		<rhq-version>3.0.0.B06</rhq-version>
+		<mobicents.jslee.version>5.1.1.GA-JBCP5</mobicents.jslee.version>
+		<getopt.version>1.0.13</getopt.version>
+	</properties>
+
+	<modules>
+		<module>jar</module>
+	</modules>
+
+	<profiles>
+		<profile>
+			<id>maven-release</id>
+			<modules>
+				<module>docs</module>
+			</modules>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>						
+						<configuration>
+							<autoVersionSubmodules>true</autoVersionSubmodules>
+							<tagBase>https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/jopr-plugin</tagBase>
+							<branchBase>https://mobicents.googlecode.com/svn/branches/servers/jain-slee/2.x.y/tools/jopr-plugin</branchBase>
+							<preparationGoals>clean install</preparationGoals>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<!-- scm>
+		<connection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/jopr-plugin/2.1.2.FINAL</connection>
+		<developerConnection>scm:svn:https://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/jopr-plugin/2.1.2.FINAL</developerConnection>
+		<url>http://mobicents.googlecode.com/svn/tags/servers/jain-slee/2.x.y/tools/jopr-plugin/2.1.2.FINAL</url>
+	</scm -->
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<groupId>org.mobicents.tools</groupId>
+				<inherited>false</inherited>
+				<executions />
+				<configuration>
+					<excludePoms />
+					<classpathExcludes>
+						<exclude>xml-apis:xml-apis</exclude>
+						<exclude>jtidy:jtidy</exclude>
+					</classpathExcludes>
+					<resolveTransitiveDependencies>true</resolveTransitiveDependencies>
+					<eclipseProjectName>mobicents-slee-tools-jopr-plugin</eclipseProjectName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

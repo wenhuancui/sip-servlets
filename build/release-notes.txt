@@ -1,0 +1,53 @@
+Release Notes for version: mss-1.6.1-RC03
+Updated on 09-27-2012.
+
+==
+r72487 | sthamara | 2012-09-06 13:27:44 -0700 (Thu, 06 Sep 2012) | 1 line
+
+DE9715: #2942-Case-00624675-From and To headers got swapped after engine double failed over
+------------------------------------------------------------------------
+r72452 | sthamara | 2012-09-04 16:57:08 -0700 (Tue, 04 Sep 2012) | 1 line
+
+DE10831: Building jain-sip locally
+------------------------------------------------------------------------
+r72446 | sthamara | 2012-09-04 13:37:39 -0700 (Tue, 04 Sep 2012) | 1 line
+
+DE10831:00692387-Memory leak with OPTIONS/TLS exception
+------------------------------------------------------------------------
+==
+
+Release Notes for version: mss-1.6.1-RC02
+Updated on 07-18-2012.
+==
+r71597 | sthamara | 2012-07-13 17:21:27 PDT
+
+US15600 TA26984: Porting from JBCP5.1.X #125 Case-00669317	Proxy removes follow-up Route headers when switching between transports
+----------------------------------------------------------------------------
+r71594 | sthamara | 2012-07-13 17:09:09 PDT
+
+US15600 TA26984: Porting from JBCP5.1.X #3232 Case-00642577	JBCP not forwarding SIP messages under certain conditions
+----------------------------------------------------------------------------
+r71593 | sthamara | 2012-07-13 17:04:07 PDT
+
+US15600 TA26984: Porting from JBCP5.1.X #3192 Case-00632969	SIP Servlets Request Creation NPE
+----------------------------------------------------------------------------
+r71591 | sthamara | 2012-07-13 16:59:57 PDT
+
+US15600 TA26984: Porting from JBCP5.1.X #3212 Case-00647789	Proxy call failure after engine failover
+----------------------------------------------------------------------------
+r71590 | sthamara | 2012-07-13 16:49:56 PDT
+
+US15600 TA26984: Porting from JBCP5.1.X #3213 Case-00648221	Call failures when interworking TLS with TCP
+----------------------------------------------------------------------------
+r71587 | sthamara | 2012-07-13 16:25:54 PDT
+
+US15600 TA26984: Porting from JBCP5.1.X #3188 Case-00617526	JAIN SIP Thread Leak with malformed packets/invalid connection
+----------------------------------------------------------------------------
+r71586 | sthamara | 2012-07-13 16:23:09 PDT
+
+US15600 TA26984: Porting from JBCP5.1.X #2942-Case 00624675 From and To Uris switch places in certain conditions	
+----------------------------------------------------------------------------
+r71585 | sthamara | 2012-07-13 16:20:08 PDT
+
+US15600 TA26984: Porting from JBCP5.1.3_HF #3182-Case#00628882 Proxy duplicates Record-Route header
+----------------------------------------------------------------------------
