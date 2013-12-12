@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<artifactId>mobicents-parent</artifactId>
@@ -102,7 +103,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
+			<version>4.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -125,8 +126,8 @@
 					<compilerArguments>
 						<g />
 					</compilerArguments>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -165,6 +166,46 @@
 			</plugin>
 
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-dependency-plugin
+										</artifactId>
+										<versionRange>
+											[2.0,)
+										</versionRange>
+										<goals>
+											<goal>unpack</goal>
+											<goal>
+												copy-dependencies
+											</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 	<profiles>
 		<profile>
@@ -180,7 +221,9 @@
 								<phase>site</phase>
 								<configuration>
 									<tasks>
-										<copy verbose="true" file="${project.build.directory}/site/index.html" tofile="${project.build.directory}/site/products_sip_servlets.html" />
+										<copy verbose="true"
+											file="${project.build.directory}/site/index.html"
+											tofile="${project.build.directory}/site/products_sip_servlets.html" />
 									</tasks>
 								</configuration>
 								<goals>
@@ -214,89 +257,6 @@
 				<maven.test.skip>true</maven.test.skip>
 			</properties>
 		</profile>
-		<!--profile>
-			<id>tomcat</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<tomcat.version>6.0.35</tomcat.version>
-				<jboss4.version>4.2.3.GA</jboss4.version>
-			</properties>
-			<modules>
-				<module>containers/sip-servlets-catalina</module>
-				<module>containers/sip-servlets-tomcat-jboss4</module>
-			</modules>
-			<dependencies>
-				<dependency>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
-					<version>2.5</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>jboss-5</id>
-			<modules>
-				<module>containers/sip-servlets-catalina</module>
-				<module>containers/sip-servlets-jboss5-metadata</module>
-				<module>containers/sip-servlets-jboss5-deployer</module>
-				<module>containers/sip-servlets-jboss5-ha-server-cache</module>
-				<module>containers/sip-servlets-jboss5</module>
-			</modules>
-			<properties>
-				<tomcat.version>6.0.35</tomcat.version>
-			</properties>
-			<dependencies>
-				<dependency>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
-					<version>2.5</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>tomcat-distro</id>
-			<modules>
-				<module>containers/sip-servlets-catalina</module>
-				<module>containers/sip-servlets-tomcat-jboss4</module>
-			</modules>
-			<properties>
-				<tomcat.version>6.0.35</tomcat.version>
-				<jboss4.version>4.2.3.GA</jboss4.version>
-			</properties>
-			<dependencies>
-				<dependency>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
-					<version>2.5</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>jboss-5-distro</id>
-			<modules>
-				<module>containers/sip-servlets-catalina</module>
-				<module>containers/sip-servlets-jboss5-metadata</module>
-				<module>containers/sip-servlets-jboss5-deployer</module>
-				<module>containers/sip-servlets-jboss5-ha-server-cache</module>
-				<module>containers/sip-servlets-jboss5</module>
-			</modules>
-			<properties>
-				<tomcat.version>6.0.35</tomcat.version>
-			</properties>
-			<dependencies>
-				<dependency>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
-					<version>2.5</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>
-		</profile-->
 		<profile>
 			<id>tomcat-7</id>
 			<activation>
@@ -339,7 +299,7 @@
 				<module>containers/sip-servlets-as7-drop-in/jboss-as-mobicents</module>
 				<module>containers/sip-servlets-as7-drop-in/build-mobicents-modules</module>
 			</modules>
-			<properties>				
+			<properties>
 				<version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
 			</properties>
 			<dependencies>
